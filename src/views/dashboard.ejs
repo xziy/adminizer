@@ -1,0 +1,28 @@
+<%- include("head") %>
+<%- include("headContent") %>
+
+<script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>
+
+<% if (Boolean((configHelper.getConfig()).dashboard)) { %>
+    <% if(hasPermission('widgets', req.session.UserAP)){ -%>
+        <script src="<%- config.routePrefix %>/assets/js/vue-widgets.js" defer></script>
+        <div class="content__body">
+            <div id="widgets"></div>
+        </div>
+
+        <div class="content__body">
+            <div id="installStep"></div>
+            <script>
+              // MountJSONForm({
+              //     mountDivId: '#installStep'
+              //     // schema,
+              //     // uischema,
+              // })
+
+            </script>
+        </div>
+    <% } -%>
+<% } else { %>
+    HELLO
+<% } %>
+<%- include("footer") %>

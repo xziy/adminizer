@@ -1,0 +1,53 @@
+export default {
+  id: {
+    type: "number",
+    autoIncrement: true,
+    primaryKey: true
+  },
+  login: {
+    type: "string",
+    required: true,
+    unique: true
+  },
+  fullName: {
+    type: "string",
+    required: true
+  },
+  email: {
+    type: "string"
+  },
+  passwordHashed: {
+    type: "string"
+  },
+  password: {
+    type: "string"
+  },
+  timezone: {
+    type: "string"
+  },
+  expires: {
+    type: "string"
+  },
+  locale: {
+    type: "string"
+  },
+  isDeleted: {
+    type: "boolean"
+  },
+  isActive: {
+    type: "boolean"
+  },
+  isAdministrator: {
+    type: "boolean"
+  },
+  groups: {
+    collection: "GroupAP",
+    via: "users"
+  },
+  widgets: {
+    type: "json"
+  },
+  isConfirmed: {
+    type: "boolean"
+  }
+}
