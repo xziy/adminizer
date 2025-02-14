@@ -7,26 +7,29 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin</title>
-
+    <!-- Vite client  -->
+    <script type="module" src="/@vite/client"></script>
     <!-- Main CSS -->
-    <link rel="stylesheet" href="<%- config.routePrefix %>/assets/style/style.min.css"/>
-    <!-- Main Script -->
-    <script src="<%- config.routePrefix %>/assets/js/script.min.js"></script>
-    <script src="<%- config.routePrefix %>/assets/js/ace/ace.js"></script>
-    <script src="<%- config.routePrefix %>/assets/js/jsoneditor/jsoneditor.min.js"></script>
-    <script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>
-    <script src="<%- config.routePrefix %>/assets/js/mediamanager.js" defer></script>
-    <script src="<%- config.routePrefix %>/assets/js/ckeditor5/ck5.js"></script>
+<!--    <link rel="stylesheet" href="<%- config.routePrefix %>/assets/style/style.min.css"/>-->
+<!--    &lt;!&ndash; Main Script &ndash;&gt;-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/script.min.js"></script>-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/ace/ace.js"></script>-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/jsoneditor/jsoneditor.min.js"></script>-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/mediamanager.js" defer></script>-->
+<!--    <script src="<%- config.routePrefix %>/assets/js/ckeditor5/ck5.js"></script>-->
     <% if (req.session.UserAP.locale !== 'en') { %>
         <script src="<%- config.routePrefix %>/assets/js/ckeditor5/translations/<%= req.session.UserAP.locale %>.js"></script>
     <% } %>
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.2.0/ckeditor5.css" />
+<!--    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.2.0/ckeditor5.css" />-->
 
     <script>
       window.jsonEditor = {}
       window.apTables = {};
       window.routePrefix = '<%- config.routePrefix %>'
     </script>
+
+    <script type="module" src="<%- config.routePrefix %>/src/assets/vite/main.js"></script>
 </head>
 
 <body>

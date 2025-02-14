@@ -22,6 +22,6 @@
     "experimentalSpecifierResolution": "node"
   },
   "lib": ["esnext"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/assets"],
   "include": ["src/**/*.ts"]
 }
