@@ -2,6 +2,7 @@ import express, {Express} from "express";
 import * as path from "path";
 import winston from "winston";
 import EventEmitter from 'events';
+import chalk from 'chalk';
 
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import PolicyManager from "./v4/PolicyManager";
@@ -63,23 +64,46 @@ export class Adminizer {
         this._emitter = new EventEmitter();
         this.ormAdapters = ormAdapters;
 
-        this.viteMiddleware().then(r => {
+        const isViteDev = process.env.VITE_ENV === "dev";
+        if (isViteDev) {
+            this.viteMiddleware().then(r => {
+                // set views
+                this.setViewEngine();
+            });
+        } else {
             // set views
-            this.app.set("view engine", "ejs");
-            this.app.set("views", path.join(import.meta.dirname, "../views"));
-        });
+            this.setViewEngine();
+        }
 
     }
 
+    /**
+     * Set view engine
+     * @protected
+     */
+    protected setViewEngine() {
+        this.app.set("view engine", "ejs");
+        this.app.set("views", path.join(import.meta.dirname, "../views"));
+    }
+
+    /**
+     * Vite middleware
+     * @protected
+     */
     protected async viteMiddleware() {
-        // Создаем Vite сервер в режиме middleware
+        // Create a Vite server in middleware mode
         this.vite = await createViteServer({
-            server: {middlewareMode: true}, // Включаем режим middleware
-            appType: 'custom', // Указываем тип приложения
+            server: { middlewareMode: true }, // Enable middleware mode
+            appType: 'custom', // Specify the application type
         });
 
-        // Используем Vite Middleware
+        // Use Vite Middleware
         this.app.use(this.vite.middlewares);
+
+        console.log(
+            chalk.green.bold('Vite is running in development mode!') +
+            chalk.blue('\nAccess your app at http://localhost:3000')
+        );
     }
 
     public async init(config: AdminpanelConfig) {

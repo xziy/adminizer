@@ -7,7 +7,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "node --trace-warnings --experimental-loader ts-node/esm ./waterlineFixture/index.ts",
 		"gulp": "gulp prod",
-		"dev": "vite",
+		"dev": "cross-env VITE_ENV=dev node --trace-warnings --experimental-loader ts-node/esm ./waterlineFixture/index.ts",
 		"build": "vite build"
 	},
 	"keywords": [],
@@ -16,6 +16,7 @@
 	"description": "",
 	"dependencies": {
 		"body-parser": "^1.20.3",
+		"chalk": "^5.4.1",
 		"cors": "^2.8.5",
 		"crypto-puzzle": "^5.0.2",
 		"datatables.net-dt": "^2.2.1",
@@ -80,6 +81,7 @@
 		"bootstrap": "^5.3.3",
 		"browser-sync": "^3.0.3",
 		"cropperjs": "^1.6.2",
+		"cross-env": "^7.0.3",
 		"cssnano": "^7.0.6",
 		"datatables.net": "^2.2.1",
 		"del": "^8.0.0",

@@ -72,9 +72,10 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             // Delete /adminizer from url
             req.url = req.url.replace(routePrefix, '') || '/';
             adminizerHandler(req, res);
+            console.log('12321  ', req.url)
         } else if (
             req.url.startsWith('/@vite') || // Запросы к Vite
-            // req.url.startsWith('/src') ||   // Запросы к исходным файлам
+            req.url.startsWith('/src/assets') ||   // Запросы к исходным файлам
             req.url.startsWith('/node_modules')
             // || // Запросы к внутренним ресурсам Vite
             // req.url.endsWith('.js') ||      // Запросы к JS-файлам
@@ -89,6 +90,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     });
 
     mainApp.listen(3000, () => {
-        console.log('MainApp listening on http://localhost:3000');
+        const isViteDev = process.env.VITE_ENV === "dev" ;
+        if(!isViteDev) console.log('MainApp listening on http://localhost:3000');
     });
 });
