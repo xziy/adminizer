@@ -14,7 +14,7 @@
     <!-- Main CSS -->
     <!--    <link rel="stylesheet" href="<%- config.routePrefix %>/assets/style/style.min.css"/>-->
     <!--    &lt;!&ndash; Main Script &ndash;&gt;-->
-        <script src="<%- config.routePrefix %>/assets/js/script.min.js"></script>
+<!--        <script src="<%- config.routePrefix %>/assets/js/script.min.js"></script>-->
     <!--    <script src="<%- config.routePrefix %>/assets/js/ace/ace.js"></script>-->
     <!--    <script src="<%- config.routePrefix %>/assets/js/jsoneditor/jsoneditor.min.js"></script>-->
     <!--    <script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>-->
@@ -30,6 +30,7 @@
         window.apTables = {};
         window.routePrefix = '<%- config.routePrefix %>'
     </script>
+    <link rel="stylesheet" href="<%- viteRender('src/assets/styles/style.css') %>">
     <script type="module" src="<%- viteRender('src/assets/js/main.js') %>"></script>
 </head>
 

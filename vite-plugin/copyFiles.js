@@ -84,7 +84,7 @@ function removeFolderIfExists(folderPath) {
         if (fs.existsSync(folderPath)) {
             const stats = fs.lstatSync(folderPath);
             if (stats.isDirectory() && !stats.isSymbolicLink()) {
-                console.log(chalk.green.bold(`[vite]: Deleting folder: ${folderPath}`));
+                console.log(chalk.yellow.bold(`[vite]: Deleting folder: ${folderPath}`));
                 fs.rmSync(folderPath, {recursive: true, force: true});
             }
         }
@@ -119,10 +119,12 @@ export function copyFiles(command) {
     //     normalizePath(path.resolve(import.meta.dirname, '../src/assets/datatables')),
     //     normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
     // )
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/translations'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/translations')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/translations'))
     )
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/migrations'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/migrations')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/migrations'))
