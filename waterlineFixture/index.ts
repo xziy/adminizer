@@ -72,15 +72,14 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             // Delete /adminizer from url
             req.url = req.url.replace(routePrefix, '') || '/';
             adminizerHandler(req, res);
-            console.log('12321  ', req.url)
         } else if (
-            req.url.startsWith('/@vite') || // Запросы к Vite
-            req.url.startsWith('/src/assets') ||   // Запросы к исходным файлам
+            req.url.startsWith('/@vite') || // Requests to Vite
+            req.url.startsWith('/src/assets') ||   // Requests to source files
             req.url.startsWith('/node_modules')
-            // || // Запросы к внутренним ресурсам Vite
-            // req.url.endsWith('.js') ||      // Запросы к JS-файлам
-            // req.url.endsWith('.css') ||     // Запросы к CSS-файлам
-            // req.url.endsWith('.mjs')        // Запросы к модульным JS-файлам
+            // || // Requests to Vite's internal resources
+            // req.url.endsWith('.js') ||      // Requests to JS files
+            // req.url.endsWith('.css') ||     // Requests to CSS files
+            // req.url.endsWith('.mjs')        // Requests to module JS files
         ) {
             adminizer.vite.middlewares(req, res);
         } else {
@@ -90,7 +89,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     });
 
     mainApp.listen(3000, () => {
-        const isViteDev = process.env.VITE_ENV === "dev" ;
-        if(!isViteDev) console.log('MainApp listening on http://localhost:3000');
+        const isViteDev = process.env.VITE_ENV === "dev";
+        if (!isViteDev) console.log('MainApp listening on http://localhost:3000');
     });
 });

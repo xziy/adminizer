@@ -3,6 +3,7 @@ import path from 'path';
 import {
     copyFiles
 } from './vite-plugin/copyFiles.js'
+import fullReload from 'vite-plugin-full-reload'
 
 export default defineConfig(({command, mode}) => {
     copyFiles(command)
@@ -22,6 +23,9 @@ export default defineConfig(({command, mode}) => {
                     entryFileNames: 'js/[name].js',
                 }
             }
-        }
+        },
+        plugins: [
+            fullReload(['src/views/**/*'])
+        ],
     }
 });
