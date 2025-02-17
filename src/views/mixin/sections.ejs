@@ -5,14 +5,16 @@
         <div class="nav-button-prev absolute left-[20px] top-[4px] hover:text-blue-500"><i
                     class="las la-angle-left text-lg transition"></i></div>
         <swiper-container class="cursor-move nav-swiper overflow-visible overflow-x-clip" init="false">
-            <swiper-slide class="w-auto justify-center flex items-center h-9">
-                <a class="nav-link<% if (section && section === "adminpanel") { %> active<% } %>"
-                   href="<%- config.routePrefix %>"><i class="las la-sliders-h"></i> <%= __("Adminpanel") %></a>
+            <swiper-slide class="!w-auto justify-center flex items-center">
+                <div class="justify-center flex items-center h-9">
+                    <a class="nav-link<% if (section && section === "adminpanel") { %> active<% } %>"
+                       href="<%- config.routePrefix %>"><i class="las la-sliders-h"></i> <%= __("Adminpanel") %></a>
+                </div>
             </swiper-slide>
             <% sections.forEach(function(itemSection) { %>
                 <% if (itemSection.link && itemSection.title) { %>
-                    <swiper-slide class="w-auto">
-                        <div class="relative group justify-center flex items-center h-9">
+                    <swiper-slide class="!w-auto">
+                        <div class="relative justify-center flex items-center h-9 group">
                             <a class="nav-link<% if (section && section === itemSection.id) { %> active<% } %>"
                                href="<%= itemSection.link %>"
                             <% if(itemSection.subItems && itemSection.subItems.length > 0){ -%>
@@ -24,7 +26,7 @@
                                 <% } %>
                                 <%= __(itemSection.title) %></a>
                             <% if(itemSection.subItems && itemSection.subItems.length > 0){ -%>
-                                <div class="menu__icon group-hover:after:rotate-45 group-hover:before:rotate-[-45deg] w-3 ml-3 after:right-0 before:right-[5px]"></div>
+                                <div class="relative after:block before:block after:absolute after:rotate-[-45deg] after:top-1/2 after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300 before:absolute before:rotate-[45deg] before:top-1/2 before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all before:transition-all after:rounded-sm before:rounded-sm w-3 ml-3 after:right-0 before:right-[5px] group-hover:after:rotate-45 group-hover:before:rotate-[-45deg]"></div>
                                 <div class="absolute top-[100%] bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 border-t-0 px-3 py-2 left-0 flex flex-col gap-2 opacity-0 invisible group-hover:opacity-100 group-active:opacity-100 group-hover:visible group-active:visible transition cursor-auto">
                                     <% itemSection.subItems.forEach(e => { -%>
                                         <div>
@@ -45,36 +47,37 @@
                     class="las la-angle-right text-lg transition"></i></div>
     </nav>
     <script>
-      const nav_swiperEl = document.querySelector('.nav-swiper');
-      // swiper parameters
-      const swiperParams = {
-        slidesPerView: 'auto',
-        speed: 500,
-        navigation: {
-          nextEl: '.nav-button-next',
-          prevEl: '.nav-button-prev',
-        },
-        spaceBetween: 30,
-        on: {
-          init: function () {
-            setTimeout(function () {
-              nav_swiperEl.setAttribute('style', 'width: calc(100vw - 96px)')
-            }, 100)
-          },
-        },
-      };
+        addEventListener('DOMContentLoaded', function () {
+            const nav_swiperEl = document.querySelector('.nav-swiper');
+            // swiper parameters
+            const swiperParams = {
+                slidesPerView: 'auto',
+                speed: 500,
+                navigation: {
+                    nextEl: '.nav-button-next',
+                    prevEl: '.nav-button-prev',
+                },
+                spaceBetween: 30,
+                on: {
+                    init: function () {
+                        setTimeout(function () {
+                            nav_swiperEl.setAttribute('style', 'width: calc(100vw - 96px)')
+                        }, 100)
+                    },
+                },
+            };
 
-      // now we need to assign all parameters to Swiper element
-      Object.assign(nav_swiperEl, swiperParams);
+            // now we need to assign all parameters to Swiper element
+            Object.assign(nav_swiperEl, swiperParams);
 
-      // and now initialize it
-      nav_swiperEl.initialize();
+            // and now initialize it
+            nav_swiperEl.initialize();
 
-      //Slide to active menu item
-      const activeNavItem = +document.querySelector('swiper-slide .nav-link.active').closest('swiper-slide').getAttribute('aria-label').charAt(0)
-      setTimeout(() => {
-        nav_swiperEl.swiper.slideTo(activeNavItem - 1)
-      }, 200)
-
+            //Slide to active menu item
+            const activeNavItem = +document.querySelector('swiper-slide .nav-link.active').closest('swiper-slide').getAttribute('aria-label').charAt(0)
+            setTimeout(() => {
+                nav_swiperEl.swiper.slideTo(activeNavItem - 1)
+            }, 200)
+        })
     </script>
 <% } %>

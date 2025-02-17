@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 @config "../../../tailwind.config.js";
 
 html, body {
@@ -85,7 +86,7 @@ svg {
 }
 
 .nav-link {
-    @apply h-full pt-2 text-sm font-medium text-neutral-500 dark:text-slate-100 relative relative after:content-[''] after:absolute
+    @apply h-full pt-2 text-sm font-medium text-neutral-500 dark:text-slate-100 relative after:content-[''] after:absolute
     after:w-0 after:h-[3px] after:bottom-0 after:left-0 after:bg-blue-700 dark:after:bg-blue-400 hover:after:w-full hover:text-neutral-900 dark:hover:text-slate-400 after:transition-all whitespace-nowrap;
 
     &.active {
@@ -101,19 +102,17 @@ svg {
     }
 }
 
-.menu {
-    & __icon {
-        @apply relative after:absolute after:right-4 after:rotate-[-45deg] after:top-1/2 after:content-[''] after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300
-        before:absolute before:right-[21px] before:rotate-[45deg] before:top-1/2 before:content-[''] before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all
-        before:transition-all after:rounded-sm before:rounded-sm;
-    }
 
-    & __has-sub--active {
-        .menu__icon {
-            @apply after:rotate-[45deg] before:rotate-[-45deg];
-        }
+.menu__icon {
+    @apply relative after:block before:block after:absolute after:right-4 after:rotate-[-45deg] after:top-1/2 after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300 before:absolute before:right-[21px] before:rotate-[45deg] before:top-1/2 before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all before:transition-all after:rounded-sm before:rounded-sm;
+}
+
+.menu__has-sub--active {
+    .menu__icon {
+        @apply after:rotate-[45deg] before:rotate-[-45deg];
     }
 }
+
 
 .menu__sub-list {
     .active {
@@ -123,18 +122,13 @@ svg {
 
 .content {
     @apply bg-gray-50 dark:bg-gray-800;
-
-    & __body {
-        @apply pt-8 pl-12 pr-16 pb-8 md:px-5 overflow-x-hidden;
-    }
 }
 
+.content__body{
+    @apply pt-8 pl-12 pr-16 pb-8 md:px-5 overflow-x-hidden;
+}
 .burger {
     -webkit-tap-highlight-color: transparent;
-
-    & --active {
-
-    }
 }
 
 .aside {
@@ -147,7 +141,7 @@ svg {
         top: 40px;
     }
 
-    & --active {
+    &--active {
         transform: translateX(100%);
     }
 }
@@ -259,34 +253,30 @@ select {
     border-radius: 0.25rem;
 }
 
-.admin-panel {
-    & __wrapper-title {
-        @apply flex items-end gap-2;
-    }
+.admin-panel__wrapper-title {
+    @apply flex items-end gap-2;
+}
 
-    & __title {
-        @apply font-bold sm:max-w-[150px];
-    }
+.admin-panel__title {
+    @apply font-bold sm:max-w-[150px];
+}
 
-    & __widget {
-        &.disabled {
-            @apply pointer-events-none opacity-80;
-        }
-    }
+.admin-panel__widget.disabled {
+    @apply pointer-events-none opacity-80;
 }
 
 .tooltip {
     @apply relative;
+}
 
-    & __content {
-        @apply absolute left-6 bottom-0 text-white z-10 w-[30vw] h-fit bg-gray-900/90 dark:bg-gray-600 p-3 pr-0 text-sm rounded after:right-[100%] after:bottom-[7px] after:border-[5px] after:border-[transparent_rgba(17,24,39,.9)_transparent_transparent] after:content-[''] after:absolute invisible opacity-0 transition-opacity;
+.tooltip__content {
+    @apply absolute left-6 bottom-0 text-white z-10 w-[30vw] h-fit bg-gray-900/90 dark:bg-gray-600 p-3 pr-0 text-sm rounded after:right-[100%] after:bottom-[7px] after:border-[5px] after:border-[transparent_rgba(17,24,39,.9)_transparent_transparent] after:content-[''] after:absolute invisible opacity-0 transition-opacity;
 
-        span {
-            padding-right: 12px;
-            max-height: 400px;
-            overflow: auto;
-            display: block;
-        }
+    span {
+        padding-right: 12px;
+        max-height: 400px;
+        overflow: auto;
+        display: block;
     }
 }
 
