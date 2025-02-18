@@ -31,7 +31,7 @@
 
 <script>
 import {defineComponent} from "vue";
-import {getDefaultColorByID} from "./colorPallete"
+import {getDefaultColorByID} from "@js/widgets/colorPallete"
 
 export default defineComponent({
 	name: 'Widget',

@@ -10,6 +10,12 @@ import JsonSchema from "./models/JsonSchema";
 import Test from "./models/Test";
 import User from "./models/User";
 
+import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
+import {SiteLinks} from "./test-widgets/Links";
+import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
+import {CustomOne, CustomTwo} from "./test-widgets/Custom";
+import {ActionOne, ActionTwo} from "./test-widgets/Actions";
+
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
@@ -43,8 +49,22 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
      */
     const waterlineAdapter = new WaterlineAdapter({orm: orm, ontology: ontology}); // ontology contains collections, orm just contains general methods
     const adminizer = new Adminizer([waterlineAdapter]);
+
     try {
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        // Add widgets
+        adminizer.widgetHandler.add(new SwitcherOne());
+        adminizer.widgetHandler.add(new SwitcherTwo());
+        adminizer.widgetHandler.add(new SiteLinks());
+        adminizer.widgetHandler.add(new InfoOne());
+        adminizer.widgetHandler.add(new InfoTwo());
+        adminizer.widgetHandler.add(new Info3());
+        adminizer.widgetHandler.add(new Info4());
+        adminizer.widgetHandler.add(new CustomOne());
+        adminizer.widgetHandler.add(new CustomTwo());
+        adminizer.widgetHandler.add(new ActionOne());
+        adminizer.widgetHandler.add(new ActionTwo());
     } catch (e) {
         console.log(e)
     }
@@ -67,19 +87,20 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
     // Main app on http
     const mainApp = http.createServer((req, res) => {
+        const adminizerHandler = expressHandler(adminizer.app);
         if (req.url.startsWith(routePrefix)) {
-            const adminizerHandler = expressHandler(adminizer.app);
             // Delete /adminizer from url
             req.url = req.url.replace(routePrefix, '') || '/';
             adminizerHandler(req, res);
-        } else if (
+        } else if(req.url.startsWith('/style')){ // Requests to style files
+            req.url = `/assets/${req.url}`
+            console.log(req.url);
+            adminizerHandler(req, res);
+        }else if (
             req.url.startsWith('/@vite') || // Requests to Vite
+            req.url.startsWith('/@id') || // Requests to Vite
             req.url.startsWith('/src/assets') ||   // Requests to source files
             req.url.startsWith('/node_modules')
-            // || // Requests to Vite's internal resources
-            // req.url.endsWith('.js') ||      // Requests to JS files
-            // req.url.endsWith('.css') ||     // Requests to CSS files
-            // req.url.endsWith('.mjs')        // Requests to module JS files
         ) {
             adminizer.vite.middlewares(req, res);
         } else {

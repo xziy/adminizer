@@ -2,9 +2,9 @@
 <% var globalSettings = (configHelper.getConfig()).globalSettings %>
 <% if (Array.isArray(sections)) { %>
     <nav class="px-12 h-9 border-b border-gray-300 bg-white dark:bg-gray-800 dark:border-slate-100 md:mt-[40px] relative md:fixed md:z-[1001]">
-        <div class="nav-button-prev absolute left-[20px] top-[4px] hover:text-blue-500"><i
+        <div class="nav-button-prev absolute left-[20px] top-[6px] hover:text-blue-500"><i
                     class="las la-angle-left text-lg transition"></i></div>
-        <swiper-container class="cursor-move nav-swiper overflow-visible overflow-x-clip" init="false">
+        <swiper-container class="cursor-move nav-swiper !overflow-y-visible !overflow-x-clip" init="false">
             <swiper-slide class="!w-auto justify-center flex items-center">
                 <div class="justify-center flex items-center h-9">
                     <a class="nav-link<% if (section && section === "adminpanel") { %> active<% } %>"
@@ -43,7 +43,7 @@
                 <% } %>
             <% }) %>
         </swiper-container>
-        <div class="nav-button-next absolute right-[15px] top-[4px] hover:text-blue-500"><i
+        <div class="nav-button-next absolute right-[15px] top-[6px] hover:text-blue-500"><i
                     class="las la-angle-right text-lg transition"></i></div>
     </nav>
     <script>

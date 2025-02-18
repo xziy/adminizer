@@ -24,11 +24,8 @@ function hashCode(str) {
     return hash;
   }
 
-  function getDefaultColorByID(key){
+  export function getDefaultColorByID(key){
     const hash = hashCode(key.toString());
     const index = Math.abs(hash % colorPallete.length)
     return colorPallete[index] || colorPallete[0]
   }
-
-
-export default { getDefaultColorByID };
