@@ -6,7 +6,7 @@ import timezones from "../lib/timezones";
 /**
  * Default admin config
  */
-var adminpanelConfig: AdminpanelConfig = {
+const adminpanelConfig: AdminpanelConfig = {
   /** Default route prefix */
   routePrefix: '/adminizer',
 
@@ -115,17 +115,4 @@ var adminpanelConfig: AdminpanelConfig = {
   }
 }
 
-
-export function setDefaultConfig(config: AdminpanelConfig) {
-  adminpanelConfig = config;
-}
-
-export function getDefaultConfig() {
-  return adminpanelConfig;
-}
-
-export function defaults() {
-  return {
-    adminpanel: adminpanelConfig
-  }
-}
+export default adminpanelConfig;

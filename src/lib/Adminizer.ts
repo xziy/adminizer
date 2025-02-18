@@ -26,7 +26,7 @@ import {AccessRightsHelper} from "../helpers/accessRightsHelper";
 import bindReqFunctions from "../system/bindReqFunctions";
 import {ConfigHelper} from "../helpers/configHelper";
 import {I18n} from "./v4/I18n";
-import {getDefaultConfig} from "../system/defaults";
+import defaultConfig from "../system/defaultConfig";
 import {AbstractAdapter} from "./v4/model/AbstractModel";
 import bindExpressUtils from "../system/bindExpressUtils";
 
@@ -75,7 +75,6 @@ export class Adminizer {
     }
 
     // Merge custom config with default, additionally merge models
-    const defaultConfig = getDefaultConfig();
     this.config = {
       ...defaultConfig,
       ...config,
