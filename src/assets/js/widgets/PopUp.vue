@@ -32,15 +32,5 @@ export default {
 }
 </script>
 
-<style>
-.modal-content {
-	padding: 31px 41px;
-	overflow: auto;
-	height: 100vh;
-}
-
-.close-admin-modal-pu {
-	top: 30px;
-	right: 33px
-}
+<style scoped>
 </style>

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs, {rmSync} from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import {normalizePath} from "vite";
@@ -110,6 +110,7 @@ export function copyFiles(command) {
         // Build mode: remove the link and copy the folder
         removeFolderIfExists(linkPath); // Delete the folder if it exists
         copyFolderRecursiveSync(targetPath, linkPath);
+
     } else {
         console.error('Invalid mode.');
     }

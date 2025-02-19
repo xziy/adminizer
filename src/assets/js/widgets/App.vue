@@ -189,18 +189,4 @@ export default defineComponent({
 })
 </script>
 <style>
-.btn-click {
-	background-color: #0d6efd;
-	max-width: fit-content;
-	padding: 0 20px;
-	height: 30px;
-	color: whitesmoke;
-	border-radius: 5px;
-	transition: all 0.3s ease-in-out;
-}
-
-.btn-click:hover {
-	color: wheat;
-	background-color: green;
-}
 </style>

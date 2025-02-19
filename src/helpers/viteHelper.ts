@@ -13,6 +13,6 @@ export function viteRender(routePrefix: string, assetName: string): string {
             return ''
         }
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-        return `${routePrefix}/${manifest[assetName]?.file}`;
+        return `${routePrefix}/assets/${manifest[assetName]?.file}`;
     }
 }
