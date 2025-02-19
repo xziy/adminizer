@@ -22,7 +22,7 @@
 					</span>
 					</div>
 					<span class="admin-widgets__icon">
-					<i :class="`las la-${icon}`"></i>
+						<span class="material-icons-outlined">{{icon}}</span>
 				</span>
 				</div>
 			</div>

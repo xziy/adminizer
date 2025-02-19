@@ -32,29 +32,29 @@ window.solveCaptcha = Puzzle.solve;
 
 import('bootstrap/dist/js/bootstrap.js')
 
-//dark-mode
-const dark = localStorage.getItem('__dark-mode')
-const html = document.querySelector('html')
-
-if (dark === '1') {
-	html.classList.add('dark')
-}
-
-//aside resize
-const left_offset = localStorage.getItem('__left_offset')
-
-let stylesheet = document.createElement("style");
-stylesheet.type = 'text/css';
-
-if (left_offset) {
-	stylesheet.innerText = `.content-resize { grid-template-columns: ${left_offset}px 8px 1fr; }`
-	//stylesheet.replaceSync(`.content-resize { grid-template-columns: ${left_offset}px 8px 1fr; }`)
-} else {
-	stylesheet.innerText = `.content-resize { grid-template-columns: 252px 8px 1fr; }`
-	//stylesheet.replaceSync(`.content-resize { grid-template-columns: 252px 8px 1fr; }`)
-}
-document.head.appendChild(stylesheet);
-//document.adoptedStyleSheets = [stylesheet];
+// //dark-mode
+// const dark = localStorage.getItem('__dark-mode')
+// const html = document.querySelector('html')
+//
+// if (dark === '1') {
+// 	html.classList.add('dark')
+// }
+//
+// //aside resize
+// const left_offset = localStorage.getItem('__left_offset')
+//
+// let stylesheet = document.createElement("style");
+// stylesheet.type = 'text/css';
+//
+// if (left_offset) {
+// 	stylesheet.innerText = `.content-resize { grid-template-columns: ${left_offset}px 8px 1fr; }`
+// 	//stylesheet.replaceSync(`.content-resize { grid-template-columns: ${left_offset}px 8px 1fr; }`)
+// } else {
+// 	stylesheet.innerText = `.content-resize { grid-template-columns: 252px 8px 1fr; }`
+// 	//stylesheet.replaceSync(`.content-resize { grid-template-columns: 252px 8px 1fr; }`)
+// }
+// document.head.appendChild(stylesheet);
+// //document.adoptedStyleSheets = [stylesheet];
 
 
 addEventListener('DOMContentLoaded', function () {

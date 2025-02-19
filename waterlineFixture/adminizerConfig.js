@@ -1,23 +1,24 @@
+
 const models = {
     test: {
-        title: 'test Form example from file',
+        title: 'Test Form example from file',
         model: 'test',
         tools: [
             {
                 link: '/test/404',
                 title: 'Some new action',
-                icon: 'cat',
+                icon: 'reorder',
             },
             {
                 link: '#',
                 title: 'Form example',
-                icon: 'beer',
+                icon: 'payment',
                 accessRightsToken: 'read-example-form'
             },
             {
                 link: '#',
                 title: 'Form example from file Form example from file',
-                icon: 'beer',
+                icon: 'touch_app',
                 accessRightsToken: 'read-exampleFromFile-form'
             }
         ],
@@ -297,7 +298,7 @@ const models = {
                 ]
             }
         },
-        icon: 'flask'
+        icon: 'extension',
     },
     example: {
         title: 'Exapmle Form example from file',
@@ -363,7 +364,7 @@ const models = {
                 ]
             }
         },
-        icon: 'cat'
+        icon: 'inbox'
     },
     jsonschema: {
         title: 'Json schema',
@@ -482,9 +483,10 @@ const models = {
                 },
             }
         },
-        icon: 'gear'
+        icon: 'pets'
     }
 };
+
 export default {
     routePrefix: "/adminizer",
     // auth: true,
@@ -518,12 +520,12 @@ export default {
     },
     navbar: {
         additionalLinks: [{
-                id: 4,
-                link: '/admin/form/global',
-                title: 'Global Settings',
-                icon: 'wrench',
-                accessRightsToken: 'read-global-form'
-            }]
+            id: 4,
+            link: '/adminizer/form/global',
+            title: 'Global Settings',
+            icon: 'build',
+            accessRightsToken: 'read-global-form'
+        }]
     },
     sections: [
         {
@@ -604,7 +606,7 @@ export default {
     },
     models: models,
     generator: {},
-    globalSettings: {
+    globalSettings: { // Global project settings
         enableMigrations: true
     },
     migrations: {

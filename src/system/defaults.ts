@@ -39,7 +39,7 @@ var adminpanelConfig: AdminpanelConfig = {
     userap: {
       title: "Users AP",
       model: "userap",
-      icon: "users",
+      icon: "people",
       add: {
         controller: "../controllers/addUser"
       },
@@ -64,7 +64,7 @@ var adminpanelConfig: AdminpanelConfig = {
     groupap: {
       title: "Groups AP",
       model: "groupap",
-      icon: "users-cog",
+      icon: "group_add",
       add: {
         controller: "../controllers/addGroup"
       },

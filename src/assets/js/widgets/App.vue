@@ -10,8 +10,7 @@
 					<input type="checkbox" id="stateChange" class="admin-switcher" role="switch" @change="editSwitch"
 						   :checked="draggable">
 				</div>
-				<div class="admin-widgets__head-add" @click="initPopup">
-					<i class="icon-add las la-plus-square"></i>
+				<div class="admin-widgets__head-add" @click="initPopup"><span class="icon-add material-icons-outlined">add_box</span>
 				</div>
 			</div>
 		</div>

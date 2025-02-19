@@ -19,7 +19,7 @@ export default function bindNavigation(adminizer: Adminizer) {
 						updatedAt: false
 					},
 					hide: false,
-					icon: 'layer-group',
+					icon: 'storage',
 					identifierField: "",
 					list: {
 						fields: {

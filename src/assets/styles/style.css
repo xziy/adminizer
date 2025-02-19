@@ -1,5 +1,5 @@
+@import 'datatables.net-dt/css/jquery.dataTables.css';
 @import "tailwindcss";
-
 @config "../../../tailwind.config.js";
 
 html, body {
@@ -10,6 +10,7 @@ html, body {
     overscroll-behavior-x: none;
     height: 100%;
     -webkit-tap-highlight-color: transparent;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
@@ -73,6 +74,27 @@ svg {
     @apply fill-current;
 }
 
+.material-icons-outlined {
+    font-family: "Material Icons Outlined";
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "liga";
+}
+
+.collapse-menu:not(.collapse_show) {
+    display: none;
+}
+
 .user-select-none {
     @apply select-none;
 }
@@ -116,7 +138,7 @@ svg {
 
 .menu__sub-list {
     .active {
-        @apply bg-white dark:bg-blue-700 w-full block;
+        @apply bg-white dark:bg-blue-700 w-full;
     }
 }
 
@@ -124,9 +146,10 @@ svg {
     @apply bg-gray-50 dark:bg-gray-800;
 }
 
-.content__body{
+.content__body {
     @apply pt-8 pl-12 pr-16 pb-8 md:px-5 overflow-x-hidden;
 }
+
 .burger {
     -webkit-tap-highlight-color: transparent;
 }
@@ -332,8 +355,8 @@ select {
 }
 
 .dataTables_filter {
-    /*TODO #{!important} was here*/
     @apply mb-2 md:text-left;
+    width: 100% !important;
 
     label {
         @apply flex gap-2 items-center dark:text-slate-100;
@@ -348,8 +371,7 @@ select {
     @apply border border-gray-400 border-b-transparent dark:border-b-gray-400 rounded overflow-hidden;
 
     table {
-        /*TODO !important was here*/
-        width: 100%;
+        width: 100% !important;
     }
 
     .dataTables_scrollHead {
@@ -395,15 +417,14 @@ select {
     @apply text-sky-600 dark:text-blue-300 font-medium hover:underline inline-flex flex-nowrap items-baseline;
 }
 
-.dataTables_paginate {
-    .paginate_button {
-        @apply dark:bg-gray-800 dark:hover:bg-gray-900 dark:hover:bg-gradient-to-b dark:hover:from-gray-700 dark:hover:to-gray-900;
+.dataTables_paginate .paginate_button {
+    @apply dark:bg-gray-800 dark:hover:bg-gray-900 dark:hover:bg-gradient-to-b dark:hover:from-gray-700 dark:hover:to-gray-900;
 
-        &.current {
-            @apply dark:bg-gradient-to-b dark:from-gray-700 dark:to-gray-900;
-        }
+    &.current {
+        @apply dark:bg-gradient-to-b dark:from-gray-700 dark:to-gray-900;
     }
 }
+
 
 .ace_editor {
     width: 100%;
@@ -815,7 +836,6 @@ select {
     z-index: 99999;
 }
 
-@import "@node_modules/line-awesome/dist/line-awesome/css/line-awesome.css";
 @import "./widgets.css";
 @import "./ch_switcher.css";
 @import "./catalog.css";

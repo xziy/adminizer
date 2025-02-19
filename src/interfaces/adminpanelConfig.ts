@@ -1,9 +1,9 @@
-import {LineAwesomeIcon} from "./lineAwesome"
+import {MaterialIcon} from "./MaaterialIcons";
 import { EditorOptions } from "@toast-ui/editor/types/editor";
 
 export type TuiEditorOptions = EditorOptions;
 
-export type AdminpanelIcon = LineAwesomeIcon
+export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
 	"string" |
 	"password" |
@@ -315,7 +315,7 @@ export interface ModelConfig {
 	/**
 	 * Entity icon
 	 * */
-	icon?: LineAwesomeIcon
+	icon?: MaterialIcon
 	/**
 	 * Force set primary key
 	 * */
@@ -431,7 +431,7 @@ export interface HrefConfig {
 	id: string
 	title: string
 	link: string
-	icon?: LineAwesomeIcon
+	icon?: MaterialIcon
 	/**
 	 * Only for view, controller still uses his own access rights token
 	 * */

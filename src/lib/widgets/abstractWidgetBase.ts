@@ -1,4 +1,4 @@
-import { LineAwesomeIcon } from "../../interfaces/lineAwesome";
+import {MaterialIcon} from "../../interfaces/MaaterialIcons";
 
 export default abstract class BaseWidget {
 
@@ -12,7 +12,7 @@ export default abstract class BaseWidget {
 	public abstract readonly description: string;
 
 	/** Widget icon */
-	public abstract readonly icon?: LineAwesomeIcon | string;
+	public abstract readonly icon?: MaterialIcon | string;
 
 	/** For group access rights by department */
 	public abstract readonly department: string;

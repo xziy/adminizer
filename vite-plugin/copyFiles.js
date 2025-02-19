@@ -115,10 +115,10 @@ export function copyFiles(command) {
     }
 
     // other files
-    // copyFolderRecursiveSync(
-    //     normalizePath(path.resolve(import.meta.dirname, '../src/assets/datatables')),
-    //     normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
-    // )
+    copyFolderRecursiveSync(
+        normalizePath(path.resolve(import.meta.dirname, '../src/assets/datatables')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
+    )
     removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/translations'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/translations')),

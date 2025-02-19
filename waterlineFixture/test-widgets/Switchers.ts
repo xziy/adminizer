@@ -4,7 +4,7 @@ export class SwitcherOne extends SwitchBase {
 	readonly id: string = 'site_switcher';
 	readonly department: string = 'test';
 	readonly description: string = 'Widget Switcher One';
-	readonly icon: string = 'dog';
+	readonly icon: string = 'router';
 	readonly name: string = 'Site Switcher';
 	readonly widgetType = 'switcher';
 	readonly backgroundCSS = '#da4fcf'
@@ -34,7 +34,7 @@ export class SwitcherTwo extends SwitchBase {
 	readonly id: string = 'switcher_two';
 	readonly department: string = 'test_two';
 	readonly description: string = 'Widget Switcher Two';
-	readonly icon: string = 'cat';
+	readonly icon: string = 'router';
 	readonly name: string = 'Switcher Two';
 	readonly widgetType = 'switcher';
 	readonly backgroundCSS = '#779d64'

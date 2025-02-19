@@ -14,7 +14,7 @@ export class SiteLinks extends LinkBase {
 			name: 'Navigation',
 			description: 'Navigation',
 			link: '/admin/model/navigation',
-			icon: 'flask',
+			icon: 'hexagon',
 			backgroundCSS: '#368869'
 		},
 		{
@@ -28,7 +28,7 @@ export class SiteLinks extends LinkBase {
 			name: 'Global Settings',
 			description: 'Global Settings',
 			link: '/admin/form/global',
-			icon: 'wrench',
+			icon: 'polyline',
 			backgroundCSS: null
 		}
 	];

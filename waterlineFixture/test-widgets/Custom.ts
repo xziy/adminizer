@@ -4,7 +4,7 @@ export class CustomOne extends CustomBase {
 	readonly id: string = 'site_custom';
 	readonly department: string = 'test';
 	readonly description: string = 'Widget Custom One';
-	readonly icon: string = 'dog';
+	readonly icon: string = 'takeout_dining';
 	readonly name: string = 'Site Custom';
 	readonly widgetType = 'custom';
 	readonly backgroundCSS = '#da4fcf'
@@ -27,7 +27,7 @@ export class CustomTwo extends CustomBase {
 	readonly id: string = 'custom_two';
 	readonly department: string = 'test_two';
 	readonly description: string = 'Widget Custom Two';
-	readonly icon: string = 'cat';
+	readonly icon: string = 'sports_mma';
 	readonly name: string = 'Custom Two';
 	readonly widgetType = 'custom';
 	readonly backgroundCSS = '#779d64'

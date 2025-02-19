@@ -92,8 +92,6 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             // Delete /adminizer from url
             req.url = req.url.replace(routePrefix, '') || '/';
             adminizerHandler(req, res);
-        } else if(req.url.startsWith('/assets')){ // Requests to assets files
-            adminizerHandler(req, res);
         }else if (
             req.url.startsWith('/@vite') || // Requests to Vite
             req.url.startsWith('/@id') || // Requests to Vite

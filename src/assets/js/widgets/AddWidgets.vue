@@ -26,8 +26,9 @@
 							<div class="add-widgets-pop-up__widgets-array-item" v-for="item in widget.items"
 								 :key="item.id">
 								<div class="add-widgets-pop-up__widgets-array-item-top">
-											<span class="add-widgets-pop-up__widgets-array-item-icon"><i
-												:class="'las la-' + (item.icon ?? 'box')"></i></span>
+											<span class="add-widgets-pop-up__widgets-array-item-icon">
+												<span class="material-icons-outlined">{{item.icon ?? 'widgets' }}</span>
+												</span>
 									<div class="add-widgets-pop-up__widgets-array-item-title">
 										{{ item.name }}
 									</div>
