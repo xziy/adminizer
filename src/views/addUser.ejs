@@ -3,7 +3,7 @@
 <div class="content__body">
     <a href="<%= entity.uri %>/">
         <button class="btn btn-back">
-            <i class="las la-long-arrow-alt-left"></i>
+            <span class="material-icons-outlined">arrow_back</span>
             <%= __("Back") %>
         </button>
     </a>
@@ -99,7 +99,7 @@
                     <label class="admin-panel__title text-2xl"><%= __("Password") %></label>
                     <div class="tooltip tooltip-right group cursor-pointer">
                         <i class="las la-info-circle text-blue-400 text-2xl"></i>
-                        <div class="tooltip__content group-hover:visible group-hover:opacity-100">
+                        <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                             <span><%= __("Leave this field empty if you don't want to change the password") %></span>
                         </div>
                     </div>

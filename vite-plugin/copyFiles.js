@@ -95,6 +95,9 @@ function removeFolderIfExists(folderPath) {
 
 
 export function copyFiles(command) {
+    // Clear the assets folder
+    removeFolderIfExists(normalizePath(path.resolve(import.meta.dirname, '../dist/assets')))
+
     const isDev = command === 'serve'; // true if the dev server is running
     const isBuild = command === 'build'; // true if the build process is running
 
@@ -129,5 +132,15 @@ export function copyFiles(command) {
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/migrations')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/migrations'))
+    )
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
+    copyFolderRecursiveSync(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/handsontable/dist/languages')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
+    )
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
+    copyFolderRecursiveSync(
+        normalizePath(path.resolve(import.meta.dirname, '../src/assets/ckeditor5')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
     )
 }

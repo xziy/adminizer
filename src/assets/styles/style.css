@@ -1,4 +1,5 @@
 @import 'datatables.net-dt/css/jquery.dataTables.css';
+@import 'handsontable/dist/handsontable.full.css';
 @import "tailwindcss";
 @config "../../../tailwind.config.js";
 
@@ -170,7 +171,7 @@ svg {
 }
 
 .btn {
-    @apply inline-flex justify-center items-baseline gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-[12px];
+    @apply inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-[12px];
 
     &[disabled="true"] {
         @apply cursor-not-allowed opacity-40;
@@ -293,7 +294,7 @@ select {
 }
 
 .tooltip__content {
-    @apply absolute left-6 bottom-0 text-white z-10 w-[30vw] h-fit bg-gray-900/90 dark:bg-gray-600 p-3 pr-0 text-sm rounded after:right-[100%] after:bottom-[7px] after:border-[5px] after:border-[transparent_rgba(17,24,39,.9)_transparent_transparent] after:content-[''] after:absolute invisible opacity-0 transition-opacity;
+    @apply absolute left-6 bottom-0 text-white z-10 w-[30vw] h-fit bg-gray-900/90 dark:bg-gray-600 p-3 pr-0 text-sm rounded after:right-[100%] after:bottom-[7px] after:border-[5px] after:border-[transparent_rgba(17,24,39,.9)_transparent_transparent] after:content-[''] after:absolute transition-opacity;
 
     span {
         padding-right: 12px;
@@ -414,7 +415,8 @@ select {
 }
 
 .list-action {
-    @apply text-sky-600 dark:text-blue-300 font-medium hover:underline inline-flex flex-nowrap items-baseline;
+    @apply text-sky-600 dark:text-blue-300 font-medium hover:text-sky-800 inline-flex flex-nowrap items-center gap-1;
+
 }
 
 .dataTables_paginate .paginate_button {

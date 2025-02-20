@@ -6,12 +6,12 @@
         <% var actionType = 'list' %>
         <% if (entity.config.add && hasPermission(`create-${entity.name}-model`, req.session.UserAP)) { %>
             <a href="<%= entity.uri %>/add" id="add">
-                <button class="btn btn-add"><i class="las la-plus"></i><span><%= __('create') %></span></button>
+                <button class="btn btn-add"><span class="material-icons-outlined">add</span><span><%= __('create') %></span></button>
             </a>
         <% } %>
         <%- include("mixin/globalActions", {actionType: actionType}) %>
     </div>
-    <div class="text-sm md:mt-3">
+    <div class="text-sm mt-3">
         <table class="table" id="list">
             <thead>
             <tr>
@@ -66,9 +66,9 @@
                     if (type === 'display') {
                         data = "";
                         if (<%- hasPermission(`update-${entity.name}-model`, req.session.UserAP) %>) {
-                            data += '<a href="<%= entity.uri %>/edit/' + row[0] + '" class="list-action"><i class="las la-edit"></i><%= __('Edit') %></a><br>';
+                            data += '<a href="<%= entity.uri %>/edit/' + row[0] + '" class="list-action"><span class="material-icons-outlined">edit</span><%= __('Edit') %></a><br>';
                         } else if (<%- hasPermission(`read-${entity.name}-model`, req.session.UserAP) %>) {
-                            data += '<a href="<%= entity.uri %>/view/' + row[0] + '" class="list-action"><i class="las la-eye"></i><%= __('View') %></a><br>';
+                            data += '<a href="<%= entity.uri %>/view/' + row[0] + '" class="list-action"><span class="material-icons-outlined">visibility </span><%= __('View') %></a><br>';
                         }
                         <%- include("mixin/list/inlineActions") %>
                     }

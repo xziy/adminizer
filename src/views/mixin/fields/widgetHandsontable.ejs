@@ -4,41 +4,44 @@
         name="<%= key %>"
         id="form-<%= key %>" hidden><%- value ? JSON.stringify(value) : [] %></textarea>
 <div id="handsontable-<%= key %>"></div>
+<!--<% if (field.config.options.language) { %>-->
+<!--&lt;!&ndash;    <script src="<%- config.routePrefix %>/assets/handsontable/<%= field.config.options.language %>.js"></script>&ndash;&gt;-->
+<!--    <script src="<%- config.routePrefix %>/assets/handsontable/<%= field.config.options.language %>.js"></script>-->
+<!--<% } else if (config.translation && config.translation.defaultLocale) { %>-->
+<!--    <script src="<%- config.routePrefix %>/assets/handsontable/en-US.js"></script>-->
+<!--<% } %>-->
 
-<% if (field.config.options.language) { %>
-    <script src="<%- config.routePrefix %>/assets/handsontable/dist/languages/<%= field.config.options.language %>.js"></script>
-<% } else if (config.translation && config.translation.defaultLocale) { %>
-    <script src="<%- config.routePrefix %>/assets/handsontable/dist/languages/<%= config.translation.defaultLocale.toLowerCase() %>-<%= config.translation.defaultLocale.toUpperCase() %>.js"></script>
-<% } %>
+<script>
+    {
+        document.addEventListener('DOMContentLoaded', function () {
+            let data<%= key %> = document.getElementById('form-<%= key %>').value;
 
-<script>{
-    let data<%= key %> = document.getElementById('form-<%= key %>').value;
+            if (data<%= key %>) {
+                data<%= key %> = JSON.parse(data<%= key %>)
+            } else {
+                data<%= key %> = []
+            }
 
-    if (data<%= key %>) {
-      data<%= key %> = JSON.parse(data<%= key %>)
-    } else {
-      data<%= key %> = []
+            let container<%= key %> = document.getElementById('handsontable-<%= key %>');
+
+            <% if (!field.config.options.language && config.translation && config.translation.defaultLocale) { %>
+            <% field.config.options.language = `${config.translation.defaultLocale.toLowerCase()}-${config.translation.defaultLocale.toUpperCase()}` %>
+            <% } %>
+
+            let options<%= key %> = <%- JSON.stringify(field.config.options) %>;
+            apTables['<%= key %>'] = new Handsontable(container<%= key %>, {
+                data: data<%= key %>,
+                ...options<%= key %>,
+                afterChange: function (change, source) {
+                    if (source === 'loadData') {
+                        return; //don't save this change
+                    }
+                    $('#form-<%= key %>').val(JSON.stringify(this.getSourceData()));
+                },
+                afterRemoveRow(index, amount, physicalRows) {
+                    $('#form-<%= key %>').val(JSON.stringify(this.getSourceData()));
+                }
+            });
+        })
     }
-
-    let container<%= key %> = document.getElementById('handsontable-<%= key %>');
-
-        <% if (!field.config.options.language && config.translation && config.translation.defaultLocale) { %>
-        <% field.config.options.language = `${config.translation.defaultLocale.toLowerCase()}-${config.translation.defaultLocale.toUpperCase()}` %>
-        <% } %>
-
-    let options<%= key %> = <%- JSON.stringify(field.config.options) %>;
-    apTables['<%= key %>'] = new Handsontable(container<%= key %>, {
-      data: data<%= key %>,
-      ...options<%= key %>,
-      afterChange: function (change, source) {
-        if (source === 'loadData') {
-          return; //don't save this change
-        }
-        $('#form-<%= key %>').val(JSON.stringify(this.getSourceData()));
-      },
-      afterRemoveRow(index, amount, physicalRows) {
-        $('#form-<%= key %>').val(JSON.stringify(this.getSourceData()));
-      }
-    });
-  }
 </script>

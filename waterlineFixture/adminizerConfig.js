@@ -176,7 +176,7 @@ const models = {
                     width: 'auto',
                     manualColumnResize: true,
                     contextMenu: true,
-                    language: 'en_EN',
+                    language: 'en-US',
                     licenseKey: 'non-commercial-and-evaluation', // for non-commercial use only
                 },
             },
@@ -274,26 +274,26 @@ const models = {
                     {
                         link: 'https://www.google.com.ua/',
                         title: 'Google',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }
                 ],
                 inline: [
                     {
                         link: 'https://www.google.com.ua/',
                         title: 'Google',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google2',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google3',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google4',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     },
                 ]
             }
@@ -340,26 +340,26 @@ const models = {
                     {
                         link: 'https://www.google.com.ua/',
                         title: 'Google',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }
                 ],
                 inline: [
                     {
                         link: 'https://www.google.com.ua/',
                         title: 'Google',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google2',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google3',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     }, {
                         link: 'https://www.google.com.ua/',
                         title: 'Google4',
-                        icon: 'external-link-square-alt'
+                        icon: 'insert_link'
                     },
                 ]
             }
@@ -489,6 +489,7 @@ const models = {
 
 export default {
     routePrefix: "/adminizer",
+    // routePrefix: "/admin",
     // auth: true,
     dashboard: true,
     forms: {
