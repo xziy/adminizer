@@ -307,7 +307,7 @@ export class EditSchedule {
     addschedule(schedule) {
         $(".schedule-content").append(schedule.getschedule());
 
-        console.log(this.permutations);
+        // console.log(this.permutations);
         if (!this.permutations.options) {
             $(".popUpButton").last().remove();
         }
@@ -489,7 +489,7 @@ export class EditSchedule {
 
             scheduleList.push(container);
         }
-        console.log(scheduleList);
+        // console.log(scheduleList);
         $(`#form-${this.field}`).val(JSON.stringify(scheduleList));
     }
 

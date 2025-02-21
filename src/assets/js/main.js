@@ -2,9 +2,7 @@ import {register} from 'swiper/element/bundle';
 import { AdminPopUp } from '@js/pop-up/admin-pop-up.js'
 import {window} from "@interactjs/utils/window.js";
 import ky from 'ky';
-import 'material-icons/iconfont/material-icons-outlined.woff2'
 import { ItcCollapse } from "./collapse.js";
-
 import Puzzle from 'crypto-puzzle';
 
 // register Swiper custom elements
@@ -12,6 +10,8 @@ register();
 
 window.AdminPopUp = AdminPopUp
 window.ky = ky
+window.solveCaptcha = Puzzle.solve;
+
 
 //dark-mode
 const dark = localStorage.getItem('__dark-mode')
@@ -155,3 +155,24 @@ class UploadAdapter {
 }
 
 window.UploadAdapter = UploadAdapter;
+
+const formStateProx = {
+    hasError: false
+};
+window.formState = new Proxy(formStateProx, {
+    set: function (target, key, value) {
+        let submitButton = document.getElementById("submit");
+        let text = document.getElementById('error-btn-submit-text')
+        if (submitButton && key === "hasError") {
+            if (value === true) {
+                text.setAttribute('style', 'display:block');
+                submitButton.setAttribute("disabled", true);
+            } else {
+                text.setAttribute('style', 'display:none');
+                submitButton.removeAttribute("disabled");
+            }
+        }
+        target[key] = value;
+        return true;
+    }
+});

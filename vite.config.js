@@ -8,6 +8,7 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig(({command, mode}) => {
     copyFiles(command);
     return {
+        base: './',
         build: {
             outDir: path.resolve(import.meta.dirname, 'dist/assets/build'), // Output directory for the build
             assetsDir: '',

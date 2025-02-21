@@ -4,8 +4,10 @@ import L from 'leaflet'
 import 'leaflet-draw'
 import {GeoJsonEditor} from './geojson/geojson.js'
 import 'select-pure';
+import Editor from '@toast-ui/editor';
 
 window.Handsontable = Handsontable
 window.EditSchedule = EditSchedule
 window.L = L
 window.GeoJsonEditor = GeoJsonEditor
+window.toastui = {Editor}

@@ -2,6 +2,9 @@
 @import 'handsontable/dist/handsontable.full.css';
 @import 'leaflet/dist/leaflet.css';
 @import 'leaflet-draw/dist/leaflet.draw-src.css';
+@import 'jsoneditor/dist/jsoneditor.css';
+@import "@toast-ui/editor/dist/toastui-editor.css";
+@import "material-icons/iconfont/outlined.css";
 @import "tailwindcss";
 @config "../../../tailwind.config.js";
 
@@ -77,22 +80,6 @@ svg {
     @apply fill-current;
 }
 
-.material-icons-outlined {
-    font-family: "Material Icons Outlined";
-    font-weight: normal;
-    font-style: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "liga";
-}
 
 .collapse-menu:not(.collapse_show) {
     display: none;
@@ -840,7 +827,11 @@ select {
 .htContextMenu:not(.htGhostTable) {
     z-index: 99999;
 }
+.material-icons-outlined {
+    font-size: 16px;
+}
 
 @import "./widgets.css";
 @import "./ch_switcher.css";
 @import "./catalog.css";
+

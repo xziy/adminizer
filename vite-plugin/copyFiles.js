@@ -191,4 +191,15 @@ export function copyFiles(command) {
         normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jquery/jquery-ui.min.js'))
     )
 
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/ace'))
+    copyFolderRecursiveSync(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/ace-builds/src-min-noconflict')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/ace'))
+    )
+
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/jsoneditor'))
+    copyFile(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jsoneditor/dist/jsoneditor.min.js')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jsoneditor/jsoneditor.min.js'))
+    )
 }
