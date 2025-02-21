@@ -4,14 +4,14 @@ import {window} from "@interactjs/utils/window.js";
 import ky from 'ky';
 import 'material-icons/iconfont/material-icons-outlined.woff2'
 import { ItcCollapse } from "./collapse.js";
-import $ from 'jquery'
+
+import Puzzle from 'crypto-puzzle';
 
 // register Swiper custom elements
 register();
 
 window.AdminPopUp = AdminPopUp
 window.ky = ky
-window.jQuery = window.$ = $
 
 //dark-mode
 const dark = localStorage.getItem('__dark-mode')

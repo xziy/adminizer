@@ -20,11 +20,10 @@
     <!--    <script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>-->
     <!--    <script src="<%- config.routePrefix %>/assets/js/mediamanager.js" defer></script>-->
     <!--    <script src="<%- config.routePrefix %>/assets/js/ckeditor5/ck5.js"></script>-->
-    <% if (req.session.UserAP.locale !== 'en') { %>
-        <script src="<%- config.routePrefix %>/assets/js/ckeditor5/translations/<%= req.session.UserAP.locale %>.js"></script>
-    <% } %>
-    <!--    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.2.0/ckeditor5.css" />-->
 
+    <!--    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.2.0/ckeditor5.css" />-->
+    <script src="<%- config.routePrefix %>/assets/jquery/jquery.min.js"></script>
+    <script src="<%- config.routePrefix %>/assets/jquery/jquery-ui.min.js"></script>
     <script>
         window.jsonEditor = {}
         window.apTables = {};

@@ -1,5 +1,7 @@
 @import 'datatables.net-dt/css/jquery.dataTables.css';
 @import 'handsontable/dist/handsontable.full.css';
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet-draw/dist/leaflet.draw-src.css';
 @import "tailwindcss";
 @config "../../../tailwind.config.js";
 
@@ -278,7 +280,7 @@ select {
 }
 
 .admin-panel__wrapper-title {
-    @apply flex items-end gap-2;
+    @apply gap-2;
 }
 
 .admin-panel__title {
@@ -435,6 +437,7 @@ select {
 
 .geoJsonEditor {
     height: 500px;
+    overflow: hidden;
 }
 
 .ql-editor {

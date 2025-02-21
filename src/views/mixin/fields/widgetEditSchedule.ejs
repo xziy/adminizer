@@ -6,12 +6,13 @@
         rows="10" hidden><%- JSON.stringify(value) %></textarea>
 
 <script>
-  var options<%= key %> = <%- JSON.stringify(field.config.options) %>
-    new EditSchedule({
-      ...options<%= key %>,
-      element: '<%= key %>-container',
-      field: '<%= key %>',
-      data: document.getElementById(`form-<%= key %>`).value
-    });
-
+    document.addEventListener('DOMContentLoaded', function () {
+        const options<%= key %> = <%- JSON.stringify(field.config.options) %>
+            new EditSchedule({
+                ...options<%= key %>,
+                element: '<%= key %>-container',
+                field: '<%= key %>',
+                data: document.getElementById(`form-<%= key %>`).value
+            });
+    })
 </script>

@@ -3,12 +3,12 @@
     <% Object.keys(fields).forEach(function(key) { %>
         <% if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) return %>
         <div class="flex flex-col gap-3">
-            <div class="admin-panel__wrapper-title">
+            <div class="admin-panel__wrapper-title flex items-center">
                 <label class="admin-panel__title"
                        for="form-<%= key %>"><%= __(fields[key].config.title) %></label>
                 <% if(fields[key].config.tooltip) { %>
-                    <div class="tooltip tooltip-right group cursor-pointer">
-                        <i class="las la-info-circle text-blue-400"></i>
+                    <div class="tooltip tooltip-right group cursor-pointer flex items-center">
+                        <span class="material-icons-outlined text-blue-400">info</span>
                         <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                             <span><%= __(fields[key].config.tooltip) %></span>
                         </div>

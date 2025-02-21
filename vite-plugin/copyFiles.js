@@ -93,7 +93,35 @@ function removeFolderIfExists(folderPath) {
     }
 }
 
+/**
+ * Copies a file from one location to another.
+ * @param sourcePath
+ * @param destinationPath
+ * @returns {string}
+ */
+function copyFile(sourcePath, destinationPath) {
+    // Проверяем, существует ли исходный файл
+    if (!fs.existsSync(sourcePath)) {
+        console.log(chalk.yellow.bold(`[vite]: Source folder does not exist: ${source}`));
+        return ''
+    }
 
+    // Создаем директорию для целевого файла, если она не существует
+    const destinationDir = path.dirname(destinationPath);
+    if (!fs.existsSync(destinationDir)) {
+        fs.mkdirSync(destinationDir, { recursive: true });
+    }
+
+    // Копируем файл
+    fs.copyFileSync(sourcePath, destinationPath);
+
+    console.log(chalk.yellow.bold(`[vite]: File copied from ${sourcePath} to ${destinationPath}`));
+}
+
+/**
+ *
+ * @param command
+ */
 export function copyFiles(command) {
     // Clear the assets folder
     removeFolderIfExists(normalizePath(path.resolve(import.meta.dirname, '../dist/assets')))
@@ -119,28 +147,48 @@ export function copyFiles(command) {
     }
 
     // other files
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/assets/datatables')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
     )
+    copyFile(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/datatables.net/js/jquery.dataTables.min.js')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables/jquery.dataTables.min.js'))
+    )
+
     removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/translations'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/translations')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/translations'))
     )
+
     removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/migrations'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/migrations')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/migrations'))
     )
+
     removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../node_modules/handsontable/dist/languages')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
     )
+
     removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
     copyFolderRecursiveSync(
         normalizePath(path.resolve(import.meta.dirname, '../src/assets/ckeditor5')),
         normalizePath(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
     )
+
+    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/jquery'))
+    copyFile(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jquery/dist/jquery.min.js')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jquery/jquery.min.js'))
+    )
+    copyFile(
+        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jquery-ui-dist/jquery-ui.min.js')),
+        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jquery/jquery-ui.min.js'))
+    )
+
 }

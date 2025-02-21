@@ -21,10 +21,10 @@
         <div class="mt-14 flex flex-col gap-10 max-w-[1144px]">
             <% Object.keys(formData).forEach(function(key) { %>
                 <div class="flex flex-col gap-3">
-                    <div class="admin-panel__wrapper-title">
+                    <div class="admin-panel__wrapper-title flex items-center">
                         <label class="admin-panel__title" for="form-<%= key %>"><%= formData[key].title %></label>
                         <% if(formData[key].tooltip) { %>
-                            <div class="tooltip tooltip-right group cursor-pointer">
+                            <div class="tooltip tooltip-right group cursor-pointer flex items-center">
                                 <span class="material-icons-outlined text-blue-400">info</span>
                                 <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                                     <span><%= formData[key].tooltip %></span>

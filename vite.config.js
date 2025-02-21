@@ -17,8 +17,7 @@ export default defineConfig(({command, mode}) => {
                 input: {
                     main: path.resolve(import.meta.dirname, 'src/assets/js/main.js'), // Entry point for JS
                     widgets: path.resolve(import.meta.dirname, 'src/assets/js/widgets/app.js'), // Entry point for Widgets JS
-                    datatable: path.resolve(import.meta.dirname, 'src/assets/js/listDataTable.js'), // Entry point for Datatable JS
-                    handsontable: path.resolve(import.meta.dirname, 'src/assets/js/handsontable.js'), // Entry point for Handsontable JS
+                    controls: path.resolve(import.meta.dirname, 'src/assets/js/controls.js'), // Entry point for controls
                     styles: path.resolve(import.meta.dirname, 'src/assets/styles/style.css'), // Entry point for CSS
                 },
                 output: {

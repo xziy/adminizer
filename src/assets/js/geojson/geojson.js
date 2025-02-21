@@ -32,11 +32,15 @@ export class GeoJsonEditor {
 				},
 				circle: false, // Turns off this drawing tool
 				circlemarker: false, // Turns off this drawing tool
-				rectangle: !config.polygonEditor ? false : {
-					shapeOptions: {
-						clickable: false
-					}
-				},
+                // TODO Not working  https://stackoverflow.com/questions/57433144/leaflet-draw-on-rectangle-draw-it-throws-error
+				// rectangle: !config.polygonEditor ? false : {
+				// 	shapeOptions: {
+				// 		clickable: false
+				// 	}
+				// },
+                rectangle: {
+                    showArea: false
+                },
 				marker: !!config.marker
 			},
 			edit: {
