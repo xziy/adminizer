@@ -146,6 +146,7 @@ svg {
 
 .aside {
     -webkit-tap-highlight-color: transparent;
+
     @media (max-width: 768px) {
         height: calc(100% - 40px);
         width: 100%;
@@ -154,11 +155,10 @@ svg {
         top: 40px;
     }
 
-    &--active {
-        transform: translateX(100%);
-    }
 }
-
+.aside--active {
+    transform: translateX(100%);
+}
 .btn {
     @apply inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-[12px];
 

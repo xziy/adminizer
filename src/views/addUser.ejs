@@ -1,5 +1,6 @@
 <%- include("head") %>
 <%- include("headContent") %>
+<script type="module" src="<%- viteRender('src/assets/js/controls.js') %>"></script>
 <div class="content__body">
     <a href="<%= entity.uri %>/">
         <button class="btn btn-back">
@@ -33,7 +34,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="basis-1/2 lg:basis-full flex flex-col justify-between">
+                <div class="basis-1/2 lg:basis-full flex flex-col justify-between gap-4">
                     <div class="flex flex-col gap-3">
                         <label class="admin-panel__title" for="timezone"><%= __("Timezone") %></label>
                         <div class="widget_narrow">
@@ -92,13 +93,11 @@
                     <% } %>
                 </div>
             </div>
-
-
             <div class="flex flex-col gap-3">
                 <div class="admin-panel__wrapper-title flex items-center">
                     <label class="admin-panel__title text-2xl"><%= __("Password") %></label>
                     <div class="tooltip tooltip-right group cursor-pointer flex items-center">
-                        <i class="las la-info-circle text-blue-400 text-2xl"></i>
+                        <span class="material-icons-outlined text-blue-400">info</span>
                         <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                             <span><%= __("Leave this field empty if you don't want to change the password") %></span>
                         </div>

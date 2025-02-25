@@ -14,3 +14,12 @@
         <option-pure value="" disabled hidden>--- No records found ---</option-pure>
     <% } %>
 </select-pure>
+<script>
+    document.addEventListener('DOMContentLoaded', function (){
+    const selectPure = document.getElementById('form-<%= key %>');
+
+        selectPure.addEventListener("change", (event) => {
+            console.log(event)
+        });
+    })
+</script>

@@ -1,8 +1,8 @@
 import {register} from 'swiper/element/bundle';
-import { AdminPopUp } from '@js/pop-up/admin-pop-up.js'
+import {AdminPopUp} from '@js/pop-up/admin-pop-up.js'
 import {window} from "@interactjs/utils/window.js";
 import ky from 'ky';
-import { ItcCollapse } from "./collapse.js";
+import {ItcCollapse} from "./collapse.js";
 import Puzzle from 'crypto-puzzle';
 
 // register Swiper custom elements
@@ -12,6 +12,13 @@ window.AdminPopUp = AdminPopUp
 window.ky = ky
 window.solveCaptcha = Puzzle.solve;
 
+//Swiper show after page loaded
+window.addEventListener('DOMContentLoaded', function() {
+    const nav = document.querySelector('nav')
+    const navFake = document.getElementById('nav-fake')
+    navFake.remove()
+    nav.style.display = 'block'
+})
 
 //dark-mode
 const dark = localStorage.getItem('__dark-mode')
@@ -39,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const menuItems = Array.from(document.querySelectorAll(".menu__has-sub"))
     if (menuItems.length) {
         menuItems.forEach((m_item) => {
-            m_item.addEventListener("click", function(e) {
+            m_item.addEventListener("click", function (e) {
                 e.preventDefault()
                 menuItems.forEach((elem) => {
                     if (this !== elem) {
@@ -91,21 +98,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // mobile-menu
-    document.addEventListener('click', function (event) {
-        if (event.target.classList.contains('burger')) {
-            event.target.classList.toggle('burger--active');
-            document.querySelector('.aside').classList.toggle('aside--active');
-            document.body.classList.toggle('body-hidden');
-        }
+    const burger = document.querySelector('.burger');
+    burger.addEventListener('click', function () {
+        burger.classList.toggle('burger--active');
+        document.querySelector('.aside').classList.toggle('aside--active');
+        document.body.classList.toggle('body-hidden');
     });
 
     // dark-mode toggle
-    document.addEventListener('click', function (event) {
-        if (event.target.classList.contains('dark-mode')) {
-            const isDarkMode = localStorage.getItem('__dark-mode') === '1';
-            localStorage.setItem('__dark-mode', isDarkMode ? '0' : '1');
-            document.documentElement.classList.toggle('dark');
-        }
+    const darkBtn = document.querySelector('.dark-mode');
+    darkBtn.addEventListener('click', function (event) {
+        const isDarkMode = localStorage.getItem('__dark-mode') === '1';
+        localStorage.setItem('__dark-mode', isDarkMode ? '0' : '1');
+        document.documentElement.classList.toggle('dark');
     });
 
     // active elem aside
