@@ -9,6 +9,10 @@ import Example from "./models/Example";
 import JsonSchema from "./models/JsonSchema";
 import Test from "./models/Test";
 import User from "./models/User";
+import CatalogGroupNav from "./models/CatalogGroupNav";
+import CatalogPageNav from "./models/CatalogPageNav";
+import GroupCatalog from "./models/GroupCatalog";
+import Page from "./models/Page";
 
 import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
 import {SiteLinks} from "./test-widgets/Links";
@@ -22,6 +26,11 @@ orm.registerModel(Example);
 orm.registerModel(JsonSchema);
 orm.registerModel(Test);
 orm.registerModel(User);
+//catalog
+orm.registerModel(CatalogGroupNav);
+orm.registerModel(CatalogPageNav);
+orm.registerModel(GroupCatalog);
+orm.registerModel(Page);
 
 // TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
 //  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)

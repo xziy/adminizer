@@ -1,4 +1,3 @@
-
 const models = {
     test: {
         title: 'Test Form example from file',
@@ -484,6 +483,37 @@ const models = {
             }
         },
         icon: 'pets'
+    },
+    page: {
+        title: 'Page',
+        model: 'page',
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+            catalogOrder: false,
+            navigation: false,
+            slug: {
+                title: 'Slug',
+                type: 'string',
+                required: true
+            },
+            title: {
+                title: 'Title',
+                type: 'string',
+                required: true
+            },
+            text: {
+                title: 'Text',
+                type: 'wysiwyg',
+                options: {
+                    ckeditor5: true,
+                },
+            },
+            about: {
+                type: 'text'
+            }
+        },
+        icon: 'lock'
     }
 };
 
