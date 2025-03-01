@@ -2,7 +2,8 @@ import {Adminizer} from "../dist/lib/Adminizer";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
 import adminpanelConfig from "./adminizerConfig";
-import {AdminpanelConfig} from "../src";
+import {InstallStepper} from "../dist/lib/installStepper/installStepper";
+import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
@@ -19,6 +20,9 @@ import {SiteLinks} from "./test-widgets/Links";
 import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
 import {CustomOne, CustomTwo} from "./test-widgets/Custom";
 import {ActionOne, ActionTwo} from "./test-widgets/Actions";
+
+import Step1 from "./installSteps/step1"
+import Step2 from "./installSteps/step2"
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
@@ -58,6 +62,13 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
      */
     const waterlineAdapter = new WaterlineAdapter({orm: orm, ontology: ontology}); // ontology contains collections, orm just contains general methods
     const adminizer = new Adminizer([waterlineAdapter]);
+
+    // Add custom install steps
+    let installStepper = InstallStepper.getInstance();
+    let step1 = new Step1();
+    installStepper.addStep(step1)
+    let step2 = new Step2();
+    installStepper.addStep(step2)
 
     try {
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)

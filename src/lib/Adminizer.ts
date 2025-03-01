@@ -146,10 +146,10 @@ export class Adminizer {
         bindResFunctions(this);
         bindReqFunctions(this);
 
-        await Router.bind(this); // must be after binding policies and req/res functions
-
         // add install stepper policy to check unfilled settings
         bindInstallStepper(this);
+
+        await Router.bind(this); // must be after binding policies and req/res functions
 
         // Bind assets
         bindAssets(this.app);
