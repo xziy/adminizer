@@ -17,6 +17,7 @@
 	"dependencies": {
 		"body-parser": "^1.20.3",
 		"chalk": "^5.4.1",
+		"choices.js": "^11.0.6",
 		"cors": "^2.8.5",
 		"crypto-puzzle": "^5.0.2",
 		"ejs": "^3.1.10",
@@ -67,7 +68,6 @@
 		"leaflet-draw": "^1.0.4",
 		"sails-disk": "^2.1.2",
 		"sails-postgresql": "^5.0.1",
-		"select-pure": "^2.1.4",
 		"sprintf-js": "^1.1.3",
 		"swiper": "^9.4.1",
 		"tailwindcss": "^4.0.6",

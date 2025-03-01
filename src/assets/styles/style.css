@@ -5,6 +5,7 @@
 @import 'jsoneditor/dist/jsoneditor.css';
 @import "@toast-ui/editor/dist/toastui-editor.css";
 @import "material-icons/iconfont/outlined.css";
+@import "choices.js/public/assets/styles/choices.css";
 @import "tailwindcss";
 @config "../../../tailwind.config.js";
 

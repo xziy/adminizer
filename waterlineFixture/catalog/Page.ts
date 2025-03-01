@@ -3,6 +3,19 @@ import Page from "../api/models/Page";
 import { Populated } from "../types/waterline";
 
 export class PageItem extends BaseItem<Item> {
+    isGroup: boolean;
+    find(itemId: string | number, catalogId: string): Promise<Item> {
+        throw new Error("Method not implemented.");
+    }
+    updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<Item> {
+        throw new Error("Method not implemented.");
+    }
+    getChilds(parentId: string | number | null, catalogId: string): Promise<Item[]> {
+        throw new Error("Method not implemented.");
+    }
+    search(s: string, catalogId: string): Promise<Item[]> {
+        throw new Error("Method not implemented.");
+    }
     readonly actionHandlers: ActionHandler[] = [];
     readonly icon: string;
     readonly id: string;
@@ -13,7 +26,8 @@ export class PageItem extends BaseItem<Item> {
     readonly level: number;
 
 
-    getAddHTML() {
+    // @ts-ignore
+    getAddHTML(req: ReqType) {
         let type: 'link' = 'link'
         return {
             type: type,
@@ -44,17 +58,17 @@ export class PageItem extends BaseItem<Item> {
     }
 
 
-    async create<T>(itemId: string, data: T): Promise<T> {
+    async create<T>(data: T, catalogId: string): Promise<T> {
         try {
-            let node: NodeModel<any>
+            let node: Item
             let newNode: { id?: string; type?: string; updatedAt?: number; createdAt?: number; label?: string; catalogOrder?: number; parentID?: string; level?: number; pages: Populated<Page>; }
             if (!data.isNew) {
                 let page = (await Page.find({id: data.id}))[0]
                 if (page) {
                     let nodeDB = await CatalogPageNav.create({
-                        label: itemId,
+                        label: catalogId,
                         level: 1,
-                        catalogOrder: data.ind,
+                        catalogOrder: data.sortOrder,
                         pages: page.id,
                         type: this.type,
                         parentID: ''
@@ -65,9 +79,9 @@ export class PageItem extends BaseItem<Item> {
                 let page = await Page.create(data).fetch()
                 if (page) {
                     let nodeDB = await CatalogPageNav.create({
-                        label: itemId,
+                        label: catalogId,
                         level: 1,
-                        catalogOrder: data.ind,
+                        catalogOrder: data.sortOrder,
                         pages: page.id,
                         type: this.type,
                         parentID: ''

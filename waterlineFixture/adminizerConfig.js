@@ -257,6 +257,11 @@ const models = {
                 title: 'Guarded field',
                 // groupsAccessRights: ["admins"]
             },
+            testRelation: {
+                displayModifier: function (data) {
+                    return data.title;
+                }
+            },
             createdAt: false,
             updatedAt: false,
         },

@@ -1,13 +1,13 @@
 import { AbstractCatalog, ActionHandler } from "../../dist/lib/catalog/AbstractCatalog";
 import {catalogController} from "../../dist/controllers/catalog/Catalog";
-import {GroupWithLink} from "./GroupWithLink";
-import {GroupNative} from "./GroupNative";
+// import {GroupWithLink} from "./GroupWithLink";
+// import {GroupNative} from "./GroupNative";
 import {PageItem} from "./Page";
-import {Update} from "./Actions/Group/Update";
+// import {Update} from "./Actions/Group/Update";
 
 const util = require('util')
-import CatalogGroupNav from "../api/models/CatalogGroupNav";
-import CatalogPageNav from "../api/models/CatalogPageNav";
+import CatalogGroupNav from "../models/CatalogGroupNav";
+// import CatalogPageNav from "../api/models/CatalogPageNav";
 import {Item} from "../../src/lib/catalog/AbstractCatalog";
 
 interface NodeData extends Item {
@@ -24,10 +24,10 @@ class NavigationCatalog extends AbstractCatalog {
     constructor() {
         super([
             // new GroupNative(),
-            new GroupWithLink(),
+            // new GroupWithLink(),
             new PageItem()
         ]);
-        this.addActionHandler(new Update())
+        // this.addActionHandler(new Update())
     }
 
 

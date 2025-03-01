@@ -1,25 +1,24 @@
-<select-pure name="<%= key %>" id="form-<%= key %>" <%= field.config.required && 'required' %> <%= field.config.disabled && 'disabled'%> multiple>
-    <% if (field.config.records && field.config.records.length) { %>
-        <% for (let opt of field.config.records) { %>
-            <% let selected = viewsHelper.isOptionSelected(opt[field.config.identifierField], value); %>
-            <% let label = field.config.displayModifier && typeof field.config.displayModifier === 'function'
-                    ? field.config.displayModifier(opt)
-                    : (field.config.displayField ? opt[field.config.displayField] : opt[field.config.identifierField]); %>
-
-            <option-pure value="<%= opt[field.config.identifierField] %>" <%= selected ? 'selected' : '' %>>
-                <%= label %>
-            </option-pure>
-        <% } %>
-    <% } else { %>
-        <option-pure value="" disabled hidden>--- No records found ---</option-pure>
-    <% } %>
-</select-pure>
+<select name="<%= key %>"
+        id="form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %> multiple>
+</select>
 <script>
-    document.addEventListener('DOMContentLoaded', function (){
-    const selectPure = document.getElementById('form-<%= key %>');
-
-        selectPure.addEventListener("change", (event) => {
-            console.log(event)
+    document.addEventListener('DOMContentLoaded', function () {
+        let choices = []
+        <% if (field.config.records && field.config.records.length) { %>
+        <% for (let opt of field.config.records) { %>
+        choices.push({
+            label: '<%- field.config.displayModifier && typeof field.config.displayModifier === 'function'
+                    ? field.config.displayModifier(opt)
+                    : (field.config.displayField ? opt[field.config.displayField] : opt[field.config.identifierField]); %>',
+            value: '<%= opt[field.config.identifierField] %>',
+            selected: false
+        })
+        <% } %>
+        <% } else { %>
+        <% } %>
+        new Choices('#form-<%= key %>', {
+            choices: choices,
+            removeItemButton: true
         });
     })
 </script>

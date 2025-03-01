@@ -19,6 +19,8 @@ export default defineConfig(({command, mode}) => {
                     main: path.resolve(import.meta.dirname, 'src/assets/js/main.js'), // Entry point for JS
                     widgets: path.resolve(import.meta.dirname, 'src/assets/js/widgets/app.js'), // Entry point for Widgets JS
                     controls: path.resolve(import.meta.dirname, 'src/assets/js/controls.js'), // Entry point for controls
+                    jsonForms: path.resolve(import.meta.dirname, 'src/assets/js/jsonForms/json-forms.js'), // Entry point for jsonForms
+                    catalog: path.resolve(import.meta.dirname, 'src/assets/js/catalog/catalog.js'), // Entry point for catalog
                     styles: path.resolve(import.meta.dirname, 'src/assets/styles/style.css'), // Entry point for CSS
                 },
                 output: {
