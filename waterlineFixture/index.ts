@@ -1,7 +1,7 @@
 import {Adminizer} from "../dist/lib/Adminizer";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
-import adminpanelConfig from "./adminizerConfig";
+import adminizerConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../src";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
@@ -23,9 +23,6 @@ orm.registerModel(User);
 await WaterlineAdapter.registerSystemModels(orm)
 
 
-// TODO getComponents ломается при отрисовке
-
-
 orm.initialize(waterlineConfig, async (err, ontology) => {
   if (err) {
     console.error("Error trying to start Waterline:", err);
@@ -34,8 +31,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
   console.log("Waterline ORM initialized!");
 
-  let routePrefix = adminpanelConfig.routePrefix;
-  process.env.ROUTE_PREFIX = adminpanelConfig.routePrefix;
+  let routePrefix = adminizerConfig.routePrefix;
 
   /**
    * In case you want to use adminizer built-in adapter, but if not, create your own adapter that extends AbstractAdapter
@@ -44,7 +40,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
   const waterlineAdapter = new WaterlineAdapter({orm: orm, ontology: ontology}); // ontology contains collections, orm just contains general methods
   const adminizer = new Adminizer([waterlineAdapter]);
   try {
-    await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+    await adminizer.init(adminizerConfig as unknown as AdminpanelConfig)
   } catch (e) {
     console.log(e)
   }
