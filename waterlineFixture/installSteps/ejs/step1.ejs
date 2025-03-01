@@ -1,22 +1,7 @@
-<h2 class="text-xl font-semibold mb-4"><%= __('Upload Image and Restaurant Name') %></h2>
+<h2 class="text-xl font-semibold mb-4"><%= __('Restaurant Info') %></h2>
 
 <!-- Form for uploading image and entering restaurant name -->
 <form id="restaurantForm" enctype="multipart/form-data">
-
-    <!-- Custom styled file input for uploading image -->
-    <div class="mb-4">
-        <label for="restaurantImage" class="block text-sm font-medium text-gray-700"><%= __('Choose Image:') %></label>
-        <div class="relative border-2 border-gray-300 border-dashed rounded-md p-6 cursor-pointer">
-            <input type="file" id="restaurantImage" name="restaurantImage" accept="image/jpeg, image/png, image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
-            <div class="flex justify-center items-center">
-                <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <span class="ml-2 text-sm leading-none text-gray-600"><%= __('Choose a file or drag it here') %></span>
-            </div>
-        </div>
-        <div id="imagePreview" class="mt-2"></div>
-    </div>
 
     <!-- Field for entering restaurant name -->
     <div class="mb-4">
@@ -69,26 +54,3 @@
     </div>
 
 </form>
-
-<script>
-    // JavaScript to display selected image
-    const restaurantImageInput = document.getElementById('restaurantImage');
-    const imagePreview = document.getElementById('imagePreview');
-
-    restaurantImageInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const imgElement = document.createElement('img');
-                imgElement.src = e.target.result;
-                imgElement.classList.add('w-32', 'h-32', 'object-cover', 'mt-2');
-                imagePreview.innerHTML = ''; // Clear previous preview, if any
-                imagePreview.appendChild(imgElement);
-            }
-            reader.readAsDataURL(file);
-        } else {
-            imagePreview.innerHTML = '';
-        }
-    });
-</script>
