@@ -64,11 +64,13 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     const adminizer = new Adminizer([waterlineAdapter]);
 
     // Add custom install steps
-    let installStepper = InstallStepper.getInstance();
-    let step1 = new Step1();
-    installStepper.addStep(step1)
-    let step2 = new Step2();
-    installStepper.addStep(step2)
+    if (process.env.ADD_EXAMPLE_INSTALL_STEPS) {
+        let installStepper = InstallStepper.getInstance();
+        let step1 = new Step1();
+        installStepper.addStep(step1)
+        let step2 = new Step2();
+        installStepper.addStep(step2)
+    }
 
     try {
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
