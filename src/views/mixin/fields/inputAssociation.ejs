@@ -1,10 +1,9 @@
-<select name="<%= key %>"
+<select name="<%= key %>" data-placeholder="Select item"
         id="form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %>>
 </select>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        let choices = []
-        <% if (field.config.records && field.config.records.length) { %>
+        let choices = [{value: '', label: 'Nothing selected'}]
         <% for (let opt of field.config.records) { %>
         choices.push({
             label: '<%- field.config.displayModifier && typeof field.config.displayModifier === 'function'
@@ -14,10 +13,18 @@
             selected: <%- opt[field.config.identifierField] === value %>
         })
         <% } %>
-        <% } else { %>
-        <% } %>
-        new Choices('#form-<%= key %>', {
-            choices: choices
+
+        const assoc = new Choices('#form-<%= key %>', {
+            choices: choices,
+            removeItemButton: true
         });
+
+        assoc.passedElement.element.addEventListener(
+            'removeItem',
+            function (event) {
+                assoc.setChoiceByValue('')
+            },
+            false,
+        );
     })
 </script>

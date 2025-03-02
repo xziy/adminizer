@@ -308,10 +308,9 @@ const models = {
         title: 'Exapmle Form example from file',
         model: 'example',
         fields: {
-            owner: false,
-            id: false,
             createdAt: false,
             updatedAt: false,
+            owner: false,
             title: 'Title',
             gallery: {
                 type: 'images',

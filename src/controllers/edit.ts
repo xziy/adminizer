@@ -87,6 +87,7 @@ export default async function edit(req: ReqType, res: ResType) {
 			if (fields[prop] && fields[prop].model && (fields[prop].model.type === 'association-many' || fields[prop].model.type === 'association')) {
 				if (!reqData[prop]) {
 					delete reqData[prop];
+					//reqData[prop] = [];
 				}
 			}
 
