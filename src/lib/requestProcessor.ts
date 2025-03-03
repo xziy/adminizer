@@ -55,10 +55,6 @@ export class RequestProcessor {
           }
         }
       }
-
-      if (field.model.type === 'association' && !postParams[key]) {
-        delete postParams[key];
-      }
     }
 
     return postParams;
