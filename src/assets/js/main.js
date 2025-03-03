@@ -13,7 +13,7 @@ window.ky = ky
 window.solveCaptcha = Puzzle.solve;
 
 //Swiper show after page loaded
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', function () {
     const nav = document.querySelector('nav')
     const navFake = document.getElementById('nav-fake')
     navFake.remove()
@@ -124,6 +124,12 @@ document.addEventListener('DOMContentLoaded', function () {
             link.classList.add('active');
         }
     });
+
+    // fix content add & edit overflow
+    let content = document.querySelector('.content');
+    setTimeout(() => {
+        content.classList.add('overflow-auto');
+    }, 100)
 });
 
 // UploadAdapter CKEditor
