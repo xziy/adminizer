@@ -1,77 +1,96 @@
-import fs, {rmSync} from 'fs';
+import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import {normalizePath} from "vite";
 
 /**
- * Creates a symbolic link to a folder if it does not exist.
- * @param {string} source - Path to the folder that the link will point to.
- * @param {string} linkPath - Path where the symbolic link will be created.
+ * Syncs a folder or file from source to target.
+ * @param source
+ * @param target
+ * @param dev
+ * @returns {string}
  */
-function createSymlinkIfNotExists(source, linkPath) {
+function syncFolderOrFile(source, target, dev = true) {
     try {
-        // Check if the target folder exists
+        // Check if the source (file or folder) exists
         if (!fs.existsSync(source)) {
-            console.log(chalk.red.bold(`[vite]: Target folder does not exist: ${source}`));
-            return;
+            console.log(chalk.red.bold(`[vite]: Source does not exist: ${source}`));
+            return '';
         }
 
-        // Check if the link already exists
-        if (fs.existsSync(linkPath)) {
-            console.log(chalk.yellow.bold(`[vite]: Symbolic link already exists: ${linkPath}`));
-            return;
-        }
+        const isSourceDirectory = fs.lstatSync(source).isDirectory();
 
-        // Check if the parent directory for the link exists
-        const parentDir = path.dirname(linkPath);
+        // Ensure the parent directory exists
+        const parentDir = path.dirname(target);
         if (!fs.existsSync(parentDir)) {
-            console.log(chalk.green.bold(`[vite]: Creating: ${parentDir}`));
-            fs.mkdirSync(parentDir, {recursive: true});
+            console.log(chalk.green.bold(`[vite]: Creating parent directory: ${parentDir}`));
+            fs.mkdirSync(parentDir, { recursive: true });
         }
 
-        // Create the symbolic link
-        console.log(chalk.green.bold(`[vite]: Creating symbolic link: ${linkPath} -> ${source}`));
-        fs.symlinkSync(source, linkPath, 'dir');
-    } catch (err) {
-        console.error(chalk.red.bold(`[vite]: Error creating symbolic link: ${err.message}`));
-    }
-}
+        if (isSourceDirectory) {
+            // Logic for folders
+            if (dev) {
+                // Dev mode: handle symbolic link or folder
+                if (fs.existsSync(target)) {
+                    const stats = fs.lstatSync(target);
 
-/**
- * Copies a folder recursively.
- * @param {string} source - Path to the source folder.
- * @param {string} target - Path to the target folder.
- */
-function copyFolderRecursiveSync(source, target) {
-    try {
-        // Check if the source folder exists
-        if (!fs.existsSync(source)) {
-            console.log(chalk.yellow.bold(`[vite]: Source folder does not exist: ${source}`));
-            return;
-        }
+                    if (stats.isDirectory()) {
+                        // If it's a folder, remove it
+                        console.log(chalk.yellow.bold(`[vite]: Removing existing folder: ${target}`));
+                        fs.rmSync(target, { recursive: true, force: true });
 
-        // Check if the target folder exists
-        if (!fs.existsSync(target)) {
-            console.log(chalk.green.bold(`[vite]: Creating: ${target}`));
-            fs.mkdirSync(target, {recursive: true});
-        }
-
-        // Read the contents of the source folder
-        const files = fs.readdirSync(source);
-        files.forEach(file => {
-            const curSource = path.join(source, file);
-            const curTarget = path.join(target, file);
-
-            // Recursively copy each item
-            const stats = fs.lstatSync(curSource);
-            if (stats.isDirectory()) {
-                copyFolderRecursiveSync(curSource, curTarget);
+                        // Create a symbolic link
+                        console.log(chalk.green.bold(`[vite]: Creating symbolic link: ${target} -> ${source}`));
+                        fs.symlinkSync(source, target, 'dir');
+                    } else if (stats.isSymbolicLink()) {
+                        // If it's a symbolic link, do nothing
+                        console.log(chalk.yellow.bold(`[vite]: Symbolic link already exists: ${target}`));
+                        return '';
+                    }
+                } else {
+                    // If nothing exists, create a symbolic link
+                    console.log(chalk.green.bold(`[vite]: Creating symbolic link: ${target} -> ${source}`));
+                    fs.symlinkSync(source, target, 'dir');
+                }
             } else {
-                fs.copyFileSync(curSource, curTarget);
+                // Non-dev mode: remove both folder and link, then copy the source folder
+                if (fs.existsSync(target)) {
+                    console.log(chalk.yellow.bold(`[vite]: Removing existing target: ${target}`));
+                    fs.rmSync(target, { recursive: true, force: true });
+                }
+
+                // Create the target folder
+                console.log(chalk.green.bold(`[vite]: Creating target folder: ${target}`));
+                fs.mkdirSync(target, { recursive: true });
+
+                // Copy the contents of the source folder to the target folder
+                const files = fs.readdirSync(source);
+                files.forEach(file => {
+                    const curSource = path.join(source, file);
+                    const curTarget = path.join(target, file);
+
+                    const stats = fs.lstatSync(curSource);
+                    if (stats.isDirectory()) {
+                        syncFolderOrFile(curSource, curTarget, dev); // Recursively copy directories
+                    } else {
+                        console.log(chalk.green.bold(`[vite]: Copying file: ${curSource} -> ${curTarget}`));
+                        fs.copyFileSync(curSource, curTarget);
+                    }
+                });
             }
-        });
+        } else {
+            // Logic for files: always copy
+            if (fs.existsSync(target)) {
+                console.log(chalk.yellow.bold(`[vite]: Removing existing file: ${target}`));
+                fs.rmSync(target, { force: true });
+            }
+
+            // Copy the file
+            console.log(chalk.green.bold(`[vite]: Copying file: ${source} -> ${target}`));
+            fs.copyFileSync(source, target);
+        }
     } catch (err) {
-        console.error(chalk.red.bold(`[vite]: Error copying folder: ${err.message}`));
+        console.error(chalk.red.bold(`[vite]: Error: ${err.message}`));
     }
 }
 
@@ -93,113 +112,60 @@ function removeFolderIfExists(folderPath) {
     }
 }
 
-/**
- * Copies a file from one location to another.
- * @param sourcePath
- * @param destinationPath
- * @returns {string}
- */
-function copyFile(sourcePath, destinationPath) {
-    // Проверяем, существует ли исходный файл
-    if (!fs.existsSync(sourcePath)) {
-        console.log(chalk.yellow.bold(`[vite]: Source folder does not exist: ${source}`));
-        return ''
-    }
-
-    // Создаем директорию для целевого файла, если она не существует
-    const destinationDir = path.dirname(destinationPath);
-    if (!fs.existsSync(destinationDir)) {
-        fs.mkdirSync(destinationDir, { recursive: true });
-    }
-
-    // Копируем файл
-    fs.copyFileSync(sourcePath, destinationPath);
-
-    console.log(chalk.yellow.bold(`[vite]: File copied from ${sourcePath} to ${destinationPath}`));
-}
-
-/**
- *
- * @param command
- */
 export function copyFiles(command) {
-    // Clear the assets folder
-    removeFolderIfExists(normalizePath(path.resolve(import.meta.dirname, '../dist/assets')))
-
     const isDev = command === 'serve'; // true if the dev server is running
-    const isBuild = command === 'build'; // true if the build process is running
 
-    const targetPath = normalizePath(path.resolve(import.meta.dirname, '../src/views')); // Path to the target folder
-    const linkPath = normalizePath(path.resolve(import.meta.dirname, '../dist/views')); // Path to the symbolic link
-
-    // Views ejs
-    if (isDev) {
-        // Development mode: create a symbolic link
-        removeFolderIfExists(linkPath); // Delete the folder if it exists
-        createSymlinkIfNotExists(targetPath, linkPath);
-    } else if (isBuild) {
-        // Build mode: remove the link and copy the folder
-        removeFolderIfExists(linkPath); // Delete the folder if it exists
-        copyFolderRecursiveSync(targetPath, linkPath);
-
-    } else {
-        console.error('Invalid mode.');
+    if(!isDev) {
+        // Clear the assets folder
+        removeFolderIfExists(normalizePath(path.resolve(import.meta.dirname, '../dist/assets')))
     }
 
-    // other files
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../src/assets/datatables')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables'))
-    )
-    copyFile(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/datatables.net/js/jquery.dataTables.min.js')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/datatables/jquery.dataTables.min.js'))
-    )
+    const sources = [
+        {
+            source: '../src/views',
+            destination: '../dist/views',
+        },
+        {
+            source: '../src/assets/datatables',
+            destination: '../dist/assets/datatables',
+        },
+        {
+            source: '../src/translations',
+            destination: '../dist/translations'
+        },
+        {
+            source: '../src/migrations',
+            destination: '../dist/migrations'
+        },
+        {
+            source: '../node_modules/handsontable/dist/languages',
+            destination: '../dist/assets/handsontable'
+        },
+        {
+            source: '../src/assets/ckeditor5',
+            destination: '../dist/assets/ckeditor5'
+        },
+        {
+            source: '../node_modules/jquery/dist/jquery.min.js',
+            destination: '../dist/assets/jquery/jquery.min.js'
+        },
+        {
+            source: '../node_modules/jquery-ui-dist/jquery-ui.min.js',
+            destination: '../dist/assets/jquery/jquery-ui.min.js'
+        },
+        {
+            source: '../node_modules/ace-builds/src-min-noconflict',
+            destination: '../dist/assets/ace'
+        },
+        {
+            source: '../node_modules/jsoneditor/dist/jsoneditor.min.js',
+            destination: '../dist/assets/jsoneditor/jsoneditor.min.js'
+        },
+    ];
 
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/translations'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../src/translations')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/translations'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/migrations'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../src/migrations')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/migrations'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/handsontable/dist/languages')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/handsontable'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../src/assets/ckeditor5')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/ckeditor5'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/jquery'))
-    copyFile(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jquery/dist/jquery.min.js')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jquery/jquery.min.js'))
-    )
-    copyFile(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jquery-ui-dist/jquery-ui.min.js')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jquery/jquery-ui.min.js'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/ace'))
-    copyFolderRecursiveSync(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/ace-builds/src-min-noconflict')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/ace'))
-    )
-
-    removeFolderIfExists(path.resolve(import.meta.dirname, '../dist/assets/jsoneditor'))
-    copyFile(
-        normalizePath(path.resolve(import.meta.dirname, '../node_modules/jsoneditor/dist/jsoneditor.min.js')),
-        normalizePath(path.resolve(import.meta.dirname, '../dist/assets/jsoneditor/jsoneditor.min.js'))
-    )
+    for (const source of sources) {
+        const targetPath = normalizePath(path.resolve(import.meta.dirname, source.source)); // Path to the target folder
+        const linkPath = normalizePath(path.resolve(import.meta.dirname, source.destination)); // Path to the symbolic link
+        syncFolderOrFile(targetPath, linkPath, isDev);
+    }
 }

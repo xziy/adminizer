@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let content = document.querySelector('.content');
     setTimeout(() => {
         content.classList.add('overflow-auto');
-    }, 100)
+    }, 0)
 });
 
 // UploadAdapter CKEditor

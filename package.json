@@ -55,8 +55,6 @@
 		"cropperjs": "^1.6.2",
 		"cross-env": "^7.0.3",
 		"cssnano": "^7.0.6",
-		"datatables.net": "^1.13.1",
-		"datatables.net-dt": "^1.13.1",
 		"handsontable": "^15.1.0",
 		"image-size": "^1.2.0",
 		"jquery": "^3.7.1",
