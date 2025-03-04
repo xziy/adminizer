@@ -259,7 +259,7 @@ const models = {
             },
             testRelation: {
                 displayModifier: function (data) {
-                    return data.title;
+                    return data?.title;
                 }
             },
             createdAt: false,

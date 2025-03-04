@@ -195,7 +195,14 @@ export class Adminizer {
         return {
             info: (...args: any[]) => this.logger.info(args.join(" ")),
             warn: (...args: any[]) => this.logger.warn(args.join(" ")),
-            error: (...args: any[]) => this.logger.error(args.join(" ")),
+            error: (...args: any[]) => {
+                const [error] = args;
+                if (error instanceof Error) {
+                    this.logger.error(`${error.message}\nStack: ${error.stack}`);
+                } else {
+                    this.logger.error(args.join(" "));
+                }
+            },
             debug: (...args: any[]) => this.logger.debug(args.join(" ")),
             verbose: (...args: any[]) => this.logger.verbose(args.join(" ")),
             silly: (...args: any[]) => this.logger.silly(args.join(" ")),
