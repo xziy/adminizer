@@ -1,4 +1,4 @@
-@import 'datatables.net-dt/css/jquery.dataTables.css';
+@import '../datatables/jquery.dataTables.css';
 @import 'handsontable/dist/handsontable.full.css';
 @import 'leaflet/dist/leaflet.css';
 @import 'leaflet-draw/dist/leaflet.draw-src.css';
