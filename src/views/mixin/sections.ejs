@@ -22,7 +22,7 @@
                                     <% } -%>
                             >
                                 <% if (itemSection.icon) { %>
-                                    <i class="las la-<%= itemSection.icon %>"></i>
+                                    <span class="material-icons-outlined"><%= itemSection.icon %></span>
                                 <% } %>
                                 <%= __(itemSection.title) %></a>
                             <% if(itemSection.subItems && itemSection.subItems.length > 0){ -%>
@@ -31,7 +31,7 @@
                                     <% itemSection.subItems.forEach(e => { -%>
                                         <div>
                                             <a href="<%= e.link %>" class="nav-link pb-0.5">
-                                                <i class="las la-<%= e.icon %>"></i>
+                                                <span class="material-icons-outlined"><%= e.icon %></span>
                                                 <%= e.title %>
                                             </a>
                                         </div>
