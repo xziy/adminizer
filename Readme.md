@@ -6,7 +6,7 @@ npm i
 tsc
 ```
 ## **Dev**
-**Starts the application in development mode with VITE_ENV=dev.**
+**Starts the application in development mode.**
 ```bash
 npm run dev
 ```
