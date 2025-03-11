@@ -573,25 +573,25 @@ export default {
                     id: "0",
                     title: 'Sub 1',
                     link: 'https://webresto.org',
-                    icon: 'cat'
+                    icon: 'language'
                 },
                 {
                     id: "1",
                     title: 'Sub 2',
                     link: '#',
-                    icon: 'mask'
+                    icon: 'share'
                 },
                 {
                     id: "2",
                     title: 'Sub 3 Sub 3 Sub 3 Sub 3',
                     link: '#',
-                    icon: 'flask'
+                    icon: 'insert_link'
                 },
                 {
                     id: "3",
                     title: 'Sub 4',
                     link: '#',
-                    icon: 'cat'
+                    icon: 'insert_link'
                 }
             ]
         },
@@ -599,25 +599,25 @@ export default {
             id: "1",
             title: 'Website 2 Website 2 Website 2',
             link: 'https://webresto.org',
-            icon: 'mask'
+            icon: 'insert_link'
         },
         {
             id: "2",
             title: 'Website 3',
             link: 'https://webresto.org',
-            icon: 'mask'
+            icon: 'share'
         },
         {
             id: "3",
             title: 'Website 1',
             link: 'https://webresto.org',
-            icon: 'mask'
+            icon: 'language'
         },
         {
             id: "4",
             title: 'Website 2 Website 2 Website 2',
             link: 'https://webresto.org',
-            icon: 'mask'
+            icon: 'insert_link'
         },
     ],
     brand: {

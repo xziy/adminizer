@@ -7,7 +7,7 @@
         <swiper-container class="cursor-move nav-swiper !overflow-y-visible !overflow-x-clip" init="false">
             <swiper-slide class="!w-auto justify-center flex items-center">
                 <div class="justify-center flex items-center h-9">
-                    <a class="nav-link<% if (section && section === "adminpanel") { %> active<% } %>"
+                    <a class="nav-link <% if (section && section === "adminpanel") { %> active<% } %>"
                        href="<%- config.routePrefix %>"><span class="material-icons-outlined relative top-[2px]">tune</span> <%= __("Adminpanel") %></a>
                 </div>
             </swiper-slide>
@@ -15,7 +15,7 @@
                 <% if (itemSection.link && itemSection.title) { %>
                     <swiper-slide class="!w-auto">
                         <div class="relative justify-center flex items-center h-9 group">
-                            <a class="nav-link<% if (section && section === itemSection.id) { %> active<% } %>"
+                            <a class="items-center flex gap-2 nav-link<% if (section && section === itemSection.id) { %> active<% } %>"
                                href="<%= itemSection.link %>"
                             <% if(itemSection.subItems && itemSection.subItems.length > 0){ -%>
                                onclick="event.preventDefault()"
@@ -26,11 +26,11 @@
                                 <% } %>
                                 <%= __(itemSection.title) %></a>
                             <% if(itemSection.subItems && itemSection.subItems.length > 0){ -%>
-                                <div class="relative after:block before:block after:absolute after:rotate-[-45deg] after:top-1/2 after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300 before:absolute before:rotate-[45deg] before:top-1/2 before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all before:transition-all after:rounded-sm before:rounded-sm w-3 ml-3 after:right-0 before:right-[5px] group-hover:after:rotate-45 group-hover:before:rotate-[-45deg]"></div>
+                                <div class="relative after:block before:block after:absolute after:rotate-[-45deg] after:top-[4px] after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300 before:absolute before:rotate-[45deg] before:top-[4px] before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all before:transition-all after:rounded-sm before:rounded-sm w-3 ml-3 after:right-0 before:right-[5px] group-hover:after:rotate-45 group-hover:before:rotate-[-45deg]"></div>
                                 <div class="absolute top-[100%] bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 border-t-0 px-3 py-2 left-0 flex flex-col gap-2 opacity-0 invisible group-hover:opacity-100 group-active:opacity-100 group-hover:visible group-active:visible transition cursor-auto">
                                     <% itemSection.subItems.forEach(e => { -%>
                                         <div>
-                                            <a href="<%= e.link %>" class="nav-link pb-0.5">
+                                            <a href="<%= e.link %>" class="nav-link pb-0.5 items-center flex gap-2">
                                                 <span class="material-icons-outlined"><%= e.icon %></span>
                                                 <%= e.title %>
                                             </a>
