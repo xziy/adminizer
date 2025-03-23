@@ -1,0 +1,39 @@
+{
+	"name": "custom-inertia",
+	"version": "1.0.1",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"dev": "cross-env VITE_ENV=dev tsx watch index.ts",
+		"start": "tsx index.ts",
+		"build": "vite build"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@inertiajs/react": "^2.0.0",
+		"@vitejs/plugin-react": "^4.3.4",
+		"cross-env": "^7.0.3",
+		"debug": "^4.4.0",
+		"express": "^4.21.2",
+		"express-session": "^1.18.1",
+		"json-stable-stringify": "^1.2.1",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-simple-wysiwyg": "^3.2.1",
+		"tsx": "^4.19.3",
+		"vite": "^6.0",
+		"vite-plugin-externals": "^0.6.2"
+	},
+	"devDependencies": {
+		"@originjs/vite-plugin-federation": "^1.4.0",
+		"@types/debug": "^4.1.12",
+		"@types/express": "^5.0.0",
+		"@types/express-session": "^1.18.1",
+		"@types/node": "^22.13.5",
+		"@types/react": "^19.0.3",
+		"@types/react-dom": "^19.0.2"
+	}
+}

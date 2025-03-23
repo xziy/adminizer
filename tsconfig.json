@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"baseUrl": ".",
+		"typeRoots": ["./types"]
+	},
+	"exclude": ["node_modules"]
+}
