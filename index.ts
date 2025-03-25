@@ -61,8 +61,8 @@ const createServer = async () => {
     }));
 
     const pages = {
-        home: {
-            component: 'Home',
+        dashboard: {
+            component: 'dashboard',
             props: {
                 controls: [
                     {
@@ -87,11 +87,11 @@ const createServer = async () => {
     router.get('/flash', async (req, _res, next) => {
         // set session data
         req.flash.setFlashMessage('success', 'User created successfully');
-        await req.Inertia.render(pages.home);
+        await req.Inertia.render(pages.dashboard);
         return next();
     });
     router.get('/', async (req, _res, next) => {
-        await req.Inertia.render(pages.home);
+        await req.Inertia.render(pages.dashboard);
         return next();
     });
 
@@ -110,6 +110,21 @@ const createServer = async () => {
             },
         })
     );
+    app.use(({Inertia}, _, next) => {
+        Inertia.shareProps({
+            auth: {
+                user: {
+                    id: 1,
+                    name: "admin",
+                    email: "email@email.com",
+                    email_verified_at: null,
+                    created_at: '1742921933',
+                    updated_at: '1742921933',
+                }
+            }
+        })
+        next();
+    })
     if (process.env.VITE_ENV === 'dev') {
         const vite: ViteDevServer = await createViteServer({
             server: {middlewareMode: true}, // Enable middleware mode

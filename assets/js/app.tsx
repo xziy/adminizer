@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import React from 'react';
@@ -7,7 +8,7 @@ import ReactDOM from 'react-dom';
 window.React = React;
 window.ReactDOM = ReactDOM;
 
-const appName = 'React Express';
+const appName = 'Adminizer';
 
 export async function resolvePageComponent<T>(path: string | string[], pages: Record<string, Promise<T> | (() => Promise<T>)>): Promise<T>{
     for (const p of (Array.isArray(path) ? path : [path])) {

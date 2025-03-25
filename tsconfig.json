@@ -16,7 +16,10 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"baseUrl": ".",
-		"typeRoots": ["./types"]
+		"typeRoots": ["./types"],
+		"paths": {
+			"@/*": ["./assets/js/*"]
+		}
 	},
 	"exclude": ["node_modules"]
 }

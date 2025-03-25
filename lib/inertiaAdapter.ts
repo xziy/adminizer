@@ -1,7 +1,4 @@
-import debug from 'debug';
 import {RequestHandler, Response, Request} from 'express';
-
-const log = debug('inertia-node-adapter:express');
 
 type props = Record<string | number | symbol, unknown>;
 
@@ -86,13 +83,10 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                     version,
                     props,
                 };
-                log('rendering', _page);
                 if (flashMessages) {
-                    log('Flashing messages');
                     this.shareProps(flashMessages(req));
                 }
                 if (enableReload) {
-                    log('Setting session for reloading components');
                     req.session.xInertiaCurrentComponent = pageRest.component;
                 }
                 const allProps = {..._sharedProps, ...props};
@@ -106,32 +100,22 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                 ) {
                     dataKeys = partialDataHeader.split(',');
                 } else {
-                    log(
-                        'partial requests without the name of the component return a full request',
-                        _page.component
-                    );
-                    log(
-                        'header partial component',
-                        req.headers[headers.xInertiaPartialComponent]
-                    );
+
                     dataKeys = Object.keys(allProps);
                 }
 
                 // we need to clear the props object on each call
                 const propsRecord: props = {};
                 for await (const key of dataKeys) {
-                    log('parsing props keys', dataKeys);
                     let value;
                     if (typeof allProps[key] === 'function') {
                         value = await (allProps[key] as () => unknown)();
-                        log('prop promise resolved', key);
                     } else {
                         value = allProps[key];
                     }
                     propsRecord[key] = value;
                 }
                 _page.props = propsRecord;
-                log('Page props built', _page.props);
 
                 if (req.headers[headers.xInertia]) {
                     res
@@ -144,10 +128,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                             Vary: 'Accept',
                         })
                         .send(JSON.stringify(_page));
-                    log(`sent response with headers`);
-                    log(res.getHeaders());
                 } else {
-                    log('Sending the default html as no inertia header is present');
                     res
                         .status(_statusCode)
                         .set({
@@ -165,7 +146,6 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                     ? 303
                     : 302;
                 res.redirect(statusCode, url);
-                log(`Redirecting to ${req.method} ${url}`);
                 return res;
             },
         };
