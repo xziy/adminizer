@@ -1,0 +1,180 @@
+import _processInstallStep from "../controllers/processInstallStep";
+import _processInstallFinalize from "../controllers/processInstallFinalize";
+import _dashboard from "../controllers/dashboard";
+import _welcome from "../controllers/welcome";
+import _list from "../controllers/list";
+import _listJson from "../controllers/listJson";
+import _edit from "../controllers/edit";
+import _add from "../controllers/add";
+import _view from "../controllers/view";
+import _remove from "../controllers/remove";
+import _uploadCKeditor5 from "../controllers/ckeditorUpload";
+import _form from "../controllers/form";
+import { CreateUpdateConfig } from "../interfaces/adminpanelConfig";
+import { widgetSwitchController } from "../controllers/widgets/switch";
+import _getAllWidgets from "../controllers/getAllWidgets";
+import _widgetsDB from "../controllers/widgetsDB";
+import { widgetInfoController } from '../controllers/widgets/Info';
+import { widgetActionController } from '../controllers/widgets/Action';
+import { widgetCustomController } from "../controllers/widgets/Custom";
+import { catalogController } from "../controllers/catalog/Catalog";
+import { mediaManagerController } from "../controllers/media-manager/mediaManagerApi";
+import { thumbController } from "../controllers/media-manager/ThumbController";
+import {Adminizer} from "../lib/Adminizer";
+
+
+export default class Router {
+
+	static onlyOnce: boolean = false;
+
+	/**
+	 * The idea is that all methods within the first 3 seconds after start call this method, and as soon as all have been loaded, the loading will be blocked
+	 */
+	static async bind(adminizer: Adminizer): Promise<void> {
+		if (this.onlyOnce) {
+			Adminizer.log.error(`This method allowed for run only one time`);
+			return;
+		}
+
+		/**
+		 * List or one policy that should be bound to actions
+		 * @type {MiddlewareType[]}
+		 */
+		let policies: MiddlewareType[] = adminizer.config.policies;
+
+		/**
+		 * Widgets All
+		 */
+		adminizer.app.all(`/widgets-get-all`, adminizer.policyManager.bindPolicies(policies, _getAllWidgets));
+
+		/**
+		 * Widgets All from DB
+		 */
+		adminizer.app.all(`/widgets-get-all-db`, adminizer.policyManager.bindPolicies(policies, _widgetsDB));
+
+
+		/**
+		 * Widgets Switch
+		 */
+		adminizer.app.all(`/widgets-switch/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetSwitchController));
+
+		/**
+		 * Widgets Info
+		 */
+		adminizer.app.all(`/widgets-info/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetInfoController))
+
+		/**
+		 * Widgets Action
+		 */
+		adminizer.app.all(`/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetActionController));
+
+		/**
+		 * Widgets Custom
+		 */
+		adminizer.app.all(`/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetCustomController));
+
+		/**
+		 * Module Install Stepper
+		 * */
+		adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
+		adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
+
+		/**
+		 * Edit form
+		 * */
+		adminizer.app.all(`/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
+
+		// Create a base entity route
+		let baseRoute = "/:entityType/:entityName";
+
+		/**
+		 * Catalog
+		 */
+		adminizer.app.all(`/catalog/:slug/:id`, adminizer.policyManager.bindPolicies(policies, catalogController));
+		adminizer.app.all(`/catalog/:slug`, adminizer.policyManager.bindPolicies(policies, catalogController));
+
+		/**
+		 * Media Manager
+		 */
+		adminizer.app.all(`/media-manager-uploader/:id`, adminizer.policyManager.bindPolicies(policies, mediaManagerController));
+		adminizer.app.all(`/get-thumbs`, adminizer.policyManager.bindPolicies(policies, thumbController));
+
+		/**
+		 * List of records
+		 */
+		adminizer.app.all(baseRoute, adminizer.policyManager.bindPolicies(policies, _list));
+
+		if (adminizer.config.models) {
+			for (let model in adminizer.config.models) {
+				const modelConfig = adminizer.config.models[model];
+				/**
+				 * Add support only routes created for boolean true
+				 */
+				if (typeof modelConfig === "boolean" && modelConfig === true) {
+					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by boolean true`)
+					adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+					adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+					adminizer.app.all(`/model/${model}/remove/:id`, adminizer.policyManager.bindPolicies(policies, _remove));
+				} else if (typeof modelConfig !== "boolean") {
+					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by ModelConfig`)
+
+					/**
+					 * Create new record
+					 */
+					if (modelConfig.add) {
+						let addHandler = modelConfig.add as CreateUpdateConfig;
+						if (addHandler.controller) {
+							let controller = await import(addHandler.controller);
+							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+						} else {
+							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+						}
+					} else {
+						adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+					}
+					/**
+					 * Edit existing record
+					 */
+					if (modelConfig.edit) {
+						let editHandler = modelConfig.edit as CreateUpdateConfig;
+						if (editHandler.controller) {
+							let controller = await import(editHandler.controller);
+							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+						} else {
+							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+						}
+					} else {
+						adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+					}
+				} else {
+					Adminizer.log.silly(`Adminpanel skip create CRUD routes for model: ${model}`)
+				}
+			}
+		}
+
+		/**
+		 * View record details
+		 */
+		adminizer.app.all(baseRoute + "/view/:id", adminizer.policyManager.bindPolicies(policies, _view));
+		adminizer.app.all(baseRoute + "/json", adminizer.policyManager.bindPolicies(policies, _listJson));
+
+		/**
+		 * Remove record
+		 */
+		adminizer.app.all(baseRoute + "/remove/:id", adminizer.policyManager.bindPolicies(policies, _remove));
+		/**
+		 * Upload images CKeditor5
+		 */
+		adminizer.app.all(`${baseRoute}/ckeditor5/upload`, adminizer.policyManager.bindPolicies(policies, _uploadCKeditor5));
+		/**
+		 * Create a default dashboard
+		 */
+		if (Boolean(adminizer.config.dashboard)) {
+			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _dashboard));
+		} else {
+			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _welcome));
+		}
+		// TODO emit can be used in tests
+		adminizer.emitter.emit("router:bound");
+	}
+}

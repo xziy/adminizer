@@ -1,0 +1,92 @@
+import {Adminizer} from "../lib/Adminizer";
+
+export default async function bindAccessRights(adminizer: Adminizer) {
+  if (adminizer.config.models) {
+    let models = adminizer.config.models;
+    for (let key of Object.keys(models)) {
+      const model = models[key];
+      if (typeof model !== "boolean") {
+        let modelName = model.model;
+        let department = `Model ${key}`;
+
+        // create
+        adminizer.accessRightsHelper.registerToken({
+          id: `create-${modelName}-model`, name: "Create",
+          description: "Access to creating record in database", department: department
+        });
+
+        // read
+        adminizer.accessRightsHelper.registerToken({
+          id: `read-${modelName}-model`, name: "Read",
+          description: "Access to reading records in database", department: department
+        });
+
+        // update
+        adminizer.accessRightsHelper.registerToken({
+          id: `update-${modelName}-model`, name: "Update",
+          description: "Access to updating records in database", department: department
+        });
+
+        // delete
+        adminizer.accessRightsHelper.registerToken({
+          id: `delete-${modelName}-model`, name: "Delete",
+          description: "Access to deleting records in database", department: department
+        });
+      }
+    }
+  }
+
+  if (adminizer.config.forms && adminizer.config.forms.data) {
+    let forms = adminizer.config.forms.data;
+    for (let key of Object.keys(forms)) {
+      let department = `Form ${key}`;
+
+      // create
+      adminizer.accessRightsHelper.registerToken({
+        id: `create-${key}-form`, name: "Create",
+        description: "Access to creating form in database", department: department
+      });
+
+      // read
+      adminizer.accessRightsHelper.registerToken({
+        id: `read-${key}-form`, name: "Read",
+        description: "Access to reading form in database", department: department
+      });
+
+      // update
+      adminizer.accessRightsHelper.registerToken({
+        id: `update-${key}-form`, name: "Update",
+        description: "Access to updating form in database", department: department
+      });
+
+      // delete
+      adminizer.accessRightsHelper.registerToken({
+        id: `delete-${key}-form`, name: "Delete",
+        description: "Access to deleting form in database", department: department
+      });
+    }
+  }
+
+  adminizer.accessRightsHelper.registerToken({
+    id: `process-install-step`, name: "Process install step",
+    description: "Access to '/processInstallStep' route", department: "Routes"
+  });
+
+  // Widgets
+  adminizer.accessRightsHelper.registerToken({
+    id: `widgets`, name: "Widgets",
+    description: "Access to widgets", department: "Widgets"
+  });
+
+  // Default user group
+  if (adminizer.config.registration && adminizer.config.registration.enable) {
+    // TODO refactor CRUD functions for DataAccessor usage
+    let defaultUserGroupRecord: ModelsAP["GroupAP"] = await adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: adminizer.config.registration.defaultUserGroup});
+    if (!defaultUserGroupRecord) {
+      // TODO refactor CRUD functions for DataAccessor usage
+      await adminizer.modelHandler.model.get("GroupAP")?.["_create"]({
+        name: adminizer.config.registration.defaultUserGroup, description: "Group for default users (guests) who dont have access to fields"
+      })
+    }
+  }
+}

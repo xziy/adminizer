@@ -1,0 +1,105 @@
+import { Adminizer } from "../lib/Adminizer";
+import {NextFunction, Request, Response} from "express";
+import multer from "multer";
+import {I18n} from "../lib/v4/I18n";
+
+type reqSession = {
+	UserAP: ModelsAP["UserAP"]
+	messages: {
+		adminError: string[],
+		adminSuccess: string[]
+	}
+	adminPretender?: ModelsAP["UserAP"]
+}
+
+declare global {
+	type ModelsAP = {
+		GroupAP: {
+			id?: number
+			name: string,
+			description?: string
+			tokens?:string[]
+			users?: ModelsAP["UserAP"][]
+		}
+
+		MediaManagerAP: {
+			id?: string
+			parent?: ModelsAP["MediaManagerAP"]
+			variants?: ModelsAP["MediaManagerAP"][]
+			mimeType?: string
+			path?: string
+			size?: number
+			group?: string
+			tag?: string
+			url?: string
+			filename?: string
+			meta?: ModelsAP["MediaManagerMetaAP"][]
+			modelAssociation?: ModelsAP["MediaManagerAssociationsAP"][]
+		}
+
+		MediaManagerAssociationsAP: {
+			id?: string
+			mediaManagerId?: string
+			model?: any
+			modelId?: any
+			widgetName?: string
+			sortOrder?: number
+			file?: ModelsAP["MediaManagerAP"]
+		}
+
+		MediaManagerMetaAP: {
+			id?: string
+			key?: string
+			value?: any
+			isPublic?: boolean
+			parent?: ModelsAP["MediaManagerAP"]
+		}
+
+		NavigationAP: {
+			id?: string
+			label: string
+			tree: any
+		}
+
+		UserAP: {
+			id?: number
+			login?: string
+			fullName?: string
+			email?: string
+			passwordHashed?: string
+			password?: string
+			timezone?: string
+			expires?: string
+			locale?: string
+			isDeleted?: boolean
+			isActive?: boolean
+			isAdministrator?: boolean
+			groups?: ModelsAP["GroupAP"][]
+			widgets?: any
+			isConfirmed?: boolean
+		}
+	}
+
+	type ReqType = Request & {
+		session: reqSession,
+		_parsedUrl: {
+			pathname: string
+		}
+		setLocale: (locale: string) => void
+		route: {
+			[key: string]: string
+		}
+		adminizer: Adminizer
+		upload: (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => multer.Multer
+		i18n: I18n
+	}
+
+	type ResType = Response & {
+		viewAdmin(specifiedPath: string, locals?: any, cb_view?: Function): void
+	}
+
+	type MiddlewareType = (req: ReqType, res: ResType, next: NextFunction) => void
+	type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
+}
+
+export {};

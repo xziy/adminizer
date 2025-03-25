@@ -1,0 +1,336 @@
+// import {File, MediaFileType, MediaManagerItem, SortCriteria, UploaderFile} from "./AbstractMediaManager";
+// import {populateVariants, randomFileName} from "./helpers/MediaManagerHelper";
+// import sizeOf from "image-size";
+// import sharp from "sharp";
+// import * as fs from 'fs';
+// import * as path from 'path';
+// import {Adminizer} from "../Adminizer";
+//
+// interface Meta {
+//   [key: string]: string;
+// }
+//
+// export class ImageItem extends File<MediaManagerItem> {
+//   public type: MediaFileType = "image";
+//   public model: string = "mediamanagerap";
+//   public metaModel: string = "mediamanagermetaap";
+//   public imageSizes: any
+//   protected readonly adminizer: Adminizer
+//
+//   constructor(adminizer: Adminizer, urlPathPrefix: string, fileStoragePath: string) {
+//     super(urlPathPrefix, fileStoragePath);
+//     this.imageSizes = adminizer.config.mediamanager.imageSizes || {};
+//     this.adminizer = adminizer;
+//   }
+//
+//   public async getItems(limit: number, skip: number, sort: SortCriteria, group: string): Promise<{
+//     data: MediaManagerItem[];
+//     next: boolean
+//   }> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+//         where: {parent: null, mimeType: {contains: this.type}, group: group},
+//         limit: limit,
+//         skip: skip,
+//         sort: sort,
+//       }, {populate: [ ["variants", {sort: sort}], ["meta", {}] ]})
+//
+//     let next = await this.adminizer.modelHandler.model.get(this.model).count({
+//         where: {parent: null, mimeType: {contains: this.type}, group: group},
+//         limit: limit,
+//         skip: skip === 0 ? limit : skip + limit,
+//         sort: sort,
+//       })
+//
+//     for (let elem of data) {
+//       elem.variants = await populateVariants(this.adminizer, elem.variants, this.model)
+//     }
+//
+//     return {
+//       data: data,
+//       next: !!next,
+//     };
+//   }
+//
+//   public async search(s: string, group: string): Promise<MediaManagerItem[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+//         where: {filename: {contains: s}, mimeType: {contains: this.type}, parent: null, group: group},
+//         sort: "createdAt DESC",
+//       }, {populate: [["variants", {sort: "createdAt DESC"}]]})
+//     for (let elem of data) {
+//       elem.variants = await populateVariants(this.adminizer, elem.variants, this.model)
+//     }
+//     return data
+//   }
+//
+//   public async upload(file: UploaderFile, filename: string, origFileName: string, group: string): Promise<MediaManagerItem[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let parent: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
+//         parent: null,
+//         mimeType: file.mimetype,
+//         size: file.size,
+//         path: file.path,
+//         group: group,
+//         tag: "origin",
+//         filename: origFileName,
+//         url: `/${this.path}/${filename}`,
+//       })
+//
+//     await this.createMeta(parent.id);
+//     await this.addFileMeta(file.path, parent.id)
+//
+//     // create file variants
+//     if (Object.keys(this.imageSizes).length) {
+//       await this.createVariants(file, parent, filename, group);
+//     }
+//
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     const item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: parent.id}});
+//     item.variants = await populateVariants(this.adminizer, item.variants, this.model)
+//     return [item]
+//   }
+//
+//   public async getVariants(id: string): Promise<MediaManagerItem[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let items = ((await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+//       where: {id: id}
+//     }, {populate: [["variants", {sort: "createdAt DESC"}]]}))[0]).variants
+//     return (await populateVariants(this.adminizer, items, this.model))
+//   }
+//
+//   protected async createVariants(file: UploaderFile, parent: MediaManagerItem, filename: string, group: string): Promise<void> {
+//     for (const sizeKey of Object.keys(this.imageSizes)) {
+//       let sizeName = randomFileName(filename, sizeKey, false);
+//
+//       let {width, height} = this.imageSizes[sizeKey];
+//
+//       if (
+//         sizeOf(file.path).width < width ||
+//         sizeOf(file.path).height < height
+//       )
+//         continue;
+//
+//       let newFile = await this.resizeImage(
+//         file.path,
+//         `${this.dir}${sizeName}`,
+//         width,
+//         height,
+//       );
+//
+//       // TODO refactor CRUD functions for DataAccessor usage
+//       let newSize = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
+//         parent: parent.id,
+//         mimeType: parent.mimeType,
+//         size: newFile.size,
+//         filename: parent.filename,
+//         group: group,
+//         path: `${this.dir}${sizeName}`,
+//         tag: `saze:${sizeKey}`,
+//         url: `/${this.path}/${sizeName}`,
+//       })
+//
+//       await this.addFileMeta(`${this.dir}${sizeName}`, newSize.id)
+//
+//     }
+//   }
+//
+//   public async getOrigin(id: string): Promise<string> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     return (await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: id}})).path;
+//   }
+//
+//   protected async createMeta(id: string): Promise<void> {
+//     //create empty meta
+//     let metaData: Meta = {
+//       author: "",
+//       description: "",
+//       title: "",
+//     };
+//
+//     for (const key of Object.keys(metaData)) {
+//       // TODO refactor CRUD functions for DataAccessor usage
+//       await this.adminizer.modelHandler.model.get(this.metaModel)["_create"]({
+//         key: key,
+//         value: metaData[key],
+//         parent: id,
+//         isPublic: true
+//       });
+//     }
+//
+//   }
+//
+//   protected async addFileMeta(file: string, id: string): Promise<void> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     await this.adminizer.modelHandler.model.get(this.metaModel)["_create"]({
+//       key: 'imageSizes',
+//       value: sizeOf(file),
+//       parent: id,
+//       isPublic: false
+//     });
+//   }
+//
+//   public async getMeta(id: string,): Promise<{ key: string; value: string }[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     return ((await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+//       id: id
+//     }, {populate: [["meta", {where: {isPublic: true}}]]}))[0]).meta;
+//   }
+//
+//   async setMeta(id: string, data: { [p: string]: string },): Promise<void> {
+//     for (const key of Object.keys(data)) {
+//       // TODO refactor CRUD functions for DataAccessor usage
+//       await this.adminizer.modelHandler.model.get(this.metaModel)["_update"](
+//         {parent: id, key: key},
+//         {value: data[key]},
+//       );
+//     }
+//   }
+//
+//   protected async resizeImage(input: string, output: string, width: number, height: number,) {
+//     // Get the directory from the output path
+//     const outputDir = path.dirname(output);
+//
+//     // Check if the directory exists, and create it if it doesn't
+//     if (!fs.existsSync(outputDir)) {
+//       fs.mkdirSync(outputDir, {recursive: true});
+//     }
+//
+//     // Resize the image and save it to the output path
+//     return await sharp(input)
+//       .resize({width: width, height: height})
+//       .toFile(output);
+//   }
+//
+//   public async uploadVariant(parent: MediaManagerItem, file: UploaderFile, filename: string, group: string, localeId: string): Promise<MediaManagerItem> {
+//     let {width, height} = sizeOf(file.path)
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
+//         parent: parent.id,
+//         mimeType: file.mimetype,
+//         size: file.size,
+//         path: file.path,
+//         group: group,
+//         tag: localeId ? `loc:${localeId}` : `size:${width}x${height}`,
+//         filename: parent.filename,
+//         url: `/${this.path}/${filename}`,
+//       })
+//
+//     await this.addFileMeta(file.path, item.id)
+//
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     return (await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: item.id}}))
+//   }
+//
+//   async delete(id: string): Promise<void> {
+//     const criteria = {where: {id: id}};
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let record = await this.adminizer.modelHandler.model.get(this.model)["_findOne"](criteria);
+//
+//     await beforeDestroy(this.adminizer, criteria);
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     await this.adminizer.modelHandler.model.get(this.model)["_destroy"](criteria);
+//     await deleteFile(record.path);
+//   }
+// }
+//
+// /*
+//  * Text item
+//  */
+// export class TextItem extends ImageItem {
+//   public type: MediaFileType = "text";
+//
+//   public async upload(file: UploaderFile, filename: string, origFileName: string, group: string): Promise<MediaManagerItem[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let parent: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
+//         parent: null,
+//         mimeType: file.mimetype,
+//         size: file.size,
+//         path: file.path,
+//         group: group,
+//         filename: origFileName,
+//         tag: "origin",
+//         url: `/${this.path}/${filename}`,
+//       })
+//
+//     await this.createMeta(parent.id);
+//
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     const item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: parent.id}});
+//     item.variants = await populateVariants(this.adminizer, item.variants, this.model)
+//     return [item]
+//   }
+//
+//   getvariants(): Promise<MediaManagerItem[]> {
+//     return Promise.resolve([]);
+//   }
+//
+//   public async uploadVariant(parent: MediaManagerItem, file: UploaderFile, filename: string, group: string, localeId: string): Promise<MediaManagerItem> {
+//     let variants = parent.variants.filter(e => /^loc:/.test(e.tag) === false)
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
+//         parent: parent.id,
+//         mimeType: file.mimetype,
+//         size: file.size,
+//         path: file.path,
+//         group: group,
+//         tag: localeId ? `loc:${localeId}` : `ver: ${variants.length + 1}`,
+//         filename: parent.filename,
+//         url: `/${this.path}/${filename}`,
+//       })
+//
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     return (await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: item.id}}))
+//   }
+//
+//   public async getVariants(id: string): Promise<MediaManagerItem[]> {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     let items = ((await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+//       where: {id: id}
+//     }, {populate: [["variants", {sort: "createdAt DESC"}]]}))[0]).variants
+//     return (await populateVariants(this.adminizer, items, this.model))
+//   }
+// }
+//
+// export class ApplicationItem extends TextItem {
+//   public type: MediaFileType = "application";
+// }
+//
+// export class VideoItem extends TextItem {
+//   public type: MediaFileType = "video";
+// }
+//
+//
+// async function beforeDestroy(adminizer: Adminizer, criteria: { where: object }) {
+//   // TODO refactor CRUD functions for DataAccessor usage
+//   let parent: ModelsAP["MediaManagerAP"] = (await adminizer.modelHandler.model.get("MediaManagerAP")?.["_find"](criteria))[0]
+//   let meta = parent.meta
+//   for (const metaElement of meta) {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     await adminizer.modelHandler.model.get("MediaManagerMetaAP")?.["_destroy"]({id: metaElement.id})
+//   }
+//
+//   // TODO refactor CRUD functions for DataAccessor usage
+//   let variants: ModelsAP["MediaManagerAP"]["variants"] = (await adminizer.modelHandler.model.get("MediaManagerAP")?.["_find"](criteria))[0].variants
+//   for (const child of variants) {
+//     // TODO refactor CRUD functions for DataAccessor usage
+//     await adminizer.modelHandler.model.get("MediaManagerAP")?.["_destroy"]({id: child.id})
+//   }
+// }
+//
+//
+// async function deleteFile(file: string) {
+//   try {
+//     await fs.promises.access(file);
+//     await fs.promises.unlink(file);
+//     console.log('The file was successfully deleted');
+//   } catch (err) {
+//     if (err.code === 'ENOENT') {
+//       console.log('The file does not exist');
+//     } else if (err.code === 'EPERM') {
+//       console.log('You do not have permission to delete this file');
+//     } else {
+//       console.error(`An error occurred: ${err}`);
+//     }
+//   }
+// }

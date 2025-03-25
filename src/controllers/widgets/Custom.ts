@@ -1,0 +1,41 @@
+import CustomBase from "../../lib/widgets/abstractCustom";
+
+export async function widgetCustomController(req: ReqType, res: ResType) {
+	let widgetId = req.params.widgetId;
+	if (!widgetId) {
+		return res.status(404).send({ error: 'Not Found' });
+	}
+
+	if (req.adminizer.config.auth) {
+		if (!req.session.UserAP) {
+			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+		} else if (!req.adminizer.accessRightsHelper.hasPermission(`widget-${widgetId}`, req.session.UserAP)) {
+			return res.sendStatus(403);
+		}
+	}
+
+	let widget = req.adminizer.widgetHandler.getById(widgetId) as CustomBase;
+	if (widget === undefined) {
+		return res.status(404).send({ error: 'Not Found' });
+	}
+
+	// /** get state */
+	// if (req.method.toUpperCase() === 'GET') {
+	// 	try{
+	// 		let state = await widget.getState();
+	// 		return res.json({state: state})
+	// 	} catch (e){
+	// 		return res.serverError(e)
+	// 	}
+	// }
+
+	// /** Custom state  */
+	// else if (req.method.toUpperCase() === 'POST') {
+	// 	try{
+	// 		let state = await widget.addOne();
+	// 		return res.json({state: state})
+	// 	} catch (e){
+	// 		return res.serverError(e)
+	// 	}
+	// }
+}
