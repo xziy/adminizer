@@ -170,7 +170,7 @@ export default class Router {
 		 * Create a default dashboard
 		 */
 		if (Boolean(adminizer.config.dashboard)) {
-			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _dashboard));
+			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _dashboard));
 		} else {
 			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _welcome));
 		}

@@ -110,8 +110,8 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     const mainApp = http.createServer((req, res) => {
         const adminizerHandler = expressHandler(adminizer.app);
         if (req.url.startsWith(routePrefix)) {
-            // Delete /adminizer from url
-            req.url = req.url.replace(routePrefix, '') || '/';
+            // Delete /adminizer from url --------------------->>>>>>>>>>!!!!!!!!!!!!
+            // req.url = req.url.replace(routePrefix, '') || '/';
             adminizerHandler(req, res);
         }else if (
             req.url.startsWith('/@vite') || // Requests to Vite

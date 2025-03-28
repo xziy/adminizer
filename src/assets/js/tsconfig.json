@@ -15,11 +15,6 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
-		"rootDir": "./",
-		"baseUrl": "./",
-		"paths": {
-			"@/*": ["./src/assets/js/*"]
-		}
 	},
 	"exclude": ["node_modules"]
 }
