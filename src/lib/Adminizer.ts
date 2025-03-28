@@ -14,8 +14,8 @@ import bindViewsLocals from "../system/bindViewsLocals";
 import bindResFunctions from "../system/bindResFunctions";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
-import bindNavigation from "../system/bindNavigation";
-import bindMediaManager from "../system/bindMediaManager";
+// import bindNavigation from "../system/bindNavigation";
+// import bindMediaManager from "../system/bindMediaManager";
 import bindAccessRights from "../system/bindAccessRights";
 import bindAuthorization from "../system/bindAuthorization";
 import bindModels from "../system/bindModels";
@@ -31,6 +31,7 @@ import {getDefaultConfig} from "../system/defaults";
 import {AbstractAdapter} from "./v4/model/AbstractModel";
 import bindExpressUtils from "../system/bindExpressUtils";
 import {createServer as createViteServer, ViteDevServer} from 'vite';
+import {bindInertia} from "../system/bindInertia";
 
 export class Adminizer {
     app: Express
@@ -63,27 +64,6 @@ export class Adminizer {
         this.app = express();
         this._emitter = new EventEmitter();
         this.ormAdapters = ormAdapters;
-
-        const isViteDev = process.env.VITE_ENV === "dev";
-        if (isViteDev) {
-            this.viteMiddleware().then(r => {
-                // set views
-                this.setViewEngine();
-            });
-        } else {
-            // set views
-            this.setViewEngine();
-        }
-
-    }
-
-    /**
-     * Set view engine
-     * @protected
-     */
-    protected setViewEngine() {
-        this.app.set("view engine", "ejs");
-        this.app.set("views", path.join(import.meta.dirname, "../views"));
     }
 
     /**
@@ -93,7 +73,7 @@ export class Adminizer {
     protected async viteMiddleware() {
         // Create a Vite server in middleware mode
         this.vite = await createViteServer({
-            server: { middlewareMode: true }, // Enable middleware mode
+            server: {middlewareMode: true}, // Enable middleware mode
             appType: 'custom', // Specify the application type
         });
 
@@ -107,6 +87,10 @@ export class Adminizer {
     }
 
     public async init(config: AdminpanelConfig) {
+        // Set vite middleware
+        const isViteDev = process.env.VITE_ENV === "dev";
+        if (isViteDev) await this.viteMiddleware()
+
         this.emitter.emit('adminizer:init');
 
         if (this.config && Object.keys(this.config).length > 0) {
@@ -143,8 +127,11 @@ export class Adminizer {
         this.widgetHandler = new WidgetHandler(this);
 
         bindExpressUtils(this.app);
-        bindResFunctions(this);
+        // bindResFunctions(this);
         bindReqFunctions(this);
+
+        // bind Inertia
+        bindInertia(this);
 
         // add install stepper policy to check unfilled settings
         bindInstallStepper(this);
@@ -160,9 +147,9 @@ export class Adminizer {
 
         await bindDashboardWidgets(this);
 
-        bindNavigation(this);
+        // bindNavigation(this);
 
-        bindMediaManager(this);
+        // bindMediaManager(this);
 
         await bindAccessRights(this);
 

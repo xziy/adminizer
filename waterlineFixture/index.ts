@@ -23,7 +23,6 @@ import Example from "./models/Example";
 //
 // import Step1 from "./installSteps/step1"
 // import Step2 from "./installSteps/step2"
-
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
@@ -118,6 +117,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             req.url.startsWith('/@vite') || // Requests to Vite
             req.url.startsWith('/@id') || // Requests to Vite
             req.url.startsWith('/src/assets') ||   // Requests to source files
+            req.url.startsWith('/@react-refresh') ||   // Requests to source files
             req.url.startsWith('/node_modules')
         ) {
             adminizer.vite.middlewares(req, res);
