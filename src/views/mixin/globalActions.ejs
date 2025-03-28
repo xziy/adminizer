@@ -1,0 +1,16 @@
+<% if (menuHelper.hasGlobalActions(entity.config, actionType)) { %>
+    <% var actions = menuHelper.getGlobalActions(entity.config, actionType) %>
+    <% if (actions && actions.length > 0) { %>
+        <% actions.forEach(function(action) { %>
+            <% if (hasPermission(action.accessRightsToken, req.session.UserAP)) { %>
+                <a href="<%= action.link %>" id="<%= action.id %>">
+                    <button class="btn btn-add">
+                        <span class="material-icons-outlined"><%= action.icon %></span>
+                        <%= action.title %>
+                    </button>
+                </a>
+            <% } %>
+        <% }) %>
+    <% } %>
+<% } %>
+

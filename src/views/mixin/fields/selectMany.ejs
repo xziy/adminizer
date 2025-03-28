@@ -1,0 +1,27 @@
+<%= (field.model.type && field.model.type !== 'json') && __(`Model field type not allowed current (${field.model.type}) expected (json)`) %>
+
+<select-pure name="<%= key %>" id="form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %> multiple>
+    <% if (!Array.isArray(isIn)) { %>
+        <% for (let opt in isIn) { %>
+            <% let isSelected = viewsHelper.isOptionSelected(opt, value); %>
+            <% let label = field.config.displayModifier && typeof field.config.displayModifier === 'function'
+                    ? __(field.config.displayModifier(opt))
+                    : __(isIn[opt]); %>
+
+            <option-pure value="<%= opt %>" <%= isSelected ? 'selected' : '' %>>
+                <%= label %>
+            </option-pure>
+        <% } %>
+    <% } else { %>
+        <% isIn.forEach(opt => { %>
+            <% let isSelected = viewsHelper.isOptionSelected(opt, value); %>
+            <% let label = field.config.displayModifier && typeof field.config.displayModifier === 'function'
+                    ? __(field.config.displayModifier(opt))
+                    : __(opt); %>
+
+            <option-pure value="<%= opt %>" <%= isSelected ? 'selected' : '' %>>
+                <%= label %>
+            </option-pure>
+        <% }) %>
+    <% } %>
+</select-pure>

@@ -84,9 +84,10 @@ export default async function edit(req: ReqType, res: ResType) {
 
 
 			// delete property from association-many and association if empty
+			// TODO check if adding and deleting associations works for other orm (this code was written for waterline)
 			if (fields[prop] && fields[prop].model && (fields[prop].model.type === 'association-many' || fields[prop].model.type === 'association')) {
 				if (!reqData[prop]) {
-					delete reqData[prop];
+					reqData[prop] = fields[prop].model.type === 'association' ? null : [];
 				}
 			}
 

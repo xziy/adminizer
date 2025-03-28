@@ -57,7 +57,7 @@ export class ControllerHelper {
     if (typeof config === "boolean") {
       config = {
         model: entityName,
-        icon: 'file',
+        icon: 'description',
         title: entityName
       }
     }
@@ -66,7 +66,7 @@ export class ControllerHelper {
       Adminizer.log.error('Wrong entity configuration, using default');
       config = {
         model: entityName,
-        icon: 'file',
+        icon: 'description',
         title: entityName
       }
     }

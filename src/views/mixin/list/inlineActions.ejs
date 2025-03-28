@@ -1,0 +1,16 @@
+<% if (menuHelper.hasInlineActions(entity.config, 'list')) { %>
+    <% var actions = menuHelper.getInlineActions(entity.config, 'list') %>
+    <% if (actions && actions.length > 0) { %>
+        data += '<div class="inline-flex relative group justify-center [&:has(>.tb-sub-peer:empty)]:hidden">'
+        data += '<span class="list-action cursor-pointer"><%= __('Actions') %></span><div class="relative after:block before:block after:absolute after:rotate-[-45deg] after:top-1/2 after:h-[1px] after:w-2 after:bg-gray-700 dark:after:bg-gray-300 before:absolute before:rotate-[45deg] before:top-1/2 before:h-[1px] before:w-2 before:bg-gray-700 dark:before:bg-gray-300 after:transition-all before:transition-all after:rounded-sm before:rounded-sm group-hover:after:rotate-45 group-hover:before:rotate-[-45deg] w-3 ml-3 after:right-0 before:right-[5px]"></div>'
+        data += '<div class="flex flex-col gap-2 items-start absolute left-0 top-[100%] bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 px-3 py-2 z-10 opacity-0 invisible transition group-hover:opacity-100 group-hover:visible tb-sub-peer">'
+        <% actions.forEach(function(action) { %>
+            <% if (hasPermission(action.accessRightsToken, req.session.UserAP)) { %>
+                <%# print data into list.ejs inline action %>
+                data += '<div><a href="<%= action.link %>/'+row[0]+'?id='+row[0]+'&entity=<%= entity.name %>" id="<%= action.id %>" class="list-action"><span class="material-icons-outlined"><%= action.icon %></span><%= __(action.title) %></a></div>';
+            <% } %>
+        <% }) %>
+        data += '</div>'
+        data += '</div>'
+    <% } %>
+<% } %>

@@ -1,0 +1,52 @@
+<select name="fake-<%= key %>" data-placeholder="Select items"
+        id="fake-form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %> multiple>
+</select>
+<textarea name="<%= key %>" id="form-<%= key %>" cols="30" rows="10" hidden></textarea>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let choices = []
+        <% for (let opt of field.config.records) { %>
+        choices.push({
+            label: '<%- field.config.displayModifier && typeof field.config.displayModifier === 'function'
+                    ? field.config.displayModifier(opt)
+                    : (field.config.displayField ? opt[field.config.displayField] : opt[field.config.identifierField]); %>',
+            value: '<%= opt[field.config.identifierField] %>',
+            selected: <%- viewsHelper.isOptionSelected(opt[field.config.identifierField], value) %>
+        })
+        <% } %>
+        const textData = document.getElementById('form-<%= key %>')
+
+        for (const choice of choices) {
+            textData.value += choice.value
+        }
+        function createStringFromArray(arr) {
+            const filteredArray = arr.filter(obj => obj.selected === true && obj.value !== undefined);
+            const valuesArray = filteredArray.map(obj => obj.value);
+            return valuesArray.join(',');
+        }
+        textData.value = createStringFromArray(choices);
+        const assoc = new Choices('#fake-form-<%= key %>', {
+            choices: choices,
+            removeItemButton: true
+        });
+
+        function toggleNumberInString(str, num) {
+            let numbers = str.split(',').filter(Boolean);
+            const index = numbers.indexOf(num.toString());
+            if (index !== -1) {
+                numbers.splice(index, 1);
+            } else {
+                numbers.push(num.toString());
+            }
+            return numbers.join(',');
+        }
+
+        assoc.passedElement.element.addEventListener(
+            'change',
+            function(event) {
+                textData.value = toggleNumberInString(textData.value, event.detail.value)
+            },
+            false,
+        );
+    })
+</script>

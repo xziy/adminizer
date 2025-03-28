@@ -1,0 +1,35 @@
+<textarea
+    <%= field.config.required && 'required' %>
+        <%= field.config.disabled && 'disabled' %>
+    name="<%= key %>"
+    id="form-<%= key %>" hidden><%- JSON.stringify(value) %></textarea>
+
+<div id="handsontable-<%= key %>" style="height: 500px;"></div>
+<% if (field.config.options.language) { %>
+    <script src="<%- config.routePrefix %>/assets/handsontable/dist/languages/<%= field.config.options.language %>.js"></script>
+<% } else if (config.translation && config.translation.defaultLocale) { %>
+    <script src="<%- config.routePrefix %>/assets/handsontable/dist/languages/<%= config.translation.defaultLocale.toLowerCase() %>-<%= config.translation.defaultLocale.toUpperCase() %>.js"></script>
+<% } %>
+
+<script>
+  let data<%= key %> = document.getElementById('form-<%= key %>').value;
+  if (data<%= key %>) {
+    data<%= key %> = JSON.parse(data<%= key %>);
+  } else {
+    data<%= key %> = [];
+  }
+
+  let container<%= key %> = document.getElementById('handsontable-<%= key %>');
+  <% if (!field.config.options.language && config.translation && config.translation.defaultLocale) { %>
+  <% field.config.options.language = `${config.translation.defaultLocale.toLowerCase()}-${config.translation.defaultLocale.toUpperCase()}` %>
+  <% } %>
+
+  let options<%= key %> = <%- JSON.stringify(field.config.options) %>;
+
+  if (options<%= key %>.height === 'auto') options<%= key %>.height = 500;
+
+  apTables['<%= key %>'] = new Handsontable(container<%= key %>, {
+    data: data<%= key %>,
+    ...options<%= key %>
+  });
+</script>
