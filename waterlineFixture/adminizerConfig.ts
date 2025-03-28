@@ -1,4 +1,6 @@
-const models = {
+import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
+
+const models: AdminpanelConfig["models"] = {
     example: {
         title: 'Exapmle Form example from file',
         model: 'example',
@@ -43,6 +45,7 @@ const models = {
         icon: 'inbox'
     },
 };
+
 export default {
     routePrefix: "/adminizer",
     // routePrefix: "/admin",
@@ -65,12 +68,12 @@ export default {
     },
     navbar: {
         additionalLinks: [{
-                id: 4,
-                link: '/adminizer/form/global',
-                title: 'Global Settings',
-                icon: 'build',
-                accessRightsToken: 'read-global-form'
-            }]
+            id: 4,
+            link: '/adminizer/form/global',
+            title: 'Global Settings',
+            icon: 'build',
+            accessRightsToken: 'read-global-form'
+        }]
     },
     sections: [
         {
@@ -151,7 +154,7 @@ export default {
     },
     models: models,
     generator: {},
-    globalSettings: {
+    globalSettings: { // Global project settings
         enableMigrations: true
     },
     migrations: {

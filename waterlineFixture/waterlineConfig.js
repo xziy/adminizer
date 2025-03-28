@@ -1,5 +1,6 @@
+// @ts-ignore
 import sailsDisk from "sails-disk";
-
+// import sailsPostgresql from "sails-postgresql";
 const config = {
     adapters: {
         disk: sailsDisk,
@@ -9,7 +10,7 @@ const config = {
         default: {
             adapter: "disk",
             // adapter: "postgres",
-            // @ts-ignore
+            // // @ts-ignore
             // url: "postgresql://user:password@localhost:5432/mydatabase",
             // ssl: false
         }

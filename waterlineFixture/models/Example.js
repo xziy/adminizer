@@ -7,9 +7,7 @@ const Example = Waterline.Collection.extend({
         // @ts-ignore
         id: { type: "number", autoMigrations: { autoIncrement: true } },
         title: { type: "string" },
-        owner: { model: "test" },
-        gallery: { type: "json" },
-        files: { type: "json" }
+        // owner: { model: "test" },
     }
 });
 export default Example;

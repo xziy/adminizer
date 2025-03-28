@@ -6,11 +6,9 @@ const Example = Waterline.Collection.extend({
 	primaryKey: "id",
 	attributes: {
 		// @ts-ignore
-		id: { type: "number", autoMigrations: { autoIncrement: true }, primaryKey: true },
+		id: { type: "number", autoMigrations: { autoIncrement: true } },
 		title: { type: "string" },
-		owner: { model: "test" },
-		gallery: { type: "json" },
-		files: { type: "json" }
+		// owner: { model: "test" },
 	}
 });
 

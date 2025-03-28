@@ -13,14 +13,6 @@ declare const _default: {
                     tooltip: string;
                     description: string;
                 };
-                gallery: {
-                    title: string;
-                    type: string;
-                    options: {
-                        accepted: string[];
-                        filesize: number;
-                    };
-                };
             };
         };
     };

@@ -1,3 +1,3 @@
-import { WaterlineConfig } from "waterline";
-declare const config: WaterlineConfig;
+import { Config } from "waterline";
+declare const config: Config;
 export default config;
