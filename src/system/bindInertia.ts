@@ -67,4 +67,21 @@ export function bindInertia(adminizer: Adminizer) {
         })
         next();
     })
+
+    // TODO : remove this, this adds a user for the test
+    adminizer.app.use((req, _, next) => {
+        req.Inertia.shareProps({
+            auth: {
+                user: {
+                    id: 1,
+                    name: "admin",
+                    email: "email@email.com",
+                    email_verified_at: null,
+                    created_at: '1742921933',
+                    updated_at: '1742921933',
+                }
+            }
+        })
+        next();
+    })
 }
