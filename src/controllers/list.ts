@@ -18,8 +18,12 @@ export default async function list(req: ReqType, res: ResType) {
   let dataAccessor = new DataAccessor(req, entity, "list");
   let fields = dataAccessor.getFieldsConfig();
 
-  res.viewAdmin(null,{
-    entity: entity,
-    fields: fields,
-  });
+  // res.viewAdmin(null,{
+  //   entity: entity,
+  //   fields: fields,
+  // });
+    return req.Inertia.render({
+        component: 'list',
+        props: null
+    });
 }

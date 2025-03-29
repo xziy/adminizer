@@ -23,7 +23,7 @@ export async function resolvePageComponent<T>(path: string | string[], pages: Re
 
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({el, App, props}) {
         const root = createRoot(el);

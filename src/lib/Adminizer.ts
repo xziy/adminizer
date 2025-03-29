@@ -130,13 +130,9 @@ export class Adminizer {
         // bindResFunctions(this);
         bindReqFunctions(this);
 
-        // bind Inertia
-        bindInertia(this);
-
         // add install stepper policy to check unfilled settings
-        bindInstallStepper(this);
+        // bindInstallStepper(this);
 
-        await Router.bind(this); // must be after binding policies and req/res functions
 
         // Bind assets
         bindAssets(this.app);
@@ -155,13 +151,18 @@ export class Adminizer {
 
         await bindAuthorization(this);
 
-        bindViewsLocals(this); // must be after setting all helpers that binds in here
+        // bindViewsLocals(this); // must be after setting all helpers that binds in here
 
         if (I18n.appendLocale) {
             bindTranslations(this);
         } else {
             this.config.translation = false
         }
+
+        // bind Inertia
+        bindInertia(this);
+
+        await Router.bind(this); // must be after binding policies and req/res functions
 
         /**
          * Adminizer loaded

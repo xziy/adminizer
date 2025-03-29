@@ -2,6 +2,9 @@ import { AbstractModel } from "../lib/v4/model/AbstractModel";
 import {ModelConfig} from "./adminpanelConfig";
 import { Inertia } from '../lib/inertia/inertiaAdapter';
 import { Flash } from '../lib/inertia/flash';
+import {Adminizer} from "../lib/Adminizer";
+import multer from "multer";
+import {I18n} from "../lib/v4/I18n";
 
 export type EntityType = "form" | "model" | "wizard";
 export interface Entity {
@@ -22,10 +25,18 @@ export interface AccessRightsToken {
 
 type FlashMessages = 'info' | 'error' | 'success' | string;
 
+
 declare module 'express-serve-static-core' {
     interface Request {
         Inertia: Inertia;
         flash: Flash<FlashMessages>;
+        _parsedUrl: {
+            pathname: string
+        }
+        setLocale: (locale: string) => void
+        adminizer: Adminizer
+        upload: (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => multer.Multer
+        i18n: I18n
     }
 }
 

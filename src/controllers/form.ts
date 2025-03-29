@@ -67,5 +67,9 @@ export default async function form(req: ReqType, res: ResType) {
 		}
 	}
 
-	res.viewAdmin("form", {formData: form, slug: slug});
+	// res.viewAdmin("form", {formData: form, slug: slug});
+    return req.Inertia.render({
+        component: 'form',
+        props: null
+    });
 }

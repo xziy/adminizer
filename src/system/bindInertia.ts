@@ -4,6 +4,7 @@ import stringify from "json-stable-stringify";
 import fs from "fs";
 import path from "node:path";
 import {Adminizer} from "../lib/Adminizer";
+import {InertiaMenuHelper} from "../helpers/inertiaMenuHelper";
 
 export function bindInertia(adminizer: Adminizer) {
 
@@ -18,7 +19,9 @@ export function bindInertia(adminizer: Adminizer) {
                 window.__vite_plugin_react_preamble_installed__ = true
             </script>
             <script type="module" src="/@vite/client"></script>
-            <script type="module" src="/src/assets/js/app.tsx"></script>`
+            <script type="module" src="/src/assets/js/app.tsx"></script>
+            <script>window.routePrefix = "${adminizer.config.routePrefix}"</script>
+            `
         } else {
             const manifestPath = path.resolve(import.meta.dirname, './dist/manifest.json');
             if (!fs.existsSync(manifestPath)) {
@@ -60,28 +63,40 @@ export function bindInertia(adminizer: Adminizer) {
         })
     );
 
-    // set locale
+
     adminizer.app.use((req, _, next) => {
+        let locale: string = ""
+
+        if (typeof req.adminizer.config.translation !== 'boolean') {
+            locale = req.adminizer.config.translation.defaultLocale
+        }
+        if (!req.adminizer.config.auth) {
+            if (req.session.UserAP) {
+                req.session.UserAP.isAdministrator = true;
+            } else {
+                req.session.UserAP = {
+                    id: 0,
+                    isAdministrator: true,
+                    locale: locale,
+                    login: "admin",
+                    email: "email@email.com",
+                }
+            }
+        }
         req.Inertia.setViewData({
             lang: req.session.UserAP?.locale || 'en',
         })
-        next();
-    })
 
-    // TODO : remove this, this adds a user for the test
-    adminizer.app.use((req, _, next) => {
+        const menuHelper = new InertiaMenuHelper(adminizer)
+
         req.Inertia.shareProps({
             auth: {
-                user: {
-                    id: 1,
-                    name: "admin",
-                    email: "email@email.com",
-                    email_verified_at: null,
-                    created_at: '1742921933',
-                    updated_at: '1742921933',
-                }
-            }
+                user: req.session.UserAP
+            },
+            menu: menuHelper.getMenuItems(req),
+            brand: menuHelper.getBrandTitle(),
         })
+
         next();
     })
 }

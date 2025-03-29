@@ -4,9 +4,8 @@ export default function (req: ReqType, res: ResType) {
     }
 
     // return res.viewAdmin('dashboard', {entity: "entity"});
-    req.flash.setFlashMessage('success', 'User created successfully');
     return req.Inertia.render({
         component: 'dashboard',
-        props: null, url: '/', version: '1'
+        props: null
     });
 };

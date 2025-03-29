@@ -12,8 +12,8 @@ export type Options = {
 export type Page = {
     readonly component: string;
     props: props;
-    readonly url: string;
-    readonly version: string;
+    readonly url?: string;
+    readonly version?: string;
 };
 export type Inertia = {
     readonly setViewData: (viewData: props) => Inertia;

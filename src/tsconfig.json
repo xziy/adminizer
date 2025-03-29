@@ -17,7 +17,7 @@
 		"lib": ["dom", "esnext"],
 		"rootDir": "./",
 		"baseUrl": "./",
-		"outDir": "../dist"
+		"outDir": "../dist",
 	},
 	"ts-node": {
 		"esm": true,

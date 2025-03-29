@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import {MenuItem} from "../../../helpers/menuHelper"
 
 export interface Auth {
     user: User;
@@ -14,27 +15,26 @@ export interface NavGroup {
     items: NavItem[];
 }
 
-export interface NavItem {
-    title: string;
-    href: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-}
+export interface NavItem extends MenuItem {}
 
 export interface SharedData {
     name: string;
-    quote: { message: string; author: string };
+    menu: MenuItem[];
+    brand: string
     auth: Auth;
     [key: string]: unknown;
 }
 
 export interface User {
     id: number;
-    name: string;
+    login: string;
     email: string;
     avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
     [key: string]: unknown;
+}
+
+declare global {
+    interface Window {
+        routePrefix: string;
+    }
 }

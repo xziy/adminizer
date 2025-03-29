@@ -5,11 +5,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 ];
 
-export default function Dashboard() {
+export default function Form() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                Dashboard
+                Form
             </div>
         </AppLayout>
     );
