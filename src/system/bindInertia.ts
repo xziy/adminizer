@@ -67,10 +67,10 @@ export function bindInertia(adminizer: Adminizer) {
     adminizer.app.use((req, _, next) => {
         let locale: string = ""
 
-        if (typeof req.adminizer.config.translation !== 'boolean') {
-            locale = req.adminizer.config.translation.defaultLocale
+        if (typeof adminizer.config.translation !== 'boolean') {
+            locale = adminizer.config.translation.defaultLocale
         }
-        if (!req.adminizer.config.auth) {
+        if (!adminizer.config.auth) {
             if (req.session.UserAP) {
                 req.session.UserAP.isAdministrator = true;
             } else {

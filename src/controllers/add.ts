@@ -126,10 +126,14 @@ export default async function add(req: ReqType, res: ResType) {
 			data: data
 		});
 	} else {
-		return res.viewAdmin(null,{
-			entity: entity,
-			fields: fields,
-			data: data
-		});
+		// return res.viewAdmin(null,{
+		// 	entity: entity,
+		// 	fields: fields,
+		// 	data: data
+		// });
+        return req.Inertia.render({
+            component: 'add',
+            props: null
+        })
 	}
 };

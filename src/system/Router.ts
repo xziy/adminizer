@@ -112,9 +112,9 @@ export default class Router {
 				 */
 				if (typeof modelConfig === "boolean" && modelConfig === true) {
 					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by boolean true`)
-					adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
-					adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
-					adminizer.app.all(`/model/${model}/remove/:id`, adminizer.policyManager.bindPolicies(policies, _remove));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/remove/:id`, adminizer.policyManager.bindPolicies(policies, _remove));
 				} else if (typeof modelConfig !== "boolean") {
 					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by ModelConfig`)
 
@@ -125,12 +125,12 @@ export default class Router {
 						let addHandler = modelConfig.add as CreateUpdateConfig;
 						if (addHandler.controller) {
 							let controller = await import(addHandler.controller);
-							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
 						} else {
-							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
 						}
 					} else {
-						adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+						adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
 					}
 					/**
 					 * Edit existing record

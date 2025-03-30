@@ -15,6 +15,16 @@ export interface NavGroup {
     items: NavItem[];
 }
 
+export interface ColumnConfig {
+    config: {
+        title: string;
+    }
+}
+
+export interface Columns {
+    [key: string]: ColumnConfig;
+}
+
 export interface NavItem extends MenuItem {}
 
 export interface SharedData {

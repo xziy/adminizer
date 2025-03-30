@@ -32,6 +32,7 @@ import {AbstractAdapter} from "./v4/model/AbstractModel";
 import bindExpressUtils from "../system/bindExpressUtils";
 import {createServer as createViteServer, ViteDevServer} from 'vite';
 import {bindInertia} from "../system/bindInertia";
+import {MenuHelper} from "../helpers/menuHelper";
 
 export class Adminizer {
     app: Express
@@ -41,6 +42,7 @@ export class Adminizer {
     policyManager!: PolicyManager
     accessRightsHelper: AccessRightsHelper
     configHelper: ConfigHelper
+    menuHelper: MenuHelper
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
     vite: ViteDevServer
@@ -123,6 +125,8 @@ export class Adminizer {
         this.accessRightsHelper = new AccessRightsHelper(this);
 
         this.configHelper = new ConfigHelper(this);
+
+        this.menuHelper = new MenuHelper(this.config)
 
         this.widgetHandler = new WidgetHandler(this);
 

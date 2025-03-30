@@ -1,36 +1,20 @@
 "use client"
-
+import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table"
+import {Columns} from "@/types";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
-    id: string
-    amount: number
-    status: "pending" | "processing" | "success" | "failed"
-    email: string
+export function useTableColumns(initColumns: Columns): ColumnDef<any>[] {
+    return useMemo(() => {
+        return Object.keys(initColumns).map((key) => {
+            const column = initColumns[key];
+            return {
+                accessorKey: key,
+                header: () => (
+                    <div className="text-center">
+                        {column.config.title}
+                    </div>
+                )
+            } as ColumnDef<any>;
+        });
+    }, [initColumns]);
 }
-
-export const columns: ColumnDef<Payment>[] = [
-    {
-        accessorKey: "amount",
-        header: () => <div className="text-right">Amount</div>,
-        cell: ({ row }) => {
-            const amount = parseFloat(row.getValue("amount"))
-            const formatted = new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-            }).format(amount)
-
-            return <div className="text-right font-medium">{formatted}</div>
-        },
-    },
-    {
-        accessorKey: "id",
-        header: () => <div className="text-right">ID</div>,
-        cell: ({ row }) => {
-
-            return <div className="text-right font-medium">{row.getValue("id")}</div>
-        },
-    },
-]
