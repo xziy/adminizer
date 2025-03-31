@@ -39,7 +39,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
         flashMessages,
         enableReload = false,
     }) {
-    return (req, res, next) => {
+    return (req: ReqType, res, next) => {
         if (
             req.method === 'GET' &&
             req.headers[headers.xInertia] &&

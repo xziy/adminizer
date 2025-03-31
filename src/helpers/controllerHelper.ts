@@ -219,7 +219,6 @@ export class ControllerHelper {
             type: entityType,
             model: null
         };
-        console.log(entity)
         // If the entity type is "model", add additional properties
         if (entityType === "model") {
             // Find and add the model configuration to the entity

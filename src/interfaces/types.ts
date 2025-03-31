@@ -21,34 +21,3 @@ export interface AccessRightsToken {
     department: string
     id: string
 }
-
-
-type FlashMessages = 'info' | 'error' | 'success' | string;
-
-
-declare module 'express-serve-static-core' {
-    interface Request {
-        Inertia: Inertia;
-        flash: Flash<FlashMessages>;
-        _parsedUrl: {
-            pathname: string
-        }
-        setLocale: (locale: string) => void
-        adminizer: Adminizer
-        upload: (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => multer.Multer
-        i18n: I18n
-    }
-}
-
-declare module 'express-session' {
-    export interface SessionData {
-        flashMessages: Record<string, string[]>;
-        xInertiaCurrentComponent: string | undefined;
-        UserAP: ModelsAP["UserAP"]
-        messages: {
-            adminError: string[],
-            adminSuccess: string[]
-        }
-        adminPretender?: ModelsAP["UserAP"]
-    }
-}

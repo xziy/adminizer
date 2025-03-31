@@ -11,7 +11,7 @@ import MaterialIcon from "@/components/material-icon.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
-export interface ExtendedSharedData extends SharedData {
+interface ExtendedSharedData extends SharedData {
     data: {
         data: any[],
     }

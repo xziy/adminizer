@@ -21,6 +21,7 @@ import { catalogController } from "../controllers/catalog/Catalog";
 import { mediaManagerController } from "../controllers/media-manager/mediaManagerApi";
 import { thumbController } from "../controllers/media-manager/ThumbController";
 import {Adminizer} from "../lib/Adminizer";
+import timezones from "../controllers/timezones";
 
 
 export default class Router {
@@ -103,6 +104,8 @@ export default class Router {
 		 * List of records
 		 */
 		adminizer.app.all(baseRoute, adminizer.policyManager.bindPolicies(policies, _list));
+
+        adminizer.app.get(`${adminizer.config.routePrefix}/get-timezones`, adminizer.policyManager.bindPolicies(policies, timezones))
 
 		if (adminizer.config.models) {
 			for (let model in adminizer.config.models) {

@@ -23,7 +23,7 @@ const flash: FlashMiddleware = <FlashMessageType extends string = string>(
         initialize?: FlashMessageType[];
     } = {}
 ) => {
-    return async (req, _res, next) => {
+    return async (req: ReqType, _res, next) => {
         if (!req.session) {
             throw new Error(
                 'Koa flash requires a session middleware to be added before'

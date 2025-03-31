@@ -139,7 +139,7 @@ export class Adminizer {
 
 
         // Bind assets
-        bindAssets(this.app);
+        bindAssets(this.app, this.config.routePrefix);
 
         if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
             bindDev(this)

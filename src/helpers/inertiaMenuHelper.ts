@@ -7,7 +7,7 @@ export class InertiaMenuHelper {
         this.adminizer = adminizer
     }
 
-    public getMenuItems(req: Express.Request) {
+    public getMenuItems(req: ReqType) {
         let menu = []
         for (const menuItem of this.adminizer.menuHelper.getMenuItems()) {
             const menuItemTokens = menuItem.actions ? menuItem.actions.map(item => {
