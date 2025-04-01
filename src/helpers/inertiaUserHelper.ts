@@ -9,9 +9,14 @@ interface Field {
 }
 
 interface listProps {
-    back: {
+    edit: boolean;
+    view: boolean;
+    btnBack: {
         title: string;
         link: string;
+    },
+    btnSave: {
+        title: string;
     },
     postLink: string,
     head: string,
@@ -21,13 +26,18 @@ interface listProps {
     locales: Record<string, string>[],
 }
 
-export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP["GroupAP"][]) {
+export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP["GroupAP"][], user?: ModelsAP["UserAP"], view: boolean = false) {
     let props: listProps = {
-        back: {
+        edit: !!user,
+        view: view,
+        btnBack: {
             title: req.i18n.__('Back'),
             link: entity.uri
         },
-        postLink: `${entity.uri}/add`,
+        btnSave: {
+            title: req.i18n.__('Save')
+        },
+        postLink: user ? `${entity.uri}/edit/${user.id}` : `${entity.uri}/add`,
         head: req.i18n.__('User settings'),
         groupHead: req.i18n.__('User groups'),
         fields: [
@@ -35,25 +45,25 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
                 label: req.i18n.__('Login'),
                 type: 'text',
                 name: 'login',
-                value: ''
+                value: user?.login ?? ''
             },
             {
                 label: req.i18n.__('Full name'),
                 type: 'text',
                 name: 'fullName',
-                value: ''
+                value: user?.fullName ?? ''
             },
             {
                 label: req.i18n.__('E-mail'),
                 type: 'email',
                 name: 'email',
-                value: ''
+                value: user?.email ?? ''
             },
             {
                 label: req.i18n.__('Timezone'),
                 type: 'select',
                 name: 'timezone',
-                value: ''
+                value: user?.timezone ?? ''
             }
         ],
         groups: [],
@@ -72,7 +82,7 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
             label: req.i18n.__('Locale'),
             type: 'select',
             name: 'locale',
-            value: ''
+            value: user?.locale ?? ''
         })
     }
     if (req.session.UserAP.isAdministrator) {
@@ -80,26 +90,26 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
             label: req.i18n.__('Profile expires'),
             type: 'date',
             name: 'date',
-            value: ''
+            value: user?.expires ?? ''
         })
         props.fields.push({
             label: req.i18n.__('Is Administrator'),
             type: 'checkbox',
             name: 'isAdmin',
-            value: false
+            value: user?.isAdministrator ?? false
         })
         props.fields.push({
             label: req.i18n.__('Is confirmed'),
             type: 'checkbox',
             name: 'isConfirmed',
-            value: false
+            value: user?.isConfirmed ?? false
         })
     }
     props.fields.push({
         label: req.i18n.__('Password'),
         type: 'password',
         name: 'userPassword',
-        tooltip: req.i18n.__('Leave this field empty if you don&apos;t want to change the password'),
+        tooltip: req.i18n.__("Leave this field empty if you don't want to change the password"),
         value: ''
     })
     props.fields.push({
@@ -109,12 +119,18 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
         value: ''
     })
     if (!req.session.UserAP.isAdministrator && groups.length) {
+        let userGroupsIds: number[] = []
+        if (user) {
+            userGroupsIds = user.groups.map((group) => {
+                return group.id
+            })
+        }
         for (let group of groups) {
             props.groups.push({
                 label: group.name,
                 type: 'checkbox',
                 name: `group-checkbox-${group.id}`,
-                value: false
+                value: userGroupsIds.includes(group.id)
             })
         }
     }

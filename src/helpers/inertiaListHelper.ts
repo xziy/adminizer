@@ -1,31 +1,54 @@
 import {Entity} from "../interfaces/types";
 import {Fields} from "./fieldsHelper";
 
+type Action = {
+    title: string;
+    link: string;
+}
+
 interface listProps {
-    create: {
-        title: string;
-        link: string;
-    },
     actions: {
         link: string;
         id: string;
         title: string;
         icon: string;
-    }[]
+    }[],
+    thActionsTitle: string,
+    crudActions: {
+        createTitle: string;
+        editTitle: string;
+        viewsTitle: string;
+    }
+    entity: {
+        name: string;
+        uri: string
+    }
 }
 
 export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) {
     const actionType = 'list';
     let props = {
-        create: {},
-        actions: []
+        thActionsTitle: req.i18n.__('Actions'),
+        actions: [],
+        crudActions: {
+            createTitle: '',
+            editTitle: '',
+            viewsTitle: ''
+        },
+        entity: {
+            name: entity.name,
+            uri: entity.uri
+        }
     } as listProps
 
     if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
-        props.create = {
-            title: req.i18n.__('create'),
-            link: `${entity.uri}/add`
-        }
+        props.crudActions.createTitle = req.i18n.__('create')
+    }
+    if (req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.session.UserAP)) {
+        props.crudActions.editTitle = req.i18n.__('Edit')
+    }
+    if (req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.session.UserAP)) {
+        props.crudActions.viewsTitle = req.i18n.__('Views')
     }
     if (req.adminizer.menuHelper.hasGlobalActions(entity.config, actionType)) {
         const actions = req.adminizer.menuHelper.getGlobalActions(entity.config, actionType)

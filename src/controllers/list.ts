@@ -41,7 +41,6 @@ export default async function list(req: ReqType, res: ResType) {
         if (err) {
             Adminizer.log.error(err);
         }
-
         return req.Inertia.render({
             component: 'list',
             props: {

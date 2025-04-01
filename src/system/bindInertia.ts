@@ -1,6 +1,5 @@
 import flash from "../lib/inertia/flash";
 import inertia, {Page} from "../lib/inertia/inertiaAdapter";
-import stringify from "json-stable-stringify";
 import fs from "fs";
 import path from "node:path";
 import {Adminizer} from "../lib/Adminizer";
@@ -78,7 +77,12 @@ export function bindInertia(adminizer: Adminizer) {
             ${viteRender()}
             </head>
         <body>
-            <div id="app" data-page='${stringify(page)}'></div>
+            <div id="app" data-page='${JSON.stringify(page)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")}'></div>
         </body>
         </html>
         `;

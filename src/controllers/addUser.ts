@@ -21,12 +21,13 @@ export default async function (req: ReqType, res: ResType) {
         Adminizer.log.error(e)
     }
 
+    let user: ModelsAP["UserAP"];
+
     if (req.method.toUpperCase() === 'POST') {
         // console.log(req.body);
-
         let userGroups = [];
         for (let key in req.body) {
-            if (key.startsWith("group-checkbox-") && req.body[key] === "on") {
+            if (key.startsWith("group-checkbox-") && req.body[key] === true) {
                 for (let group of groups) {
                     if (group.id == parseInt(key.slice(15))) {
                         userGroups.push(group.id)
@@ -35,16 +36,14 @@ export default async function (req: ReqType, res: ResType) {
             }
         }
 
-        let isAdministrator = req.body.isAdmin === "on";
-        let isConfirmed = req.body.isConfirmed === "on";
+        let isAdministrator = req.body.isAdmin === true;
+        let isConfirmed = req.body.isConfirmed === true;
 
         let locale: string
         if (typeof req.adminizer.config.translation !== "boolean") {
             locale = req.body.locale === 'default' ? req.adminizer.config.translation.defaultLocale : req.body.locale;
         }
 
-
-        let user: ModelsAP["UserAP"];
         try {
             let passwordHashed = generate(req.body.login + req.body.userPassword);
             let password = 'masked';
@@ -55,8 +54,13 @@ export default async function (req: ReqType, res: ResType) {
                 locale: locale, isAdministrator: isAdministrator, isConfirmed: isConfirmed, groups: userGroups
             })
             Adminizer.log.debug(`A new user was created: `, user);
-            req.session.messages.adminSuccess.push('A new user was created !');
-            return res.redirect(`${req.adminizer.config.routePrefix}/model/userap`);
+
+            // req.session.messages.adminSuccess.push('A new user was created !');
+            // return res.redirect(`${req.adminizer.config.routePrefix}/model/userap`);
+
+            req.flash.setFlashMessage('success', 'A new user was created !');
+            return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap`)
+
         } catch (e) {
             Adminizer.log.error(e);
             req.session.messages.adminError.push(e.message || 'Something went wrong...');

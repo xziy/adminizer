@@ -150,6 +150,9 @@ export class DataAccessor {
                 case "list":
                     actionSpecificConfig = modelConfig['list']?.fields || {};
                     break;
+                case "view":
+                    actionSpecificConfig = modelConfig['edit']?.fields || {};
+                    break;
                 default:
                     throw `Action type error: unknown type [${this.action}]`
             }
@@ -223,6 +226,11 @@ export class DataAccessor {
         }
 
         const filteredRecord: Partial<T> = {};
+
+        // Set the primary key value
+        const primaryKey = (this.entity.model.primaryKey ?? 'id') as keyof T;
+        filteredRecord[primaryKey] = record[primaryKey];
+
         for (const fieldKey in record) {
             const fieldConfig = this.fields[fieldKey];
             const fieldValue = record[fieldKey];

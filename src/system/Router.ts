@@ -142,12 +142,12 @@ export default class Router {
 						let editHandler = modelConfig.edit as CreateUpdateConfig;
 						if (editHandler.controller) {
 							let controller = await import(editHandler.controller);
-							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
 						} else {
-							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
 						}
 					} else {
-						adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+						adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
 					}
 				} else {
 					Adminizer.log.silly(`Adminpanel skip create CRUD routes for model: ${model}`)

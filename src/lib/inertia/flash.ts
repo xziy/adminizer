@@ -4,7 +4,7 @@ export interface Flash<FlashMessageType extends string = string> {
     setFlashMessage: (type: FlashMessageType, message: string) => number;
     setFlashMessages: (type: FlashMessageType, message: string[]) => number;
     flash: (type: FlashMessageType) => string[];
-    flashAll: () => Record<FlashMessageType, string[]>;
+    flashAll: () => {flash: Record<FlashMessageType, string[]>};
 }
 
 export type FlashMiddleware = <FlashMessageType extends string>(options?: {
@@ -95,7 +95,7 @@ const flash: FlashMiddleware = <FlashMessageType extends string = string>(
                 const messagesRecord: MessagesRecord = req.session!.flashMessages || {};
 
                 delete req.session!.flashMessages;
-                return messagesRecord;
+                return {flash: messagesRecord};
             }
         }
 

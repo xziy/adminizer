@@ -27,10 +27,13 @@ export interface Columns {
 
 export interface NavItem extends MenuItem {}
 
+type FlashMessages = 'info' | 'error' | 'success' | string;
+
 export interface SharedData {
     name: string;
     menu: MenuItem[];
     brand: string
+    flash: Record<FlashMessages, string>;
     auth: Auth;
     [key: string]: unknown;
 }

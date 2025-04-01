@@ -209,24 +209,71 @@ export class NodeTable {
         }
     }
 
+    // mapData(data: { [key: string]: any }): object[] {
+    //     let out: object[] = [];
+    //     data.forEach((elem: any) => {
+    //         let row: any = [elem[this.model.primaryKey ?? 'id']];
+    //         Object.keys(this.fields).forEach((key: string) => {
+    //             let fieldConfigConfig = this.fields[key].config as BaseFieldConfig;
+    //             if (fieldConfigConfig.displayModifier) {
+    //                 row.push(fieldConfigConfig.displayModifier(elem[key]));
+    //             } else if (this.fields[key].model && this.fields[key].model.model) {
+    //                 // Обработка связей типа "belongsTo"
+    //                 if (!elem[key]) {
+    //                     row.push(null);
+    //                 } else {
+    //                     row.push(elem[key][fieldConfigConfig.displayField]);
+    //                 }
+    //             } else if (this.fields[key].model.type === "association-many" || this.fields[key].model.type === "association") {
+    //                 if (!elem[key] || elem[key].length === 0) {
+    //                     row.push(null);
+    //                 } else {
+    //                     let displayValues: string[] = [];
+    //                     elem[key].forEach((item: any) => {
+    //                         if (item[fieldConfigConfig.displayField]) {
+    //                             displayValues.push(item[fieldConfigConfig.displayField]);
+    //                         } else {
+    //                             displayValues.push(item[fieldConfigConfig.identifierField]);
+    //                         }
+    //                     });
+    //                     row.push(displayValues.join(', '));
+    //                 }
+    //
+    //             } else if (this.fields[key].model.type === "json") {
+    //                 let str = JSON.stringify(elem[key]);
+    //                 row.push(str === "{}" ? "" : str);
+    //             } else {
+    //                 row.push(elem[key]);
+    //             }
+    //         });
+    //         out.push(row);
+    //     });
+    //
+    //     return out;
+    // }
     mapData(data: { [key: string]: any }): object[] {
         let out: object[] = [];
         data.forEach((elem: any) => {
-            let row: any = [elem[this.model.primaryKey ?? 'id']];
+            let row: any = {};
+            // Add primary key first
+            row[this.model.primaryKey ?? 'id'] = elem[this.model.primaryKey ?? 'id'];
             Object.keys(this.fields).forEach((key: string) => {
                 let fieldConfigConfig = this.fields[key].config as BaseFieldConfig;
+
+                let fieldName = key;
+
                 if (fieldConfigConfig.displayModifier) {
-                    row.push(fieldConfigConfig.displayModifier(elem[key]));
+                    row[fieldName] = fieldConfigConfig.displayModifier(elem[key]);
                 } else if (this.fields[key].model && this.fields[key].model.model) {
-                    // Обработка связей типа "belongsTo"
+                    // Handle "belongsTo" relationships
                     if (!elem[key]) {
-                        row.push(null);
+                        row[fieldName] = null;
                     } else {
-                        row.push(elem[key][fieldConfigConfig.displayField]);
+                        row[fieldName] = elem[key][fieldConfigConfig.displayField];
                     }
                 } else if (this.fields[key].model.type === "association-many" || this.fields[key].model.type === "association") {
                     if (!elem[key] || elem[key].length === 0) {
-                        row.push(null);
+                        row[fieldName] = null;
                     } else {
                         let displayValues: string[] = [];
                         elem[key].forEach((item: any) => {
@@ -236,14 +283,13 @@ export class NodeTable {
                                 displayValues.push(item[fieldConfigConfig.identifierField]);
                             }
                         });
-                        row.push(displayValues.join(', '));
+                        row[fieldName] = displayValues.join(', ');
                     }
-
                 } else if (this.fields[key].model.type === "json") {
                     let str = JSON.stringify(elem[key]);
-                    row.push(str === "{}" ? "" : str);
+                    row[fieldName] = str === "{}" ? "" : str;
                 } else {
-                    row.push(elem[key]);
+                    row[fieldName] = elem[key];
                 }
             });
             out.push(row);

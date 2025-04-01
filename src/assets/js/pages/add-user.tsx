@@ -2,11 +2,10 @@ import AppLayout from '@/layouts/app-layout';
 import {type BreadcrumbItem, SharedData} from '@/types';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Icon} from "@/components/icon.tsx";
-import {MoveLeft} from "lucide-react";
+import {LoaderCircle, MoveLeft, Info} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import InputError from '@/components/input-error';
 import {
     Select,
     SelectContent,
@@ -14,10 +13,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {useEffect, useState} from "react";
+import {FormEventHandler, useEffect, useState} from "react";
 import ky from 'ky';
 import {DatePicker} from "@/components/date-picker.tsx";
 import {Checkbox} from "@/components/ui/checkbox"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 interface Field {
     label: string;
@@ -28,9 +34,14 @@ interface Field {
 }
 
 interface AddUserProps extends SharedData {
-    back: {
+    edit: boolean;
+    view: boolean;
+    btnBack: {
         title: string;
         link: string;
+    },
+    btnSave: {
+        title: string;
     },
     postLink: string,
     head: string,
@@ -41,10 +52,10 @@ interface AddUserProps extends SharedData {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [];
-
 export default function AddUser() {
     const page = usePage<AddUserProps>()
     const [timezones, setTimezones] = useState<Record<string, string>[]>()
+
     const {fields, groups} = page.props;
     const initialFormData = {
         ...Object.fromEntries(fields.map(field => [field.name, field.value])),
@@ -54,10 +65,8 @@ export default function AddUser() {
     const {
         data,
         setData,
-        //post,
+        post,
         processing,
-        errors,
-        //reset
     } = useForm<Required<Record<string, string | boolean | Date | Record<string, string>[]>>>(initialFormData);
 
     useEffect(() => {
@@ -74,17 +83,21 @@ export default function AddUser() {
         return page.props.fields.find(field => field.name === name);
     }
 
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(page.props.postLink);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Button className="mb-3 w-fit" asChild>
-                    <Link href={page.props.back.link}>
+                    <Link href={page.props.btnBack.link}>
                         <Icon iconNode={MoveLeft}/>
-                        {page.props.back.title}
+                        {page.props.btnBack.title}
                     </Link>
                 </Button>
-                <form id="addUserForm" action={page.props.postLink} method="POST">
+                <form id="addUserForm" onSubmit={submit} className={`${page.props.view ? 'pointer-events-none opacity-60' : ''}`}>
                     <div className="flex flex-col gap-10 max-w-[1144px]">
                         <h2 className="font-bold text-xl">{page.props.head}</h2>
                         <div className="flex gap-16">
@@ -102,7 +115,6 @@ export default function AddUser() {
                                         disabled={processing}
                                         placeholder={getField('login')?.label}
                                     />
-                                    <InputError message={errors.name} className="mt-2"/>
                                 </div>
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('fullName')?.name}>{getField('fullName')?.label}</Label>
@@ -117,7 +129,6 @@ export default function AddUser() {
                                         disabled={processing}
                                         placeholder={getField('fullName')?.label}
                                     />
-                                    <InputError message={errors.name} className="mt-2"/>
                                 </div>
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('email')?.name}>{getField('email')?.label}</Label>
@@ -132,13 +143,13 @@ export default function AddUser() {
                                         disabled={processing}
                                         placeholder={getField('email')?.label}
                                     />
-                                    <InputError message={errors.name} className="mt-2"/>
                                 </div>
                             </div>
                             <div className="basis-1/2 flex flex-col gap-6">
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('timezone')?.name}>{getField('timezone')?.label}</Label>
-                                    <Select onValueChange={(value) => setData('timezone', value)}>
+                                    <Select onValueChange={(value) => setData('timezone', value)}
+                                            defaultValue={data.timezone as string}>
                                         <SelectTrigger className="w-full cursor-pointer">
                                             <SelectValue placeholder={getField('timezone')?.name}/>
                                         </SelectTrigger>
@@ -155,7 +166,7 @@ export default function AddUser() {
                                         <div className="grid gap-4">
                                             <Label htmlFor={getField('date')?.name}>{getField('date')?.label}</Label>
                                             <DatePicker onSelect={(data) => setData('date', data as Date)}
-                                                        selected={data.date as Date}/>
+                                                        selected={data.date ? new Date(data.date as string) : new Date()}/>
                                         </div>
                                     )}
                                     <div className="flex gap-6">
@@ -188,7 +199,8 @@ export default function AddUser() {
                                 {getField('locale') && (
                                     <div className="grid gap-4">
                                         <Label htmlFor={getField('locale')?.name}>{getField('locale')?.label}</Label>
-                                        <Select onValueChange={(value) => setData('locale', value)}>
+                                        <Select onValueChange={(value) => setData('locale', value)}
+                                                defaultValue={data.locale as string}>
                                             <SelectTrigger className="w-full cursor-pointer">
                                                 <SelectValue placeholder={getField('locale')?.name}/>
                                             </SelectTrigger>
@@ -203,11 +215,78 @@ export default function AddUser() {
                                 )}
                             </div>
                         </div>
+                        <div className="flex gap-3">
+                            <label className="font-bold text-xl">{getField('userPassword')?.label}</label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Icon iconNode={Info} className="text-primary w-5 h-5 cursor-pointer"/>
+                                    </TooltipTrigger>
+                                    <TooltipContent align="center" side="right">
+                                        <p>{getField('userPassword')?.tooltip}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                        <div className="grid grid-cols-2 grid-rows-2 gap-x-16 gap-y-6">
+                            <div className="grid gap-4 col-span-1">
+                                <Label
+                                    htmlFor={getField('userPassword')?.name}>{getField('userPassword')?.label}</Label>
+                                <Input
+                                    id={getField('userPassword')?.name}
+                                    type="password"
+                                    required={!page.props.edit}
+                                    tabIndex={1}
+                                    autoComplete={getField('userPassword')?.name}
+                                    value={data.password as string}
+                                    onChange={(e) => setData('userPassword', e.target.value)}
+                                    disabled={processing}
+                                    placeholder={getField('userPassword')?.label}
+                                />
+                            </div>
+                            <div className="grid gap-4 col-span-1 col-start-1">
+                                <Label
+                                    htmlFor={getField('repeatUserPassword')?.name}>{getField('repeatUserPassword')?.label}</Label>
+                                <Input
+                                    id={getField('repeatUserPassword')?.name}
+                                    type="password"
+                                    required={!page.props.edit}
+                                    tabIndex={1}
+                                    autoComplete={getField('repeatUserPassword')?.name}
+                                    value={data.repeatUserPassword as string}
+                                    onChange={(e) => setData('repeatUserPassword', e.target.value)}
+                                    disabled={processing}
+                                    placeholder={getField('repeatUserPassword')?.label}
+                                />
+                            </div>
+                        </div>
+                        {page.props.groups.length > 0 && (
+                            <>
+                                <h2 className="font-bold text-xl">{page.props.groupHead}</h2>
+                                <div className="flex flex-col">
+                                    {page.props.groups.map(group => (
+                                        <div className="grid gap-4">
+                                            <Label className="cursor-pointer"
+                                                   htmlFor={group.name}>{group.label}</Label>
+                                            <Checkbox
+                                                id={group.name}
+                                                className="cursor-pointer size-5"
+                                                checked={false}
+                                                onCheckedChange={() => {
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                        <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
+                                disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                            {page.props.btnSave.title}
+                        </Button>
                     </div>
                 </form>
-                <pre>
-                {JSON.stringify(data, null, 2)}
-                </pre>
             </div>
         </AppLayout>
     );
