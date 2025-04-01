@@ -8,7 +8,7 @@ interface Field {
     value: string | boolean | Record<string, string>[];
 }
 
-interface listProps{
+interface listProps {
     back: {
         title: string;
         link: string;
@@ -18,6 +18,7 @@ interface listProps{
     groupHead: string,
     fields: Field[]
     groups: Field[]
+    locales: Record<string, string>[],
 }
 
 export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP["GroupAP"][]) {
@@ -53,17 +54,20 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
                 type: 'select',
                 name: 'timezone',
                 value: ''
-            },
-            {
-                label: req.i18n.__('Profile expires'),
-                type: 'date',
-                name: 'date',
-                value: ''
-            },
+            }
         ],
-        groups: []
+        groups: [],
+        locales: []
     }
     if (req.adminizer.config.translation) {
+        let locales: Record<string, string>[] = []
+        for (let locale of req.adminizer.config.translation.locales) {
+            locales.push({
+                label: locale,
+                value: locale
+            })
+        }
+        props.locales = locales
         props.fields.push({
             label: req.i18n.__('Locale'),
             type: 'select',
@@ -72,6 +76,12 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
         })
     }
     if (req.session.UserAP.isAdministrator) {
+        props.fields.push({
+            label: req.i18n.__('Profile expires'),
+            type: 'date',
+            name: 'date',
+            value: ''
+        })
         props.fields.push({
             label: req.i18n.__('Is Administrator'),
             type: 'checkbox',
