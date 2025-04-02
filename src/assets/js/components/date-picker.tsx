@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover"
 
 interface DatePickerProps {
-    selected: Date
+    selected?: Date
     onSelect: (date?: Date) => void
     placeholder?: string
     className?: string

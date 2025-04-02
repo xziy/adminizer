@@ -18,7 +18,14 @@ interface listProps {
         createTitle: string;
         editTitle: string;
         viewsTitle: string;
-    }
+        deleteTitle: string
+    },
+    delModal: {
+        yes: string,
+        no: string
+        text: string
+    },
+    notFoundContent: string,
     entity: {
         name: string;
         uri: string
@@ -33,12 +40,19 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
         crudActions: {
             createTitle: '',
             editTitle: '',
-            viewsTitle: ''
+            viewsTitle: '',
+            deleteTitle: ''
         },
         entity: {
             name: entity.name,
             uri: entity.uri
-        }
+        },
+        delModal: {
+            yes: req.i18n.__('Yes'),
+            no: req.i18n.__('No'),
+            text: req.i18n.__('Are you sure?')
+        },
+        notFoundContent: req.i18n.__('No records found !')
     } as listProps
 
     if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
@@ -48,7 +62,10 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
         props.crudActions.editTitle = req.i18n.__('Edit')
     }
     if (req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.session.UserAP)) {
-        props.crudActions.viewsTitle = req.i18n.__('Views')
+        props.crudActions.viewsTitle = req.i18n.__('View')
+    }
+    if (req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.session.UserAP)) {
+        props.crudActions.deleteTitle = req.i18n.__('Delete')
     }
     if (req.adminizer.menuHelper.hasGlobalActions(entity.config, actionType)) {
         const actions = req.adminizer.menuHelper.getGlobalActions(entity.config, actionType)

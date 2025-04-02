@@ -18,6 +18,7 @@ import {
 import {useEffect} from "react";
 import {toast} from "sonner";
 import { Toaster } from "@/components/ui/sonner"
+import DeleteModal from "@/components/modals/del-modal.tsx";
 
 
 const breadcrumbs: BreadcrumbItem[] = [];
@@ -39,10 +40,17 @@ interface ExtendedSharedData extends SharedData {
             createTitle: string;
             editTitle: string;
             viewsTitle: string;
+            deleteTitle: string;
         },
         entity: {
             name: string;
             uri: string
+        },
+        notFoundContent: string,
+        delModal: {
+            yes: string,
+            no: string
+            text: string
         }
     }
 }
@@ -63,11 +71,11 @@ export default function List() {
                     <div className="text-center">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="cursor-pointer">
+                                <Button variant="outline" size="icon">
                                     <BetweenHorizontalStart/>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-36" side="right">
+                            <DropdownMenuContent className="w-46" side="right" align="start">
                                 <DropdownMenuGroup>
                                     {page.props.header.crudActions?.editTitle && (
                                         <DropdownMenuItem asChild className="cursor-pointer">
@@ -83,6 +91,11 @@ export default function List() {
                                                 <Icon iconNode={Eye}/>
                                                 {page.props.header.crudActions.viewsTitle}
                                             </Link>
+                                        </DropdownMenuItem>
+                                    )}
+                                    {page.props.header.crudActions?.deleteTitle && (
+                                        <DropdownMenuItem asChild className="cursor-pointer">
+                                            <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle} delModal={page.props.header.delModal} link={`${page.props.header.entity.uri}/remove/${row.original.id}`} />
                                         </DropdownMenuItem>
                                     )}
                                 </DropdownMenuGroup>
@@ -105,6 +118,20 @@ export default function List() {
                 toast.error(page.props.flash.error)
             }
         }
+
+        //Close dropdown menus when the page is hidden
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") {
+                // Find dropdown menus and close them
+                document.querySelectorAll('[data-state="open"]').forEach((el) => {
+                    el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+                });
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+
     }, [])
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -130,7 +157,7 @@ export default function List() {
                         )) || null}
                     </div>
                 </div>
-                <DataTable columns={columns} data={data.data}/>
+                <DataTable columns={columns} data={data.data} notFoundContent={page.props.header.notFoundContent}/>
             </div>
         </AppLayout>
     );

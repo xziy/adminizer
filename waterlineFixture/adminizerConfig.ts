@@ -149,7 +149,7 @@ export default {
     },
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
-        path: 'config/locales/adminpanel', // relative path to translations directory
+        path: 'config/locales', // relative path to translations directory
         defaultLocale: 'en'
     },
     models: models,

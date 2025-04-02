@@ -10,12 +10,12 @@ export function useTableColumns(initColumns: Columns): ColumnDef<any>[] {
             return {
                 accessorKey: key,
                 header: () => (
-                    <div className="text-center">
+                    <div className="text-center max-w-[300px]">
                         {column.config.title}
                     </div>
                 ),
                 cell: ({row}) => {
-                    return <div className="text-center">{row.getValue(key)?.toString()}</div>
+                    return <div className="text-center max-w-[300px] overflow-hidden text-ellipsis">{row.getValue(key)?.toString()}</div>
                 }
             } as ColumnDef<any>;
         });

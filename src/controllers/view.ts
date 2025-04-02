@@ -2,6 +2,8 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
+import {inertiaGroupHelpers} from "../helpers/inertiaGroupHelpers";
+import {AccessRightsToken} from "../interfaces/types";
 
 export default async function view(req: ReqType, res: ResType) {
     // Check id
@@ -43,13 +45,56 @@ export default async function view(req: ReqType, res: ResType) {
     //     record: record,
     //     fields: fields
     // });
-    if (entity.config.model === 'userap') {
-        let groups: ModelsAP["GroupAP"][];
-        const props = inertiaUserHelper(entity, req, groups, record, true)
-        return req.Inertia.render({
-            component: 'add-user',
-            props: props as unknown as Record<string | number | symbol, unknown>
-        })
+    switch (entity.config.model) {
+
+        case 'userap':
+            let groups: ModelsAP["GroupAP"][];
+            try {
+                // TODO refactor CRUD functions for DataAccessor usage
+                groups = await req.adminizer.modelHandler.model.get("GroupAP")["_find"]({});
+            } catch (e) {
+                Adminizer.log.error(e)
+            }
+            const userProps = inertiaUserHelper(entity, req, groups, record, true)
+            return req.Inertia.render({
+                component: 'add-user',
+                props: userProps as unknown as Record<string | number | symbol, unknown>
+            })
+
+        case 'groupap':
+            let users: ModelsAP["UserAP"][]
+            try {
+                // TODO refactor CRUD functions for DataAccessor usage
+                users = await req.adminizer.modelHandler.model.get("UserAP")["_find"](({isAdministrator: false}));
+            } catch (e) {
+                Adminizer.log.error(e)
+            }
+
+            let group: ModelsAP["GroupAP"]
+            try {
+                // TODO refactor CRUD functions for DataAccessor usage
+                group = await req.adminizer.modelHandler.model.get("GroupAP")["_findOne"]({id: req.params.id});
+            } catch (e) {
+                Adminizer.log.error('Admin edit error: ');
+                Adminizer.log.error(e);
+                res.status(500).send({error: 'Internal Server Error'});
+            }
+            let departments = req.adminizer.accessRightsHelper.getAllDepartments();
+            let groupedTokens: {
+                [key: string]: AccessRightsToken[]
+            } = {}
+
+            for (let department of departments) {
+                groupedTokens[department] = req.adminizer.accessRightsHelper.getTokensByDepartment(department)
+            }
+            const groupProps = inertiaGroupHelpers(entity, req, users, groupedTokens, group, true)
+            return req.Inertia.render({
+                component: 'add-group',
+                props: groupProps as unknown as Record<string | number | symbol, unknown>
+            })
+
+        default:
+            return
     }
-    return
+
 };

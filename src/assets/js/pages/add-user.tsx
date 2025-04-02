@@ -23,6 +23,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import InputError from "@/components/input-error.tsx";
 
 
 interface Field {
@@ -40,6 +41,7 @@ interface AddUserProps extends SharedData {
         title: string;
         link: string;
     },
+    passwordError: string
     btnSave: {
         title: string;
     },
@@ -65,6 +67,9 @@ export default function AddUser() {
     const {
         data,
         setData,
+        errors,
+        setError,
+        clearErrors,
         post,
         processing,
     } = useForm<Required<Record<string, string | boolean | Date | Record<string, string>[]>>>(initialFormData);
@@ -77,6 +82,7 @@ export default function AddUser() {
             setTimezones(data.timezones)
         }
         getTimezones()
+        console.log(page.props)
     }, [])
 
     const getField = (name: string) => {
@@ -85,8 +91,17 @@ export default function AddUser() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        if (data.userPassword !== data.repeatUserPassword) {
+            setError('repeatUserPassword', page.props.passwordError)
+            return
+        }
         post(page.props.postLink);
     };
+
+    const handleChangeDate = (fieldName: string, value: string | Date | boolean) => {
+        clearErrors()
+        setData(fieldName, value);
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -97,10 +112,11 @@ export default function AddUser() {
                         {page.props.btnBack.title}
                     </Link>
                 </Button>
-                <form id="addUserForm" onSubmit={submit} className={`${page.props.view ? 'pointer-events-none opacity-60' : ''}`}>
+                <form id="addUserForm" onSubmit={submit}
+                      className={`${page.props.view ? 'pointer-events-none opacity-60' : ''}`}>
                     <div className="flex flex-col gap-10 max-w-[1144px]">
                         <h2 className="font-bold text-xl">{page.props.head}</h2>
-                        <div className="flex gap-16">
+                        <div className="flex-col xl:flex-row flex gap-16">
                             <div className="basis-1/2 flex flex-col gap-6">
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('login')?.name}>{getField('login')?.label}</Label>
@@ -111,7 +127,7 @@ export default function AddUser() {
                                         tabIndex={1}
                                         autoComplete={getField('login')?.name}
                                         value={data.login as string}
-                                        onChange={(e) => setData('login', e.target.value)}
+                                        onChange={(e) => handleChangeDate('login', e.target.value)}
                                         disabled={processing}
                                         placeholder={getField('login')?.label}
                                     />
@@ -125,7 +141,7 @@ export default function AddUser() {
                                         tabIndex={1}
                                         autoComplete={getField('fullName')?.name}
                                         value={data.fullName as string}
-                                        onChange={(e) => setData('fullName', e.target.value)}
+                                        onChange={(e) => handleChangeDate('fullName', e.target.value)}
                                         disabled={processing}
                                         placeholder={getField('fullName')?.label}
                                     />
@@ -139,7 +155,7 @@ export default function AddUser() {
                                         tabIndex={1}
                                         autoComplete={getField('email')?.name}
                                         value={data.email as string}
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        onChange={(e) => handleChangeDate('field', e.target.value)}
                                         disabled={processing}
                                         placeholder={getField('email')?.label}
                                     />
@@ -148,7 +164,7 @@ export default function AddUser() {
                             <div className="basis-1/2 flex flex-col gap-6">
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('timezone')?.name}>{getField('timezone')?.label}</Label>
-                                    <Select onValueChange={(value) => setData('timezone', value)}
+                                    <Select onValueChange={(value) => handleChangeDate('timezone', value)}
                                             defaultValue={data.timezone as string}>
                                         <SelectTrigger className="w-full cursor-pointer">
                                             <SelectValue placeholder={getField('timezone')?.name}/>
@@ -161,12 +177,12 @@ export default function AddUser() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="flex justify-between items-center">
+                                <div className="flex flex-col md:flex-row justify-start gap-4 xl:justify-between items-start md:items-center">
                                     {getField('date') && (
                                         <div className="grid gap-4">
                                             <Label htmlFor={getField('date')?.name}>{getField('date')?.label}</Label>
-                                            <DatePicker onSelect={(data) => setData('date', data as Date)}
-                                                        selected={data.date ? new Date(data.date as string) : new Date()}/>
+                                            <DatePicker onSelect={(data) => handleChangeDate('date', data as Date)}
+                                                        selected={data.date ? new Date(data.date as string) : undefined}/>
                                         </div>
                                     )}
                                     <div className="flex gap-6">
@@ -178,7 +194,7 @@ export default function AddUser() {
                                                     id={getField('isAdmin')?.name}
                                                     className="cursor-pointer size-5"
                                                     checked={data.isAdmin as boolean}
-                                                    onCheckedChange={(value) => setData('isAdmin', value)}
+                                                    onCheckedChange={(value) => handleChangeDate('isAdmin', value)}
                                                 />
                                             </div>
                                         )}
@@ -190,7 +206,7 @@ export default function AddUser() {
                                                     id={getField('isConfirmed')?.name}
                                                     className="cursor-pointer size-5"
                                                     checked={data.isConfirmed as boolean}
-                                                    onCheckedChange={(value) => setData('isConfirmed', value)}
+                                                    onCheckedChange={(value) => handleChangeDate('isConfirmed', value)}
                                                 />
                                             </div>
                                         )}
@@ -199,7 +215,7 @@ export default function AddUser() {
                                 {getField('locale') && (
                                     <div className="grid gap-4">
                                         <Label htmlFor={getField('locale')?.name}>{getField('locale')?.label}</Label>
-                                        <Select onValueChange={(value) => setData('locale', value)}
+                                        <Select onValueChange={(value) => handleChangeDate('locale', value)}
                                                 defaultValue={data.locale as string}>
                                             <SelectTrigger className="w-full cursor-pointer">
                                                 <SelectValue placeholder={getField('locale')?.name}/>
@@ -219,16 +235,16 @@ export default function AddUser() {
                             <label className="font-bold text-xl">{getField('userPassword')?.label}</label>
                             <TooltipProvider>
                                 <Tooltip>
-                                    <TooltipTrigger>
+                                    <TooltipTrigger onClick={(e) => e.preventDefault()}>
                                         <Icon iconNode={Info} className="text-primary w-5 h-5 cursor-pointer"/>
                                     </TooltipTrigger>
-                                    <TooltipContent align="center" side="right">
+                                    <TooltipContent align="center" side="top">
                                         <p>{getField('userPassword')?.tooltip}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <div className="grid grid-cols-2 grid-rows-2 gap-x-16 gap-y-6">
+                        <div className="grid grid-col-1 lg:grid-cols-2 grid-rows-2 gap-x-16 gap-y-6">
                             <div className="grid gap-4 col-span-1">
                                 <Label
                                     htmlFor={getField('userPassword')?.name}>{getField('userPassword')?.label}</Label>
@@ -239,7 +255,7 @@ export default function AddUser() {
                                     tabIndex={1}
                                     autoComplete={getField('userPassword')?.name}
                                     value={data.password as string}
-                                    onChange={(e) => setData('userPassword', e.target.value)}
+                                    onChange={(e) => handleChangeDate('userPassword', e.target.value)}
                                     disabled={processing}
                                     placeholder={getField('userPassword')?.label}
                                 />
@@ -254,10 +270,11 @@ export default function AddUser() {
                                     tabIndex={1}
                                     autoComplete={getField('repeatUserPassword')?.name}
                                     value={data.repeatUserPassword as string}
-                                    onChange={(e) => setData('repeatUserPassword', e.target.value)}
+                                    onChange={(e) => handleChangeDate('repeatUserPassword', e.target.value)}
                                     disabled={processing}
                                     placeholder={getField('repeatUserPassword')?.label}
                                 />
+                                <InputError message={errors.repeatUserPassword}/>
                             </div>
                         </div>
                         {page.props.groups.length > 0 && (
@@ -265,15 +282,14 @@ export default function AddUser() {
                                 <h2 className="font-bold text-xl">{page.props.groupHead}</h2>
                                 <div className="flex flex-col">
                                     {page.props.groups.map(group => (
-                                        <div className="grid gap-4">
+                                        <div className="grid gap-4" key={group.name}>
                                             <Label className="cursor-pointer"
                                                    htmlFor={group.name}>{group.label}</Label>
                                             <Checkbox
                                                 id={group.name}
                                                 className="cursor-pointer size-5"
-                                                checked={false}
-                                                onCheckedChange={() => {
-                                                }}
+                                                checked={data[group.name] as boolean}
+                                                onCheckedChange={(value) => handleChangeDate(group.name, value)}
                                             />
                                         </div>
                                     ))}

@@ -15,6 +15,7 @@ interface listProps {
         title: string;
         link: string;
     },
+    passwordError: string,
     btnSave: {
         title: string;
     },
@@ -34,6 +35,7 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
             title: req.i18n.__('Back'),
             link: entity.uri
         },
+        passwordError: req.i18n.__('Values in "password" and "repeatPassword" fields should be the same'),
         btnSave: {
             title: req.i18n.__('Save')
         },
@@ -118,7 +120,7 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
         name: 'repeatUserPassword',
         value: ''
     })
-    if (!req.session.UserAP.isAdministrator && groups.length) {
+    if (groups.length) {
         let userGroupsIds: number[] = []
         if (user) {
             userGroupsIds = user.groups.map((group) => {

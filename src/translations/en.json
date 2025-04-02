@@ -97,5 +97,8 @@
 	"In the builds that contain toolbars an optimal default configuration is defined for it. You may need a different toolbar arrangement, though, and this can be achieved through configuration. Toolbar configuration is a strict UI-related setting. Removing a toolbar item does not remove the feature from the editor internals. If your goal with the toolbar configuration is to remove features, the right solution is to also remove their respective plugins. Check removing features for more information.": "In the builds that contain toolbars an optimal default configuration is defined for it. You may need a different toolbar arrangement, though, and this can be achieved through configuration. Toolbar configuration is a strict UI-related setting. Removing a toolbar item does not remove the feature from the editor internals. If your goal with the toolbar configuration is to remove features, the right solution is to also remove their respective plugins. Check removing features for more information.",
 	"gallery": "gallery",
 	"files": "files",
-	"Your record was created !": "Your record was created !"
+	"Your record was created !": "Your record was created !",
+	"Values in \"password\" and \"repeatPassword\" fields should be the same": "Values in \"password\" and \"repeatPassword\" fields should be the same",
+	"Yes": "Yes",
+	"No": "No"
 }
