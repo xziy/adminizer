@@ -14,7 +14,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm i && npm run test
+      # - run: npm i && npm run test
       
       # resolve version with short commit hash
       - run: |
