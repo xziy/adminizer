@@ -27,6 +27,7 @@ jobs:
           
           VEROUT="${VERLOC}-commit.${COMMIT_HASH}"
           jq -r --arg VER "$VEROUT" '.version = $VER' package.json > /tmp/package.json && mv /tmp/package.json ./package.json
+        working-directory: ./dist
       
       - run: npm publish --tag ${GITHUB_REF##*/}
         env:
