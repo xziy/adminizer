@@ -153,7 +153,6 @@ export class Adminizer {
 
         await bindAccessRights(this);
 
-        await bindAuthorization(this);
 
         // bindViewsLocals(this); // must be after setting all helpers that binds in here
 
@@ -166,6 +165,7 @@ export class Adminizer {
         // bind Inertia
         bindInertia(this);
 
+        await bindAuthorization(this);
         await Router.bind(this); // must be after binding policies and req/res functions
 
         /**

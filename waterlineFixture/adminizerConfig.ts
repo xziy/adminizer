@@ -49,7 +49,7 @@ const models: AdminpanelConfig["models"] = {
 export default {
     routePrefix: "/adminizer",
     // routePrefix: "/admin",
-    // auth: true,
+    auth: true,
     dashboard: true,
     forms: {
         path: 'forms',

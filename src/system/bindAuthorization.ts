@@ -7,95 +7,95 @@ import {generate} from "password-hash";
 
 export default async function bindAuthorization(adminizer: Adminizer) {
 
-  let admins: ModelsAP["UserAP"][];
-  try {
-    // TODO refactor CRUD functions for DataAccessor usage
-    admins = await adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
-  } catch (e) {
-    Adminizer.log.error("Error trying to find administrator", e)
-    return;
-  }
-
-
-  /**
-   * Router
-   */
-  let policies = adminizer.config.policies;
-  let baseRoute = '/model/:entity';
-
-
-  let adminsCredentials: { fullName: string, login: string, password: string }[] = [];
-  // if we have administrator profiles
-  let config: AdminpanelConfig = adminizer.config;
-
-  if (admins && admins.length) {
-    for (let admin of admins) {
-      adminsCredentials.push({
-        fullName: admin.fullName,
-        login: admin.login,
-        password: admin.password
-      })
-    }
-
-    Adminizer.log.debug(`Has Administrators with login [${adminsCredentials[0].login}]`)
-
-  } else if (process.env.ADMINPANEL_LAZY_GEN_ADMIN_ENABLE !== undefined) {
-    let adminData;
-
-    if (config.administrator && config.administrator.login && config.administrator.password) {
-      adminData = config.administrator;
-    } else {
-      let password = getRandomInt(1000000000000, 9999999999999)
-      adminData = {
-        login: "admin",
-        password: `${password}`
-      }
-    }
-
+    let admins: ModelsAP["UserAP"][];
     try {
-      let passwordHashed = generate(adminData.login + adminData.password);
-      let password = 'masked';
-      // TODO refactor CRUD functions for DataAccessor usage
-      await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
-        login: adminData.login, password: password, passwordHashed: passwordHashed, fullName: "Administrator",
-        isActive: true, isAdministrator: true
-      });
+        // TODO refactor CRUD functions for DataAccessor usage
+        admins = await adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
     } catch (e) {
-      Adminizer.log.error("Could not create administrator profile", e)
-      return;
+        Adminizer.log.error("Error trying to find administrator", e)
+        return;
     }
 
-    console.group("Administrators credentials")
-    console.table(adminsCredentials);
-    console.groupEnd()
 
-  } else { // try to create one if we don't
+    /**
+     * Router
+     */
+    let policies = adminizer.config.policies;
+    let baseRoute = `${adminizer.config.routePrefix}/model/:entity`;
+
+
+    let adminsCredentials: { fullName: string, login: string, password: string }[] = [];
+    // if we have administrator profiles
+    let config: AdminpanelConfig = adminizer.config;
+
+    if (admins && admins.length) {
+        for (let admin of admins) {
+            adminsCredentials.push({
+                fullName: admin.fullName,
+                login: admin.login,
+                password: admin.password
+            })
+        }
+
+        Adminizer.log.debug(`Has Administrators with login [${adminsCredentials[0].login}]`)
+
+    } else if (process.env.ADMINPANEL_LAZY_GEN_ADMIN_ENABLE !== undefined) {
+        let adminData;
+
+        if (config.administrator && config.administrator.login && config.administrator.password) {
+            adminData = config.administrator;
+        } else {
+            let password = getRandomInt(1000000000000, 9999999999999)
+            adminData = {
+                login: "admin",
+                password: `${password}`
+            }
+        }
+
+        try {
+            let passwordHashed = generate(adminData.login + adminData.password);
+            let password = 'masked';
+            // TODO refactor CRUD functions for DataAccessor usage
+            await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
+                login: adminData.login, password: password, passwordHashed: passwordHashed, fullName: "Administrator",
+                isActive: true, isAdministrator: true
+            });
+        } catch (e) {
+            Adminizer.log.error("Could not create administrator profile", e)
+            return;
+        }
+
+        console.group("Administrators credentials")
+        console.table(adminsCredentials);
+        console.groupEnd()
+
+    } else { // try to create one if we don't
+        if (adminizer.config.auth) {
+            Adminizer.log.debug(`Adminpanel does not have an administrator`)
+            adminizer.config.policies.push(initUserPolicy)
+            adminizer.app.use('/init_user', _initUser);
+        }
+    }
+
     if (adminizer.config.auth) {
-      Adminizer.log.debug(`Adminpanel does not have an administrator`)
-      adminizer.config.policies.push(initUserPolicy)
-      adminizer.app.use('/init_user', _initUser);
+        adminizer.app.use(baseRoute + '/login', adminizer.policyManager.bindPolicies(policies, _login));
+        adminizer.app.use(baseRoute + '/logout', adminizer.policyManager.bindPolicies(policies, _login));
+        adminizer.app.use(baseRoute + '/register', adminizer.policyManager.bindPolicies(policies, _register));
     }
-  }
-
-  if (adminizer.config.auth) {
-    adminizer.app.use(baseRoute + '/login', adminizer.policyManager.bindPolicies(policies, _login));
-    adminizer.app.use(baseRoute + '/logout', adminizer.policyManager.bindPolicies(policies, _login));
-    adminizer.app.use(baseRoute + '/register', adminizer.policyManager.bindPolicies(policies, _register));
-  }
 };
 
 function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min;
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 
 async function initUserPolicy(req: ReqType, res: ResType, proceed: any) {
-  // TODO refactor CRUD functions for DataAccessor usage
-  let admins: ModelsAP["UserAP"][] = await req.adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
-  if (!admins || !admins.length) {
-    return res.redirect(`${req.adminizer.config.routePrefix}/init_user`)
-  }
-  return proceed()
+    // TODO refactor CRUD functions for DataAccessor usage
+    let admins: ModelsAP["UserAP"][] = await req.adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
+    if (!admins || !admins.length) {
+        return res.redirect(`${req.adminizer.config.routePrefix}/init_user`)
+    }
+    return proceed()
 }

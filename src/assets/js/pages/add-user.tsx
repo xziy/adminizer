@@ -82,7 +82,6 @@ export default function AddUser() {
             setTimezones(data.timezones)
         }
         getTimezones()
-        console.log(page.props)
     }, [])
 
     const getField = (name: string) => {
@@ -112,8 +111,7 @@ export default function AddUser() {
                         {page.props.btnBack.title}
                     </Link>
                 </Button>
-                <form id="addUserForm" onSubmit={submit}
-                      className={`${page.props.view ? 'pointer-events-none opacity-60' : ''}`}>
+                <form id="addUserForm" onSubmit={submit} className={page.props.view ? 'cursor-not-allowed' : ''}>
                     <div className="flex flex-col gap-10 max-w-[1144px]">
                         <h2 className="font-bold text-xl">{page.props.head}</h2>
                         <div className="flex-col xl:flex-row flex gap-16">
@@ -128,7 +126,7 @@ export default function AddUser() {
                                         autoComplete={getField('login')?.name}
                                         value={data.login as string}
                                         onChange={(e) => handleChangeDate('login', e.target.value)}
-                                        disabled={processing}
+                                        disabled={processing || page.props.view}
                                         placeholder={getField('login')?.label}
                                     />
                                 </div>
@@ -142,7 +140,7 @@ export default function AddUser() {
                                         autoComplete={getField('fullName')?.name}
                                         value={data.fullName as string}
                                         onChange={(e) => handleChangeDate('fullName', e.target.value)}
-                                        disabled={processing}
+                                        disabled={processing || page.props.view}
                                         placeholder={getField('fullName')?.label}
                                     />
                                 </div>
@@ -156,7 +154,7 @@ export default function AddUser() {
                                         autoComplete={getField('email')?.name}
                                         value={data.email as string}
                                         onChange={(e) => handleChangeDate('field', e.target.value)}
-                                        disabled={processing}
+                                        disabled={processing || page.props.view}
                                         placeholder={getField('email')?.label}
                                     />
                                 </div>
@@ -165,7 +163,7 @@ export default function AddUser() {
                                 <div className="grid gap-4">
                                     <Label htmlFor={getField('timezone')?.name}>{getField('timezone')?.label}</Label>
                                     <Select onValueChange={(value) => handleChangeDate('timezone', value)}
-                                            defaultValue={data.timezone as string}>
+                                            defaultValue={data.timezone as string} disabled={processing || page.props.view}>
                                         <SelectTrigger className="w-full cursor-pointer">
                                             <SelectValue placeholder={getField('timezone')?.name}/>
                                         </SelectTrigger>
@@ -182,7 +180,7 @@ export default function AddUser() {
                                         <div className="grid gap-4">
                                             <Label htmlFor={getField('date')?.name}>{getField('date')?.label}</Label>
                                             <DatePicker onSelect={(data) => handleChangeDate('date', data as Date)}
-                                                        selected={data.date ? new Date(data.date as string) : undefined}/>
+                                                        selected={data.date ? new Date(data.date as string) : undefined} disabled={processing || page.props.view}/>
                                         </div>
                                     )}
                                     <div className="flex gap-6">
@@ -193,6 +191,7 @@ export default function AddUser() {
                                                 <Checkbox
                                                     id={getField('isAdmin')?.name}
                                                     className="cursor-pointer size-5"
+                                                    disabled={processing || page.props.view}
                                                     checked={data.isAdmin as boolean}
                                                     onCheckedChange={(value) => handleChangeDate('isAdmin', value)}
                                                 />
@@ -205,6 +204,7 @@ export default function AddUser() {
                                                 <Checkbox
                                                     id={getField('isConfirmed')?.name}
                                                     className="cursor-pointer size-5"
+                                                    disabled={processing || page.props.view}
                                                     checked={data.isConfirmed as boolean}
                                                     onCheckedChange={(value) => handleChangeDate('isConfirmed', value)}
                                                 />
@@ -216,7 +216,7 @@ export default function AddUser() {
                                     <div className="grid gap-4">
                                         <Label htmlFor={getField('locale')?.name}>{getField('locale')?.label}</Label>
                                         <Select onValueChange={(value) => handleChangeDate('locale', value)}
-                                                defaultValue={data.locale as string}>
+                                                defaultValue={data.locale as string} disabled={processing || page.props.view}>
                                             <SelectTrigger className="w-full cursor-pointer">
                                                 <SelectValue placeholder={getField('locale')?.name}/>
                                             </SelectTrigger>
@@ -256,7 +256,7 @@ export default function AddUser() {
                                     autoComplete={getField('userPassword')?.name}
                                     value={data.password as string}
                                     onChange={(e) => handleChangeDate('userPassword', e.target.value)}
-                                    disabled={processing}
+                                    disabled={processing || page.props.view}
                                     placeholder={getField('userPassword')?.label}
                                 />
                             </div>
@@ -271,7 +271,7 @@ export default function AddUser() {
                                     autoComplete={getField('repeatUserPassword')?.name}
                                     value={data.repeatUserPassword as string}
                                     onChange={(e) => handleChangeDate('repeatUserPassword', e.target.value)}
-                                    disabled={processing}
+                                    disabled={processing || page.props.view}
                                     placeholder={getField('repeatUserPassword')?.label}
                                 />
                                 <InputError message={errors.repeatUserPassword}/>
@@ -287,6 +287,7 @@ export default function AddUser() {
                                                    htmlFor={group.name}>{group.label}</Label>
                                             <Checkbox
                                                 id={group.name}
+                                                disabled={processing || page.props.view}
                                                 className="cursor-pointer size-5"
                                                 checked={data[group.name] as boolean}
                                                 onCheckedChange={(value) => handleChangeDate(group.name, value)}
@@ -297,7 +298,7 @@ export default function AddUser() {
                             </>
                         )}
                         <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
-                                disabled={processing}>
+                                disabled={processing || page.props.view}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                             {page.props.btnSave.title}
                         </Button>

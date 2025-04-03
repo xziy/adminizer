@@ -105,38 +105,43 @@ export function bindInertia(adminizer: Adminizer) {
 
 
     adminizer.app.use((req: ReqType, _, next) => {
-        let locale: string = ""
+        checkAuth(req, adminizer)
 
-        if (typeof adminizer.config.translation !== 'boolean') {
-            locale = adminizer.config.translation.defaultLocale
-        }
-        if (!adminizer.config.auth) {
-            if (req.session.UserAP) {
-                req.session.UserAP.isAdministrator = true;
-            } else {
-                req.session.UserAP = {
-                    id: 0,
-                    isAdministrator: true,
-                    locale: locale,
-                    login: "admin",
-                    email: "email@email.com",
-                }
-            }
-        }
         req.Inertia.setViewData({
             lang: req.session.UserAP?.locale || 'en',
         })
-
         const menuHelper = new InertiaMenuHelper(adminizer)
 
         req.Inertia.shareProps({
             auth: {
                 user: req.session.UserAP
             },
-            menu: menuHelper.getMenuItems(req),
-            brand: menuHelper.getBrandTitle(),
+            menu: req.session.UserAP ? menuHelper.getMenuItems(req) : null,
+            brand: req.session.UserAP ? menuHelper.getBrandTitle() : null,
         })
 
         next();
     })
+}
+
+function checkAuth(req: ReqType, adminizer: Adminizer) {
+    let locale: string = ""
+
+    if (typeof adminizer.config.translation !== 'boolean') {
+        locale = adminizer.config.translation.defaultLocale
+    }
+    if (!adminizer.config.auth) {
+        if (req.session.UserAP) {
+            req.session.UserAP.isAdministrator = true;
+        } else {
+            req.session.UserAP = {
+                id: 0,
+                isAdministrator: true,
+                locale: locale,
+                login: "admin",
+                email: "email@email.com",
+            }
+        }
+    }
+
 }

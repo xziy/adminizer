@@ -89,7 +89,7 @@ export default function AddGroup() {
                     </Link>
                 </Button>
                 <form id="addUserForm" onSubmit={submit}
-                      className={`${page.props.view ? 'pointer-events-none opacity-60' : ''}`}>
+                      className={`${page.props.view ? 'cursor-not-allowed' : ''}`}>
                     <div className="flex flex-col gap-6 max-w-[1144px]">
                         <h2 className="font-bold text-xl">{page.props.head}</h2>
                         <div className="grid gap-4">
@@ -102,7 +102,7 @@ export default function AddGroup() {
                                 autoComplete={getField('name')?.name}
                                 value={data.name as string}
                                 onChange={(e) => handleChangeDate('name', e.target.value)}
-                                disabled={processing}
+                                disabled={processing || page.props.view}
                                 placeholder={getField('name')?.label}
                             />
                         </div>
@@ -116,7 +116,7 @@ export default function AddGroup() {
                                 autoComplete={getField('description')?.name}
                                 value={data.description as string}
                                 onChange={(e) => handleChangeDate('description', e.target.value)}
-                                disabled={processing}
+                                disabled={processing || page.props.view}
                                 placeholder={getField('description')?.label}
                             />
                         </div>
@@ -129,6 +129,7 @@ export default function AddGroup() {
                                             <Checkbox
                                                 id={field.name}
                                                 className="cursor-pointer size-5"
+                                                disabled={processing || page.props.view}
                                                 checked={data[field.name] as boolean}
                                                 onCheckedChange={(value) => handleChangeDate(field.name, value)}
                                             />
@@ -149,6 +150,7 @@ export default function AddGroup() {
                                                 <Checkbox
                                                     id={field.name}
                                                     className="cursor-pointer size-5"
+                                                    disabled={processing || page.props.view}
                                                     checked={data[field.name] as boolean}
                                                     onCheckedChange={(value) => handleChangeDate(field.name, value)}
                                                 />
@@ -174,7 +176,7 @@ export default function AddGroup() {
                             )}
                         </div>
                         <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
-                                disabled={processing}>
+                                disabled={processing || page.props.view}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                             {page.props.btnSave.title}
                         </Button>
