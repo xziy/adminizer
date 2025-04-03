@@ -32,3 +32,4 @@ jobs:
       - run: npm publish --tag ${GITHUB_REF##*/}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ./dist
