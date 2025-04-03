@@ -11,7 +11,8 @@
 		"compile:backend": "tsc -p src/tsconfig.json",
 		"watch:backend": "tsc -w -p src/tsconfig.json",
 		"copy:backend": "node copy-backend.js",
-		"build:backend": "npm run copy:backend && npm run compile:backend"
+		"build:backend": "npm run copy:backend && npm run compile:backend",
+		"build": "npm run copy:backend && npm run compile:backend && npm run build:assets"
 	},
 	"keywords": [],
 	"author": "",
