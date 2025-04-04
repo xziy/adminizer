@@ -14,7 +14,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm i --legacy-peer-deps && npm run build
+      - run: npm i --force && npm run build
       - run: cp ./package.json ./dist && echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ./dist/.npmrc
 
       # resolve version with short commit hash
@@ -29,7 +29,7 @@ jobs:
           jq -r --arg VER "$VEROUT" '.version = $VER' package.json > /tmp/package.json && mv /tmp/package.json ./package.json
         working-directory: ./dist
       
-      - run: npm publish --tag ${GITHUB_REF##*/} --access public
+      - run: npm publish --tag commit
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: ./dist
