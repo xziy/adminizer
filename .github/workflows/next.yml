@@ -33,6 +33,7 @@ jobs:
               VEROUT=$(printf "$VERNPM\n$VERLOC\n" | sort -V -r | awk 'NR==1 {print; exit}')
           fi
           jq -r '.version = "'${VEROUT}'-build.'$BUILD_VERSION'"' package.json > /tmp/package.json && mv /tmp/package.json ./package.json
+      
       - run: npm publish --tag ${GITHUB_REF##*/}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
