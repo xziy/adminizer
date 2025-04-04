@@ -15,7 +15,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm i --legacy-peer-deps && npm run build
-      - run: cp ./package.json ./dist
+      - run: cp ./package.json ./dist && echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ./dist/.npmrc
 
       # resolve version with short commit hash
       - run: |
