@@ -122,7 +122,7 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
     })
     if (groups.length) {
         let userGroupsIds: number[] = []
-        if (user) {
+        if (user && user.groups !== undefined) {
             userGroupsIds = user.groups.map((group) => {
                 return group.id
             })

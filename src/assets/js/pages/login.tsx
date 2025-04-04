@@ -24,7 +24,7 @@ interface LoginProps extends SharedData {
     captchaTask: number[]
 }
 
-export default function Dashboard() {
+export default function Lodin() {
     const [captchaProcessing, setCaptchaProcessing] = useState(false);
 
     const page = usePage<LoginProps>()
@@ -84,7 +84,7 @@ export default function Dashboard() {
 
     }
 
-    const handleChangeDate = (fieldName: 'login' | 'password', value: string) => {
+    const handleChangeDate = (fieldName: keyof typeof data, value: string) => {
         clearErrors()
         setData(fieldName, value);
     }

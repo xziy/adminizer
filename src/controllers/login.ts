@@ -41,15 +41,17 @@ export default async function login(req: ReqType, res: ResType) {
                 return inertiaAdminMessage(req, "Wrong username", 'login');
             } else {
                 if (req.adminizer.config.registration.confirmationRequired && !user.isConfirmed && !user.isAdministrator) {
+                    //Here we use the captchaSolution key to output messages unrelated to the form fields.
                     return inertiaAdminMessage(req, "Profile is not confirmed, please contact to administrator", 'captchaSolution');
                 }
 
                 if (passwordHash.verify(login + password, user.passwordHashed)) {
                     if (user.expires && Date.now() > Date.parse(user.expires)) {
+                        //Here we use the captchaSolution key to output messages unrelated to the form fields.
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
                     req.session.UserAP = user;
-                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
+                    return res.redirect(`${req.adminizer.config.routePrefix}`);
                 } else {
                     return inertiaAdminMessage(req, "Wrong password", 'password');
                 }

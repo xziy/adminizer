@@ -53,7 +53,7 @@ const config: AdminpanelConfig = {
     // routePrefix: "/admin",
     auth: true,
     registration: {
-        enable: false,
+        enable: true,
         defaultUserGroup: "test",
         confirmationRequired: false
     },

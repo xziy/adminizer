@@ -138,7 +138,7 @@ export default function List() {
             <Toaster position="top-center" richColors closeButton />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex gap-6">
-                    {page.props.header.crudActions?.viewsTitle && (
+                    {page.props.header.crudActions?.createTitle && (
                         <Button className="mb-3" asChild>
                             <Link href={`${page.props.header.entity.uri}/add`}>
                                 <Icon iconNode={SquarePlus}/>

@@ -153,7 +153,7 @@ export default function AddUser() {
                                         tabIndex={1}
                                         autoComplete={getField('email')?.name}
                                         value={data.email as string}
-                                        onChange={(e) => handleChangeDate('field', e.target.value)}
+                                        onChange={(e) => handleChangeDate('email', e.target.value)}
                                         disabled={processing || page.props.view}
                                         placeholder={getField('email')?.label}
                                     />
@@ -280,7 +280,7 @@ export default function AddUser() {
                         {page.props.groups.length > 0 && (
                             <>
                                 <h2 className="font-bold text-xl">{page.props.groupHead}</h2>
-                                <div className="flex flex-col">
+                                <div className="grid grid-cols-1 md:grid-cols-5 xl:grid-cols-6 gap-4">
                                     {page.props.groups.map(group => (
                                         <div className="grid gap-4" key={group.name}>
                                             <Label className="cursor-pointer"

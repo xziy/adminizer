@@ -80,6 +80,6 @@ export default async function remove(req: ReqType, res: ResType) {
         // req.session.messages.adminError.push('Record was not removed');
         req.flash.setFlashMessage('success', 'Record was not removed');
     }
-    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`)
+    return req.Inertia.redirect(`${entity.uri}`)
     // res.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
 };

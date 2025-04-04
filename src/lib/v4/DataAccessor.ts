@@ -153,6 +153,9 @@ export class DataAccessor {
                 case "view":
                     actionSpecificConfig = modelConfig['edit']?.fields || {};
                     break;
+                case "remove":
+                    actionSpecificConfig = {}
+                    break;
                 default:
                     throw `Action type error: unknown type [${this.action}]`
             }
@@ -205,7 +208,6 @@ export class DataAccessor {
         }
 
         const userGroups = this.user.groups?.map((group: ModelsAP["GroupAP"]) => group.name.toLowerCase());
-
         // Check if `groupsAccessRights` is set in the fieldConfig
         if (fieldConfig.groupsAccessRights) {
             const allowedGroups = fieldConfig.groupsAccessRights.map((item: string) => item.toLowerCase());

@@ -36,7 +36,6 @@ export default async function list(req: ReqType, res: ResType) {
     };
 
     const nodeTable = new NodeTable(mockRequestBody, entity.model, fields);
-
     await nodeTable.output((err: Error, data: NodeOutput) => {
         if (err) {
             Adminizer.log.error(err);
