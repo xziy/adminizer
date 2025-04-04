@@ -3,22 +3,20 @@ import passwordHash from "password-hash";
 
 export default async function login(req: ReqType, res: ResType) {
     const powCaptcha = new POWCaptcha();
-
     if (req.originalUrl.indexOf("login") >= 0) {
         if (!req.adminizer.config.auth) {
-            return res.redirect(`${req.adminizer.config.routePrefix}/`);
+            return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
 
         if (req.method.toUpperCase() === "POST") {
-            let login = req.params.login;
-            let password = req.params.password;
-            let captchaSolution = req.params.captchaSolution;
-            console.log("captchaSolution", captchaSolution)
+            let login = req.body.login;
+            let password = req.body.password;
+            let captchaSolution = req.body.captchaSolution;
 
             // Verify CAPTCHA solution
             const isCaptchaValid = powCaptcha.check(captchaSolution, `login:${req.ip}`);
             if (!isCaptchaValid) {
-                return await viewAdminMessage(req, res, "Invalid CAPTCHA solution");
+                return inertiaAdminMessage(req, "Invalid CAPTCHA solution", 'captchaSolution');
             }
 
             let user: ModelsAP["UserAP"];
@@ -28,7 +26,6 @@ export default async function login(req: ReqType, res: ResType) {
             } catch (e) {
                 return res.status(500).send({error: e.message || 'Internal Server Error'});
             }
-
             if (req.body.pretend) {
                 if (!user) {
                     return res.sendStatus(404);
@@ -41,20 +38,20 @@ export default async function login(req: ReqType, res: ResType) {
             }
 
             if (!user) {
-                return await viewAdminMessage(req, res, "Wrong username or password");
+                return inertiaAdminMessage(req, "Wrong username", 'login');
             } else {
                 if (req.adminizer.config.registration.confirmationRequired && !user.isConfirmed && !user.isAdministrator) {
-                    return await viewAdminMessage(req, res, "Profile is not confirmed, please contact to administrator");
+                    return inertiaAdminMessage(req, "Profile is not confirmed, please contact to administrator", 'captchaSolution');
                 }
 
                 if (passwordHash.verify(login + password, user.passwordHashed)) {
                     if (user.expires && Date.now() > Date.parse(user.expires)) {
-                        return await viewAdminMessage(req, res, "Profile expired, contact the administrator");
+                        return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
                     req.session.UserAP = user;
-                    return res.redirect(`${req.adminizer.config.routePrefix}/`);
+                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
                 } else {
-                    return await viewAdminMessage(req, res, "Wrong username or password");
+                    return inertiaAdminMessage(req, "Wrong password", 'password');
                 }
             }
         }
@@ -66,26 +63,55 @@ export default async function login(req: ReqType, res: ResType) {
             return req.Inertia.render({
                 component: 'login',
                 props: {
-                    captchaTask: captchaTask
+                    captchaTask: captchaTask,
+                    ...loginHelper(req),
                 }
             })
         }
 
-    } else if (req.url.indexOf("logout") >= 0) {
+    } else if (req.originalUrl.indexOf("logout") >= 0) {
         if (req.session.adminPretender && req.session.adminPretender.id && req.session.UserAP && req.session.UserAP.id) {
             req.session.UserAP = req.session.adminPretender;
             req.session.adminPretender = {};
-            return res.redirect(`${req.adminizer.config.routePrefix}/`);
+            return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
         req.session.UserAP = undefined;
-        res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+        req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }
+    return res.status(404);
 }
 
-async function viewAdminMessage(req: ReqType, res: ResType, message: string) {
+async function inertiaAdminMessage(req: ReqType, message: string, messageType: string) {
     const powCaptcha = new POWCaptcha();
     const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
-    req.session.messages.adminError.push(message);
 
-    return res.viewAdmin("login", {captchaTask: captchaTask});
+    // req.session.messages.adminError.push(message);
+    // return res.viewAdmin("login", {captchaTask: captchaTask});
+
+    let errors: Record<string, string> = {};
+    errors[messageType] = message
+    return req.Inertia.render({
+        component: 'login',
+        props: {
+            captchaTask: captchaTask,
+            errors: errors,
+            ...loginHelper(req),
+        }
+    })
+}
+
+function loginHelper(req: ReqType) {
+    let props: Record<string, unknown> = {};
+    props.login = req.i18n.__('Login');
+    props.password = req.i18n.__('Password');
+    props.title = req.i18n.__("Welcome");
+    props.submitButton = req.i18n.__("Log in");
+    props.submitLink = `${req.adminizer.config.routePrefix}/model/userap/login`
+    if (req.adminizer.config.registration?.enable === true) {
+        props.registerLink = {
+            title: req.i18n.__("Register"),
+            link: `${req.adminizer.config.routePrefix}/model/userap/register`
+        };
+    }
+    return props
 }

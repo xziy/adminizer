@@ -32,7 +32,8 @@ type FlashMessages = 'info' | 'error' | 'success' | string;
 export interface SharedData {
     name: string;
     menu: MenuItem[];
-    brand: string
+    brand: string,
+    logout: string
     flash: Record<FlashMessages, string>;
     auth: Auth;
     [key: string]: unknown;

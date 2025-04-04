@@ -26,4 +26,8 @@ export class InertiaMenuHelper {
     public getBrandTitle() {
         return this.adminizer.menuHelper.getBrandTitle()
     }
+
+    public getLogoutUrl(){
+        return `${this.adminizer.config.routePrefix}/model/userap/logout`
+    }
 }

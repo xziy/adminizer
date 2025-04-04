@@ -46,10 +46,17 @@ const models: AdminpanelConfig["models"] = {
     },
 };
 
-export default {
+// @ts-ignore
+// @ts-ignore
+const config: AdminpanelConfig = {
     routePrefix: "/adminizer",
     // routePrefix: "/admin",
     auth: true,
+    registration: {
+        enable: false,
+        defaultUserGroup: "test",
+        confirmationRequired: false
+    },
     dashboard: true,
     forms: {
         path: 'forms',
@@ -68,7 +75,7 @@ export default {
     },
     navbar: {
         additionalLinks: [{
-            id: 4,
+            id: '4',
             link: '/adminizer/form/global',
             title: 'Global Settings',
             icon: 'build',
@@ -80,7 +87,7 @@ export default {
             id: "0",
             title: 'Website 1',
             link: '#',
-            icon: 'mask',
+            icon: 'circle',
             subItems: [
                 {
                     id: "0",
@@ -135,6 +142,7 @@ export default {
     ],
     brand: {
         link: {
+            id: "0",
             title: 'WebResto adminpanel',
             link: 'https://webresto.org',
         }
@@ -153,6 +161,7 @@ export default {
         defaultLocale: 'en'
     },
     models: models,
+    //@ts-ignore
     generator: {},
     globalSettings: { // Global project settings
         enableMigrations: true
@@ -162,3 +171,5 @@ export default {
         //config: string | object // db-migrate config
     }
 };
+
+export default config

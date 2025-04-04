@@ -343,6 +343,8 @@ export interface FieldsModels {
 
 interface FormFieldConfig extends BaseFieldConfig {
 	value?: any
+    required?: boolean
+    description?: string
 }
 
 export interface BaseFieldConfig {

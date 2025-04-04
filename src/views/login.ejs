@@ -47,149 +47,149 @@
 
 <body>
 
-<div class="bg-gray-50 dark:bg-slate-800 dark:text-slate-100">
-    <div class="flex min-h-screen items-center justify-center bg-gradient-to-tr from-purple-400 dark:from-slate-700 via-pink-500 dark:via-slate-900 to-red-500 dark:to-slate-800">
-        <form class="rounded-2xl flex-col dark:bg-slate-900/70 bg-white dark:bg-slate-900/70 flex w-4/12 lg:w-6/12 md:w-7/12 xs:w-11/12 shadow-2xl"
-              method="post" action="<%- config.routePrefix %>/model/userap/login" id="loginForm">
+    <div class="bg-gray-50 dark:bg-slate-800 dark:text-slate-100">
+        <div class="flex min-h-screen items-center justify-center bg-gradient-to-tr from-purple-400 dark:from-slate-700 via-pink-500 dark:via-slate-900 to-red-500 dark:to-slate-800">
+            <form class="rounded-2xl flex-col dark:bg-slate-900/70 bg-white dark:bg-slate-900/70 flex w-4/12 lg:w-6/12 md:w-7/12 xs:w-11/12 shadow-2xl"
+                  method="post" action="<%- config.routePrefix %>/model/userap/login" id="loginForm">
 
-            <%- include("mixin/alerts") %>
+                <%- include("mixin/alerts") %>
 
-            <div class="flex-1 p-6">
-                <div class="mb-2">
-                    <h3 class="font-medium"><%= __("Welcome") %>!</h3>
-                    <p>
-                        <%= __("Please log in or register if you don't have profile yet") %>
-                    </p>
-                </div>
-                <div class="mb-6 last:mb-0">
-                    <label class="block font-bold mb-2"><%= __("Login") %></label>
-                    <div>
-                        <div class="relative">
-                            <input class="px-3 py-2 max-w-full focus:ring focus:outline-none border-gray-700 rounded w-full dark:placeholder-gray-400 h-12 border bg-white dark:bg-slate-800 pl-10"
-                                   type="text" placeholder="<%= __("Login") %>" name="login"/>
-                            <span class="inline-flex justify-center items-center w-10 h-12 absolute top-0 left-0 z-10 pointer-events-none text-gray-500 dark:text-slate-400">
+                <div class="flex-1 p-6">
+                    <div class="mb-2">
+                        <h3 class="font-medium"><%= __("Welcome") %>!</h3>
+                        <p>
+                            <%= __("Please log in or register if you don't have profile yet") %>
+                        </p>
+                    </div>
+                    <div class="mb-6 last:mb-0">
+                        <label class="block font-bold mb-2"><%= __("Login") %></label>
+                        <div>
+                            <div class="relative">
+                                <input class="px-3 py-2 max-w-full focus:ring focus:outline-none border-gray-700 rounded w-full dark:placeholder-gray-400 h-12 border bg-white dark:bg-slate-800 pl-10"
+                                       type="text" placeholder="<%= __("Login") %>" name="login"/>
+                                <span class="inline-flex justify-center items-center w-10 h-12 absolute top-0 left-0 z-10 pointer-events-none text-gray-500 dark:text-slate-400">
                             <svg viewBox="0 0 24 24" width="16" height="16" class="inline-block">
                                 <path fill="currentColor"
                                       d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
                             </svg>
                         </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="mb-6 last:mb-0">
-                    <label class="block font-bold mb-2"><%= __("Password") %></label>
-                    <div>
-                        <div class="relative">
-                            <input class="px-3 py-2 max-w-full focus:ring focus:outline-none border-gray-700 rounded w-full dark:placeholder-gray-400 h-12 border bg-white dark:bg-slate-800 pl-10"
-                                   type="password" placeholder="<%= __("Password") %>" name="password"/>
-                            <span class="inline-flex justify-center items-center w-10 h-12 absolute top-0 left-0 z-10 pointer-events-none text-gray-500 dark:text-slate-400">
+                    <div class="mb-6 last:mb-0">
+                        <label class="block font-bold mb-2"><%= __("Password") %></label>
+                        <div>
+                            <div class="relative">
+                                <input class="px-3 py-2 max-w-full focus:ring focus:outline-none border-gray-700 rounded w-full dark:placeholder-gray-400 h-12 border bg-white dark:bg-slate-800 pl-10"
+                                       type="password" placeholder="<%= __("Password") %>" name="password"/>
+                                <span class="inline-flex justify-center items-center w-10 h-12 absolute top-0 left-0 z-10 pointer-events-none text-gray-500 dark:text-slate-400">
                             <svg viewBox="0 0 24 24" width="16" height="16" class="inline-block"><path
                                         fill="currentColor"
                                         d="M21 13H14.4L19.1 17.7L17.7 19.1L13 14.4V21H11V14.3L6.3 19L4.9 17.6L9.4 13H3V11H9.6L4.9 6.3L6.3 4.9L11 9.6V3H13V9.4L17.6 4.8L19 6.3L14.3 11H21V13Z"></path></svg>
                         </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <input type="hidden" name="captchaSolution" id="captchaSolution"/>
+                    <input type="hidden" name="captchaSolution" id="captchaSolution"/>
 
-                <div class="flex justify-between items-center mt-6">
-                    <button class="inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-white bg-blue-500 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-900 font-medium border-blue-500">
-                        <%= __("Log in") %>
-                    </button>
-                    <% if (config.registration?.enable === true) { %>
-                        <a href="<%- config.routePrefix %>/model/userap/register"
-                           class="inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-white bg-gray-500 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-900 font-medium border-gray-500">
-                            <%= __("Register") %>
-                        </a>
-                    <% } %>
-                </div>
-
-                <!-- Captcha -->
-                <div class="bg-white rounded-lg shadow-lg p-4 mt-6 flex items-center space-x-4">
-                    <div class="relative">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
-                            </svg>
-                        </div>
-                        <div id="spinner" class="spinner absolute inset-0 m-auto hidden"></div>
+                    <div class="flex justify-between items-center mt-6">
+                        <button class="inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-white bg-blue-500 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-900 font-medium border-blue-500">
+                            <%= __("Log in") %>
+                        </button>
+                        <% if (config.registration?.enable === true) { %>
+                            <a href="<%- config.routePrefix %>/model/userap/register"
+                               class="inline-flex justify-center items-center gap-1 whitespace-nowrap focus:outline-none transition-colors cursor-pointer rounded border py-2 px-3 text-white bg-gray-500 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-900 font-medium border-gray-500">
+                                <%= __("Register") %>
+                            </a>
+                        <% } %>
                     </div>
-                    <span id="robot-text" class="text-gray-600 font-semibold">I'm not a robot</span>
-                    <svg id="checkmark" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 hidden"
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <path class="checkmark" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
+
+                    <!-- Captcha -->
+                    <div class="bg-white rounded-lg shadow-lg p-4 mt-6 flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <div id="spinner" class="spinner absolute inset-0 m-auto hidden"></div>
+                        </div>
+                        <span id="robot-text" class="text-gray-600 font-semibold">I'm not a robot</span>
+                        <svg id="checkmark" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 hidden"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <path class="checkmark" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
-<script>
-  // Dark-mode
-  const dark = localStorage.getItem('__dark-mode');
-  const html = document.querySelector('html');
+    <script>
+        // Dark-mode
+        const dark = localStorage.getItem('__dark-mode');
+        const html = document.querySelector('html');
 
-  if (dark === '1') {
-    html.classList.add('dark');
-  }
+        if (dark === '1') {
+            html.classList.add('dark');
+        }
 
-  async function solveCaptchaAndSubmit() {
-    const spinner = document.getElementById('spinner');
-    const robotText = document.getElementById('robot-text');
-    const checkmark = document.getElementById('checkmark');
+        async function solveCaptchaAndSubmit() {
+            const spinner = document.getElementById('spinner');
+            const robotText = document.getElementById('robot-text');
+            const checkmark = document.getElementById('checkmark');
 
-    try {
-      // Disable all buttons and links
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach(button => button.disabled = true);
+            try {
+                // Disable all buttons and links
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(button => button.disabled = true);
 
-      const links = document.querySelectorAll('a');
-      links.forEach(link => {
-        link.style.pointerEvents = 'none';
-        link.href = '#';
-      });
+                const links = document.querySelectorAll('a');
+                links.forEach(link => {
+                    link.style.pointerEvents = 'none';
+                    link.href = '#';
+                });
 
-      // Show spinner
-      spinner.classList.remove('hidden');
-      robotText.textContent = "Solving CAPTCHA...";
+                // Show spinner
+                spinner.classList.remove('hidden');
+                robotText.textContent = "Solving CAPTCHA...";
 
-      function sleep(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-      }
+                function sleep(ms) {
+                    return new Promise((resolve) => setTimeout(resolve, ms));
+                }
 
-      // spinner does not have time to appear, so call sleep function
-      await sleep(100)
+                // spinner does not have time to appear, so call sleep function
+                await sleep(100)
 
-      // Start solving
-      const puzzle = new Uint8Array(<%- JSON.stringify(captchaTask) %>);
-      const solution = await window.solveCaptcha(puzzle);
+                // Start solving
+                const puzzle = new Uint8Array(<%- JSON.stringify(captchaTask) %>);
+                const solution = await window.solveCaptcha(puzzle);
 
-      // CAPTCHA solved
-      robotText.textContent = "Verification complete!";
-      spinner.classList.add('hidden');
-      checkmark.classList.remove('hidden');
+                // CAPTCHA solved
+                robotText.textContent = "Verification complete!";
+                spinner.classList.add('hidden');
+                checkmark.classList.remove('hidden');
 
-      // Checkmark animation
-      setTimeout(() => {
-        checkmark.querySelector('.checkmark').classList.add('visible');
-      }, 100);
+                // Checkmark animation
+                setTimeout(() => {
+                    checkmark.querySelector('.checkmark').classList.add('visible');
+                }, 100);
 
-      document.getElementById("captchaSolution").value = solution;
-      document.getElementById("loginForm").submit();
-    } catch (error) {
-      console.error("Error solving CAPTCHA:", error);
-      robotText.textContent = "Error solving CAPTCHA. Try again.";
-      spinner.classList.add('hidden');
-    }
-  }
+                document.getElementById("captchaSolution").value = solution;
+                document.getElementById("loginForm").submit();
+            } catch (error) {
+                console.error("Error solving CAPTCHA:", error);
+                robotText.textContent = "Error solving CAPTCHA. Try again.";
+                spinner.classList.add('hidden');
+            }
+        }
 
-  document.getElementById("loginForm").addEventListener("submit", (event) => {
-    event.preventDefault();
-    solveCaptchaAndSubmit();
-  });
-</script>
+        document.getElementById("loginForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+            solveCaptchaAndSubmit();
+        });
+    </script>
 </body>
 </html>

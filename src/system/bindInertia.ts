@@ -117,7 +117,8 @@ export function bindInertia(adminizer: Adminizer) {
                 user: req.session.UserAP
             },
             menu: req.session.UserAP ? menuHelper.getMenuItems(req) : null,
-            brand: req.session.UserAP ? menuHelper.getBrandTitle() : null,
+            brand: menuHelper.getBrandTitle(),
+            logout: menuHelper.getLogoutUrl(),
         })
 
         next();
