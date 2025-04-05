@@ -1,7 +1,7 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
-import {inertiaGroupHelpers} from "../helpers/inertiaGroupHelpers";
+import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 
 export default async function editGroup(req: ReqType, res: ResType) {
 
@@ -116,9 +116,9 @@ export default async function editGroup(req: ReqType, res: ResType) {
     // console.log("GROUP", group)
 
     // return res.viewAdmin("editGroup", {entity: entity, group: group, users: users, groupedTokens: groupedTokens});
-    const props = inertiaGroupHelpers(entity, req, users, groupedTokens, group)
+    const props = inertiaGroupHelper(entity, req, users, groupedTokens, group)
     return req.Inertia.render({
         component: 'add-group',
-        props: props as unknown as Record<string | number | symbol, unknown>
+        props: props
     })
 };

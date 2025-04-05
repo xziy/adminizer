@@ -51,12 +51,12 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: "/adminizer",
     // routePrefix: "/admin",
-    auth: true,
-    registration: {
-        enable: true,
-        defaultUserGroup: "test",
-        confirmationRequired: false
-    },
+    // auth: true,
+    // registration: {
+    //     enable: true,
+    //     defaultUserGroup: "test",
+    //     confirmationRequired: false
+    // },
     dashboard: true,
     forms: {
         path: 'forms',

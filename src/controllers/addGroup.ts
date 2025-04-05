@@ -1,7 +1,7 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
-import {inertiaGroupHelpers} from "../helpers/inertiaGroupHelpers";
+import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 
 export default async function addGroup(req: ReqType, res: ResType) {
 
@@ -80,7 +80,7 @@ export default async function addGroup(req: ReqType, res: ResType) {
         // console.log(group)
     }
 
-    const props = inertiaGroupHelpers(entity, req, users, groupedTokens)
+    const props = inertiaGroupHelper(entity, req, users, groupedTokens)
     return req.Inertia.render({
         component: 'add-group',
         props: props as unknown as Record<string | number | symbol, unknown>

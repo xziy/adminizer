@@ -5,6 +5,7 @@ import {BaseFieldConfig, CreateUpdateConfig} from "../interfaces/adminpanelConfi
 import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
+import inertiaAddHelper from "../helpers/inertiaAddHelper";
 
 export default async function add(req: ReqType, res: ResType) {
 	let entity = ControllerHelper.findEntityObject(req);
@@ -131,9 +132,11 @@ export default async function add(req: ReqType, res: ResType) {
 		// 	fields: fields,
 		// 	data: data
 		// });
+
+        const props = inertiaAddHelper(req, entity)
         return req.Inertia.render({
             component: 'add',
-            props: null
+            props: props
         })
 	}
 };

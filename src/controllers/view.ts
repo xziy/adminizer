@@ -2,7 +2,7 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
-import {inertiaGroupHelpers} from "../helpers/inertiaGroupHelpers";
+import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 import {AccessRightsToken} from "../interfaces/types";
 
 export default async function view(req: ReqType, res: ResType) {
@@ -58,7 +58,7 @@ export default async function view(req: ReqType, res: ResType) {
             const userProps = inertiaUserHelper(entity, req, groups, record, true)
             return req.Inertia.render({
                 component: 'add-user',
-                props: userProps as unknown as Record<string | number | symbol, unknown>
+                props: userProps
             })
 
         case 'groupap':
@@ -87,10 +87,10 @@ export default async function view(req: ReqType, res: ResType) {
             for (let department of departments) {
                 groupedTokens[department] = req.adminizer.accessRightsHelper.getTokensByDepartment(department)
             }
-            const groupProps = inertiaGroupHelpers(entity, req, users, groupedTokens, group, true)
+            const groupProps = inertiaGroupHelper(entity, req, users, groupedTokens, group, true)
             return req.Inertia.render({
                 component: 'add-group',
-                props: groupProps as unknown as Record<string | number | symbol, unknown>
+                props: groupProps
             })
 
         default:

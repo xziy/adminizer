@@ -67,8 +67,6 @@ export default function Lodin() {
                 }))
 
                 post(page.props.submitLink, {
-                    onSuccess: () => {
-                    },
                     onError: (errors) => {
                         for (const key of Object.keys(errors)) {
                             toast.error(errors[key])
@@ -107,7 +105,7 @@ export default function Lodin() {
                                     type="text"
                                     required
                                     tabIndex={1}
-                                    autoComplete="login"
+                                    autoComplete="username"
                                     value={data.login}
                                     disabled={processing || captchaProcessing}
                                     onChange={(e) => {
@@ -129,7 +127,7 @@ export default function Lodin() {
                                     required
                                     disabled={processing || captchaProcessing}
                                     tabIndex={1}
-                                    autoComplete="password"
+                                    autoComplete="current-password"
                                     value={data.password}
                                     onChange={(e) => {
                                         handleChangeDate('password', e.target.value)

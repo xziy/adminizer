@@ -13,7 +13,7 @@ interface groupedTokens {
     fields: Field[]
 }
 
-interface listProps {
+interface listProps extends Record<string | number | symbol, unknown>{
     edit: boolean;
     view: boolean;
     btnBack: {
@@ -31,7 +31,7 @@ interface listProps {
     groupedTokens: groupedTokens[]
 }
 
-export function inertiaGroupHelpers(
+export function inertiaGroupHelper(
     entity: Entity, req: ReqType, users: ModelsAP["UserAP"][],
     groupedTokens: {
         [key: string]: AccessRightsToken[]

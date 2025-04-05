@@ -80,7 +80,7 @@ export default function Register() {
                                     type="text"
                                     required
                                     tabIndex={1}
-                                    autoComplete="login"
+                                    autoComplete="username"
                                     value={data.login}
                                     disabled={processing}
                                     onChange={(e) => {
@@ -122,7 +122,7 @@ export default function Register() {
                                     type="password"
                                     required
                                     tabIndex={1}
-                                    autoComplete="password"
+                                    autoComplete="new-password"
                                     value={data.password}
                                     disabled={processing}
                                     onChange={(e) => {
@@ -143,7 +143,7 @@ export default function Register() {
                                     type="password"
                                     required
                                     tabIndex={1}
-                                    autoComplete="confirmPassword"
+                                    autoComplete="new-password"
                                     value={data.confirmPassword}
                                     disabled={processing}
                                     onChange={(e) => {

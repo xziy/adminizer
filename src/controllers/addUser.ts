@@ -72,6 +72,6 @@ export default async function (req: ReqType, res: ResType) {
     const props = inertiaUserHelper(entity, req, groups)
     return req.Inertia.render({
         component: 'add-user',
-        props: props as unknown as Record<string | number | symbol, unknown>
+        props: props
     })
 };

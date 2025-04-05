@@ -1,18 +1,9 @@
 import {Entity} from "../interfaces/types";
 import {Fields} from "./fieldsHelper";
+import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 
-type Action = {
-    title: string;
-    link: string;
-}
-
-interface listProps {
-    actions: {
-        link: string;
-        id: string;
-        title: string;
-        icon: string;
-    }[],
+interface listProps extends Record<string | number | symbol, unknown>{
+    actions: Actions[],
     thActionsTitle: string,
     crudActions: {
         createTitle: string;
@@ -67,20 +58,8 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
     if (req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.session.UserAP)) {
         props.crudActions.deleteTitle = req.i18n.__('Delete')
     }
-    if (req.adminizer.menuHelper.hasGlobalActions(entity.config, actionType)) {
-        const actions = req.adminizer.menuHelper.getGlobalActions(entity.config, actionType)
-        if (actions && actions.length > 0) {
-            actions.forEach(function (action) {
-                if (req.adminizer.accessRightsHelper.hasPermission(action.accessRightsToken, req.session.UserAP)) {
-                    props.actions.push({
-                        link: action.link,
-                        id: action.id,
-                        title: action.title,
-                        icon: action.icon
-                    })
-                }
-            })
-        }
-    }
+
+    props.actions = inertiaActionsHelper(actionType, entity, req)
+
     return props
 }

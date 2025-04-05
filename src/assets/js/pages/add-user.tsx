@@ -123,7 +123,7 @@ export default function AddUser() {
                                         type="text"
                                         required
                                         tabIndex={1}
-                                        autoComplete={getField('login')?.name}
+                                        autoComplete="username"
                                         value={data.login as string}
                                         onChange={(e) => handleChangeDate('login', e.target.value)}
                                         disabled={processing || page.props.view}
@@ -137,7 +137,7 @@ export default function AddUser() {
                                         type="text"
                                         required
                                         tabIndex={1}
-                                        autoComplete={getField('fullName')?.name}
+                                        autoComplete="additional-name"
                                         value={data.fullName as string}
                                         onChange={(e) => handleChangeDate('fullName', e.target.value)}
                                         disabled={processing || page.props.view}
@@ -151,7 +151,7 @@ export default function AddUser() {
                                         type="email"
                                         required
                                         tabIndex={1}
-                                        autoComplete={getField('email')?.name}
+                                        autoComplete="email"
                                         value={data.email as string}
                                         onChange={(e) => handleChangeDate('email', e.target.value)}
                                         disabled={processing || page.props.view}
@@ -253,7 +253,7 @@ export default function AddUser() {
                                     type="password"
                                     required={!page.props.edit}
                                     tabIndex={1}
-                                    autoComplete={getField('userPassword')?.name}
+                                    autoComplete="new-password"
                                     value={data.password as string}
                                     onChange={(e) => handleChangeDate('userPassword', e.target.value)}
                                     disabled={processing || page.props.view}
@@ -268,7 +268,7 @@ export default function AddUser() {
                                     type="password"
                                     required={!page.props.edit}
                                     tabIndex={1}
-                                    autoComplete={getField('repeatUserPassword')?.name}
+                                    autoComplete="new-password"
                                     value={data.repeatUserPassword as string}
                                     onChange={(e) => handleChangeDate('repeatUserPassword', e.target.value)}
                                     disabled={processing || page.props.view}

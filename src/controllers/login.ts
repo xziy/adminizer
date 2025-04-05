@@ -1,5 +1,6 @@
 import {POWCaptcha} from "../lib/v4/POWCaptcha";
 import passwordHash from "password-hash";
+import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
 
 export default async function login(req: ReqType, res: ResType) {
     const powCaptcha = new POWCaptcha();
@@ -51,7 +52,7 @@ export default async function login(req: ReqType, res: ResType) {
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
                     req.session.UserAP = user;
-                    return res.redirect(`${req.adminizer.config.routePrefix}`);
+                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
                 } else {
                     return inertiaAdminMessage(req, "Wrong password", 'password');
                 }
@@ -66,7 +67,7 @@ export default async function login(req: ReqType, res: ResType) {
                 component: 'login',
                 props: {
                     captchaTask: captchaTask,
-                    ...loginHelper(req),
+                    ...inertiaLoginHelper(req),
                 }
             })
         }
@@ -97,23 +98,8 @@ async function inertiaAdminMessage(req: ReqType, message: string, messageType: s
         props: {
             captchaTask: captchaTask,
             errors: errors,
-            ...loginHelper(req),
+            ...inertiaLoginHelper(req),
         }
     })
 }
 
-function loginHelper(req: ReqType) {
-    let props: Record<string, unknown> = {};
-    props.login = req.i18n.__('Login');
-    props.password = req.i18n.__('Password');
-    props.title = req.i18n.__("Welcome");
-    props.submitButton = req.i18n.__("Log in");
-    props.submitLink = `${req.adminizer.config.routePrefix}/model/userap/login`
-    if (req.adminizer.config.registration?.enable === true) {
-        props.registerLink = {
-            title: req.i18n.__("Register"),
-            link: `${req.adminizer.config.routePrefix}/model/userap/register`
-        };
-    }
-    return props
-}

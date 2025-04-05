@@ -8,7 +8,7 @@ interface Field {
     value: string | boolean | Record<string, string>[];
 }
 
-interface listProps {
+interface listProps extends Record<string | number | symbol, unknown>{
     edit: boolean;
     view: boolean;
     btnBack: {
