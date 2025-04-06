@@ -7,7 +7,60 @@ const models: AdminpanelConfig["models"] = {
         fields: {
             createdAt: false,
             updatedAt: false,
-            title: 'Title',
+            title: {
+                title: 'Title',
+                type: 'string',
+                required: true
+            },
+            description: {
+                title: 'Textarea',
+                type: 'text',
+                tooltip: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic, nisi.'
+            },
+            sort: {
+                type: 'boolean',
+                title: 'Boolean'
+            },
+            range: {
+                type: 'range',
+                title: 'Range',
+                options: {
+                    min: 10,
+                    max: 80
+                }
+            },
+            select: {
+                title: 'Select',
+                isIn: ['one', 'two', 'three']
+            },
+            date: {
+                title: 'Date',
+                type: 'date',
+            },
+            month: {
+                title: 'Month',
+                type: 'month',
+            },
+            datetime: {
+                title: 'Date and time',
+                type: 'datetime',
+            },
+            time: {
+                title: 'time',
+                type: 'time',
+            },
+            number: {
+                title: 'Number',
+                type: 'number',
+            },
+            color: {
+                title: 'color',
+                type: 'color',
+            },
+            week: {
+                title: 'Week',
+                type: 'week',
+            },
         },
         list: {
             fields: {},

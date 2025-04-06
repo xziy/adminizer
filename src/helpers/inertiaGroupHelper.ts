@@ -1,16 +1,10 @@
-import {AccessRightsToken, Entity} from "../interfaces/types";
+import {AccessRightsToken, Entity, PropsField} from "../interfaces/types";
 
-interface Field {
-    label: string;
-    type: string;
-    name: string;
-    tooltip?: string;
-    value: string | boolean | Record<string, string>[];
-}
+
 
 interface groupedTokens {
     header: string,
-    fields: Field[]
+    fields: PropsField[]
 }
 
 interface listProps extends Record<string | number | symbol, unknown>{
@@ -26,8 +20,8 @@ interface listProps extends Record<string | number | symbol, unknown>{
     postLink: string,
     head: string,
     userHead: string,
-    fields: Field[],
-    users: Field[]
+    fields: PropsField[],
+    users: PropsField[]
     groupedTokens: groupedTokens[]
 }
 
@@ -87,7 +81,7 @@ export function inertiaGroupHelper(
     if (Object.keys(groupedTokens).length) {
         for (let [department, tokens] of Object.entries(groupedTokens)) {
             let header = department
-            let fields: Field[] = []
+            let fields: PropsField[] = []
             for (let token of tokens) {
                 fields.push({
                     label: token.name,

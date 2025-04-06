@@ -21,3 +21,15 @@ export interface AccessRightsToken {
     department: string
     id: string
 }
+
+export interface PropsField {
+    label: string;
+    type: string;
+    name: string;
+    tooltip?: string;
+    value: string | boolean | number;
+    disabled?: boolean;
+    required?: boolean;
+    isIn?: string[] | number[] | boolean[];
+    options?: Record<string, string>
+}

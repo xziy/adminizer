@@ -357,7 +357,7 @@ export interface BaseFieldConfig {
 	/**
 	 * Options for widgets like 'Navigation', 'Schedule'
 	 * */
-	options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions
+	options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions | RangeType
 	/**
 	 * Function that makes data modification on list view
 	 * */
@@ -377,6 +377,9 @@ export interface BaseFieldConfig {
 
 	/** Show as disabled element HTML */
 	disabled?: boolean
+
+    /** Show as required element HTML */
+    required?: boolean
 }
 
 export interface TuiEditorFieldConfig extends BaseFieldConfig {
@@ -386,6 +389,11 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 
 export interface MediaManagerOptionsField {
 	id: string
+}
+
+interface RangeType {
+    min?: number
+    max?: number
 }
 
 interface ScheduleOptionsField {

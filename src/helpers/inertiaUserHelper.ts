@@ -1,12 +1,4 @@
-import {Entity} from "../interfaces/types";
-
-interface Field {
-    label: string;
-    type: string;
-    name: string;
-    tooltip?: string;
-    value: string | boolean | Record<string, string>[];
-}
+import {Entity, PropsField} from "../interfaces/types";
 
 interface listProps extends Record<string | number | symbol, unknown>{
     edit: boolean;
@@ -22,8 +14,8 @@ interface listProps extends Record<string | number | symbol, unknown>{
     postLink: string,
     head: string,
     groupHead: string,
-    fields: Field[]
-    groups: Field[]
+    fields: PropsField[]
+    groups: PropsField[]
     locales: Record<string, string>[],
 }
 

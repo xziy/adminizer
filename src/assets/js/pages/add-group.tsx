@@ -15,12 +15,14 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+type value = string | boolean | Date | Record<string, string>[]
+
 interface Field {
     label: string;
     type: string;
     name: string;
     tooltip?: string;
-    value: string | boolean | Record<string, string>[];
+    value: value;
 }
 
 interface groupedTokens {
@@ -64,12 +66,12 @@ export default function AddGroup() {
         clearErrors,
         post,
         processing,
-    } = useForm<Required<Record<string, string | boolean | Date | Record<string, string>[]>>>(initialFormData);
+    } = useForm<Required<Record<string, value>>>(initialFormData);
     const getField = (name: string) => {
         return page.props.fields.find(field => field.name === name);
     }
 
-    const handleChangeDate = (fieldName: string, value: string | Date | boolean) => {
+    const handleChangeDate = (fieldName: string, value: value) => {
         clearErrors()
         setData(fieldName, value);
     }

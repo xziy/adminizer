@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select"
 import {FormEventHandler, useEffect, useState} from "react";
 import ky from 'ky';
-import {DatePicker} from "@/components/date-picker.tsx";
 import {Checkbox} from "@/components/ui/checkbox"
 import {
     Tooltip,
@@ -25,13 +24,14 @@ import {
 } from "@/components/ui/tooltip"
 import InputError from "@/components/input-error.tsx";
 
+type value = string | boolean | Date | Record<string, string>[]
 
 interface Field {
     label: string;
     type: string;
     name: string;
     tooltip?: string;
-    value: string | boolean | Date | Record<string, string>[];
+    value: value;
 }
 
 interface AddUserProps extends SharedData {
@@ -72,7 +72,7 @@ export default function AddUser() {
         clearErrors,
         post,
         processing,
-    } = useForm<Required<Record<string, string | boolean | Date | Record<string, string>[]>>>(initialFormData);
+    } = useForm<Required<Record<string, value>>>(initialFormData);
 
     useEffect(() => {
         const getTimezones = async () => {
@@ -97,7 +97,7 @@ export default function AddUser() {
         post(page.props.postLink);
     };
 
-    const handleChangeDate = (fieldName: string, value: string | Date | boolean) => {
+    const handleChangeDate = (fieldName: string, value: value) => {
         clearErrors()
         setData(fieldName, value);
     }
@@ -179,8 +179,15 @@ export default function AddUser() {
                                     {getField('date') && (
                                         <div className="grid gap-4">
                                             <Label htmlFor={getField('date')?.name}>{getField('date')?.label}</Label>
-                                            <DatePicker onSelect={(data) => handleChangeDate('date', data as Date)}
-                                                        selected={data.date ? new Date(data.date as string) : undefined} disabled={processing || page.props.view}/>
+                                            <Input
+                                                id={getField('date')?.name}
+                                                type="date"
+                                                className="max-w-fit"
+                                                tabIndex={1}
+                                                value={data.date as string}
+                                                onChange={(e) => handleChangeDate('date', e.target.value)}
+                                                disabled={processing}
+                                            />
                                         </div>
                                     )}
                                     <div className="flex gap-6">

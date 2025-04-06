@@ -111,8 +111,11 @@ export default async function add(req: ReqType, res: ResType) {
 			if (req.body.jsonPopupCatalog) {
 				return res.json({record: record})
 			} else {
-				req.session.messages.adminSuccess.push('Your record was created !');
-				return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+				// req.session.messages.adminSuccess.push('Your record was created !');
+				// return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+
+                req.flash.setFlashMessage('success', 'Your record was created !');
+                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
 			}
 		} catch (e) {
 			Adminizer.log.error(e);
@@ -133,7 +136,7 @@ export default async function add(req: ReqType, res: ResType) {
 		// 	data: data
 		// });
 
-        const props = inertiaAddHelper(req, entity)
+        const props = inertiaAddHelper(req, entity, fields)
         return req.Inertia.render({
             component: 'add',
             props: props
