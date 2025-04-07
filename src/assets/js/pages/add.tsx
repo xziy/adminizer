@@ -163,7 +163,6 @@ const FieldRenderer: FC<{
                     onChange={handleInputChange}
                     disabled={processing || field.disabled}
                     placeholder={field.label}
-                    autoComplete="on"
                 />
             );
     }

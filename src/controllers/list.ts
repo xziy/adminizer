@@ -23,11 +23,19 @@ export default async function list(req: ReqType, res: ResType) {
     let fields = dataAccessor.getFieldsConfig();
 
     const header = inertiaListHelper(entity, req, fields)
-
+    let start = "0";
+    if (req.query.page) {
+        if (req.query.page === '1') {
+            start = "0";
+        } else {
+            start = ((+req.query.page - 1) * +req.query.count).toString();
+        }
+    }
+    const count = req.query.count ? req.query.count.toString() : "2"
     const mockRequestBody = {
         draw: "1",
-        start: "0",
-        length: "10",
+        start: start,
+        length: count,
         // @ts-ignore
         order: [],
         // @ts-ignore

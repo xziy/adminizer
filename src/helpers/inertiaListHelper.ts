@@ -2,7 +2,7 @@ import {Entity} from "../interfaces/types";
 import {Fields} from "./fieldsHelper";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 
-interface listProps extends Record<string | number | symbol, unknown>{
+interface listProps extends Record<string | number | symbol, unknown> {
     actions: Actions[],
     thActionsTitle: string,
     crudActions: {
@@ -20,7 +20,8 @@ interface listProps extends Record<string | number | symbol, unknown>{
     entity: {
         name: string;
         uri: string
-    }
+    },
+    inlineActions: Actions[]
 }
 
 export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) {
@@ -28,6 +29,7 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
     let props = {
         thActionsTitle: req.i18n.__('Actions'),
         actions: [],
+        inlineActions: [],
         crudActions: {
             createTitle: '',
             editTitle: '',
@@ -60,6 +62,19 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
     }
 
     props.actions = inertiaActionsHelper(actionType, entity, req)
+
+    if (req.adminizer.menuHelper.hasInlineActions(entity.config, 'list')) {
+        for (const inlineAction of req.adminizer.menuHelper.getInlineActions(entity.config, 'list')) {
+            if (req.adminizer.accessRightsHelper.hasPermission(inlineAction.accessRightsToken, req.session.UserAP)) {
+                props.inlineActions.push({
+                    icon: inlineAction.icon,
+                    id: inlineAction.id,
+                    link: inlineAction.link,
+                    title: req.i18n.__(inlineAction.title),
+                })
+            }
+        }
+    }
 
     return props
 }

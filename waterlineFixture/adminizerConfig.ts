@@ -4,6 +4,28 @@ const models: AdminpanelConfig["models"] = {
     example: {
         title: 'Exapmle Form example from file',
         model: 'example',
+        tools: [
+            {
+                id: '1',
+                link: '/test/404',
+                title: 'Some new action',
+                icon: 'reorder',
+            },
+            {
+                id: '2',
+                link: '#',
+                title: 'Form example',
+                icon: 'payment',
+                accessRightsToken: 'read-example-form'
+            },
+            {
+                id: '3',
+                link: '#',
+                title: 'Form example from file Form example from file',
+                icon: 'touch_app',
+                accessRightsToken: 'read-exampleFromFile-form'
+            }
+        ],
         fields: {
             createdAt: false,
             updatedAt: false,
@@ -76,19 +98,19 @@ const models: AdminpanelConfig["models"] = {
                 inline: [
                     {
                         id: "1",
-                        link: '#',
+                        link: 'test',
                         title: 'Google',
                         icon: 'insert_link'
                     },
                     {
                         id: "2",
-                        link: '#',
+                        link: 'test2',
                         title: 'Google1',
                         icon: 'insert_link'
                     },
                     {
                         id: "3",
-                        link: '#',
+                        link: 'test3',
                         title: 'Google2',
                         icon: 'insert_link'
                     }

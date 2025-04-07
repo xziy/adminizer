@@ -4,7 +4,7 @@ import {BreadcrumbItem, SharedData} from "@/types";
 import {Button} from "@/components/ui/button.tsx";
 import {Icon} from "@/components/icon.tsx";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
-import {FormEventHandler} from "react";
+import {FormEventHandler, useMemo} from "react";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
@@ -54,12 +54,12 @@ export default function AddGroup() {
     const page = usePage<AddGroupProps>();
 
     const {fields, groupedTokens, users} = page.props;
-    const initialFormData = {
+    const initialFormData = useMemo(() => ({
         ...Object.fromEntries(fields.map(field => [field.name, field.value])),
         ...Object.fromEntries(users.map(field => [field.name, field.value])),
         ...Object.fromEntries(groupedTokens.flatMap(group =>
             group.fields.map(field => [field.name, field.value])))
-    };
+    }), [fields, groupedTokens, users]);
     const {
         data,
         setData,
