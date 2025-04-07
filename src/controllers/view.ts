@@ -4,6 +4,7 @@ import {Adminizer} from "../lib/Adminizer";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 import {AccessRightsToken} from "../interfaces/types";
+import inertiaAddHelper from "../helpers/inertiaAddHelper";
 
 export default async function view(req: ReqType, res: ResType) {
     // Check id
@@ -94,7 +95,11 @@ export default async function view(req: ReqType, res: ResType) {
             })
 
         default:
-            return
+            const props = inertiaAddHelper(req, entity, fields, record, true)
+            return req.Inertia.render({
+                component: 'add',
+                props: props
+            })
     }
 
 };

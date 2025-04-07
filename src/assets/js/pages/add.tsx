@@ -98,7 +98,7 @@ const FieldRenderer: FC<{
             return (
                 <Checkbox
                     id={field.name}
-                    disabled={processing || field.disabled}
+                    disabled={processing || field.disabled }
                     tabIndex={1}
                     className="cursor-pointer size-5"
                     checked={value as boolean}
@@ -181,7 +181,7 @@ const Add: FC = () => {
     const {
         data,
         setData,
-        errors,
+        // errors,
         clearErrors,
         post,
         processing,
@@ -225,7 +225,7 @@ const Add: FC = () => {
                     field={field}
                     value={data[field.name]}
                     onChange={(value) => handleFieldChange(field.name, value)}
-                    processing={processing}
+                    processing={processing || page.props.view}
                 />
             </div>
         )),
