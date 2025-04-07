@@ -41,7 +41,8 @@ interface AddProps extends SharedData {
         link: string;
     };
     fields: Field[];
-    view?: boolean;
+    edit: boolean;
+    view: boolean;
     btnSave: {
         title: string;
     },
@@ -162,6 +163,7 @@ const FieldRenderer: FC<{
                     onChange={handleInputChange}
                     disabled={processing || field.disabled}
                     placeholder={field.label}
+                    autoComplete="on"
                 />
             );
     }

@@ -15,12 +15,12 @@ export default async function add(req: ReqType, res: ResType) {
 	}
 
 	if (!entity.config?.add) {
-		return res.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
+		return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
 	}
 
 	if (req.adminizer.config.auth) {
 		if (!req.session.UserAP) {
-			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+			return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 		} else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
 			return res.sendStatus(403);
 		}

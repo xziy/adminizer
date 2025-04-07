@@ -10,6 +10,7 @@ import {
 import { MediaManagerWidgetJSON } from "../lib/media-manager/AbstractMediaManager";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
+import inertiaAddHelper from "../helpers/inertiaAddHelper";
 
 export default async function edit(req: ReqType, res: ResType) {
 	//Check id
@@ -151,8 +152,11 @@ export default async function edit(req: ReqType, res: ResType) {
 					}
 				}
 
-				req.session.messages.adminSuccess.push('Your record was updated !');
-				return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+				// req.session.messages.adminSuccess.push('Your record was updated !');
+				// return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+
+                req.flash.setFlashMessage('success', 'Your record was updated !');
+                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
 			}
 		} catch (e) {
 			Adminizer.log.error(e);
@@ -182,10 +186,15 @@ export default async function edit(req: ReqType, res: ResType) {
 			fields: fields
 		});
 	} else {
-		return res.viewAdmin(null,{
-			entity: entity,
-			record: record,
-			fields: fields
-		});
+		// return res.viewAdmin(null,{
+		// 	entity: entity,
+		// 	record: record,
+		// 	fields: fields
+		// });
+        const props = inertiaAddHelper(req, entity, fields, record)
+        return req.Inertia.render({
+            component: 'add',
+            props: props
+        })
 	}
 };

@@ -4,6 +4,8 @@ import {Field, Fields} from "./fieldsHelper";
 import {BaseFieldConfig} from "../interfaces/adminpanelConfig";
 
 interface listProps extends Record<string | number | symbol, unknown> {
+    edit: boolean;
+    view: boolean;
     actions: Actions[],
     btnBack: {
         title: string;
@@ -16,9 +18,11 @@ interface listProps extends Record<string | number | symbol, unknown> {
     postLink: string,
 }
 
-export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields) {
+export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number>, view: boolean = false) {
     const actionType = 'add';
     let props: listProps = {
+        edit: !!record,
+        view: view,
         actions: [],
         btnBack: {
             title: req.i18n.__('Back'),
@@ -28,7 +32,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         btnSave: {
             title: req.i18n.__('Save')
         },
-        postLink: `${entity.uri}/add`,
+        postLink: record ? `${entity.uri}/edit/${record.id}` : `${entity.uri}/add`,
     }
     props.actions = inertiaActionsHelper(actionType, entity, req)
 
@@ -50,7 +54,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let disabled = false
         let required = fieldConfig.required ?? false
         let options = {}
-        let value = undefined
+        let value = record ? record[key] : undefined
 
         //@ts-ignore TODO: fix field type
         if (entity.config.model && req.adminizer.configHelper.isId(field, entity.config.model)) {
@@ -62,7 +66,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             if (type === 'range') {
                 options = {...fieldConfig.options}
                 if ("min" in fieldConfig.options) {
-                    value = fieldConfig.options.min ? fieldConfig.options.min : 0
+                    value = record ? record[key] : fieldConfig.options.min ? fieldConfig.options.min : 0
                 }
             }
         }
