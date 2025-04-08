@@ -1,5 +1,7 @@
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 
+const routePrefix = "/adminizer";
+
 const models: AdminpanelConfig["models"] = {
     example: {
         title: 'Exapmle Form example from file',
@@ -13,7 +15,7 @@ const models: AdminpanelConfig["models"] = {
             },
             {
                 id: '2',
-                link: '#',
+                link: `${routePrefix}/form/global`,
                 title: 'Form example',
                 icon: 'payment',
                 accessRightsToken: 'read-example-form'
@@ -124,7 +126,7 @@ const models: AdminpanelConfig["models"] = {
 // @ts-ignore
 // @ts-ignore
 const config: AdminpanelConfig = {
-    routePrefix: "/adminizer",
+    routePrefix: routePrefix,
     // routePrefix: "/admin",
     // auth: true,
     // registration: {

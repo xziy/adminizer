@@ -1,5 +1,5 @@
-import { LucideIcon } from 'lucide-react';
 import {MenuItem} from "../../../helpers/menuHelper"
+
 
 export interface Auth {
     user: User;
@@ -17,8 +17,8 @@ export interface NavGroup {
 
 export interface ColumnConfig {
     config: {
-        title: string;
-    }
+        title: string
+    };
 }
 
 export interface Columns {

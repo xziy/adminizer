@@ -58,7 +58,7 @@ export function NavMain({items = []}: { items: NavItem[] }) {
                                             <SidebarMenuSubItem key={subItem.title}>
                                                 <SidebarMenuSubButton asChild isActive={isActiveItem(subItem.link)}>
                                                     <Link href={subItem.link} prefetch>
-                                                        <MaterialIcon name={subItem.icon} className="!text-[18px]"/>
+                                                        <MaterialIcon name={subItem.icon ?? ''} className="!text-[18px]"/>
                                                         <span>{subItem.title}</span>
                                                     </Link>
                                                 </SidebarMenuSubButton>

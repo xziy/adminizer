@@ -259,7 +259,7 @@ export default function List() {
     )
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} className="overflow-auto">
             <Toaster position="top-center" richColors closeButton/>
             <div className={`flex h-full flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
                 <div className="flex gap-6">
