@@ -19,6 +19,7 @@ const Example = Waterline.Collection.extend({
         number: { type: "number" },
         color: { type: "string" },
         week: { type: "string" },
+        editor: { type: "string" },
 		// owner: { model: "test" },
 	}
 });

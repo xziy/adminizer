@@ -55,7 +55,7 @@ export function NavMain({items = []}: { items: NavItem[] }) {
                                 <CollapsibleContent>
                                     <SidebarMenuSub>
                                         {item.actions?.map((subItem) => (
-                                            <SidebarMenuSubItem key={subItem.title}>
+                                            <SidebarMenuSubItem key={subItem.id}>
                                                 <SidebarMenuSubButton asChild isActive={isActiveItem(subItem.link)}>
                                                     <Link href={subItem.link} prefetch>
                                                         <MaterialIcon name={subItem.icon ?? ''} className="!text-[18px]"/>

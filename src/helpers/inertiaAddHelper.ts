@@ -79,6 +79,9 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if (['text', 'longtext', 'mediumtext'].includes(type)) {
             fieldType = 'textarea'
         }
+        if(['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
+            fieldType = 'wysiwyg'
+        }
 
         props.fields.push({
             label: label,

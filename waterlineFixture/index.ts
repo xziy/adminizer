@@ -2,38 +2,14 @@ import {Adminizer} from "../dist/lib/Adminizer";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
 import adminpanelConfig from "./adminizerConfig";
-// import {InstallStepper} from "../dist/lib/installStepper/installStepper";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
-// import JsonSchema from "./models/JsonSchema";
-// import Test from "./models/Test";
-// import User from "./models/User";
-// import CatalogGroupNav from "./models/CatalogGroupNav";
-// import CatalogPageNav from "./models/CatalogPageNav";
-// import GroupCatalog from "./models/GroupCatalog";
-// import Page from "./models/Page";
 
-// import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
-// import {SiteLinks} from "./test-widgets/Links";
-// import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
-// import {CustomOne, CustomTwo} from "./test-widgets/Custom";
-// import {ActionOne, ActionTwo} from "./test-widgets/Actions";
-//
-// import Step1 from "./installSteps/step1"
-// import Step2 from "./installSteps/step2"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
-// orm.registerModel(JsonSchema);
-// orm.registerModel(Test);
-// orm.registerModel(User);
-// //catalog
-// orm.registerModel(CatalogGroupNav);
-// orm.registerModel(CatalogPageNav);
-// orm.registerModel(GroupCatalog);
-// orm.registerModel(Page);
 
 // TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
 //  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)
@@ -62,30 +38,36 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     const waterlineAdapter = new WaterlineAdapter({orm: orm, ontology: ontology}); // ontology contains collections, orm just contains general methods
     const adminizer = new Adminizer([waterlineAdapter]);
 
-    // Add custom install steps
-    // if (process.env.ADD_EXAMPLE_INSTALL_STEPS) {
-    //     let installStepper = InstallStepper.getInstance();
-    //     let step1 = new Step1();
-    //     installStepper.addStep(step1)
-    //     let step2 = new Step2();
-    //     installStepper.addStep(step2)
-    // }
+
+
+    adminizer.emitter.on('adminizer:loaded', () => {
+        let policies: MiddlewareType[] = adminizer.config.policies;
+        const module = (req: ReqType, res: ResType) => {
+            if (req.adminizer.config.auth) {
+                if (!req.session.UserAP) {
+                    return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+                }
+            }
+            const isDev = process.env.NODE_ENV === 'development';
+            const moduleComponent = isDev ? '/modules/test/ComponentB.tsx' : `${adminizer.config.routePrefix}/assets/ComponentB.es.js`;
+
+            return req.Inertia.render({
+                component: 'module',
+                props: {
+                    title: 'Module Test',
+                    moduleComponent: moduleComponent,
+                    message: 'Hello from Adminizer',
+                }
+            })
+
+        }
+
+        adminizer.app.all(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
+    });
 
     try {
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
-        // Add widgets
-        // adminizer.widgetHandler.add(new SwitcherOne());
-        // adminizer.widgetHandler.add(new SwitcherTwo());
-        // adminizer.widgetHandler.add(new SiteLinks());
-        // adminizer.widgetHandler.add(new InfoOne());
-        // adminizer.widgetHandler.add(new InfoTwo());
-        // adminizer.widgetHandler.add(new Info3());
-        // adminizer.widgetHandler.add(new Info4());
-        // adminizer.widgetHandler.add(new CustomOne());
-        // adminizer.widgetHandler.add(new CustomTwo());
-        // adminizer.widgetHandler.add(new ActionOne());
-        // adminizer.widgetHandler.add(new ActionTwo());
     } catch (e) {
         console.log(e)
     }
@@ -118,7 +100,8 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             req.url.startsWith('/@id') || // Requests to Vite
             req.url.startsWith('/src/assets') ||   // Requests to source files
             req.url.startsWith('/@react-refresh') ||   // Requests to source files
-            req.url.startsWith('/node_modules')
+            req.url.startsWith('/node_modules') ||
+            req.url.startsWith('/modules')
         ) {
             adminizer.vite.middlewares(req, res);
         } else {

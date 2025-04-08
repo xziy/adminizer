@@ -1,17 +1,18 @@
 import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo} from 'react';
-import { Link, useForm, usePage } from "@inertiajs/react";
+import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Button } from "@/components/ui/button.tsx";
-import { Icon } from "@/components/icon.tsx";
-import { Label } from "@/components/ui/label.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Checkbox } from "@/components/ui/checkbox.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
-import { Slider } from "@/components/ui/slider.tsx";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {type BreadcrumbItem, type SharedData} from '@/types';
+import {Button} from "@/components/ui/button.tsx";
+import {Icon} from "@/components/icon.tsx";
+import {Label} from "@/components/ui/label.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
+import {Textarea} from "@/components/ui/textarea.tsx";
+import {Slider} from "@/components/ui/slider.tsx";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
@@ -54,7 +55,7 @@ const FieldRenderer: FC<{
     value: FieldValue;
     onChange: (value: FieldValue) => void;
     processing: boolean;
-}> = memo(({ field, value, onChange, processing }) => {
+}> = memo(({field, value, onChange, processing}) => {
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             onChange(e.target.value);
@@ -83,6 +84,13 @@ const FieldRenderer: FC<{
         [onChange]
     );
 
+    const handleEditorChange = useCallback(
+        (value: string) => {
+            onChange(value);
+        },
+        [onChange]
+    )
+
     const inputClassName = useMemo(() => {
         if (field.type === 'color') {
             return 'max-w-[40px] p-px h-[40px] border-transparent';
@@ -98,7 +106,7 @@ const FieldRenderer: FC<{
             return (
                 <Checkbox
                     id={field.name}
-                    disabled={processing || field.disabled }
+                    disabled={processing || field.disabled}
                     tabIndex={1}
                     className="cursor-pointer size-5"
                     checked={value as boolean}
@@ -140,7 +148,7 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                 >
                     <SelectTrigger className="w-full cursor-pointer" id={field.name}>
-                        <SelectValue placeholder={field.name} />
+                        <SelectValue placeholder={field.name}/>
                     </SelectTrigger>
                     <SelectContent>
                         {(field.isIn ?? []).map((option) => (
@@ -151,6 +159,10 @@ const FieldRenderer: FC<{
                     </SelectContent>
                 </Select>
             );
+        case 'wysiwyg':
+            return (
+                <AdminCKEditor initialValue={value as string} onChange={handleEditorChange} />
+            )
         default:
             return (
                 <Input
@@ -170,7 +182,7 @@ const FieldRenderer: FC<{
 
 const Add: FC = () => {
     const page = usePage<AddProps>();
-    const { fields, btnBack, view } = page.props;
+    const {fields, btnBack, view} = page.props;
 
     const initialFormData = useMemo(
         () => Object.fromEntries(fields.map(field => [field.name, field.value ?? ''])),
@@ -236,7 +248,7 @@ const Add: FC = () => {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Button className="mb-3 w-fit" asChild>
                     <Link href={btnBack.link}>
-                        <Icon iconNode={MoveLeft} />
+                        <Icon iconNode={MoveLeft}/>
                         {btnBack.title}
                     </Link>
                 </Button>

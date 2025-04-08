@@ -85,6 +85,10 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Week',
                 type: 'week',
             },
+            editor: {
+                title: 'Editor',
+                type: 'wysiwyg'
+            }
         },
         list: {
             fields: {},
@@ -151,13 +155,22 @@ const config: AdminpanelConfig = {
         }
     },
     navbar: {
-        additionalLinks: [{
-            id: '4',
-            link: '/adminizer/form/global',
-            title: 'Global Settings',
-            icon: 'build',
-            accessRightsToken: 'read-global-form'
-        }]
+        additionalLinks: [
+            {
+                id: '1',
+                link: `${routePrefix}/form/global`,
+                title: 'Global Settings',
+                icon: 'build',
+                accessRightsToken: 'read-global-form'
+            },
+            {
+                id: '2',
+                link: `${routePrefix}/module-test`,
+                title: 'Test Module',
+                icon: '360',
+                accessRightsToken: 'read-global-form'
+            }
+        ]
     },
     sections: [
         {
