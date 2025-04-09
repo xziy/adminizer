@@ -15,6 +15,10 @@ export class ToastUiEditor extends AbstractControls{
     }
     readonly type: ControlType = 'markdown';
 
+    constructor(routPrefix: string) {
+        super(routPrefix);
+    }
+
     getConfig(): Config | undefined {
         return this.config;
     }

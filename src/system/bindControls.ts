@@ -1,9 +1,11 @@
 import {ControlsHandler} from "../lib/controls/ControlsHandler";
 import {CKeditor} from "../lib/controls/wysiwyg/CKeditor";
 import {ToastUiEditor} from "../lib/controls/markdown/ToastUiEditor";
+import {Adminizer} from "../lib/Adminizer";
 
-export function bindControls(handler: ControlsHandler): void {
+export function bindControls(adminizer: Adminizer): void {
     // bind wysiwyg
-    handler.add(new CKeditor())
-    handler.add(new ToastUiEditor())
+    adminizer.controlsHandler.add(new CKeditor(adminizer.config.routePrefix))
+    // bind markdown
+    adminizer.controlsHandler.add(new ToastUiEditor(adminizer.config.routePrefix))
 }

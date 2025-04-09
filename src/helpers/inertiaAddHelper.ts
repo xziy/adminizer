@@ -203,7 +203,3 @@ function inputText(type: string, isIn: string[]) {
         }
     }
 }
-
-function resolveControlConfig(){
-
-}

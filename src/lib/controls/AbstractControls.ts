@@ -15,6 +15,11 @@ export abstract class AbstractControls {
     public abstract readonly type: ControlType;
     public abstract readonly path: Path
     public abstract readonly config: Config
+    public readonly routPrefix: string
+
+    constructor(routPrefix: string) {
+        this.routPrefix = routPrefix
+    }
 
     public abstract getConfig(): Config | undefined
 

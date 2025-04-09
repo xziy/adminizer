@@ -7790,7 +7790,7 @@ function Fg({ initialValue: r, onChange: t }) {
   const e = Pg((n) => {
     t(n);
   }, [t]);
-  return /* @__PURE__ */ Zo.jsx(Pr, { theme: "snow", value: r, onChange: e });
+  return /* @__PURE__ */ Zo.jsx(Pr, { theme: "snow", value: r, onChange: e, style: { paddingBottom: "40px" } });
 }
 const Zg = Ug(Fg);
 export {

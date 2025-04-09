@@ -167,7 +167,7 @@ export class Adminizer {
 
         //bind controls
         this.controlsHandler = new ControlsHandler()
-        bindControls(this.controlsHandler)
+        bindControls(this)
 
         // bind Inertia
         bindInertia(this);

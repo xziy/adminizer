@@ -72,7 +72,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
     // add custom control wysiwyg
     adminizer.emitter.on('adminizer:loaded', () => {
-        adminizer.controlsHandler.add(new ReactQuill())
+        adminizer.controlsHandler.add(new ReactQuill(adminizer.config.routePrefix))
     })
 
     try {

@@ -33,6 +33,10 @@ export class CKeditor extends AbstractControls {
         ],
     };
 
+    constructor(routPrefix: string) {
+        super(routPrefix);
+    }
+
     getConfig(): Config {
         return this.config;
     }
