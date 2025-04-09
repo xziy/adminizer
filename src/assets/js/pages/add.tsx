@@ -13,6 +13,7 @@ import {Slider} from "@/components/ui/slider.tsx";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
+import DynamicControls from "@/components/dynamic-controls.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
@@ -27,7 +28,7 @@ interface Field {
     disabled?: boolean;
     required?: boolean;
     isIn?: string[];
-    options?: Record<string, number>;
+    options?: Record<string, string>;
 }
 
 interface AddProps extends SharedData {
@@ -160,9 +161,20 @@ const FieldRenderer: FC<{
                 </Select>
             );
         case 'wysiwyg':
-            return (
-                <AdminCKEditor initialValue={value as string} onChange={handleEditorChange} />
-            )
+            if (field.options?.name === 'ckeditor') {
+                return (
+                    <AdminCKEditor
+                        initialValue={value as string}
+                        onChange={handleEditorChange}
+                        options={field.options}
+                    />
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={{test: 'test'}} initialValue={value as string}
+                                     onChange={handleEditorChange}/>
+                )
+            }
         default:
             return (
                 <Input

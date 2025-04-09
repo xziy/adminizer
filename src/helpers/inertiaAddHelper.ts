@@ -1,7 +1,10 @@
 import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
-import {Field, Fields} from "./fieldsHelper";
-import {BaseFieldConfig} from "../interfaces/adminpanelConfig";
+import {Fields, Field} from "./fieldsHelper";
+import {BaseFieldConfig, WysiwygOptions} from "../interfaces/adminpanelConfig";
+import {ControlsHandler} from "../lib/controls/ControlsHandler";
+import {AbstractControls} from "../lib/controls/AbstractControls";
+import chalk from "chalk";
 
 interface listProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
@@ -40,7 +43,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
     for (const key of Object.keys(fields)) {
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
-        let field = fields[key]
+        let field = fields[key] as Field
         let fieldConfig = field.config as BaseFieldConfig
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
 
@@ -70,17 +73,40 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                 }
             }
         }
+
         if (type === 'select') {
             fieldType = 'select'
         }
+
         if (type === 'boolean' || type === 'binary') {
             fieldType = 'checkbox'
         }
+
         if (['text', 'longtext', 'mediumtext'].includes(type)) {
             fieldType = 'textarea'
         }
-        if(['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
-            fieldType = 'wysiwyg'
+
+        if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
+            fieldType = 'wysiwyg';
+
+            const editorOptions = fieldConfig?.options as WysiwygOptions;
+            let editor: AbstractControls;
+
+            if (editorOptions?.name) {
+                editor = req.adminizer.controlsHandler.get('wysiwyg', editorOptions.name);
+                if (!editor) {
+                    console.log(chalk.yellow(`Wysiwyg editor ${editorOptions.name} not found, falling back to ckeditor`));
+                    editor = req.adminizer.controlsHandler.get('wysiwyg', 'ckeditor');
+                }
+                options = {
+                    config: editor.getConfig(),
+                    path: editor.getPath()
+                }
+            } else {
+                editor = req.adminizer.controlsHandler.get('wysiwyg', 'ckeditor');
+                options = editorOptions?.items ? editorOptions : editor?.getConfig();
+            }
+            console.log(options)
         }
 
         props.fields.push({

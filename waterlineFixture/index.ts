@@ -6,6 +6,7 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
+import {ReactSimple} from "../modules/controls/wysiwyg/ReactSimple";
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
@@ -39,7 +40,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     const adminizer = new Adminizer([waterlineAdapter]);
 
 
-
+    // Add custom module
     adminizer.emitter.on('adminizer:loaded', () => {
         let policies: MiddlewareType[] = adminizer.config.policies;
         const module = (req: ReqType, res: ResType) => {
@@ -48,15 +49,19 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
                     return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
                 }
             }
+
+            // this is module logic
+
             const isDev = process.env.NODE_ENV === 'development';
-            const moduleComponent = isDev ? '/modules/test/ComponentB.tsx' : `${adminizer.config.routePrefix}/assets/ComponentB.es.js`;
+            const moduleComponent = isDev ? '/modules/test/ComponentB.tsx' : `${adminizer.config.routePrefix}/assets/modules/ComponentB.es.js`;
 
             return req.Inertia.render({
-                component: 'module',
+                component: 'module', // required
                 props: {
                     title: 'Module Test',
-                    moduleComponent: moduleComponent,
+                    moduleComponent: moduleComponent, // required
                     message: 'Hello from Adminizer',
+                    // other props
                 }
             })
 
@@ -64,6 +69,11 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
         adminizer.app.all(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
     });
+
+
+    adminizer.emitter.on('adminizer:loaded', () => {
+        adminizer.controlsHandler.add(new ReactSimple())
+    })
 
     try {
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)

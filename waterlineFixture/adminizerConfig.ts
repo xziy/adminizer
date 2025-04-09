@@ -87,7 +87,33 @@ const models: AdminpanelConfig["models"] = {
             },
             editor: {
                 title: 'Editor',
-                type: 'wysiwyg'
+                type: 'wysiwyg',
+                options: {
+                    name: 'react-simple',
+                    // items: [
+                    //     // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
+                    //     // 'showBlocks',
+                    //     // '|',
+                    //     'heading',
+                    //     '|',
+                    //     'bold',
+                    //     'italic',
+                    //     'underline',
+                    //     '|',
+                    //     // 'horizontalLine',
+                    //     'link',
+                    //     'insertImageViaUrl',
+                    //     'insertTable',
+                    //     'blockQuote',
+                    //     '|',
+                    //     'alignment',
+                    //     '|',
+                    //     'bulletedList',
+                    //     'numberedList',
+                    //     'outdent',
+                    //     'indent',
+                    // ]
+                }
             }
         },
         list: {

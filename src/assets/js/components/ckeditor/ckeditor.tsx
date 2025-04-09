@@ -44,14 +44,14 @@ import 'ckeditor5/ckeditor5.css';
 interface EditorProps {
     initialValue: string,
     onChange: (value: string) => void
+    options?: { items?: string[]}
 }
 
 /**
  * Create a free account with a trial: https://portal.ckeditor.com/checkout?plan=free
  */
-const LICENSE_KEY = 'GPL'; // or <YOUR_LICENSE_KEY>.
 
-export default function AdminCKEditor({initialValue, onChange}: EditorProps) {
+export default function AdminCKEditor({initialValue, onChange, options}: EditorProps) {
     const editorContainerRef = useRef(null);
     const editorRef = useRef(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);
@@ -61,37 +61,13 @@ export default function AdminCKEditor({initialValue, onChange}: EditorProps) {
 
         return () => setIsLayoutReady(false);
     }, []);
-
     const editorConfig = useMemo<EditorConfig>((): EditorConfig => {
         if (!isLayoutReady) {
             return {};
         }
-
         return {
             toolbar: {
-                items: [
-                    'sourceEditing',
-                    'showBlocks',
-                    '|',
-                    'heading',
-                    '|',
-                    'bold',
-                    'italic',
-                    'underline',
-                    '|',
-                    'horizontalLine',
-                    'link',
-                    'insertImageViaUrl',
-                    'insertTable',
-                    'blockQuote',
-                    '|',
-                    'alignment',
-                    '|',
-                    'bulletedList',
-                    'numberedList',
-                    'outdent',
-                    'indent'
-                ],
+                items: options?.items ?? [],
                 shouldNotGroupWhenFull: true
             },
             plugins: [
@@ -175,7 +151,7 @@ export default function AdminCKEditor({initialValue, onChange}: EditorProps) {
                 toolbar: ['imageTextAlternative']
             },
             initialData: initialValue,
-            licenseKey: LICENSE_KEY,
+            licenseKey: 'GPL',
             link: {
                 addTargetToExternalLinks: true,
                 defaultProtocol:

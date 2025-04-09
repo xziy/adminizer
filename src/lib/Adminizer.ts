@@ -33,6 +33,8 @@ import bindExpressUtils from "../system/bindExpressUtils";
 import {createServer as createViteServer, ViteDevServer} from 'vite';
 import {bindInertia} from "../system/bindInertia";
 import {MenuHelper} from "../helpers/menuHelper";
+import {bindControls} from "../system/bindControls";
+import {ControlsHandler} from "./controls/ControlsHandler";
 
 export class Adminizer {
     app: Express
@@ -46,6 +48,7 @@ export class Adminizer {
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
     vite: ViteDevServer
+    controlsHandler!: ControlsHandler
 
     static logger = winston.createLogger({
         level: "info",
@@ -161,6 +164,10 @@ export class Adminizer {
         } else {
             this.config.translation = false
         }
+
+        //bind controls
+        this.controlsHandler = new ControlsHandler()
+        bindControls(this.controlsHandler)
 
         // bind Inertia
         bindInertia(this);
