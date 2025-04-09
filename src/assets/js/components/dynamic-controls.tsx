@@ -1,4 +1,4 @@
-import React, {FC, useState, useEffect} from "react";
+import React, {FC, useState, useEffect, useCallback} from "react";
 
 export interface ComponentType {
     default: FC<{
@@ -18,20 +18,21 @@ interface Props {
 export default function DynamicControls({moduleComponent, initialValue, onChange}: Props) {
     const [Component, setComponent] = useState<React.ReactElement | null>(null);
 
+    const memoizedOnChange = useCallback(onChange, []);
+
     useEffect(() => {
         const initModule = async () => {
-            // const Module = await import(/* @vite-ignore */ moduleComponent as string);
             const Module = await import(/* @vite-ignore */ moduleComponent as string);
             const Component = Module.default as ComponentType['default'];
-            setComponent(<Component initialValue={initialValue} onChange={onChange}/>);
+            setComponent(
+                <Component
+                    initialValue={initialValue}
+                    onChange={memoizedOnChange}
+                />
+            );
         }
         initModule();
-    }, [initialValue])
+    }, [initialValue, moduleComponent, memoizedOnChange])
 
-
-    return (
-        <>
-            {Component || null}
-        </>
-    )
+    return Component
 }

@@ -28,7 +28,7 @@ interface Field {
     disabled?: boolean;
     required?: boolean;
     isIn?: string[];
-    options?: Record<string, string>;
+    options?: any;
 }
 
 interface AddProps extends SharedData {
@@ -99,7 +99,7 @@ const FieldRenderer: FC<{
         if (['date', 'datetime-local', 'time', 'month', 'week'].includes(field.type)) {
             return 'w-fit';
         }
-        return '';
+        return ''
     }, [field.type]);
 
     switch (field.type) {
@@ -166,12 +166,13 @@ const FieldRenderer: FC<{
                     <AdminCKEditor
                         initialValue={value as string}
                         onChange={handleEditorChange}
-                        options={field.options}
+                        options={field.options?.config as { items: string[] }}
                     />
                 )
             } else {
                 return (
-                    <DynamicControls moduleComponent={field.options?.path as string} options={{test: 'test'}} initialValue={value as string}
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string}
                                      onChange={handleEditorChange}/>
                 )
             }

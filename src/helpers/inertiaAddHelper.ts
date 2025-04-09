@@ -2,7 +2,6 @@ import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 import {Fields, Field} from "./fieldsHelper";
 import {BaseFieldConfig, WysiwygOptions} from "../interfaces/adminpanelConfig";
-import {ControlsHandler} from "../lib/controls/ControlsHandler";
 import {AbstractControls} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 
@@ -56,7 +55,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let fieldType = ''
         let disabled = false
         let required = fieldConfig.required ?? false
-        let options = {}
+        let options: Record<string, unknown> = {}
         let value = record ? record[key] : undefined
 
         //@ts-ignore TODO: fix field type
@@ -64,7 +63,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             disabled = true
         }
 
-        if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'color', 'email', 'month', 'week', 'range'].includes(type)) {
+        if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'email', 'month', 'week', 'range'].includes(type)) {
             fieldType = inputText(type, isIn)
             if (type === 'range') {
                 options = {...fieldConfig.options}
@@ -72,6 +71,11 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                     value = record ? record[key] : fieldConfig.options.min ? fieldConfig.options.min : 0
                 }
             }
+        }
+
+        if (type === 'color') {
+            fieldType = inputText(type, isIn)
+            value = record ? (record[key] ? record[key] : '#000000') : '#000000'
         }
 
         if (type === 'select') {
@@ -91,22 +95,34 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
             const editorOptions = fieldConfig?.options as WysiwygOptions;
             let editor: AbstractControls;
+            let editorName = 'ckeditor'; // default editor name
 
+            // Determine which editor to use
             if (editorOptions?.name) {
-                editor = req.adminizer.controlsHandler.get('wysiwyg', editorOptions.name);
-                if (!editor) {
-                    console.log(chalk.yellow(`Wysiwyg editor ${editorOptions.name} not found, falling back to ckeditor`));
-                    editor = req.adminizer.controlsHandler.get('wysiwyg', 'ckeditor');
-                }
-                options = {
-                    config: editor.getConfig(),
-                    path: editor.getPath()
-                }
-            } else {
-                editor = req.adminizer.controlsHandler.get('wysiwyg', 'ckeditor');
-                options = editorOptions?.items ? editorOptions : editor?.getConfig();
+                editorName = editorOptions.name;
             }
-            console.log(options)
+
+            // Get the editor instance
+            editor = req.adminizer.controlsHandler.get('wysiwyg', editorName);
+
+            // Fallback to ckeditor if specified editor not found
+            if (!editor && editorName !== 'ckeditor') {
+                console.log(chalk.yellow(`Wysiwyg editor ${editorName} not found, falling back to ckeditor`));
+                editorName = 'ckeditor';
+                editor = req.adminizer.controlsHandler.get('wysiwyg', editorName);
+            }
+
+            // Prepare options object
+            options = {
+                name: editorName,
+                config: editor?.getConfig() || {},
+                path: editor?.getPath() || {},
+            };
+
+            // If items are provided, use them instead of the editor's config
+            if (editorOptions?.items) {
+                options.config = {items: editorOptions.items};
+            }
         }
 
         props.fields.push({

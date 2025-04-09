@@ -1,11 +1,11 @@
 import {AbstractControls, ControlType, Config, Path} from "../../../dist/lib/controls/AbstractControls";
 
-export class ReactSimple extends AbstractControls {
-    readonly name: string = 'react-simple';
+export class ReactQuill extends AbstractControls {
+    readonly name: string = 'react-quill';
     readonly type: ControlType = 'wysiwyg';
     readonly path: Path = {
-        dev: '/modules/controls/wysiwyg/react-simple-editor.tsx',
-        production: '/adminizer/assets/modules/react-simple-editor.es.js'
+        dev: '/modules/controls/wysiwyg/react-quill-editor.tsx',
+        production: '/adminizer/assets/modules/react-quill-editor.es.js'
     }
     readonly config: Config =  {};
 

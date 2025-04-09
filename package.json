@@ -14,7 +14,9 @@
 		"build:backend": "npm run copy:backend && npm run compile:backend",
 		"build": "npm run copy:backend && npm run compile:backend && npm run build:assets",
 		"build:module": "vite build --config modules/test/vite.config.module.ts",
-		"build:react-simple": "vite build --config modules/controls/wysiwyg/vite.config.react-simple.ts"
+		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
+		"copy:modules": "node copy-modules.js",
+		"buold:assets:modules": "npm run build:assets && npm run copy:modules"
 	},
 	"keywords": [],
 	"author": "",
@@ -84,6 +86,7 @@
 		"react": "^19.0.0",
 		"react-day-picker": "^8.10.1",
 		"react-dom": "^19.0.0",
+		"react-quill-new": "^3.4.6",
 		"react-simple-wysiwyg": "^3.2.2",
 		"sails-disk": "^2.1.2",
 		"sails-postgresql": "^5.0.1",

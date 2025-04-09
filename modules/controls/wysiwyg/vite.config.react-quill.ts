@@ -20,10 +20,20 @@ export default defineConfig({
         emptyOutDir: false,
         lib: {
             // Точка входа для библиотеки
-            entry: path.resolve(import.meta.dirname, 'react-simple-editor.tsx'),
+            entry: path.resolve(import.meta.dirname, 'react-quill-editor.tsx'),
             name: 'ComponentB',
             formats: ['es'],
-            fileName: (format) => `react-simple-editor.${format}.js`,
+            fileName: (format) => `react-quill-editor.${format}.js`,
+        },
+        rollupOptions: {
+            output: {
+                assetFileNames: ({ names }) => {
+                    if (names && names[0].endsWith('.css')) {
+                        return 'react-quill-editor.css';
+                    }
+                    return 'assets/[name]-[hash][extname]';
+                },
+            },
         },
     },
     resolve: {

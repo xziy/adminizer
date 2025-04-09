@@ -31,5 +31,5 @@ export interface PropsField {
     disabled?: boolean;
     required?: boolean;
     isIn?: string[] | number[] | boolean[];
-    options?: Record<string, string>
+    options?: Record<string, unknown>
 }

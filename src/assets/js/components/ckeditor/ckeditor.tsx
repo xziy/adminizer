@@ -44,7 +44,7 @@ import 'ckeditor5/ckeditor5.css';
 interface EditorProps {
     initialValue: string,
     onChange: (value: string) => void
-    options?: { items?: string[]}
+    options: { items: string[]}
 }
 
 /**

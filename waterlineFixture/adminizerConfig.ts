@@ -89,7 +89,8 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Editor',
                 type: 'wysiwyg',
                 options: {
-                    name: 'react-simple',
+                    // name: 'react-quill',
+                    name: 'ckeditor',
                     // items: [
                     //     // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
                     //     // 'showBlocks',

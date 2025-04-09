@@ -6,7 +6,7 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
-import {ReactSimple} from "../modules/controls/wysiwyg/ReactSimple";
+import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
@@ -72,7 +72,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
 
     adminizer.emitter.on('adminizer:loaded', () => {
-        adminizer.controlsHandler.add(new ReactSimple())
+        adminizer.controlsHandler.add(new ReactQuill())
     })
 
     try {
