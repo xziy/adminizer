@@ -85,35 +85,46 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Week',
                 type: 'week',
             },
+            tui: {
+                type: 'tuieditor',
+                options: {
+                    name: 'toast-ui',
+                    config:{
+                        hideModeSwitch: true,
+                    },
+                }
+            },
             editor: {
                 title: 'Editor',
                 type: 'wysiwyg',
                 options: {
                     // name: 'react-quill',
                     name: 'ckeditor',
-                    // items: [
-                    //     // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
-                    //     // 'showBlocks',
-                    //     // '|',
-                    //     'heading',
-                    //     '|',
-                    //     'bold',
-                    //     'italic',
-                    //     'underline',
-                    //     '|',
-                    //     // 'horizontalLine',
-                    //     'link',
-                    //     'insertImageViaUrl',
-                    //     'insertTable',
-                    //     'blockQuote',
-                    //     '|',
-                    //     'alignment',
-                    //     '|',
-                    //     'bulletedList',
-                    //     'numberedList',
-                    //     'outdent',
-                    //     'indent',
-                    // ]
+                    config: {
+                        items: [
+                            // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
+                            // 'showBlocks',
+                            // '|',
+                            'heading',
+                            '|',
+                            'bold',
+                            'italic',
+                            'underline',
+                            '|',
+                            // 'horizontalLine',
+                            'link',
+                            'insertImageViaUrl',
+                            'insertTable',
+                            'blockQuote',
+                            '|',
+                            'alignment',
+                            '|',
+                            'bulletedList',
+                            'numberedList',
+                            'outdent',
+                            'indent',
+                        ]
+                    }
                 }
             }
         },

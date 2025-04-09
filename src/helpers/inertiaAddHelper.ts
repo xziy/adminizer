@@ -1,7 +1,7 @@
 import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 import {Fields, Field} from "./fieldsHelper";
-import {BaseFieldConfig, WysiwygOptions} from "../interfaces/adminpanelConfig";
+import {BaseFieldConfig, TuiEditorOptions, WysiwygOptions} from "../interfaces/adminpanelConfig";
 import {AbstractControls} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 
@@ -93,13 +93,13 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
             fieldType = 'wysiwyg';
 
-            const editorOptions = fieldConfig?.options as WysiwygOptions;
+            const fieldOptions = fieldConfig?.options as WysiwygOptions;
             let editor: AbstractControls;
             let editorName = 'ckeditor'; // default editor name
 
             // Determine which editor to use
-            if (editorOptions?.name) {
-                editorName = editorOptions.name;
+            if (fieldOptions?.name) {
+                editorName = fieldOptions.name;
             }
 
             // Get the editor instance
@@ -120,9 +120,39 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             };
 
             // If items are provided, use them instead of the editor's config
-            if (editorOptions?.items) {
-                options.config = {items: editorOptions.items};
+            if (fieldOptions?.config?.items && editorName === 'ckeditor') {
+                options.config = {items: fieldOptions.config.items};
             }
+        }
+
+        if(['tui', 'tuieditor', 'toast-ui'].includes(type)){
+            fieldType = 'markdown';
+
+            const fieldOptions = fieldConfig?.options as TuiEditorOptions;
+            let editor: AbstractControls;
+            let editorName = 'toast-ui'; // default editor name
+
+            // Determine which editor to use
+            if (fieldOptions?.name) {
+                editorName = fieldOptions.name;
+            }
+            // Get the editor instance
+            editor = req.adminizer.controlsHandler.get('markdown', editorName);
+
+            // Fallback to ckeditor if specified editor not found
+            if (!editor && editorName !== 'toast-ui') {
+                console.log(chalk.yellow(`Wysiwyg editor ${editorName} not found, falling back to toast-ui`));
+                editorName = 'toast-ui';
+                editor = req.adminizer.controlsHandler.get('markdown', editorName);
+            }
+            options = {
+                name: editorName,
+                config: {
+                    ...(editor?.getConfig() || {}), // Base config of the editor
+                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
+                },
+                path: editor?.getPath() || {},
+            };
         }
 
         props.fields.push({
@@ -172,4 +202,8 @@ function inputText(type: string, isIn: string[]) {
                 return "text"
         }
     }
+}
+
+function resolveControlConfig(){
+
 }

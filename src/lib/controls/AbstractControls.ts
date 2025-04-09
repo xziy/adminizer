@@ -1,4 +1,4 @@
-export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson'
+export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown'
 
 export interface Path {
     dev: string,

@@ -16,6 +16,6 @@ function ReactQuillEditor({initialValue, onChange}: EditorProps) {
     }, [onChange]);
 
 
-    return <ReactQuill theme="snow" value={initialValue} onChange={handleEditorChange} />;
+    return <ReactQuill theme="snow" value={initialValue} onChange={handleEditorChange} style={{paddingBottom: '40px'}}/>;
 }
 export default memo(ReactQuillEditor);

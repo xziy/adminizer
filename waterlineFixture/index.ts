@@ -50,7 +50,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
                 }
             }
 
-            // this is module logic
+            // module logic here
 
             const isDev = process.env.NODE_ENV === 'development';
             const moduleComponent = isDev ? '/modules/test/ComponentB.tsx' : `${adminizer.config.routePrefix}/assets/modules/ComponentB.es.js`;
@@ -70,7 +70,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
         adminizer.app.all(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
     });
 
-
+    // add custom control wysiwyg
     adminizer.emitter.on('adminizer:loaded', () => {
         adminizer.controlsHandler.add(new ReactQuill())
     })

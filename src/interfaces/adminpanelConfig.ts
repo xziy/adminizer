@@ -1,8 +1,6 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 
-export type TuiEditorOptions = EditorOptions;
-
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
     "string" |
@@ -396,9 +394,18 @@ interface RangeType {
     max?: number
 }
 
+export interface TuiEditorOptions {
+    name: string;
+    config: Partial<EditorOptions>;
+}
+
 export interface WysiwygOptions {
-    name: 'ckeditor' | string
-    items?: string[]
+    name: string;
+    config?: {
+        items: string[];
+    } | {
+        [key: string]: Record<string, unknown>;
+    };
 }
 
 interface ScheduleOptionsField {

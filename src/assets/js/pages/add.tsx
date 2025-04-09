@@ -14,6 +14,7 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/compon
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
+import ToastEditor from "@/components/toast-editor.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
@@ -176,6 +177,10 @@ const FieldRenderer: FC<{
                                      onChange={handleEditorChange}/>
                 )
             }
+        case 'markdown':
+            return (
+                <ToastEditor initialValue={field.value as string} options={field.options?.config} onChange={handleEditorChange} />
+            )
         default:
             return (
                 <Input
