@@ -17,7 +17,8 @@
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
 		"buold:assets:modules": "npm run build:assets && npm run copy:modules",
-		"demo": "npm run build:assets && npm run copy:modules && npm run build:module && npm run build:react-quill && npm run copy:backend && npm run compile:backend && tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts"
+		"demo:build": "npm run build:assets && npm run copy:modules && npm run build:module && npm run build:react-quill && npm run copy:backend && npm run compile:backend",
+		"demo": "tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts"
 	},
 	"keywords": [],
 	"author": "",
