@@ -94,23 +94,23 @@ const models: AdminpanelConfig["models"] = {
                     },
                 }
             },
-            datatable: {
-                title: 'Price',
-                type: 'table',
-                options: {
-                    name: 'handsontable',
-                    config: {
-                        dataSchema: {name: null, footage: null, price: null},
-                        colHeaders: ['One', 'Two', 'Three'],
-                        columns: [
-                            {data: 'name'},
-                            {data: 'footage'},
-                            {data: 'price'}
-                        ],
-                        language: 'en-US',
-                    }
-                },
-            },
+            // datatable: {
+            //     title: 'Price',
+            //     type: 'table',
+            //     options: {
+            //         name: 'handsontable',
+            //         config: {
+            //             dataSchema: {name: null, footage: null, price: null},
+            //             colHeaders: ['One', 'Two', 'Three'],
+            //             columns: [
+            //                 {data: 'name'},
+            //                 {data: 'footage'},
+            //                 {data: 'price'}
+            //             ],
+            //             language: 'en-US',
+            //         }
+            //     },
+            // },
             editor: {
                 title: 'Editor',
                 type: 'wysiwyg',
