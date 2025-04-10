@@ -1,8 +1,13 @@
 import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 import {Fields, Field} from "./fieldsHelper";
-import {BaseFieldConfig, TuiEditorOptions, WysiwygOptions} from "../interfaces/adminpanelConfig";
-import {AbstractControls} from "../lib/controls/AbstractControls";
+import {
+    BaseFieldConfig,
+    HandsontableOptions,
+    TuiEditorOptions,
+    WysiwygOptions
+} from "../interfaces/adminpanelConfig";
+import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 
 interface listProps extends Record<string | number | symbol, unknown> {
@@ -94,29 +99,15 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             fieldType = 'wysiwyg';
 
             const fieldOptions = fieldConfig?.options as WysiwygOptions;
-            let editor: AbstractControls;
-            let editorName = 'ckeditor'; // default editor name
 
-            // Determine which editor to use
-            if (fieldOptions?.name) {
-                editorName = fieldOptions.name;
-            }
-
-            // Get the editor instance
-            editor = req.adminizer.controlsHandler.get('wysiwyg', editorName);
-
-            // Fallback to ckeditor if specified editor not found
-            if (!editor && editorName !== 'ckeditor') {
-                console.log(chalk.yellow(`Wysiwyg editor ${editorName} not found, falling back to ckeditor`));
-                editorName = 'ckeditor';
-                editor = req.adminizer.controlsHandler.get('wysiwyg', editorName);
-            }
+            let control = getControl(req, 'wysiwyg', fieldOptions?.name, 'ckeditor');
+            let editorName = control.getName();
 
             // Prepare options object
             options = {
                 name: editorName,
-                config: editor?.getConfig() || {},
-                path: editor?.getPath() || {},
+                config: control?.getConfig() || {},
+                path: control?.getPath() || {},
             };
 
             // If items are provided, use them instead of the editor's config
@@ -129,29 +120,31 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             fieldType = 'markdown';
 
             const fieldOptions = fieldConfig?.options as TuiEditorOptions;
-            let editor: AbstractControls;
-            let editorName = 'toast-ui'; // default editor name
 
-            // Determine which editor to use
-            if (fieldOptions?.name) {
-                editorName = fieldOptions.name;
-            }
-            // Get the editor instance
-            editor = req.adminizer.controlsHandler.get('markdown', editorName);
+            let control = getControl(req, 'markdown', fieldOptions?.name, 'toast-ui');
 
-            // Fallback to ckeditor if specified editor not found
-            if (!editor && editorName !== 'toast-ui') {
-                console.log(chalk.yellow(`Wysiwyg editor ${editorName} not found, falling back to toast-ui`));
-                editorName = 'toast-ui';
-                editor = req.adminizer.controlsHandler.get('markdown', editorName);
-            }
             options = {
-                name: editorName,
+                name: control.getName(),
                 config: {
-                    ...(editor?.getConfig() || {}), // Base config of the editor
+                    ...(control?.getConfig() || {}), // Base config of the editor
                     ...(fieldOptions?.config || {}), // Additional config provided in the field config
                 },
-                path: editor?.getPath() || {},
+                path: control?.getPath() || {},
+            };
+        }
+
+        if(type === 'table'){
+            console.log(value)
+            fieldType = 'table';
+            const fieldOptions = fieldConfig?.options as HandsontableOptions
+            let control = getControl(req, 'table', fieldOptions?.name, 'handsontable');
+            options = {
+                name: control.getName(),
+                config: {
+                    ...(control?.getConfig() || {}), // Base config of the editor
+                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
+                },
+                path: control?.getPath() || {},
             };
         }
 
@@ -202,4 +195,23 @@ function inputText(type: string, isIn: string[]) {
                 return "text"
         }
     }
+}
+
+function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultName: string) {
+    let control: AbstractControls;
+    let editorName = defaultName // default editor name
+
+    // Determine which editor to use
+    if (name) {
+        editorName = name;
+    }
+    // Get the editor instance
+    control = req.adminizer.controlsHandler.get(type, editorName);
+
+    // Fallback to ckeditor if specified editor not found
+    if (!control) {
+        console.log(chalk.yellow(`Wysiwyg control ${type} - ${name} not found, falling back to ckeditor`));
+        control = req.adminizer.controlsHandler.get(type, defaultName);
+    }
+    return control;
 }

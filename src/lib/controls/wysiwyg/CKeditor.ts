@@ -45,4 +45,8 @@ export class CKeditor extends AbstractControls {
         return undefined;
     }
 
+    getName(): string {
+        return this.name
+    }
+
 }

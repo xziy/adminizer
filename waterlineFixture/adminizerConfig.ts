@@ -94,12 +94,29 @@ const models: AdminpanelConfig["models"] = {
                     },
                 }
             },
+            datatable: {
+                title: 'Price',
+                type: 'table',
+                options: {
+                    name: 'handsontable',
+                    config: {
+                        dataSchema: {name: null, footage: null, price: null},
+                        colHeaders: ['One', 'Two', 'Three'],
+                        columns: [
+                            {data: 'name'},
+                            {data: 'footage'},
+                            {data: 'price'}
+                        ],
+                        language: 'en-US',
+                    }
+                },
+            },
             editor: {
                 title: 'Editor',
                 type: 'wysiwyg',
                 options: {
-                    name: 'react-quill',
-                    // name: 'ckeditor',
+                    // name: 'react-quill',
+                    name: 'ckeditor',
                     config: {
                         items: [
                             // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts

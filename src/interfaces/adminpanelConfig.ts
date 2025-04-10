@@ -1,5 +1,6 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
+import {GridSettings as HandsontableSettings} from "handsontable/settings";
 
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
@@ -355,7 +356,7 @@ export interface BaseFieldConfig {
     /**
      * Options for widgets like 'Navigation', 'Schedule'
      * */
-    options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions | RangeType | WysiwygOptions
+    options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions | RangeType | WysiwygOptions | HandsontableOptions
     /**
      * Function that makes data modification on list view
      * */
@@ -397,6 +398,11 @@ interface RangeType {
 export interface TuiEditorOptions {
     name: string;
     config: Partial<EditorOptions>;
+}
+
+export interface HandsontableOptions{
+    name: string;
+    config?: HandsontableSettings
 }
 
 export interface WysiwygOptions {

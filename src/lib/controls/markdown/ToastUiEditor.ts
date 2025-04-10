@@ -26,4 +26,8 @@ export class ToastUiEditor extends AbstractControls{
     getPath(): Path | string | undefined {
         return undefined;
     }
+
+    getName(): string {
+        return this.name;
+    }
 }

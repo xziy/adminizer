@@ -1,4 +1,4 @@
-import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo} from 'react';
+import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo, useState, useEffect} from 'react';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import AppLayout from '@/layouts/app-layout';
@@ -15,10 +15,11 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
 import ToastEditor from "@/components/toast-editor.tsx";
+import HandsoneTable from "@/components/handsontable.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
-type FieldValue = string | boolean | number | Date;
+type FieldValue = string | boolean | number | Date | any[];
 
 interface Field {
     label: string;
@@ -56,8 +57,9 @@ const FieldRenderer: FC<{
     field: Field;
     value: FieldValue;
     onChange: (value: FieldValue) => void;
+    setTable: (table: any) => void;
     processing: boolean;
-}> = memo(({field, value, onChange, processing}) => {
+}> = memo(({field, value, onChange, processing, setTable}) => {
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             onChange(e.target.value);
@@ -92,6 +94,7 @@ const FieldRenderer: FC<{
         },
         [onChange]
     )
+
 
     const inputClassName = useMemo(() => {
         if (field.type === 'color') {
@@ -179,8 +182,13 @@ const FieldRenderer: FC<{
             }
         case 'markdown':
             return (
-                <ToastEditor initialValue={field.value as string} options={field.options?.config} onChange={handleEditorChange} />
+                <ToastEditor initialValue={field.value as string} options={field.options?.config}
+                             onChange={handleEditorChange}/>
             )
+        // case 'table':
+        //     return (
+        //         <HandsoneTable data={field.value as any[]} config={field.options?.config} onChange={setTable}/>
+        //     )
         default:
             return (
                 <Input
@@ -214,7 +222,10 @@ const Add: FC = () => {
         clearErrors,
         post,
         processing,
+        transform
     } = useForm<Record<string, FieldValue>>(initialFormData);
+
+    const [handsoneTable, setHandsoneTable] = useState({})
 
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
@@ -224,10 +235,24 @@ const Add: FC = () => {
         [clearErrors, setData]
     );
 
+    const handleHandsoneTable = useCallback(
+        (name: string, data: any) => {
+            setHandsoneTable({[name]: data})
+        },
+        [setHandsoneTable]
+    )
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(page.props.postLink);
+        transform((data) => ({
+            ...data,
+            ...handsoneTable
+        }))
+        console.log(handsoneTable)
+        // post(page.props.postLink);
+        console.log(data)
     };
+
 
     const renderFields = useMemo(
         () => fields.map((field) => (
@@ -252,6 +277,7 @@ const Add: FC = () => {
                 </div>
                 <FieldRenderer
                     field={field}
+                    setTable={(data: any) => handleHandsoneTable(field.name, data)}
                     value={data[field.name]}
                     onChange={(value) => handleFieldChange(field.name, value)}
                     processing={processing || page.props.view}

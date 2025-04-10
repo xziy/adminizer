@@ -1,4 +1,4 @@
-export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown'
+export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table'
 
 export interface Path {
     dev: string,
@@ -17,11 +17,13 @@ export abstract class AbstractControls {
     public abstract readonly config: Config
     public readonly routPrefix: string
 
-    constructor(routPrefix: string) {
+    protected constructor(routPrefix: string) {
         this.routPrefix = routPrefix
     }
 
     public abstract getConfig(): Config | undefined
 
     public abstract getPath(): Path | string | undefined
+
+    public abstract getName(): string
 }

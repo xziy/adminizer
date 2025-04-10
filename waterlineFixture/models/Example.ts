@@ -21,6 +21,7 @@ const Example = Waterline.Collection.extend({
         week: { type: "string" },
         editor: { type: "string" },
         tui: { type: "string" },
+        datatable: { type: "json" },
 		// owner: { model: "test" },
 	}
 });
