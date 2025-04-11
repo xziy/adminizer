@@ -237,7 +237,7 @@ const config: AdminpanelConfig = {
                 {
                     id: "0",
                     title: 'Sub 1',
-                    link: 'https://webresto.org',
+                    link: 'https://example.com',
                     icon: 'language'
                 },
                 {
@@ -263,38 +263,38 @@ const config: AdminpanelConfig = {
         {
             id: "1",
             title: 'Website 2 Website 2 Website 2',
-            link: 'https://webresto.org',
+            link: 'https://example.com',
             icon: 'insert_link'
         },
         {
             id: "2",
             title: 'Website 3',
-            link: 'https://webresto.org',
+            link: 'https://example.com',
             icon: 'share'
         },
         {
             id: "3",
             title: 'Website 1',
-            link: 'https://webresto.org',
+            link: 'https://example.com',
             icon: 'language'
         },
         {
             id: "4",
             title: 'Website 2 Website 2 Website 2',
-            link: 'https://webresto.org',
+            link: 'https://example.com',
             icon: 'insert_link'
         },
     ],
     brand: {
         link: {
             id: "0",
-            title: 'WebResto adminpanel',
-            link: 'https://webresto.org',
+            title: 'Demo adminpanel',
+            link: 'https://example.com',
         }
     },
     welcome: {
-        title: 'Webresto adminpanel project',
-        text: 'restaurant and delivery food solution www.webresto.org'
+        title: 'Demo adminpanel project',
+        text: 'restaurant and delivery food solution www.example.com'
     },
     administrator: {
         login: process.env.ADMIN_LOGIN === undefined ? 'admin' : process.env.ADMIN_LOGIN,
