@@ -1,6 +1,6 @@
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
-import { type BreadcrumbItem } from '@/types';
-import { type ReactNode } from 'react';
+import {type BreadcrumbItem} from '@/types';
+import {memo, type ReactNode} from 'react';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -8,8 +8,13 @@ interface AppLayoutProps {
     className?: string;
 }
 
-export default ({ children, className, breadcrumbs, ...props }: AppLayoutProps) => (
-    <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
-        {children}
-    </AppLayoutTemplate>
-);
+const AppLayout = memo(({children, className, breadcrumbs, ...props}: AppLayoutProps) => {
+    console.log('AppLayout')
+    return (
+        <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
+            {children}
+        </AppLayoutTemplate>
+    )
+});
+
+export default AppLayout;
