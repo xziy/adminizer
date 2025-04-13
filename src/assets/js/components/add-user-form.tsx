@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {FormEventHandler, useEffect, useMemo, useState} from "react";
+import {FormEventHandler, useEffect, useState} from "react";
 import ky from 'ky';
 import {Checkbox} from "@/components/ui/checkbox"
 import {
@@ -57,10 +57,6 @@ export default function AddUserForm() {
     const [timezones, setTimezones] = useState<Record<string, string>[]>()
 
     const {fields, groups} = page.props;
-    const initialFormData = useMemo(() => ({
-        ...Object.fromEntries(fields.map(field => [field.name, field.value])),
-        ...Object.fromEntries(groups.map(group => [group.name, group.value]))
-    }), [fields, groups]);
 
     const {
         data,
@@ -70,7 +66,10 @@ export default function AddUserForm() {
         clearErrors,
         post,
         processing,
-    } = useForm<Required<Record<string, value>>>(initialFormData);
+    } = useForm<Required<Record<string, value>>>({
+        ...Object.fromEntries(fields.map(field => [field.name, field.value])),
+        ...Object.fromEntries(groups.map(group => [group.name, group.value]))
+    });
 
     useEffect(() => {
         const getTimezones = async () => {

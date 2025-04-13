@@ -3,7 +3,7 @@ import {SharedData} from "@/types";
 import {Button} from "@/components/ui/button.tsx";
 import {Icon} from "@/components/icon.tsx";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
-import {FormEventHandler, useMemo} from "react";
+import {FC, FormEventHandler, memo, useCallback} from "react";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
@@ -13,6 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {CheckedState} from "@radix-ui/react-checkbox";
 
 type value = string | boolean | Date | Record<string, string>[]
 
@@ -47,32 +48,77 @@ interface AddGroupProps extends SharedData {
     groupedTokens: groupedTokens[]
 }
 
+interface CheckboxFieldProps {
+    field: Field
+    disabled: boolean;
+    value: boolean
+    onCheckedChange: (name: string, value: CheckedState) => void;
+    tooltip?: boolean;
+}
+
+const CheckboxField: FC<CheckboxFieldProps> = memo(({field, disabled, value, onCheckedChange, tooltip}) => {
+
+    const handleChange = useCallback((value: CheckedState) => {
+        onCheckedChange(field.name, value);
+    }, [field.name, onCheckedChange]);
+
+    return (
+        <div className="flex gap-3 items-center">
+            <Checkbox
+                id={field.name}
+                className="cursor-pointer size-5"
+                disabled={disabled}
+                checked={value}
+                onCheckedChange={handleChange}
+            />
+            <div className="flex gap-3">
+                <Label className="cursor-pointer"
+                       htmlFor={field.name}>{field.label}</Label>
+                {tooltip &&
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                                <Icon iconNode={Info}
+                                      className="text-primary w-5 h-5 cursor-pointer"/>
+                            </TooltipTrigger>
+                            <TooltipContent align="center" side="top">
+                                <p>{field.tooltip}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                }
+            </div>
+        </div>
+    )
+})
+
 
 export default function AddGroupForm() {
     const page = usePage<AddGroupProps>();
 
     const {fields, groupedTokens, users} = page.props;
-    const initialFormData = useMemo(() => ({
-        ...Object.fromEntries(fields.map(field => [field.name, field.value])),
-        ...Object.fromEntries(users.map(field => [field.name, field.value])),
-        ...Object.fromEntries(groupedTokens.flatMap(group =>
-            group.fields.map(field => [field.name, field.value])))
-    }), [fields, groupedTokens, users]);
+
     const {
         data,
         setData,
         clearErrors,
         post,
         processing,
-    } = useForm<Required<Record<string, value>>>(initialFormData);
+    } = useForm<Required<Record<string, value>>>({
+        ...Object.fromEntries(fields.map(field => [field.name, field.value])),
+        ...Object.fromEntries(users.map(field => [field.name, field.value])),
+        ...Object.fromEntries(groupedTokens.flatMap(group =>
+            group.fields.map(field => [field.name, field.value])))
+    });
+
     const getField = (name: string) => {
         return page.props.fields.find(field => field.name === name);
     }
 
-    const handleChangeDate = (fieldName: string, value: value) => {
+    const handleChangeDate = useCallback((fieldName: string, value: value) => {
         clearErrors()
         setData(fieldName, value);
-    }
+    }, [])
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -123,19 +169,13 @@ export default function AddGroupForm() {
                         <>
                             <h2 className="font-bold text-xl">{page.props.userHead}</h2>
                             {page.props.users.map((field) => (
-                                <div className="flex gap-3" key={field.name}>
-                                    <div className="flex gap-4 items-center">
-                                        <Checkbox
-                                            id={field.name}
-                                            className="cursor-pointer size-5"
-                                            disabled={processing || page.props.view}
-                                            checked={data[field.name] as boolean}
-                                            onCheckedChange={(value) => handleChangeDate(field.name, value)}
-                                        />
-                                        <Label className="cursor-pointer"
-                                               htmlFor={field.name}>{field.label}</Label>
-                                    </div>
-                                </div>
+                                <CheckboxField
+                                    key={field.name}
+                                    field={field}
+                                    disabled={processing || page.props.view}
+                                    value={data[field.name] as boolean}
+                                    onCheckedChange={handleChangeDate}
+                                />
                             ))}
                         </>
                     )}
@@ -145,30 +185,14 @@ export default function AddGroupForm() {
                                 <div key={group.header} className="grid gap-4 content-start justify-between">
                                     <h2 className="font-bold text-xl mt-3">{group.header}</h2>
                                     {group.fields.map((field) => (
-                                        <div key={field.name} className="flex gap-3 items-center">
-                                            <Checkbox
-                                                id={field.name}
-                                                className="cursor-pointer size-5"
-                                                disabled={processing || page.props.view}
-                                                checked={data[field.name] as boolean}
-                                                onCheckedChange={(value) => handleChangeDate(field.name, value)}
-                                            />
-                                            <div className="flex gap-3">
-                                                <Label className="cursor-pointer"
-                                                       htmlFor={field.name}>{field.label}</Label>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger onClick={(e) => e.preventDefault()}>
-                                                            <Icon iconNode={Info}
-                                                                  className="text-primary w-5 h-5 cursor-pointer"/>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent align="center" side="top">
-                                                            <p>{field.tooltip}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                        </div>
+                                        <CheckboxField
+                                            key={field.name}
+                                            field={field}
+                                            disabled={processing || page.props.view}
+                                            value={data[field.name] as boolean}
+                                            onCheckedChange={handleChangeDate}
+                                            tooltip={true}
+                                        />
                                     ))}
                                 </div>
                             ))

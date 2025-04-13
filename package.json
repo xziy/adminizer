@@ -75,6 +75,7 @@
 		"@types/uuid": "^10.0.0",
 		"@types/waterline": "^0.13.9",
 		"@vitejs/plugin-react": "^4.3.4",
+		"babel-plugin-react-compiler": "^19.0.0-beta-e993439-20250405",
 		"ckeditor5": "^45.0.0",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
