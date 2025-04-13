@@ -1,4 +1,4 @@
-import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo, useState, useEffect} from 'react';
+import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo} from 'react';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import {type SharedData} from '@/types';
@@ -14,7 +14,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
 import ToastEditor from "@/components/toast-editor.tsx";
-import HandsoneTable from "@/components/handsontable.tsx";
+import HandsonTable from "@/components/handsontable.tsx";
+import {RowObject} from "handsontable/common";
 
 
 type FieldValue = string | boolean | number | Date | any[];
@@ -54,46 +55,49 @@ interface AddProps extends SharedData {
 const FieldRenderer: FC<{
     field: Field;
     value: FieldValue;
-    onChange: (value: FieldValue) => void;
-    setTable: (table: any) => void;
+    onChange: (name: string, value: FieldValue) => void;
+    // setTable: (table: any) => void;
     processing: boolean;
-}> = memo(({field, value, onChange, processing, setTable}) => {
+}> = memo(({field, value, onChange, processing}) => {
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            onChange(e.target.value);
+            onChange(field.name, e.target.value);
         },
-        []
+        [onChange, field.name]
     );
 
     const handleSliderChange = useCallback(
         (values: number[]) => {
-            onChange(values[0]);
+            onChange(field.name, values[0]);
         },
-        []
+        [onChange, field.name]
     );
 
     const handleCheckboxChange = useCallback(
         (checked: boolean) => {
-            onChange(checked);
+            onChange(field.name, checked);
         },
-        []
+        [onChange, field.name]
     );
 
     const handleSelectChange = useCallback(
         (selectedValue: string) => {
-            onChange(selectedValue);
+            onChange(field.name, selectedValue);
         },
-        []
+        [onChange, field.name]
     );
 
     const handleEditorChange = useCallback(
         (value: string) => {
-            onChange(value);
+            onChange(field.name, value);
         },
-        []
+        [onChange, field.name]
     )
 
+    const handleDateChange = useCallback((value: RowObject[]) => {
+        onChange(field.name, value);
+    }, [onChange, field.name])
 
     const inputClassName = useMemo(() => {
         if (field.type === 'color') {
@@ -113,7 +117,7 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                     tabIndex={1}
                     className="cursor-pointer size-5"
-                    checked={value as boolean}
+                    checked={value as boolean ?? false}
                     onCheckedChange={handleCheckboxChange}
                 />
             );
@@ -123,7 +127,7 @@ const FieldRenderer: FC<{
                     id={field.name}
                     tabIndex={1}
                     disabled={processing || field.disabled}
-                    value={value as string}
+                    value={value as string ?? ''}
                     onChange={handleInputChange}
                     placeholder={field.label}
                 />
@@ -148,7 +152,7 @@ const FieldRenderer: FC<{
             return (
                 <Select
                     onValueChange={handleSelectChange}
-                    defaultValue={value as string}
+                    defaultValue={value as string ?? ''}
                     disabled={processing || field.disabled}
                 >
                     <SelectTrigger className="w-full cursor-pointer" id={field.name}>
@@ -167,7 +171,7 @@ const FieldRenderer: FC<{
             if (field.options?.name === 'ckeditor') {
                 return (
                     <AdminCKEditor
-                        initialValue={value as string}
+                        initialValue={value as string ?? ''}
                         onChange={handleEditorChange}
                         options={field.options?.config as { items: string[] }}
                     />
@@ -175,19 +179,19 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string}
+                                     initialValue={value as string ?? ''}
                                      onChange={handleEditorChange}/>
                 )
             }
         case 'markdown':
             return (
-                <ToastEditor initialValue={field.value as string} options={field.options?.config}
+                <ToastEditor initialValue={field.value as string ?? ''} options={field.options?.config}
                              onChange={handleEditorChange}/>
             )
-        // case 'table':
-        //     return (
-        //         <HandsoneTable data={field.value as any[]} config={field.options?.config} onChange={setTable}/>
-        //     )
+        case 'table':
+            return (
+                <HandsonTable data={value as any[]} config={field.options?.config} onChange={handleDateChange}/>
+            )
         default:
             return (
                 <Input
@@ -196,7 +200,7 @@ const FieldRenderer: FC<{
                     className={inputClassName}
                     required={field.required}
                     tabIndex={1}
-                    value={value as string}
+                    value={value as any ?? '' }
                     onChange={handleInputChange}
                     disabled={processing || field.disabled}
                     placeholder={field.label}
@@ -205,14 +209,33 @@ const FieldRenderer: FC<{
     }
 });
 
+const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
+    return (
+        <div className="flex gap-3">
+            <Label htmlFor={field.name}>{field.label}</Label>
+            {field.tooltip && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger onClick={(e) => e.preventDefault()}>
+                            <Icon
+                                iconNode={Info}
+                                className="text-primary w-5 h-5 cursor-pointer"
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent align="center" side="top">
+                            <p>{field.tooltip}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
+        </div>
+    )
+})
+
 const AddForm: FC = () => {
     const page = usePage<AddProps>();
     const {fields, btnBack, view} = page.props;
 
-    const initialFormData = useMemo(
-        () => Object.fromEntries(fields.map(field => [field.name, field.value ?? ''])),
-        [fields]
-    );
 
     const {
         data,
@@ -221,70 +244,25 @@ const AddForm: FC = () => {
         clearErrors,
         post,
         processing,
-        transform
-    } = useForm<Record<string, FieldValue>>(initialFormData);
+    } = useForm<Record<string, FieldValue>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
 
-    const [handsoneTable, setHandsoneTable] = useState({})
+    // const [handsoneTable, setHandsoneTable] = useState({})
 
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
             clearErrors();
             setData(fieldName, value);
         },
-        [clearErrors, setData]
+        []
     );
 
-    const handleHandsoneTable = useCallback(
-        (name: string, data: any) => {
-            setHandsoneTable({[name]: data})
-        },
-        [setHandsoneTable]
-    )
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        transform((data) => ({
-            ...data,
-            ...handsoneTable
-        }))
-        console.log(handsoneTable)
-        // post(page.props.postLink);
-        console.log(data)
+        post(page.props.postLink);
     };
 
 
-    const renderFields = useMemo(
-        () => fields.map((field) => (
-            <div className="grid gap-4" key={field.name}>
-                <div className="flex gap-3">
-                    <Label htmlFor={field.name}>{field.label}</Label>
-                    {field.tooltip && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger onClick={(e) => e.preventDefault()}>
-                                    <Icon
-                                        iconNode={Info}
-                                        className="text-primary w-5 h-5 cursor-pointer"
-                                    />
-                                </TooltipTrigger>
-                                <TooltipContent align="center" side="top">
-                                    <p>{field.tooltip}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    )}
-                </div>
-                <FieldRenderer
-                    field={field}
-                    setTable={(data: any) => handleHandsoneTable(field.name, data)}
-                    value={data[field.name]}
-                    onChange={(value) => handleFieldChange(field.name, value)}
-                    processing={processing || page.props.view}
-                />
-            </div>
-        )),
-        [fields, data, processing, handleFieldChange]
-    );
     return (
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <Button className="mb-3 w-fit" asChild>
@@ -299,7 +277,17 @@ const AddForm: FC = () => {
                 className={view ? 'cursor-not-allowed' : ''}
             >
                 <div className="flex flex-col gap-10 max-w-[1144px]">
-                    {renderFields}
+                    {fields.map((field) => (
+                        <div className="grid gap-4" key={field.name}>
+                            <LabelRenderer field={field} />
+                            <FieldRenderer
+                                field={field}
+                                value={data[field.name]}
+                                onChange={handleFieldChange}
+                                processing={processing || page.props.view}
+                            />
+                        </div>
+                    ))}
                     <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
                             disabled={processing || page.props.view}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}

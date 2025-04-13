@@ -32,6 +32,7 @@ export function DataTable<TData, TValue>(
         data,
         notFoundContent,
     }: DataTableProps<TData, TValue>) {
+    "use no memo"
     const [sorting, setSorting] = useState<SortingState>([])
 
     const table = useReactTable({
@@ -42,10 +43,10 @@ export function DataTable<TData, TValue>(
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
         state: {
-            sorting,
+            sorting
         },
+        manualPagination: true
     })
-
     return (
         <div className="rounded-md border">
             <Table>

@@ -134,7 +134,6 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         }
 
         if(type === 'table'){
-            console.log(value)
             fieldType = 'table';
             const fieldOptions = fieldConfig?.options as HandsontableOptions
             let control = getControl(req, 'table', fieldOptions?.name, 'handsontable');

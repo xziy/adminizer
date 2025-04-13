@@ -9,7 +9,6 @@ interface AppLayoutProps {
 }
 
 const AppLayout = memo(({children, className, breadcrumbs, ...props}: AppLayoutProps) => {
-    console.log('AppLayout')
     return (
         <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
             {children}
