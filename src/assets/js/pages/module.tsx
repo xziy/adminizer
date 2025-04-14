@@ -2,6 +2,7 @@ import {usePage} from "@inertiajs/react";
 import {type BreadcrumbItem, SharedData} from "@/types";
 import React, {FC, useState, useEffect} from "react";
 import AppLayout from "@/layouts/app-layout.tsx";
+import {LoaderCircle} from "lucide-react";
 
 export interface ComponentType {
     default: FC<{ message?: string }>;
@@ -28,7 +29,8 @@ export default function Module() {
                 <div className="mb-5">
                     <h1>{page.props.title as string}</h1>
                 </div>
-                {Component || null}
+                {Component ||
+                    <LoaderCircle className="size-10 animate-spin text-neutral-500 mx-auto mt-[15%]"/>}
             </div>
         </AppLayout>
     )

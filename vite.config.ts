@@ -3,6 +3,15 @@ import react from '@vitejs/plugin-react';
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 
+const ReactConfig = {
+    babel: {
+        plugins: [
+            ['babel-plugin-react-compiler'],
+        ]
+    }
+};
+
+
 export default defineConfig({
     base: './',
     build: {
@@ -21,7 +30,7 @@ export default defineConfig({
         },
     },
     plugins: [
-        react(),
+        react(ReactConfig),
         tailwindcss(),
     ],
     esbuild: {

@@ -396,17 +396,17 @@ interface RangeType {
 }
 
 export interface TuiEditorOptions {
-    name: string;
+    name?: string;
     config: Partial<EditorOptions>;
 }
 
 export interface HandsontableOptions{
-    name: string;
+    name?: string;
     config?: HandsontableSettings
 }
 
 export interface WysiwygOptions {
-    name: string;
+    name?: string;
     config?: {
         items: string[];
     } | {
