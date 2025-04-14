@@ -12,7 +12,7 @@ interface Props {
     moduleComponent: string;
     options?: Record<string, string>
     initialValue: string
-    onChange: (value: string) => void
+    onChange: (value: any) => void
 }
 
 export default function DynamicControls({moduleComponent, initialValue, onChange}: Props) {

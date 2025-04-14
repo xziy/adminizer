@@ -55,6 +55,7 @@ interface AddProps extends SharedData {
 
 const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
 const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
+
 const FieldRenderer: FC<{
     field: Field;
     value: FieldValue;
@@ -98,7 +99,7 @@ const FieldRenderer: FC<{
         [onChange, field.name]
     )
 
-    const handleDateChange = useCallback((value: RowObject[]) => {
+    const handleTableChange = useCallback((value: RowObject[]) => {
         onChange(field.name, value);
     }, [onChange, field.name])
 
@@ -191,25 +192,50 @@ const FieldRenderer: FC<{
                 )
             }
         case 'markdown':
-            return (
-                <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
-                    <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
-                             onChange={handleEditorChange}/>
-                </Suspense>
-            )
+            if (field.options?.name === 'toast-ui') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                        <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
+                                 onChange={handleEditorChange}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleEditorChange}/>
+                )
+            }
         case 'table':
-            return (
-                <Suspense fallback={<Skeleton className="w-full h-[150px]"/>}>
-                    <HandsonTableLazy data={value as any[]} config={field.options?.config} onChange={handleDateChange}/>
-                </Suspense>
-            )
+            if (field.options?.name === 'handsontable') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[150px]"/>}>
+                        <HandsonTableLazy data={value as any[]} config={field.options?.config}
+                                          onChange={handleTableChange}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleEditorChange}/>
+                )
+            }
         case 'json':
-            return (
-                <VanillaJSONEditor
-                    content={value as Content}
-                    onChange={handleJSONChange}
-                />
-            )
+            if (field.options?.name === 'jsoneditor') {
+                return (
+                    <VanillaJSONEditor
+                        content={value as Content}
+                        onChange={handleJSONChange}
+                    />
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleJSONChange}/>
+                )
+            }
         default:
             return (
                 <Input

@@ -1,4 +1,5 @@
 import {AbstractControls, ControlType, Config, Path} from "../AbstractControls";
+import {Adminizer} from "../../Adminizer";
 
 export class Handsontable extends AbstractControls{
     readonly config: Config = {
@@ -12,14 +13,19 @@ export class Handsontable extends AbstractControls{
     };
     readonly name: string = "handsontable";
     readonly path: Path = {
-        dev: '',
-        production: ''
-    };
+        cssPath: "",
+        jsPath:
+            {
+                dev: "",
+                production: ""
+            }
+    }
     readonly type: ControlType = 'table';
 
-    constructor(routePrefix: string) {
-        super(routePrefix);
+    constructor(adminizer: Adminizer) {
+        super(adminizer);
     }
+
     getConfig(): Config | undefined {
         return this.config;
     }
@@ -28,8 +34,12 @@ export class Handsontable extends AbstractControls{
         return this.name;
     }
 
-    getPath(): Path | string | undefined {
-        return this.path;
+    getJsPath(): undefined {
+        return undefined;
+    }
+
+    getCssPath(): undefined {
+        return undefined
     }
 
 }

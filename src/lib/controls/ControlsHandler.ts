@@ -43,7 +43,7 @@ export class ControlsHandler {
     }
 
     // Get all controls (grouped by type)
-    public  getAll(): Record<ControlType, AbstractControls[]> {
+    public getAll(): Record<ControlType, AbstractControls[]> {
         return Object.fromEntries(
             Array.from(this.controls.entries()).map(([type, group]) => [
                 type,
@@ -52,4 +52,20 @@ export class ControlsHandler {
         ) as Record<ControlType, AbstractControls[]>;
     }
 
+    public collectAndGenerateStyleLinks(routePrefix: string): string[] {
+        const stylesheets: string[] = [];
+
+        const allControls = this.getAll();
+
+        Object.values(allControls).forEach(controls => {
+            controls.forEach(control => {
+                const cssPath = control.getCssPath();
+                if (cssPath) {
+                    stylesheets.push(cssPath);
+                }
+            });
+        });
+
+        return stylesheets
+    }
 }

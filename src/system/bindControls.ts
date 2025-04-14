@@ -6,11 +6,11 @@ import {JsonEditor} from "../lib/controls/jsoneditor/JsonEditor";
 
 export function bindControls(adminizer: Adminizer): void {
     // bind wysiwyg
-    adminizer.controlsHandler.add(new CKeditor(adminizer.config.routePrefix))
+    adminizer.controlsHandler.add(new CKeditor(adminizer))
     // bind markdown
-    adminizer.controlsHandler.add(new ToastUiEditor(adminizer.config.routePrefix))
+    adminizer.controlsHandler.add(new ToastUiEditor(adminizer))
     // bind table
-    adminizer.controlsHandler.add(new Handsontable(adminizer.config.routePrefix))
+    adminizer.controlsHandler.add(new Handsontable(adminizer))
     // bind json editor
-    adminizer.controlsHandler.add(new JsonEditor(adminizer.config.routePrefix))
+    adminizer.controlsHandler.add(new JsonEditor(adminizer))
 }

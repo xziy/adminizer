@@ -1,11 +1,16 @@
 import {AbstractControls, ControlType, Config, Path} from "../../../dist/lib/controls/AbstractControls";
+import {Adminizer} from "../../../dist";
 
 export class ReactQuill extends AbstractControls {
     readonly name: string = 'react-quill';
     readonly type: ControlType = 'wysiwyg';
     readonly path: Path = {
-        dev: '/modules/controls/wysiwyg/react-quill-editor.tsx',
-        production: `${this.routPrefix}/assets/modules/react-quill-editor.es.js`
+        cssPath: `${this.routPrefix}/assets/modules/react-quill-editor.css`,
+        jsPath:
+            {
+                dev: "/modules/controls/wysiwyg/react-quill-editor.tsx",
+                production: `${this.routPrefix}/assets/modules/react-quill-editor.es.js`
+            }
     }
     readonly config: Config = {};
 
@@ -13,16 +18,20 @@ export class ReactQuill extends AbstractControls {
         return this.config;
     }
 
-    constructor(routPrefix: string) {
-        super(routPrefix);
+    constructor(adminizer: Adminizer) {
+        super(adminizer);
     }
 
-    getPath(): string {
+    getJsPath(): string {
         if (process.env.VITE_ENV === 'dev') {
-            return this.path.dev;
+            return this.path.jsPath.dev;
         } else {
-            return this.path.production
+            return this.path.jsPath.production
         }
+    }
+
+    getCssPath(): string {
+        return this.path.cssPath
     }
 
     getName(): string {

@@ -107,7 +107,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             options = {
                 name: editorName,
                 config: control?.getConfig() || {},
-                path: control?.getPath() || {},
+                path: control?.getJsPath() || {},
             };
 
             // If items are provided, use them instead of the editor's config
@@ -129,7 +129,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                     ...(control?.getConfig() || {}), // Base config of the editor
                     ...(fieldOptions?.config || {}), // Additional config provided in the field config
                 },
-                path: control?.getPath() || {},
+                path: control?.getJsPath() || {},
             };
         }
 
@@ -143,7 +143,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                     ...(control?.getConfig() || {}), // Base config of the editor
                     ...(fieldOptions?.config || {}), // Additional config provided in the field config
                 },
-                path: control?.getPath() || {},
+                path: control?.getJsPath() || {},
             };
         }
         if(['jsoneditor', 'json', 'array', 'object'].includes(type)){
@@ -156,7 +156,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                     ...(control?.getConfig() || {}), // Base config of the editor
                     ...(fieldOptions?.config || {}), // Additional config provided in the field config
                 },
-                path: control?.getPath() || {},
+                path: control?.getJsPath() || {},
             };
         }
 

@@ -1,11 +1,16 @@
 import {AbstractControls, ControlType, Config, Path} from "../AbstractControls";
+import {Adminizer} from "../../Adminizer";
 
 export class CKeditor extends AbstractControls {
     readonly name: string = 'ckeditor';
     readonly type: ControlType = 'wysiwyg';
     readonly path: Path = {
-        dev: '',
-        production: ''
+        cssPath: "",
+        jsPath:
+            {
+                dev: "",
+                production: ""
+            }
     }
     readonly config: Config = {
         items: [
@@ -33,16 +38,20 @@ export class CKeditor extends AbstractControls {
         ],
     };
 
-    constructor(routPrefix: string) {
-        super(routPrefix);
+    constructor(adminizer: Adminizer) {
+        super(adminizer);
     }
 
     getConfig(): Config {
         return this.config;
     }
 
-    getPath(): Path {
+    getJsPath(): undefined {
         return undefined;
+    }
+
+    getCssPath(): undefined {
+        return undefined
     }
 
     getName(): string {

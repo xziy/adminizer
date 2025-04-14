@@ -57,22 +57,13 @@ export function bindInertia(adminizer: Adminizer) {
                 scripts.push(`<script type="module" src="${href}"></script>`);
             }
 
-            // Check for modules CSS files in production only
-            const modulesDir = path.resolve(import.meta.dirname, '../assets/modules');
-            try {
-                if (fs.existsSync(modulesDir)) {
-                    const moduleFiles = fs.readdirSync(modulesDir);
-                    moduleFiles.forEach(file => {
-                        if (file.endsWith('.css')) {
-                            const href = `${adminizer.config.routePrefix}/assets/modules/${file}`;
-                            preloadLinks.push(`<link rel="preload" href="${href}" as="style">`);
-                            stylesheets.push(`<link rel="stylesheet" href="${href}">`);
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error('[vite]: Error reading modules directory:', err);
-            }
+
+            // Load modules CSS
+            const modulesCss = adminizer.controlsHandler.collectAndGenerateStyleLinks(adminizer.config.routePrefix)
+            modulesCss.forEach(cssPath => {
+                preloadLinks.push(`<link rel="preload" href="${cssPath}" as="style">`);
+                stylesheets.push(`<link rel="stylesheet" href="${cssPath}">`);
+            })
 
             // Route prefix script
             const routePrefixScript = `<script>window.routePrefix = "${adminizer.config.routePrefix}";</script>`;

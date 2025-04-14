@@ -61,6 +61,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
                     title: 'Module Test',
                     moduleComponent: moduleComponent, // required
                     message: 'Hello from Adminizer',
+                    // ...{menu: {test: '12'}}
                     // other props
                 }
             })
@@ -72,7 +73,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
     // add custom control wysiwyg
     adminizer.emitter.on('adminizer:loaded', () => {
-        adminizer.controlsHandler.add(new ReactQuill(adminizer.config.routePrefix))
+        adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
     try {
