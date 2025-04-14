@@ -52,3 +52,15 @@ declare global {
         routePrefix: string;
     }
 }
+
+export interface Field {
+    label: string;
+    type: string;
+    name: string;
+    tooltip?: string;
+    value: FieldValue;
+    disabled?: boolean;
+    required?: boolean;
+    isIn?: string[];
+    options?: any;
+}

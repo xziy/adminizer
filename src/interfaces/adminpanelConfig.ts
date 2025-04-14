@@ -34,6 +34,7 @@ export type FieldsTypes =
     "array" |
     "object" |
     "ace" |
+    "code" |
     "html" |
     "xml" |
     "aceeditor" |

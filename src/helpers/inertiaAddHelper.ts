@@ -116,7 +116,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             }
         }
 
-        if(['tui', 'tuieditor', 'toast-ui'].includes(type)){
+        if (['tui', 'tuieditor', 'toast-ui'].includes(type)) {
             fieldType = 'markdown';
 
             const fieldOptions = fieldConfig?.options as TuiEditorOptions;
@@ -133,7 +133,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             };
         }
 
-        if(type === 'table'){
+        if (type === 'table') {
             fieldType = 'table';
             const fieldOptions = fieldConfig?.options as HandsontableOptions
             let control = getControl(req, 'table', fieldOptions?.name, 'handsontable');
@@ -146,9 +146,12 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                 path: control?.getJsPath() || {},
             };
         }
-        if(['jsoneditor', 'json', 'array', 'object'].includes(type)){
+        if (['jsoneditor', 'json', 'array', 'object'].includes(type)) {
             fieldType = 'json';
-            const fieldOptions = fieldConfig?.options as {name?: string, config?: Record<string, unknown>} | undefined;
+            const fieldOptions = fieldConfig?.options as {
+                name?: string,
+                config?: Record<string, unknown>
+            } | undefined;
             let control = getControl(req, 'jsonEditor', fieldOptions?.name, 'jsoneditor');
             options = {
                 name: control.getName(),
@@ -158,6 +161,22 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                 },
                 path: control?.getJsPath() || {},
             };
+        }
+
+        if (['ace', 'html', 'xml', 'aceeditor', 'code'].includes(type)) {
+            fieldType = 'code';
+            const fieldOptions = fieldConfig?.options as {
+                name?: string,
+                config?: Record<string, unknown>
+            } | undefined;
+            let control = getControl(req, 'codeEditor', fieldOptions?.name, 'monaco');
+            options = {
+                name: control.getName(),
+                config: {
+                    ...(control?.getConfig() || {}), // Base config of the editor
+                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
+                },
+            }
         }
 
         props.fields.push({
@@ -222,7 +241,7 @@ function getControl(req: ReqType, type: ControlType, name: string | undefined, d
 
     // Fallback to ckeditor if specified editor not found
     if (!control) {
-        console.log(chalk.yellow(`Wysiwyg control ${type} - ${name} not found, falling back to ckeditor`));
+        console.log(chalk.yellow(`Control ${type} - ${name} not found, falling back to default`));
         control = req.adminizer.controlsHandler.get(type, defaultName);
     }
     return control;

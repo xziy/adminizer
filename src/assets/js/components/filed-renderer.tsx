@@ -1,0 +1,237 @@
+import {type FC, lazy, memo, ReactNode, Suspense, useCallback, useMemo} from "react";
+import {RowObject} from "handsontable/common";
+import type {Content} from "vanilla-jsoneditor";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
+import {Textarea} from "@/components/ui/textarea.tsx";
+import {Slider} from "@/components/ui/slider.tsx";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
+import DynamicControls from "@/components/dynamic-controls.tsx";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
+import MonacoEditor from "@/components/monaco-editor.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {Field} from "@/types";
+
+const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
+const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
+const JsonEditorLazy = lazy(() => import('@/components/VanillaJSONEditor.tsx'));
+
+type FieldValue = string | boolean | number | Date | any[] | Content;
+
+const FieldRenderer: FC<{
+    field: Field;
+    value: FieldValue;
+    onChange: (name: string, value: FieldValue) => void;
+    processing: boolean;
+}> = memo(({field, value, onChange, processing}) => {
+
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            onChange(field.name, e.target.value);
+        },
+        [onChange, field.name]
+    );
+
+    const handleSliderChange = useCallback(
+        (values: number[]) => {
+            onChange(field.name, values[0]);
+        },
+        [onChange, field.name]
+    );
+
+    const handleCheckboxChange = useCallback(
+        (checked: boolean) => {
+            onChange(field.name, checked);
+        },
+        [onChange, field.name]
+    );
+
+    const handleSelectChange = useCallback(
+        (selectedValue: string) => {
+            onChange(field.name, selectedValue);
+        },
+        [onChange, field.name]
+    );
+
+    const handleEditorChange = useCallback(
+        (value: string) => {
+            onChange(field.name, value);
+        },
+        [onChange, field.name]
+    )
+
+    const handleTableChange = useCallback((value: RowObject[]) => {
+        onChange(field.name, value);
+    }, [onChange, field.name])
+
+    const handleJSONChange = useCallback((value: Content) => {
+        onChange(field.name, value);
+    }, [onChange, field.name])
+
+    const handleCodeChange = useCallback((value: string) => {
+            onChange(field.name, value)
+        }, [onChange, field.name]
+    )
+
+    const inputClassName = useMemo(() => {
+        if (field.type === 'color') {
+            return 'max-w-[40px] p-px h-[40px] border-transparent';
+        }
+        if (['date', 'datetime-local', 'time', 'month', 'week'].includes(field.type)) {
+            return 'w-fit';
+        }
+        return ''
+    }, []);
+
+    switch (field.type) {
+        case 'checkbox':
+            return (
+                <Checkbox
+                    id={field.name}
+                    disabled={processing || field.disabled}
+                    tabIndex={1}
+                    className="cursor-pointer size-5"
+                    checked={value as boolean ?? false}
+                    onCheckedChange={handleCheckboxChange}
+                />
+            );
+        case 'textarea':
+            return (
+                <Textarea
+                    id={field.name}
+                    tabIndex={1}
+                    disabled={processing || field.disabled}
+                    value={value as string ?? ''}
+                    onChange={handleInputChange}
+                    placeholder={field.label}
+                />
+            );
+        case 'range':
+            return (
+                <>
+                    <output>{value as ReactNode}</output>
+                    <Slider
+                        defaultValue={[Number(field.value) || 0]}
+                        value={[Number(value) || 0]}
+                        max={field.options?.max ? Number(field.options.max) : 100}
+                        min={field.options?.min ? Number(field.options.min) : 0}
+                        step={1}
+                        id={field.name}
+                        onValueChange={handleSliderChange}
+                        disabled={processing || field.disabled}
+                    />
+                </>
+            );
+        case 'select':
+            return (
+                <Select
+                    onValueChange={handleSelectChange}
+                    defaultValue={value as string ?? ''}
+                    disabled={processing || field.disabled}
+                >
+                    <SelectTrigger className="w-full cursor-pointer" id={field.name}>
+                        <SelectValue placeholder={field.name}/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {(field.isIn ?? []).map((option) => (
+                            <SelectItem value={option} key={option}>
+                                {option}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            );
+        case 'wysiwyg':
+            if (field.options?.name === 'ckeditor') {
+                return (
+                    <AdminCKEditor
+                        initialValue={value as string ?? ''}
+                        onChange={handleEditorChange}
+                        options={field.options?.config as { items: string[] }}
+                    />
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleEditorChange}/>
+                )
+            }
+        case 'markdown':
+            if (field.options?.name === 'toast-ui') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                        <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
+                                 onChange={handleEditorChange}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleEditorChange}/>
+                )
+            }
+        case 'table':
+            if (field.options?.name === 'handsontable') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[150px]"/>}>
+                        <HandsonTableLazy data={value as any[]} config={field.options?.config}
+                                          onChange={handleTableChange}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleEditorChange}/>
+                )
+            }
+        case 'json':
+            if (field.options?.name === 'jsoneditor') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                        <JsonEditorLazy content={value as Content}
+                                        onChange={handleJSONChange}
+                        />
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleJSONChange}/>
+                )
+            }
+        case 'code':
+            if (field.options?.name === 'monaco') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                        <MonacoEditor value={value as string ?? ''} onChange={handleCodeChange} options={field.options?.config}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleJSONChange}/>
+                )
+            }
+        default:
+            return (
+                <Input
+                    id={field.name}
+                    type={field.type}
+                    className={inputClassName}
+                    required={field.required}
+                    tabIndex={1}
+                    value={value as any ?? ''}
+                    onChange={handleInputChange}
+                    disabled={processing || field.disabled}
+                    placeholder={field.label}
+                />
+            );
+    }
+});
+
+export default FieldRenderer

@@ -2,8 +2,9 @@ import {HotTable, HotColumn} from '@handsontable/react';
 import {registerAllModules} from 'handsontable/registry';
 //@ts-ignore
 import {ColumnSettings, GridSettings} from "handsontable/settings";
-import {useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {RowObject} from "handsontable/common";
+import {useAppearance} from "@/hooks/use-appearance.tsx";
 
 registerAllModules();
 
@@ -14,6 +15,8 @@ interface TableProps {
 }
 
 const HandsonTable = ({config, data = [], onChange}: TableProps) => {
+    const {appearance} = useAppearance()
+    const [theme, setTheme] = useState<string>('ht-theme-main')
 
     const handleChange = useCallback((_changes: any[], source: string) => {
         if (source === 'loadData') {
@@ -30,8 +33,17 @@ const HandsonTable = ({config, data = [], onChange}: TableProps) => {
         }
     }, [data]);
 
+    useEffect(() => {
+        if (appearance === 'dark') {
+            setTheme('ht-theme-main-dark');
+        } else {
+            setTheme('ht-theme-main');
+        }
+    }, [appearance]);
+
     return (
         <HotTable
+            themeName={theme}
             ref={hotTableRef}
             {...config}
             afterChange={handleChange}

@@ -23,6 +23,7 @@ const Example = Waterline.Collection.extend({
         tui: { type: "string" },
         datatable: { type: "json" },
         json: { type: "json" },
+        code: { type: "string" },
 		// owner: { model: "test" },
 	}
 });

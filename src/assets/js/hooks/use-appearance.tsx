@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
@@ -52,22 +52,43 @@ export function useAppearance() {
 
     const updateAppearance = useCallback((mode: Appearance) => {
         setAppearance(mode);
-
-        // Store in localStorage for client-side persistence...
         localStorage.setItem('appearance', mode);
-
-        // Store in cookie for SSR...
         setCookie('appearance', mode);
-
         applyTheme(mode);
+
+        // Trigger custom event for current tab
+        window.dispatchEvent(new Event('appearanceChanged'));
     }, []);
 
     useEffect(() => {
         const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
         updateAppearance(savedAppearance || 'system');
 
-        return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
+        // Listen for localStorage changes (from other tabs)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'appearance') {
+                const newAppearance = e.newValue as Appearance;
+                setAppearance(newAppearance);
+                applyTheme(newAppearance);
+            }
+        };
+
+        // Listen for custom event (from current tab)
+        const handleAppearanceChange = () => {
+            const savedAppearance = localStorage.getItem('appearance') as Appearance;
+            setAppearance(savedAppearance);
+            applyTheme(savedAppearance);
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('appearanceChanged', handleAppearanceChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('appearanceChanged', handleAppearanceChange);
+            mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
+        };
     }, [updateAppearance]);
 
-    return { appearance, updateAppearance } as const;
+    return {appearance, updateAppearance} as const;
 }

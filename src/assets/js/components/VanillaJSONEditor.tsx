@@ -3,12 +3,24 @@ import {
     JSONEditorPropsOptional,
     JsonEditor,
 } from 'vanilla-jsoneditor';
-import { useEffect, useRef } from 'react';
+import {useEffect, useRef, useState} from 'react';
+import {useAppearance} from "@/hooks/use-appearance.tsx";
 
 export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
     const refContainer = useRef<HTMLDivElement | null>(null);
     const refEditor = useRef<JsonEditor | null>(null);
     const refPrevProps = useRef<JSONEditorPropsOptional>(props);
+
+    const {appearance} = useAppearance()
+    const [theme, setTheme] = useState<string>('light')
+
+    useEffect(() => {
+        if (appearance === 'dark') {
+            setTheme('jse-theme-dark');
+        } else {
+            setTheme('');
+        }
+    }, [appearance]);
 
     useEffect(() => {
         // create editor
@@ -40,7 +52,7 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
         }
     }, [props]);
 
-    return <div className="vanilla-jsoneditor-react" ref={refContainer}></div>;
+    return <div className={`vanilla-jsoneditor-react ${theme}`} ref={refContainer}></div>;
 }
 
 function filterUnchangedProps(

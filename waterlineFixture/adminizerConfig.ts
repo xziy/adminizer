@@ -97,6 +97,16 @@ const models: AdminpanelConfig["models"] = {
                     },
                 }
             },
+            code: {
+                title: 'Code',
+                type: 'code',
+                options: {
+                    name: 'monaco',
+                    config: {
+                        language: 'typescript',
+                    }
+                }
+            },
             datatable: {
                 title: 'Price',
                 type: 'table',
@@ -117,8 +127,8 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Editor',
                 type: 'wysiwyg',
                 options: {
-                    // name: 'react-quill',
-                    name: 'ckeditor',
+                    name: 'react-quill',
+                    // name: 'ckeditor',
                     config: {
                         items: [
                             // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
