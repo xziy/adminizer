@@ -25,7 +25,6 @@ export async function resolvePageComponent<T>(path: string | string[], pages: Re
     throw new Error(`Page not found: ${path}`);
 }
 
-
 createInertiaApp({
     title: (title) => `${title}${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),

@@ -136,6 +136,11 @@ export default async function add(req: ReqType, res: ResType) {
 		// 	data: data
 		// });
 
+        // const sleep = (ms: number) => {
+        //     return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+        // await sleep(2000);
+
         const props = inertiaAddHelper(req, entity, fields)
         return req.Inertia.render({
             component: 'add',

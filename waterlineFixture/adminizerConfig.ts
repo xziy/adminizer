@@ -85,6 +85,9 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Week',
                 type: 'week',
             },
+            json: {
+                type: 'jsoneditor'
+            },
             tui: {
                 type: 'tuieditor',
                 options: {
@@ -98,7 +101,6 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Price',
                 type: 'table',
                 options: {
-                    name: 'handsontable',
                     config: {
                         dataSchema: {name: null, footage: null, price: null},
                         colHeaders: ['One', 'Two', 'Three'],

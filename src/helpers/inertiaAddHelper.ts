@@ -146,6 +146,19 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
                 path: control?.getPath() || {},
             };
         }
+        if(['jsoneditor', 'json', 'array', 'object'].includes(type)){
+            fieldType = 'json';
+            const fieldOptions = fieldConfig?.options as {name?: string, config?: Record<string, unknown>} | undefined;
+            let control = getControl(req, 'jsonEditor', fieldOptions?.name, 'jsoneditor');
+            options = {
+                name: control.getName(),
+                config: {
+                    ...(control?.getConfig() || {}), // Base config of the editor
+                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
+                },
+                path: control?.getPath() || {},
+            };
+        }
 
         props.fields.push({
             label: label,

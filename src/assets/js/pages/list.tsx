@@ -265,7 +265,7 @@ export default function List() {
                 <div className="flex gap-6">
                     {page.props.header.crudActions?.createTitle && (
                         <Button className="mb-3" asChild>
-                            <Link href={`${page.props.header.entity.uri}/add`}>
+                            <Link href={`${page.props.header.entity.uri}/add`} prefetch>
                                 <Icon iconNode={SquarePlus}/>
                                 {page.props.header.crudActions.createTitle}
                             </Link>

@@ -1,4 +1,4 @@
-import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo} from 'react';
+import {type FC, useMemo, useCallback, ReactNode, FormEventHandler, memo, lazy, Suspense} from 'react';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import {type SharedData} from '@/types';
@@ -13,12 +13,13 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/compon
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
-import ToastEditor from "@/components/toast-editor.tsx";
-import HandsonTable from "@/components/handsontable.tsx";
 import {RowObject} from "handsontable/common";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
+import VanillaJSONEditor from "@/components/VanillaJSONEditor.tsx";
+import {type Content} from "vanilla-jsoneditor";
 
 
-type FieldValue = string | boolean | number | Date | any[];
+type FieldValue = string | boolean | number | Date | any[] | Content;
 
 interface Field {
     label: string;
@@ -52,6 +53,8 @@ interface AddProps extends SharedData {
     postLink: string,
 }
 
+const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
+const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
 const FieldRenderer: FC<{
     field: Field;
     value: FieldValue;
@@ -96,6 +99,10 @@ const FieldRenderer: FC<{
     )
 
     const handleDateChange = useCallback((value: RowObject[]) => {
+        onChange(field.name, value);
+    }, [onChange, field.name])
+
+    const handleJSONChange = useCallback((value: Content) => {
         onChange(field.name, value);
     }, [onChange, field.name])
 
@@ -185,12 +192,23 @@ const FieldRenderer: FC<{
             }
         case 'markdown':
             return (
-                <ToastEditor initialValue={field.value as string ?? ''} options={field.options?.config}
+                <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                    <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
                              onChange={handleEditorChange}/>
+                </Suspense>
             )
         case 'table':
             return (
-                <HandsonTable data={value as any[]} config={field.options?.config} onChange={handleDateChange}/>
+                <Suspense fallback={<Skeleton className="w-full h-[150px]"/>}>
+                    <HandsonTableLazy data={value as any[]} config={field.options?.config} onChange={handleDateChange}/>
+                </Suspense>
+            )
+        case 'json':
+            return (
+                <VanillaJSONEditor
+                    content={value as Content}
+                    onChange={handleJSONChange}
+                />
             )
         default:
             return (
@@ -200,7 +218,7 @@ const FieldRenderer: FC<{
                     className={inputClassName}
                     required={field.required}
                     tabIndex={1}
-                    value={value as any ?? '' }
+                    value={value as any ?? ''}
                     onChange={handleInputChange}
                     disabled={processing || field.disabled}
                     placeholder={field.label}
@@ -244,9 +262,7 @@ const AddForm: FC = () => {
         clearErrors,
         post,
         processing,
-    } = useForm<Record<string, FieldValue>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
-
-    // const [handsoneTable, setHandsoneTable] = useState({})
+    } = useForm<Record<string, any>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
 
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
@@ -279,7 +295,7 @@ const AddForm: FC = () => {
                 <div className="flex flex-col gap-10 max-w-[1144px]">
                     {fields.map((field) => (
                         <div className="grid gap-4" key={field.name}>
-                            <LabelRenderer field={field} />
+                            <LabelRenderer field={field}/>
                             <FieldRenderer
                                 field={field}
                                 value={data[field.name]}
