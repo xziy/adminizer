@@ -9,7 +9,7 @@ const models: AdminpanelConfig["models"] = {
         tools: [
             {
                 id: '1',
-                link: '/test/404',
+                link: `#`,
                 title: 'Some new action',
                 icon: 'reorder',
             },
@@ -94,6 +94,7 @@ const models: AdminpanelConfig["models"] = {
                     name: 'toast-ui',
                     config:{
                         hideModeSwitch: true,
+                        previewStyle: 'vertical',
                     },
                 }
             },
@@ -127,8 +128,8 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Editor',
                 type: 'wysiwyg',
                 options: {
-                    name: 'react-quill',
-                    // name: 'ckeditor',
+                    // name: 'react-quill',
+                    name: 'ckeditor',
                     config: {
                         items: [
                             // 'sourceEditing', // This is for test, see full list of items in src/lib/controls/wysiwyg/CKeditor.ts
@@ -166,7 +167,7 @@ const models: AdminpanelConfig["models"] = {
                         link: '#',
                         title: 'Google',
                         icon: 'insert_link'
-                    }
+                    },
                 ],
                 inline: [
                     {

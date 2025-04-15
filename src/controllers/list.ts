@@ -31,7 +31,7 @@ export default async function list(req: ReqType, res: ResType) {
             start = ((+req.query.page - 1) * +req.query.count).toString();
         }
     }
-    const count = req.query.count ? req.query.count.toString() : "2"
+    const count = req.query.count ? req.query.count.toString() : "5"
     const mockRequestBody = {
         draw: "1",
         start: start,

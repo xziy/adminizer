@@ -72,11 +72,11 @@ interface ExtendedSharedData extends SharedData {
 export default function List() {
     const page = usePage<ExtendedSharedData>()
     const data = page.props.data
-    const [count, setCount] = useState("2")
     const [loading, setLoading] = useState(false)
 
     const searchParams = new URLSearchParams(window.location.search);
     const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+    const [count, setCount] = useState(searchParams.get('count') || '5')
 
     let columns: ColumnDef<any>[] = [
         {
@@ -259,12 +259,12 @@ export default function List() {
     )
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} className="overflow-auto">
+        <AppLayout breadcrumbs={breadcrumbs} className="overflow-auto h-[calc(100svh-16px)]">
             <Toaster position="top-center" richColors closeButton/>
-            <div className={`flex h-full flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
-                <div className="flex gap-6">
+            <div className={`flex h-auto flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
+                <div className="flex gap-6 sticky top-0 z-10 bg-background py-3">
                     {page.props.header.crudActions?.createTitle && (
-                        <Button className="mb-3" asChild>
+                        <Button asChild>
                             <Link href={`${page.props.header.entity.uri}/add`} prefetch>
                                 <Icon iconNode={SquarePlus}/>
                                 {page.props.header.crudActions.createTitle}
@@ -273,7 +273,7 @@ export default function List() {
                     )}
                     <div className="flex gap-2">
                         {page.props.header.actions.map((action) => (
-                            <Button className="mb-3" asChild variant="outline" key={action.id}>
+                            <Button asChild variant="outline" key={action.id}>
                                 <a href={action.link} target='_blank'>
                                     <MaterialIcon name={action.icon} className="!text-[18px]"/>
                                     {action.title}
@@ -293,7 +293,7 @@ export default function List() {
                                     <SelectValue placeholder={count}/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {['2', '5', '10', '50'].map((option) => (
+                                    {['5', '10', '50'].map((option) => (
                                         <SelectItem value={option}
                                                     key={option}>{option}</SelectItem>
                                     ))}

@@ -1,4 +1,4 @@
-import {type FC, useCallback, FormEventHandler, memo } from 'react';
+import {type FC, useCallback, FormEventHandler, memo} from 'react';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import {Field, type SharedData} from '@/types';
@@ -86,35 +86,46 @@ const AddForm: FC = () => {
 
 
     return (
-        <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <Button className="mb-3 w-fit" asChild>
-                <Link href={btnBack.link}>
-                    <Icon iconNode={MoveLeft}/>
-                    {btnBack.title}
-                </Link>
-            </Button>
+        <div className="p-4 w-full">
+            <div className="w-full sticky py-4 top-0 z-10 h-fit bg-background flex gap-4">
+                <Button className="w-fit" asChild>
+                    <Link href={btnBack.link}>
+                        <Icon iconNode={MoveLeft}/>
+                        {btnBack.title}
+                    </Link>
+                </Button>
+                <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden"
+                        disabled={processing || page.props.view}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    {page.props.btnSave.title}
+                </Button>
+            </div>
             <form
                 id="addUserForm"
                 onSubmit={submit}
                 className={view ? 'cursor-not-allowed' : ''}
             >
-                <div className="flex flex-col gap-10 max-w-[1144px]">
-                    {fields.map((field) => (
-                        <div className="grid gap-4" key={field.name}>
-                            <LabelRenderer field={field}/>
-                            <FieldRenderer
-                                field={field}
-                                value={data[field.name]}
-                                onChange={handleFieldChange}
-                                processing={processing || page.props.view}
-                            />
-                        </div>
-                    ))}
-                    <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
-                            disabled={processing || page.props.view}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                        {page.props.btnSave.title}
-                    </Button>
+                <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px]">
+                    <div className="flex flex-col gap-10">
+                        {fields.map((field) => (
+                            <div className="grid gap-4 w-full" key={field.name}>
+                                <LabelRenderer field={field}/>
+                                <FieldRenderer
+                                    field={field}
+                                    value={data[field.name]}
+                                    onChange={handleFieldChange}
+                                    processing={processing || page.props.view}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-4 rounded-md h-fit sticky top-[68px] shadow hidden lg:block">
+                        <Button variant="green" type="submit" className="w-fit cursor-pointer"
+                                disabled={processing || page.props.view}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                            {page.props.btnSave.title}
+                        </Button>
+                    </div>
                 </div>
             </form>
         </div>

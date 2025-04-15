@@ -12,7 +12,7 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
     const refPrevProps = useRef<JSONEditorPropsOptional>(props);
 
     const {appearance} = useAppearance()
-    const [theme, setTheme] = useState<string>('light')
+    const [theme, setTheme] = useState<string>('')
 
     useEffect(() => {
         if (appearance === 'dark') {
@@ -21,7 +21,6 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
             setTheme('');
         }
     }, [appearance]);
-
     useEffect(() => {
         // create editor
         // console.log('create editor', refContainer.current);
