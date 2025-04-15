@@ -108,6 +108,9 @@ const models: AdminpanelConfig["models"] = {
                     }
                 }
             },
+            // geojson: {
+            //     type: 'geo-polygon',
+            // },
             datatable: {
                 title: 'Price',
                 type: 'table',

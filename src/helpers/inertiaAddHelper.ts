@@ -179,6 +179,22 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             }
         }
 
+        if (['geojson', 'geo-polygon', 'geo-marker'].includes(type)) {
+            fieldType = 'geojson';
+            const fieldOptions = fieldConfig?.options as {
+                name?: string,
+                config?: Record<string, unknown>
+            } | undefined;
+            let control = getControl(req, 'geoJson', fieldOptions?.name, 'leaflet');
+            options = {
+                name: control.getName(),
+                config: {
+                    ...(control?.getConfig() || {}), // Base config of the editor
+                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
+                },
+            }
+        }
+
         props.fields.push({
             label: label,
             tooltip: tooltip,
@@ -228,9 +244,9 @@ function inputText(type: string, isIn: string[]) {
     }
 }
 
-function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultName: string) {
+function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultControlName: string) {
     let control: AbstractControls;
-    let editorName = defaultName // default editor name
+    let editorName = defaultControlName // default editor name
 
     // Determine which editor to use
     if (name) {
@@ -242,7 +258,7 @@ function getControl(req: ReqType, type: ControlType, name: string | undefined, d
     // Fallback to ckeditor if specified editor not found
     if (!control) {
         console.log(chalk.yellow(`Control ${type} - ${name} not found, falling back to default`));
-        control = req.adminizer.controlsHandler.get(type, defaultName);
+        control = req.adminizer.controlsHandler.get(type, defaultControlName);
     }
     return control;
 }

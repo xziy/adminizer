@@ -5,6 +5,7 @@ import 'handsontable/styles/ht-theme-main.min.css';
 import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 import '@toast-ui/editor/dist/toastui-editor.css';
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
+import "leaflet/dist/leaflet.css";
 
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';

@@ -19,7 +19,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <div className="flex gap-4 items-center">
                     <Button
                         variant="ghost" size="icon"
-                        className="shrink-0 cursor-pointer"
+                        className={`shrink-0 cursor-pointer`}
                         onClick={() => updateAppearance(appearance === 'light' ? 'dark' : 'light')}
                     >
                         {appearance === 'light' ? (

@@ -152,3 +152,7 @@
     flex-wrap: wrap;
     height: auto !important;
 }
+
+.leaflet-control-attribution.leaflet-control{
+    display: none !important;
+}

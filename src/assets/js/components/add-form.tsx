@@ -81,13 +81,14 @@ const AddForm: FC = () => {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(page.props.postLink);
+        console.log(data)
+        // post(page.props.postLink);
     };
 
 
     return (
         <div className="p-4 w-full">
-            <div className="w-full sticky py-4 top-0 z-10 h-fit bg-background flex gap-4">
+            <div className="w-full sticky py-4 pb-8 top-0 z-10 h-fit bg-background flex gap-4">
                 <Button className="w-fit" asChild>
                     <Link href={btnBack.link}>
                         <Icon iconNode={MoveLeft}/>
@@ -105,7 +106,7 @@ const AddForm: FC = () => {
                 onSubmit={submit}
                 className={view ? 'cursor-not-allowed' : ''}
             >
-                <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px]">
+                <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8">
                     <div className="flex flex-col gap-10">
                         {fields.map((field) => (
                             <div className="grid gap-4 w-full" key={field.name}>
@@ -119,7 +120,7 @@ const AddForm: FC = () => {
                             </div>
                         ))}
                     </div>
-                    <div className="p-4 rounded-md h-fit sticky top-[68px] shadow hidden lg:block">
+                    <div className="p-4 rounded-md h-fit sticky top-[84px] shadow hidden lg:block">
                         <Button variant="green" type="submit" className="w-fit cursor-pointer"
                                 disabled={processing || page.props.view}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}

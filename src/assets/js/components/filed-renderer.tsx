@@ -11,6 +11,7 @@ import {Skeleton} from "@/components/ui/skeleton.tsx";
 import MonacoEditor from "@/components/monaco-editor.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Field} from "@/types";
+import GeoJsonEditor from "@/components/geo-json.tsx";
 
 const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
 const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
@@ -72,6 +73,10 @@ const FieldRenderer: FC<{
             onChange(field.name, value)
         }, [onChange, field.name]
     )
+
+    const handleGeoJsonChange = useCallback((value: any) => {
+        onChange(field.name, value)
+    }, [onChange, field.name])
 
     const inputClassName = useMemo(() => {
         if (field.type === 'color') {
@@ -207,7 +212,26 @@ const FieldRenderer: FC<{
             if (field.options?.name === 'monaco') {
                 return (
                     <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
-                        <MonacoEditor value={value as string ?? ''} onChange={handleCodeChange} options={field.options?.config}/>
+                        <MonacoEditor value={value as string ?? ''} onChange={handleCodeChange}
+                                      options={field.options?.config}/>
+                    </Suspense>
+                )
+            } else {
+                return (
+                    <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
+                                     initialValue={value as string ?? ''}
+                                     onChange={handleJSONChange}/>
+                )
+            }
+        case 'geojson':
+            if (field.options?.name === 'leaflet') {
+                return (
+                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                        <GeoJsonEditor
+                            mode="all"
+                            initialFeatures={value as [] ?? undefined}
+                            onFeaturesChange={handleGeoJsonChange}
+                        />
                     </Suspense>
                 )
             } else {

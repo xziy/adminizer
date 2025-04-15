@@ -49,15 +49,20 @@ export function initializeTheme() {
 
 export function useAppearance() {
     const [appearance, setAppearance] = useState<Appearance>('system');
+    const [isThemeChanging, setIsThemeChanging] = useState(false);
 
     const updateAppearance = useCallback((mode: Appearance) => {
+        setIsThemeChanging(true);
         setAppearance(mode);
         localStorage.setItem('appearance', mode);
         setCookie('appearance', mode);
         applyTheme(mode);
 
         // Trigger custom event for current tab
-        window.dispatchEvent(new Event('appearanceChanged'));
+        setTimeout(() => {
+            setIsThemeChanging(false);
+            window.dispatchEvent(new Event('appearanceChanged'));
+        }, 0)
     }, []);
 
     useEffect(() => {
@@ -90,5 +95,5 @@ export function useAppearance() {
         };
     }, [updateAppearance]);
 
-    return {appearance, updateAppearance} as const;
+    return {appearance, updateAppearance, isThemeChanging} as const;
 }

@@ -4,6 +4,7 @@ import {Adminizer} from "../lib/Adminizer";
 import {Handsontable} from "../lib/controls/table/Handsontable";
 import {JsonEditor} from "../lib/controls/jsoneditor/JsonEditor";
 import {MonacoEditor} from "../lib/controls/codeEditor/MonacoEditor";
+import {GeoEditor} from "../lib/controls/geojsoneditor/GeoEditor";
 
 export function bindControls(adminizer: Adminizer): void {
     // bind wysiwyg
@@ -16,4 +17,6 @@ export function bindControls(adminizer: Adminizer): void {
     adminizer.controlsHandler.add(new JsonEditor(adminizer))
     // bind code editor
     adminizer.controlsHandler.add(new MonacoEditor(adminizer))
+    //bind geo json editor
+    adminizer.controlsHandler.add(new GeoEditor(adminizer))
 }
