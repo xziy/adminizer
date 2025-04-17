@@ -3,16 +3,14 @@ import {
     MapContainer,
     TileLayer,
     Marker,
-    Popup,
     Polygon,
     useMap,
     Polyline,
     Rectangle,
 } from "react-leaflet";
 import L from "leaflet";
-import {Button} from "@/components/ui/button.tsx";
-import {Hexagon, MapPin, RectangleHorizontal, Trash2} from "lucide-react";
-
+import { Button } from "@/components/ui/button.tsx";
+import { Hexagon, MapPin, RectangleHorizontal, Trash2, Check } from "lucide-react";
 
 // Фикс для иконок маркеров
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -25,6 +23,14 @@ L.Icon.Default.mergeOptions({
         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+const polylineStyle = {
+    color: "red",
+    weight: 5,
+    opacity: 1,
+    fillOpacity: 0.7,
+    dashArray: "0",
+};
+
 type Position = [number, number];
 type PolygonCoords = Position[];
 
@@ -32,7 +38,7 @@ interface MapFeature {
     id: string | number;
     position?: Position;
     polygon?: PolygonCoords[];
-    rectangle?: [Position, Position]; // две точки для прямоугольника
+    rectangle?: [Position, Position];
     popupContent?: string;
     color?: string;
 }
@@ -55,14 +61,18 @@ const ControlPanel = ({
                           onAddPolygon,
                           onAddRectangle,
                           onClearAll,
+                          onFinishDrawing,
                           drawingMode,
+                          drawingInProgress,
                       }: {
     position: string;
     onAddMarker: () => void;
     onAddPolygon: () => void;
     onAddRectangle: () => void;
     onClearAll: () => void;
+    onFinishDrawing: () => void;
     drawingMode: string;
+    drawingInProgress: boolean;
 }) => {
     const positionClass = {
         "top-left": "leaflet-top leaflet-left",
@@ -82,9 +92,11 @@ const ControlPanel = ({
                     size="sm"
                     onClick={(e) => {
                         e.preventDefault();
-                        onAddMarker()
+                        e.stopPropagation();
+                        onAddMarker();
                     }}
                     title="Add marker"
+                    disabled={drawingInProgress}
                 >
                     <MapPin />
                 </Button>
@@ -96,9 +108,11 @@ const ControlPanel = ({
                     size="sm"
                     onClick={(e) => {
                         e.preventDefault();
-                        onAddPolygon()
+                        e.stopPropagation();
+                        onAddPolygon();
                     }}
                     title="Add polygon"
+                    disabled={drawingInProgress && drawingMode !== "polygon"}
                 >
                     <Hexagon />
                 </Button>
@@ -110,21 +124,40 @@ const ControlPanel = ({
                     size="sm"
                     onClick={(e) => {
                         e.preventDefault();
-                        onAddRectangle()
+                        e.stopPropagation();
+                        onAddRectangle();
                     }}
                     title="Add rectangle"
+                    disabled={drawingInProgress}
                 >
                     <RectangleHorizontal />
                 </Button>
+                {drawingMode === "polygon" && drawingInProgress && (
+                    <Button
+                        className="cursor-pointer rounded-none leaflet-control-button bg-green-500 hover:bg-green-600 text-white"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onFinishDrawing();
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        title="Finish drawing"
+                    >
+                        <Check />
+                    </Button>
+                )}
                 <Button
                     className="cursor-pointer rounded-none leaflet-control-button"
                     onClick={(e) => {
                         e.preventDefault();
-                        onClearAll()
+                        e.stopPropagation();
+                        onClearAll();
                     }}
                     variant="ghost"
                     size="sm"
                     title="Clear map"
+                    disabled={drawingInProgress}
                 >
                     <Trash2 />
                 </Button>
@@ -139,18 +172,58 @@ const MapEditor = ({
                        drawingMode,
                        setDrawingMode,
                        onFeaturesChange,
+                       setDrawingInProgress,
+                       onFinishDrawing,
                    }: {
     features: MapFeature[];
     mode: string;
     drawingMode: string;
     setDrawingMode: (mode: string) => void;
     onFeaturesChange: (features: MapFeature[]) => void;
+    setDrawingInProgress: (value: boolean) => void;
+    onFinishDrawing: () => void;
 }) => {
     const map = useMap();
     const [currentPolygon, setCurrentPolygon] = useState<Position[]>([]);
     const [rectangleStart, setRectangleStart] = useState<Position | null>(null);
     const [rectangleEnd, setRectangleEnd] = useState<Position | null>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
+
+    // Завершение рисования полигона
+    const completePolygon = useCallback(() => {
+        if (currentPolygon.length < 3) {
+            setCurrentPolygon([]);
+            setDrawingMode("none");
+            setDrawingInProgress(false);
+            return;
+        }
+
+        const newFeature: MapFeature = {
+            id: Date.now(),
+            polygon: [[...currentPolygon, currentPolygon[0]]],
+            popupContent: `Полигон ${features.length + 1}`,
+            color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+        };
+
+        onFeaturesChange([...features, newFeature]);
+        setCurrentPolygon([]);
+        setDrawingMode("none");
+        setDrawingInProgress(false);
+        map.doubleClickZoom.enable();
+    }, [
+        currentPolygon,
+        features,
+        onFeaturesChange,
+        setDrawingMode,
+        map,
+        setDrawingInProgress,
+    ]);
+
+    // Обработчик завершения рисования из родительского компонента
+    useEffect(() => {
+        if (drawingMode === "polygon" && currentPolygon.length > 0) {
+            completePolygon();
+        }
+    }, [onFinishDrawing]);
 
     // Добавление маркера
     const addMarker = useCallback(
@@ -175,34 +248,11 @@ const MapEditor = ({
             const newPoint: Position = [latlng.lat, latlng.lng];
             const updatedPoints = [...currentPolygon, newPoint];
             setCurrentPolygon(updatedPoints);
-
+            setDrawingInProgress(true);
             map.doubleClickZoom.disable();
         },
-        [currentPolygon, drawingMode, map]
+        [currentPolygon, drawingMode, map, setDrawingInProgress]
     );
-
-    // Завершение рисования полигона
-    const finishPolygon = useCallback(() => {
-        if (currentPolygon.length < 3) {
-            setCurrentPolygon([]);
-            setIsDrawing(false);
-            setDrawingMode("none");
-            return;
-        }
-
-        const newFeature: MapFeature = {
-            id: Date.now(),
-            polygon: [[...currentPolygon, currentPolygon[0]]], // Замыкаем полигон
-            popupContent: `Полигон ${features.length + 1}`,
-            color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-        };
-
-        onFeaturesChange([...features, newFeature]);
-        setCurrentPolygon([]);
-        setIsDrawing(false);
-        setDrawingMode("none");
-        map.doubleClickZoom.enable();
-    }, [currentPolygon, features, onFeaturesChange, setDrawingMode, map]);
 
     // Начало рисования прямоугольника
     const startRectangle = useCallback(
@@ -212,9 +262,9 @@ const MapEditor = ({
             const pos: Position = [latlng.lat, latlng.lng];
             setRectangleStart(pos);
             setRectangleEnd(pos);
-            setIsDrawing(true);
+            setDrawingInProgress(true);
         },
-        [drawingMode]
+        [drawingMode, setDrawingInProgress]
     );
 
     // Обновление прямоугольника
@@ -233,8 +283,8 @@ const MapEditor = ({
         if (!rectangleStart || !rectangleEnd) {
             setRectangleStart(null);
             setRectangleEnd(null);
-            setIsDrawing(false);
             setDrawingMode("none");
+            setDrawingInProgress(false);
             return;
         }
 
@@ -248,14 +298,15 @@ const MapEditor = ({
         onFeaturesChange([...features, newFeature]);
         setRectangleStart(null);
         setRectangleEnd(null);
-        setIsDrawing(false);
         setDrawingMode("none");
+        setDrawingInProgress(false);
     }, [
         rectangleStart,
         rectangleEnd,
         features,
         onFeaturesChange,
         setDrawingMode,
+        setDrawingInProgress,
     ]);
 
     // Обработчики событий карты
@@ -280,51 +331,36 @@ const MapEditor = ({
             }
         };
 
-        const handleDoubleClick = () => {
-            if (drawingMode === "polygon") {
-                finishPolygon();
-            }
-        };
-
         map.on("click", handleClick);
         map.on("mousemove", handleMove);
-        map.on("dblclick", handleDoubleClick);
 
         return () => {
             map.off("click", handleClick);
             map.off("mousemove", handleMove);
-            map.off("dblclick", handleDoubleClick);
         };
     }, [
         map,
         drawingMode,
         addMarker,
         addPolygonPoint,
-        finishPolygon,
         startRectangle,
         updateRectangle,
         finishRectangle,
         rectangleStart,
     ]);
 
-    // Удаление элемента
-    const deleteFeature = useCallback(
-        (id: string | number) => {
-            onFeaturesChange(features.filter((f) => f.id !== id));
-        },
-        [features, onFeaturesChange]
-    );
-
     // Клавиша Escape для отмены рисования
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape" && isDrawing) {
-                setCurrentPolygon([]);
-                setRectangleStart(null);
-                setRectangleEnd(null);
-                setIsDrawing(false);
-                setDrawingMode("none");
-                map.doubleClickZoom.enable();
+            if (e.key === "Escape") {
+                if (currentPolygon.length > 0 || rectangleStart) {
+                    setCurrentPolygon([]);
+                    setRectangleStart(null);
+                    setRectangleEnd(null);
+                    setDrawingMode("none");
+                    setDrawingInProgress(false);
+                    map.doubleClickZoom.enable();
+                }
             }
         };
 
@@ -332,7 +368,13 @@ const MapEditor = ({
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [isDrawing, setDrawingMode, map]);
+    }, [
+        currentPolygon.length,
+        rectangleStart,
+        setDrawingMode,
+        setDrawingInProgress,
+        map,
+    ]);
 
     return (
         <>
@@ -340,18 +382,6 @@ const MapEditor = ({
                 <React.Fragment key={feature.id}>
                     {(mode === "marker" || mode === "all") && feature.position && (
                         <Marker position={feature.position}>
-                            <Popup>
-                                {feature.popupContent}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteFeature(feature.id);
-                                    }}
-                                    style={{ marginTop: "10px" }}
-                                >
-                                    Удалить
-                                </button>
-                            </Popup>
                         </Marker>
                     )}
 
@@ -360,18 +390,6 @@ const MapEditor = ({
                             positions={feature.polygon}
                             pathOptions={{ color: feature.color || "blue" }}
                         >
-                            <Popup>
-                                {feature.popupContent}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteFeature(feature.id);
-                                    }}
-                                    style={{ marginTop: "10px" }}
-                                >
-                                    Удалить
-                                </button>
-                            </Popup>
                         </Polygon>
                     )}
 
@@ -380,18 +398,6 @@ const MapEditor = ({
                             bounds={feature.rectangle}
                             pathOptions={{ color: feature.color || "green" }}
                         >
-                            <Popup>
-                                {feature.popupContent}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteFeature(feature.id);
-                                    }}
-                                    style={{ marginTop: "10px" }}
-                                >
-                                    Удалить
-                                </button>
-                            </Popup>
                         </Rectangle>
                     )}
                 </React.Fragment>
@@ -402,9 +408,7 @@ const MapEditor = ({
                 <>
                     <Polyline
                         positions={currentPolygon}
-                        color="red"
-                        weight={3}
-                        dashArray="5, 5"
+                        {...polylineStyle}
                     />
                     {currentPolygon.length > 0 && (
                         <Polyline
@@ -412,9 +416,7 @@ const MapEditor = ({
                                 currentPolygon[currentPolygon.length - 1],
                                 currentPolygon[0],
                             ]}
-                            color="red"
-                            weight={3}
-                            dashArray="5, 5"
+                            {...polylineStyle}
                         />
                     )}
                 </>
@@ -432,22 +434,23 @@ const MapEditor = ({
 };
 
 const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
-                                                       mode = "all",
-                                                       initialFeatures = [],
-                                                       center = [45.7, 60.1],
-                                                       zoom = 3,
-                                                       showControls = true,
-                                                       controlsPosition = "top-right",
-                                                       onFeaturesChange,
-                                                       className,
-                                                       style,
-                                                   }) => {
+                                                         mode = "all",
+                                                         initialFeatures = [],
+                                                         center = [45.7, 60.1],
+                                                         zoom = 3,
+                                                         showControls = true,
+                                                         controlsPosition = "top-right",
+                                                         onFeaturesChange,
+                                                         className,
+                                                         style,
+                                                     }) => {
     const [features, setFeatures] = useState<MapFeature[]>(initialFeatures);
     const [drawingMode, setDrawingMode] = useState<
         "none" | "marker" | "polygon" | "rectangle"
     >("none");
+    const [drawingInProgress, setDrawingInProgress] = useState(false);
+    const [finishDrawingTrigger, setFinishDrawingTrigger] = useState(0);
 
-    // Объединенный обработчик изменений
     const handleFeaturesChange = useCallback(
         (newFeatures: MapFeature[]) => {
             setFeatures(newFeatures);
@@ -458,51 +461,62 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
         [onFeaturesChange]
     );
 
-    // Переключение режимов рисования
-    const toggleDrawingMode = useCallback((mode: "marker" | "polygon" | "rectangle" | "none") => {
-        setDrawingMode((prev) => (prev === mode ? "none" : mode));
-    }, []);
+    const toggleDrawingMode = useCallback(
+        (mode: "marker" | "polygon" | "rectangle" | "none") => {
+            if (drawingInProgress) return;
+            setDrawingMode((prev) => (prev === mode ? "none" : mode));
+        },
+        [drawingInProgress]
+    );
 
-    // Очистка карты
+    const handleFinishDrawing = useCallback(() => {
+        if (drawingMode === "polygon" && drawingInProgress) {
+            setFinishDrawingTrigger(prev => prev + 1);
+        }
+    }, [drawingMode, drawingInProgress]);
+
     const handleClearAll = useCallback(() => {
+        if (drawingInProgress) return;
         handleFeaturesChange([]);
         setDrawingMode("none");
-    }, [handleFeaturesChange]);
+    }, [handleFeaturesChange, drawingInProgress]);
 
     return (
         <div className={className} style={{ position: "relative", ...style }}>
             <MapContainer
                 center={center}
                 zoom={zoom}
-                style={{ height: "400px", width: "100%" }}
+                style={{ height: "500px", width: "100%" }}
                 doubleClickZoom={true}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-
                 <MapEditor
                     features={features}
                     mode={mode}
                     drawingMode={drawingMode}
-                    //@ts-ignore
+                    // @ts-ignore
                     setDrawingMode={setDrawingMode}
                     onFeaturesChange={handleFeaturesChange}
+                    setDrawingInProgress={setDrawingInProgress}
+                    // @ts-ignore
+                    onFinishDrawing={finishDrawingTrigger}
                 />
-
-                {showControls && (
-                    <ControlPanel
-                        position={controlsPosition}
-                        onAddMarker={() => toggleDrawingMode("marker")}
-                        onAddPolygon={() => toggleDrawingMode("polygon")}
-                        onAddRectangle={() => toggleDrawingMode("rectangle")}
-                        onClearAll={handleClearAll}
-                        drawingMode={drawingMode}
-                    />
-                )}
             </MapContainer>
-
+            {showControls && (
+                <ControlPanel
+                    position={controlsPosition}
+                    onAddMarker={() => toggleDrawingMode("marker")}
+                    onAddPolygon={() => toggleDrawingMode("polygon")}
+                    onAddRectangle={() => toggleDrawingMode("rectangle")}
+                    onClearAll={handleClearAll}
+                    onFinishDrawing={handleFinishDrawing}
+                    drawingMode={drawingMode}
+                    drawingInProgress={drawingInProgress}
+                />
+            )}
             {drawingMode === "polygon" && (
                 <div
                     style={{
@@ -513,12 +527,14 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         backgroundColor: "white",
                         padding: "10px",
                         borderRadius: "5px",
+                        fontSize: '14px',
                         boxShadow: "0 0 10px rgba(0,0,0,0.2)",
                         zIndex: 1000,
                     }}
                 >
-                    Рисование полигона: кликните чтобы добавить точки, двойной клик чтобы
-                    завершить
+                    {drawingInProgress
+                        ? "Add more polygon points on the map, then click finish"
+                        : "Add a point on the map"}
                 </div>
             )}
 
@@ -532,12 +548,31 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         backgroundColor: "white",
                         padding: "10px",
                         borderRadius: "5px",
+                        fontSize: '14px',
                         boxShadow: "0 0 10px rgba(0,0,0,0.2)",
                         zIndex: 1000,
                     }}
                 >
-                    Рисование прямоугольника: кликните и перетащите чтобы создать
-                    прямоугольник
+                    Drawing a rectangle: click and drag to create a rectangle
+                </div>
+            )}
+
+            {drawingMode === "marker" && (
+                <div
+                    style={{
+                        position: "absolute",
+                        bottom: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "white",
+                        padding: "10px",
+                        borderRadius: "5px",
+                        fontSize: '14px',
+                        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                        zIndex: 1000,
+                    }}
+                >
+                    Put markers on the map, then click the marker again to finish
                 </div>
             )}
         </div>

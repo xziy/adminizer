@@ -211,7 +211,7 @@ const FieldRenderer: FC<{
         case 'code':
             if (field.options?.name === 'monaco') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                    <Suspense fallback={<Skeleton className="w-full h-[518px]"/>}>
                         <MonacoEditor value={value as string ?? ''} onChange={handleCodeChange}
                                       options={field.options?.config}/>
                     </Suspense>
@@ -226,7 +226,7 @@ const FieldRenderer: FC<{
         case 'geojson':
             if (field.options?.name === 'leaflet') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
+                    <Suspense fallback={<Skeleton className="w-full h-[500px]"/>}>
                         <GeoJsonEditor
                             mode="all"
                             initialFeatures={value as [] ?? undefined}

@@ -24,7 +24,7 @@ const Example = Waterline.Collection.extend({
         datatable: { type: "json" },
         json: { type: "json" },
         code: { type: "string" },
-        // geojson: { type: "json" },
+        geojson: { type: "json" },
 		// owner: { model: "test" },
 	}
 });
