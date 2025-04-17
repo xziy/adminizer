@@ -8,6 +8,8 @@ import {Label} from "@/components/ui/label.tsx";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {type Content} from "vanilla-jsoneditor";
 import FieldRenderer from "@/components/filed-renderer.tsx";
+import {useInView} from 'react-intersection-observer';
+import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 type FieldValue = string | boolean | number | Date | any[] | Content;
 
@@ -56,10 +58,39 @@ const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
     )
 })
 
+const LazyField: FC<{
+    field: Field;
+    value: FieldValue;
+    onChange: (name: string, value: FieldValue) => void;
+    processing: boolean;
+}> = memo(({field, value, onChange, processing}) => {
+    const [ref, inView] = useInView({
+        triggerOnce: true,
+        rootMargin: '10px 0px', // Начинаем загружать заранее
+    });
+
+    return (
+        <div ref={ref} className="grid gap-4 w-full">
+            {inView ? (
+                <>
+                    <LabelRenderer field={field}/>
+                    <FieldRenderer
+                        field={field}
+                        value={value}
+                        onChange={onChange}
+                        processing={processing}
+                    />
+                </>
+            ) : <Skeleton className="w-full h-[66px]"/>}
+        </div>
+    );
+});
+
+
 const AddForm: FC = () => {
+
     const page = usePage<AddProps>();
     const {fields, btnBack, view} = page.props;
-
 
     const {
         data,
@@ -85,7 +116,6 @@ const AddForm: FC = () => {
         post(page.props.postLink);
     };
 
-
     return (
         <div className="p-4 w-full">
             <div className="w-full sticky py-4 pb-8 top-0 z-10 h-fit bg-background flex gap-4">
@@ -109,14 +139,22 @@ const AddForm: FC = () => {
                 <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8">
                     <div className="flex flex-col gap-10">
                         {fields.map((field) => (
-                            <div className="grid gap-4 w-full" key={field.name}>
-                                <LabelRenderer field={field}/>
-                                <FieldRenderer
-                                    field={field}
-                                    value={data[field.name]}
-                                    onChange={handleFieldChange}
-                                    processing={processing || page.props.view}
-                                />
+                            <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`} key={field.name}>
+                                {field.type === "markdown" || field.type === "table" || field.type === "json" || field.type === "code" || field.type === "geojson" ?
+                                    <LazyField
+                                        field={field}
+                                        value={data[field.name]}
+                                        onChange={handleFieldChange}
+                                        processing={processing || view}
+                                    />
+                                    :
+                                    <FieldRenderer
+                                        field={field}
+                                        value={data[field.name]}
+                                        onChange={handleFieldChange}
+                                        processing={processing || view}
+                                    />
+                                }
                             </div>
                         ))}
                     </div>

@@ -6,11 +6,13 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
+import Test from "./models/Test";
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
+orm.registerModel(Test);
 
 // TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
 //  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)
@@ -116,8 +118,8 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
         ) {
             adminizer.vite.middlewares(req, res);
         } else {
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            res.end('Hello from MainApp!');
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
         }
     });
 

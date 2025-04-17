@@ -488,6 +488,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                 zoom={zoom}
                 style={{ height: "500px", width: "100%" }}
                 doubleClickZoom={true}
+
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -1,23 +1,26 @@
-import {type FC, lazy, memo, ReactNode, Suspense, useCallback, useMemo} from "react";
+import {type FC, lazy, memo, ReactNode, useCallback, useMemo} from "react";
 import {RowObject} from "handsontable/common";
 import type {Content} from "vanilla-jsoneditor";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Slider} from "@/components/ui/slider.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
-import {Skeleton} from "@/components/ui/skeleton.tsx";
-import MonacoEditor from "@/components/monaco-editor.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Field} from "@/types";
-import GeoJsonEditor from "@/components/geo-json.tsx";
+import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
+
+import MultiSelect from "@/components/multi-select.tsx";
 
 const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
 const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
 const JsonEditorLazy = lazy(() => import('@/components/VanillaJSONEditor.tsx'));
+const GeoJsonEditorLazy = lazy(() => import("@/components/geo-json.tsx"));
+const MonacoLazy = lazy(() => import('@/components/monaco-editor.tsx'));
+
 
 type FieldValue = string | boolean | number | Date | any[] | Content;
+
 
 const FieldRenderer: FC<{
     field: Field;
@@ -75,6 +78,10 @@ const FieldRenderer: FC<{
     )
 
     const handleGeoJsonChange = useCallback((value: any) => {
+        onChange(field.name, value)
+    }, [onChange, field.name])
+
+    const handleAssociationChange = useCallback((value: string[]) => {
         onChange(field.name, value)
     }, [onChange, field.name])
 
@@ -146,6 +153,20 @@ const FieldRenderer: FC<{
                     </SelectContent>
                 </Select>
             );
+        case 'association':
+        case 'association-many':
+            return (
+                <MultiSelect
+                    options={field.options}
+                    onValueChange={handleAssociationChange}
+                    defaultValue={value as string[] ?? []}
+                    variant="secondary"
+                    processing={processing || field.disabled}
+                    mode={field.type === 'association' ? 'single' : 'multiple'}
+                    maxCount={10}
+                    className={`${processing ? 'pointer-events-none' : ''}`}
+                />
+            )
         case 'wysiwyg':
             if (field.options?.name === 'ckeditor') {
                 return (
@@ -165,10 +186,8 @@ const FieldRenderer: FC<{
         case 'markdown':
             if (field.options?.name === 'toast-ui') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
-                        <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
-                                 onChange={handleEditorChange}/>
-                    </Suspense>
+                    <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
+                             onChange={handleEditorChange}/>
                 )
             } else {
                 return (
@@ -180,10 +199,8 @@ const FieldRenderer: FC<{
         case 'table':
             if (field.options?.name === 'handsontable') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[150px]"/>}>
-                        <HandsonTableLazy data={value as any[]} config={field.options?.config}
-                                          onChange={handleTableChange}/>
-                    </Suspense>
+                    <HandsonTableLazy data={value as any[]} config={field.options?.config}
+                                      onChange={handleTableChange}/>
                 )
             } else {
                 return (
@@ -195,11 +212,9 @@ const FieldRenderer: FC<{
         case 'json':
             if (field.options?.name === 'jsoneditor') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[352px]"/>}>
-                        <JsonEditorLazy content={value as Content}
-                                        onChange={handleJSONChange}
-                        />
-                    </Suspense>
+                    <JsonEditorLazy content={value as Content}
+                                    onChange={handleJSONChange}
+                    />
                 )
             } else {
                 return (
@@ -211,10 +226,8 @@ const FieldRenderer: FC<{
         case 'code':
             if (field.options?.name === 'monaco') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[518px]"/>}>
-                        <MonacoEditor value={value as string ?? ''} onChange={handleCodeChange}
-                                      options={field.options?.config}/>
-                    </Suspense>
+                    <MonacoLazy value={value as string ?? ''} onChange={handleCodeChange}
+                                options={field.options?.config}/>
                 )
             } else {
                 return (
@@ -226,13 +239,11 @@ const FieldRenderer: FC<{
         case 'geojson':
             if (field.options?.name === 'leaflet') {
                 return (
-                    <Suspense fallback={<Skeleton className="w-full h-[500px]"/>}>
-                        <GeoJsonEditor
-                            mode="all"
-                            initialFeatures={value as [] ?? undefined}
-                            onFeaturesChange={handleGeoJsonChange}
-                        />
-                    </Suspense>
+                    <GeoJsonEditorLazy
+                        mode="all"
+                        initialFeatures={value as [] ?? undefined}
+                        onFeaturesChange={handleGeoJsonChange}
+                    />
                 )
             } else {
                 return (

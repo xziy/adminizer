@@ -9,6 +9,7 @@ import {
 } from "../interfaces/adminpanelConfig";
 import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
+import {ModelAnyField} from "../lib/v4/model/AbstractModel";
 
 interface listProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
@@ -25,7 +26,7 @@ interface listProps extends Record<string | number | symbol, unknown> {
     postLink: string,
 }
 
-export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number>, view: boolean = false) {
+export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number | string[]>, view: boolean = false) {
     const actionType = 'add';
     let props: listProps = {
         edit: !!record,
@@ -60,7 +61,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let fieldType = ''
         let disabled = false
         let required = fieldConfig.required ?? false
-        let options: Record<string, unknown> = {}
+        let options: Record<string, unknown> | Record<string, unknown>[] = {}
         let value = record ? record[key] : undefined
 
         //@ts-ignore TODO: fix field type
@@ -93,6 +94,13 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
         if (['text', 'longtext', 'mediumtext'].includes(type)) {
             fieldType = 'textarea'
+        }
+
+        if (type === 'association' || type === 'association-many') {
+            fieldType = type === 'association' ? 'association' : 'association-many'
+            const {initValue, initOptions} = setAssociationValues(field, value as string[])
+            options = initOptions
+            value = initValue
         }
 
         if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
@@ -261,4 +269,51 @@ function getControl(req: ReqType, type: ControlType, name: string | undefined, d
         control = req.adminizer.controlsHandler.get(type, defaultControlName);
     }
     return control;
+}
+
+function setAssociationValues(field: Field, value: string[]) {
+    let options = []
+    let initValue: string[] = []
+    const config = field.config as Record<string, any>
+
+    const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
+        if (Array.isArray(value)) {
+            return value.includes(option);
+        } else {
+            return (option == value);
+        }
+    }
+
+    const getAssociationValue = (value: ModelAnyField, config: Record<string, string>): string | string[] => {
+        const displayField = config.displayField || 'id';
+        if(value === null) return []
+
+        if (Array.isArray(value)) {
+            return value
+                .map(val => (val as unknown as { [key: string]: any })[displayField])
+        }
+
+        if (typeof value === 'object') {
+            return (value as { [key: string]: any })[displayField];
+        }
+
+        return String(value);
+    }
+
+
+    for (let opt of config.records) {
+        options.push({
+            label: config.displayModifier && typeof config.displayModifier === 'function'
+                ? config.displayModifier(opt)
+                : (config.displayField ? opt[config.displayField] : opt[config.identifierField]),
+            value: opt[config.identifierField],
+        })
+        if(isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
+            initValue.push(opt[config.identifierField])
+        }
+    }
+    return {
+        initOptions: options,
+        initValue: initValue,
+    }
 }

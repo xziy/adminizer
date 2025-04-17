@@ -3,6 +3,25 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 const routePrefix = "/adminizer";
 
 const models: AdminpanelConfig["models"] = {
+    test: {
+        title: 'Test model',
+        model: 'test',
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+            title: {
+                title: 'Title',
+                type: 'string',
+                required: true
+            },
+            owner: false
+        },
+        list:{
+            fields:{
+                owner:false
+            }
+        }
+    },
     example: {
         title: 'Exapmle Form example from file',
         model: 'example',
@@ -92,7 +111,7 @@ const models: AdminpanelConfig["models"] = {
                 type: 'tuieditor',
                 options: {
                     name: 'toast-ui',
-                    config:{
+                    config: {
                         hideModeSwitch: true,
                         previewStyle: 'vertical',
                     },
@@ -159,7 +178,19 @@ const models: AdminpanelConfig["models"] = {
                         ]
                     }
                 }
-            }
+            },
+            testRelation: {
+                title: 'Test one association',
+                displayModifier: function (data) {
+                    return data?.title;
+                }
+            },
+            tests: {
+                title: 'One to many association',
+                displayModifier: function (data) {
+                    return data?.title;
+                }
+            },
         },
         list: {
             fields: {},
@@ -198,8 +229,6 @@ const models: AdminpanelConfig["models"] = {
     },
 };
 
-// @ts-ignore
-// @ts-ignore
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
@@ -319,7 +348,7 @@ const config: AdminpanelConfig = {
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
         path: 'config/locales', // relative path to translations directory
-        defaultLocale: 'ru'
+        defaultLocale: 'en'
     },
     models: models,
     //@ts-ignore

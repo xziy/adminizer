@@ -79,9 +79,14 @@ export default async function add(req: ReqType, res: ResType) {
 
 			// delete property from association-many and association if empty
 			if (fields[prop] && fields[prop].model && (fields[prop].model.type === 'association-many' || fields[prop].model.type === 'association')) {
-				if (!reqData[prop]) {
+                console.log('add: ', reqData[prop])
+				if (!reqData[prop] || !reqData[prop].length) {
 					delete reqData[prop];
-				}
+				} else{
+                    if (fields[prop].model.type === 'association') {
+                        reqData[prop] = (reqData[prop] as string[])[0]
+                    }
+                }
 			}
 
 			// split string for association-many

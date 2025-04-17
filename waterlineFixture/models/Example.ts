@@ -12,6 +12,8 @@ const Example = Waterline.Collection.extend({
         sort: { type: "boolean" },
         range: { type: "string" },
         select: { type: "string" },
+        testRelation: { model: "example" },
+        tests: { collection: "test", via: "owner" },
         datetime: { type: "string" },
         date: { type: "string" },
         time: { type: "string" },
@@ -25,8 +27,7 @@ const Example = Waterline.Collection.extend({
         json: { type: "json" },
         code: { type: "string" },
         geojson: { type: "json" },
-		// owner: { model: "test" },
-	}
+    }
 });
 
 export default Example;
