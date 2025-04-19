@@ -1,6 +1,6 @@
 import {type FC, lazy, memo, ReactNode, useCallback, useMemo} from "react";
 import {RowObject} from "handsontable/common";
-import type {Content} from "vanilla-jsoneditor";
+import type {Content, JSONContent} from "vanilla-jsoneditor";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Slider} from "@/components/ui/slider.tsx";
@@ -68,8 +68,8 @@ const FieldRenderer: FC<{
         onChange(field.name, value);
     }, [onChange, field.name])
 
-    const handleJSONChange = useCallback((value: Content) => {
-        onChange(field.name, value);
+    const handleJSONChange = useCallback((value: JSONContent) => {
+        onChange(field.name, value.json as any);
     }, [onChange, field.name])
 
     const handleCodeChange = useCallback((value: string) => {
@@ -102,6 +102,7 @@ const FieldRenderer: FC<{
                     id={field.name}
                     disabled={processing || field.disabled}
                     tabIndex={1}
+                    required={field.required}
                     className="cursor-pointer size-5"
                     checked={value as boolean ?? false}
                     onCheckedChange={handleCheckboxChange}
@@ -114,6 +115,7 @@ const FieldRenderer: FC<{
                     tabIndex={1}
                     disabled={processing || field.disabled}
                     value={value as string ?? ''}
+                    required={field.required}
                     onChange={handleInputChange}
                     placeholder={field.label}
                 />
@@ -140,6 +142,7 @@ const FieldRenderer: FC<{
                     onValueChange={handleSelectChange}
                     defaultValue={value as string ?? ''}
                     disabled={processing || field.disabled}
+                    required={field.required}
                 >
                     <SelectTrigger className="w-full cursor-pointer" id={field.name}>
                         <SelectValue placeholder={field.name}/>
@@ -213,8 +216,8 @@ const FieldRenderer: FC<{
         case 'json':
             if (field.options?.name === 'jsoneditor') {
                 return (
-                    <JsonEditorLazy content={value as Content}
-                                    onChange={handleJSONChange}
+                    <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
+                                    onChange={handleJSONChange} {...field.options?.config}
                     />
                 )
             } else {

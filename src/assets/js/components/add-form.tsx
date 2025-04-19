@@ -1,4 +1,4 @@
-import {type FC, useCallback, FormEventHandler, memo} from 'react';
+import {type FC, useCallback, FormEventHandler, memo, useEffect} from 'react';
 import {Link, useForm, usePage} from "@inertiajs/react";
 import {Info, LoaderCircle, MoveLeft} from "lucide-react";
 import {Field, type SharedData} from '@/types';
@@ -10,6 +10,8 @@ import {type Content} from "vanilla-jsoneditor";
 import FieldRenderer from "@/components/filed-renderer.tsx";
 import {useInView} from 'react-intersection-observer';
 import {Skeleton} from "@/components/ui/skeleton.tsx";
+import {getFieldError, hasFormErrors, resetFormErrors} from '@/hooks/form-state';
+import InputError from "@/components/input-error.tsx";
 
 type FieldValue = string | boolean | number | Date | any[] | Content;
 
@@ -72,15 +74,12 @@ const LazyField: FC<{
     return (
         <div ref={ref} className="grid gap-4 w-full">
             {inView ? (
-                <>
-                    <LabelRenderer field={field}/>
-                    <FieldRenderer
-                        field={field}
-                        value={value}
-                        onChange={onChange}
-                        processing={processing}
-                    />
-                </>
+                <FieldRenderer
+                    field={field}
+                    value={value}
+                    onChange={onChange}
+                    processing={processing}
+                />
             ) : <Skeleton className="w-full h-[250px] rounded-sm"/>}
         </div>
     );
@@ -101,6 +100,14 @@ const AddForm: FC = () => {
         processing,
     } = useForm<Record<string, any>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
 
+    useEffect(() => {
+        // Reset errors
+        resetFormErrors();
+        return () => {
+            resetFormErrors();
+        };
+    }, []);
+
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
             clearErrors();
@@ -108,7 +115,6 @@ const AddForm: FC = () => {
         },
         []
     );
-
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -126,7 +132,7 @@ const AddForm: FC = () => {
                     </Link>
                 </Button>
                 <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden"
-                        disabled={processing || page.props.view}>
+                        disabled={processing || page.props.view || hasFormErrors()}>
                     {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                     {page.props.btnSave.title}
                 </Button>
@@ -141,15 +147,20 @@ const AddForm: FC = () => {
                         {fields.map((field) => (
                             <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`} key={field.name}>
                                 {field.type === "markdown" || field.type === "table" || field.type === "json" || field.type === "code" || field.type === "geojson" ?
-                                    <LazyField
-                                        field={field}
-                                        value={data[field.name]}
-                                        onChange={handleFieldChange}
-                                        processing={processing || view}
-                                    />
+                                    <>
+                                        <LabelRenderer field={field}/>
+                                        <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
+                                        <LazyField
+                                            field={field}
+                                            value={data[field.name]}
+                                            onChange={handleFieldChange}
+                                            processing={processing || view}
+                                        />
+                                    </>
                                     :
                                     <>
                                         <LabelRenderer field={field}/>
+                                        <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
                                         <FieldRenderer
                                             field={field}
                                             value={data[field.name]}
@@ -163,7 +174,7 @@ const AddForm: FC = () => {
                     </div>
                     <div className="p-4 rounded-md h-fit sticky top-[84px] shadow hidden lg:block">
                         <Button variant="green" type="submit" className="w-fit cursor-pointer"
-                                disabled={processing || page.props.view}>
+                                disabled={processing || page.props.view || hasFormErrors()}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                             {page.props.btnSave.title}
                         </Button>

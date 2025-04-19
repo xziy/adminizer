@@ -7,12 +7,14 @@ import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
 import Test from "./models/Test";
+import JsonSchema from "./models/JsonSchema";
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
 orm.registerModel(Test);
+orm.registerModel(JsonSchema);
 
 // TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
 //  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)

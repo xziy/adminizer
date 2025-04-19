@@ -184,6 +184,9 @@ export default function List() {
             }
         };
 
+        // fix dropdown menu effects for the body freze style = {points-event: none} after delete item
+        document.body.removeAttribute('style')
+
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
     }, [])

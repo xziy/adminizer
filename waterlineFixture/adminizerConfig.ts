@@ -16,9 +16,9 @@ const models: AdminpanelConfig["models"] = {
             },
             owner: false
         },
-        list:{
-            fields:{
-                owner:false
+        list: {
+            fields: {
+                owner: false
             }
         }
     },
@@ -58,6 +58,7 @@ const models: AdminpanelConfig["models"] = {
             description: {
                 title: 'Textarea',
                 type: 'text',
+                required: true,
                 tooltip: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic, nisi.'
             },
             sort: {
@@ -235,6 +236,65 @@ const models: AdminpanelConfig["models"] = {
             }
         },
         icon: 'inbox'
+    },
+    jsonschema: {
+        title: 'Json schema',
+        model: 'jsonschema',
+        fields: {
+            data: {
+                type: 'json',
+                options: {
+                    name: 'jsoneditor',
+                    config: {
+                        schema: {
+                            'type': 'array',
+                            "minItems": 1,
+                            'items': {
+                                '$ref': '#/definitions/badge'
+                            },
+                            'definitions': {
+                                'badge': {
+                                    'type': 'object',
+                                    'additionalProperties': false,
+                                    'properties': {
+                                        'text': {
+                                            'type': 'string',
+                                            'minLength': 3,
+                                            'maxLength': 18
+                                        },
+                                        'color': {
+                                            'type': 'string',
+                                            'pattern': '^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$'
+                                        },
+                                        'textColor': {
+                                            'type': 'string',
+                                            'pattern': '^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$'
+                                        }
+                                    },
+                                    'required': [
+                                        'color',
+                                        'text',
+                                        'textColor'
+                                    ]
+                                }
+                            }
+                        },
+                        mode: 'tree',
+                        // json: []
+                        // json: [
+                        //     {text: 'Gray badge', color: '#808080', textColor: '#FFFFFF'},
+                        //     {text: 'Silver badge', color: '#C0C0C0', textColor: '#000000'},
+                        //     {text: 'White badge', color: '#FFFFFF', textColor: '#000000'},
+                        //     {text: 'Fuchsia badge', color: '#FF00FF', textColor: '#000000'}
+                        // ]
+                    }
+                },
+            },
+            data2: {
+                type: 'json',
+            }
+        },
+        icon: 'pets'
     },
 };
 

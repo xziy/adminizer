@@ -2,11 +2,16 @@ import {
     createJSONEditor,
     JSONEditorPropsOptional,
     JsonEditor,
+    createAjvValidator,
+    JSONSchema, OnChangeStatus, ContentValidationErrors
 } from 'vanilla-jsoneditor';
 import {useEffect, useRef, useState} from 'react';
 import {useAppearance} from "@/hooks/use-appearance.tsx";
+import {setFieldError} from "@/hooks/form-state.ts";
 
-export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
+
+
+export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Record<string, any>) {
     const refContainer = useRef<HTMLDivElement | null>(null);
     const refEditor = useRef<JsonEditor | null>(null);
     const refPrevProps = useRef<JSONEditorPropsOptional>(props);
@@ -22,17 +27,63 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
         }
     }, [appearance]);
     useEffect(() => {
-        // create editor
-        // console.log('create editor', refContainer.current);
+        const validator = props.schema ? createAjvValidator({schema: props.schema as JSONSchema}) : undefined;
+        const content = props.content ? {json: props.content} : props.json ? {json: props.json} : undefined;
+
         refEditor.current = createJSONEditor({
             target: refContainer.current as HTMLDivElement,
-            props,
+            props: {
+                ...props,
+                validator,
+                content,
+                onChange: (content: any, previousContent: any, status: OnChangeStatus) => {
+                    const isEmpty = content.json === undefined
+                    const validationError = isEmpty
+                        ? ['error']
+                        : (status.contentErrors as ContentValidationErrors)?.validationErrors;
+
+                    setFieldError(props.name, !!validationError?.length, 'Error validation JSON schema');
+
+                    if (props.onChange) {
+                        props.onChange(content, previousContent, status);
+                    }
+                }
+            }
         });
+
+        // Trigger onChange manually
+        if (refEditor.current) {
+            // Get the current content
+            const currentContent = refEditor.current.get();
+
+            // Validate the content
+            const validationResult = refEditor.current.validate();
+            // @ts-ignore
+            const hasErrors = !!validationResult?.validationErrors?.length;
+
+
+            if (props.onChange) {
+                props.onChange(
+                    currentContent,
+                    //@ts-ignore
+                    undefined,
+                    {
+                        contentErrors: validationResult,
+                        patchResult: undefined,
+                        isUndo: false,
+                        isRedo: false,
+                        isValid: !hasErrors
+                    }
+                );
+            }
+
+            // Set the error state
+            setFieldError(props.name, hasErrors, 'Error validation JSON schema');
+        }
 
         return () => {
             // destroy editor
             if (refEditor.current) {
-                // console.log('destroy editor');
                 refEditor.current.destroy();
                 refEditor.current = null;
             }
@@ -45,7 +96,6 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional) {
             // only pass the props that actually changed
             // since the last time to prevent syncing issues
             const changedProps = filterUnchangedProps(props, refPrevProps.current);
-            // console.log('update props', changedProps);
             refEditor.current.updateProps(changedProps);
             refPrevProps.current = props;
         }
@@ -58,10 +108,20 @@ function filterUnchangedProps(
     props: JSONEditorPropsOptional,
     prevProps: JSONEditorPropsOptional
 ): JSONEditorPropsOptional {
-    return Object.fromEntries(
-        Object.entries(props).filter(
-            ([key, value]) =>
-                value !== prevProps[key as keyof JSONEditorPropsOptional]
-        )
-    );
+    const changedProps: JSONEditorPropsOptional = {};
+
+    for (const [key, value] of Object.entries(props)) {
+        if (key === 'content') {
+            const currentJson = value?.json;
+            // @ts-ignore
+            const prevJson = prevProps[key]?.json;
+            if (JSON.stringify(currentJson) !== JSON.stringify(prevJson)) {
+                changedProps[key] = value;
+            }
+        } else if (value !== prevProps[key as keyof JSONEditorPropsOptional]) {
+            changedProps[key as keyof JSONEditorPropsOptional] = value;
+        }
+    }
+
+    return changedProps;
 }
