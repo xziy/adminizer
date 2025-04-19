@@ -12,7 +12,7 @@ interface TuiEditorProps {
 const ToastEditor = ({ initialValue = '', onChange, options }: TuiEditorProps) => {
     const editorRef = useRef<Editor>(null);
     const { width } = useWindowSize();
-    const [theme, setTheme] = useState<string>('dark')
+    const [theme, setTheme] = useState<string>('light')
     const {appearance} = useAppearance()
     const [editorOptions, setEditorOptions] = useState<EditorProps>({
         height: '600px',

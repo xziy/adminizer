@@ -81,7 +81,7 @@ const LazyField: FC<{
                         processing={processing}
                     />
                 </>
-            ) : <Skeleton className="w-full h-[66px]"/>}
+            ) : <Skeleton className="w-full h-[250px] rounded-sm"/>}
         </div>
     );
 });
@@ -118,9 +118,9 @@ const AddForm: FC = () => {
 
     return (
         <div className="p-4 w-full">
-            <div className="w-full sticky py-4 pb-8 top-0 z-10 h-fit bg-background flex gap-4">
+            <div className="w-full sticky z-[1001] py-4 pb-8 top-0 h-fit bg-background flex gap-4">
                 <Button className="w-fit" asChild>
-                    <Link href={btnBack.link}>
+                    <Link href={btnBack.link} preserveScroll={true}>
                         <Icon iconNode={MoveLeft}/>
                         {btnBack.title}
                     </Link>
@@ -148,12 +148,15 @@ const AddForm: FC = () => {
                                         processing={processing || view}
                                     />
                                     :
-                                    <FieldRenderer
-                                        field={field}
-                                        value={data[field.name]}
-                                        onChange={handleFieldChange}
-                                        processing={processing || view}
-                                    />
+                                    <>
+                                        <LabelRenderer field={field}/>
+                                        <FieldRenderer
+                                            field={field}
+                                            value={data[field.name]}
+                                            onChange={handleFieldChange}
+                                            processing={processing || view}
+                                        />
+                                    </>
                                 }
                             </div>
                         ))}

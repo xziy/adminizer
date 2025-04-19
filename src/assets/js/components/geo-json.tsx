@@ -530,7 +530,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         borderRadius: "5px",
                         fontSize: '14px',
                         boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-                        zIndex: 1000,
+                        zIndex: 410,
                     }}
                 >
                     {drawingInProgress
@@ -551,7 +551,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         borderRadius: "5px",
                         fontSize: '14px',
                         boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-                        zIndex: 1000,
+                        zIndex: 410,
                     }}
                 >
                     Drawing a rectangle: click and drag to create a rectangle

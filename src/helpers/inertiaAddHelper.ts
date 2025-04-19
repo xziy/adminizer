@@ -103,6 +103,13 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             value = initValue
         }
 
+        if(type === 'select-many'){
+            fieldType = 'select-many'
+            const {initValue, initOptions} = setSelectMany(isIn, value as string[])
+            options = initOptions
+            value = initValue
+        }
+
         if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
             fieldType = 'wysiwyg';
 
@@ -315,5 +322,23 @@ function setAssociationValues(field: Field, value: string[]) {
     return {
         initOptions: options,
         initValue: initValue,
+    }
+}
+
+function setSelectMany(isIn: string[], value: string[] | undefined){
+    let options = []
+    let initValue: string[] = []
+    for(let opt of isIn){
+        options.push({
+            label: opt,
+            value: opt,
+        })
+        if(value && value.includes(opt)) {
+            initValue.push(opt)
+        }
+    }
+    return {
+        initOptions: options,
+        initValue: initValue
     }
 }

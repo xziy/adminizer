@@ -79,9 +79,6 @@ export default async function edit(req: ReqType, res: ResType) {
             }
 
             let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
-            if (fieldConfigConfig.type === 'select-many') {
-                reqData[prop] = reqData[prop].toString().split(",")
-            }
 
 
             // delete property from association-many and association if empty

@@ -146,6 +146,15 @@ const models: AdminpanelConfig["models"] = {
                     }
                 },
             },
+            selectMany: {
+                title: 'Select many',
+                isIn: ['Sone', 'Stwo', 'Sthree', 'Sfour', 'Sfive'],
+                type: 'select-many'
+            },
+            checkboxes: {
+                title: 'Checkboxes',
+                isIn: ['one', 'two', 'three']
+            },
             editor: {
                 title: 'Editor',
                 type: 'wysiwyg',

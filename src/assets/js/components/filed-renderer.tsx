@@ -155,6 +155,7 @@ const FieldRenderer: FC<{
             );
         case 'association':
         case 'association-many':
+        case 'select-many':
             return (
                 <MultiSelect
                     options={field.options}

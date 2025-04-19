@@ -53,9 +53,6 @@ export default async function add(req: ReqType, res: ResType) {
 			}
 
 			let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
-			if (fieldConfigConfig.type === 'select-many') {
-				reqData[prop] = reqData[prop].split(",")
-			}
 
 			if (fields[prop] && fields[prop].model && fields[prop].model.type === 'json' && reqData[prop] !== '') {
 				try {
