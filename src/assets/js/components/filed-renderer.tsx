@@ -99,7 +99,7 @@ const FieldRenderer: FC<{
         case 'checkbox':
             return (
                 <Checkbox
-                    id={field.name}
+                    id={`${field.type}-${field.name}`}
                     disabled={processing || field.disabled}
                     tabIndex={1}
                     required={field.required}
@@ -111,7 +111,7 @@ const FieldRenderer: FC<{
         case 'textarea':
             return (
                 <Textarea
-                    id={field.name}
+                    id={`${field.type}-${field.name}`}
                     tabIndex={1}
                     disabled={processing || field.disabled}
                     value={value as string ?? ''}
@@ -130,7 +130,7 @@ const FieldRenderer: FC<{
                         max={field.options?.max ? Number(field.options.max) : 100}
                         min={field.options?.min ? Number(field.options.min) : 0}
                         step={1}
-                        id={field.name}
+                        id={`${field.type}-${field.name}`}
                         onValueChange={handleSliderChange}
                         disabled={processing || field.disabled}
                     />
@@ -183,7 +183,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleEditorChange}/>
                 )
             }
@@ -196,7 +196,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleEditorChange}/>
                 )
             }
@@ -209,7 +209,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleEditorChange}/>
                 )
             }
@@ -223,7 +223,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleJSONChange}/>
                 )
             }
@@ -236,7 +236,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleJSONChange}/>
                 )
             }
@@ -252,7 +252,7 @@ const FieldRenderer: FC<{
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-                                     initialValue={value as string ?? ''}
+                                     initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
                                      onChange={handleJSONChange}/>
                 )
             }

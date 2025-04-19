@@ -40,7 +40,7 @@ interface AddProps extends SharedData {
 const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
     return (
         <div className="flex gap-3">
-            <Label htmlFor={field.name}>{field.label}</Label>
+            <Label htmlFor={`${field.type}-${field.name}`}>{field.label}</Label>
             {field.tooltip && (
                 <TooltipProvider>
                     <Tooltip>
@@ -68,7 +68,7 @@ const LazyField: FC<{
 }> = memo(({field, value, onChange, processing}) => {
     const [ref, inView] = useInView({
         triggerOnce: true,
-        rootMargin: '10px 0px', // Начинаем загружать заранее
+        rootMargin: '100px 0px', // Начинаем загружать заранее
     });
 
     return (
