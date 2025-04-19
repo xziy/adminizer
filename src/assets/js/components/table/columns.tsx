@@ -6,21 +6,36 @@ import {Button} from "@/components/ui/button.tsx";
 import {Icon} from "@/components/icon.tsx";
 import {Columns} from "@/types";
 
-export function useTableColumns(columnConfigs: Columns): ColumnDef<any>[] {
+export function useTableColumns(
+    columnConfigs: Columns,
+    onSort?: (key: string, direction: 'asc' | 'desc') => void
+): ColumnDef<any>[] {
     return useMemo(() => {
         return Object.entries(columnConfigs).map(([key, config]) => ({
             accessorKey: key,
-            header: ({column}) => {
-                const isSorted = column.getIsSorted();
+            header: () => {
                 return (
-                    <div className="text-center max-w-[300px]">
+                    <div className={`text-center max-w-[300px] ${config.direction ? 'text-ring' : ''}`}>
                         <Button
                             variant="ghost"
-                            className="cursor-pointer"
-                            onClick={() => {column.toggleSorting(column.getIsSorted() === "asc")}}
+                            className="cursor-pointer hover:text-inherit"
+                            onClick={() => {
+                                if (onSort) {
+                                    // При первом клике - сортировка по возрастанию, при повторном - по убыванию
+                                    const direction = config.direction === 'asc' ? 'desc' : 'asc';
+                                    onSort(config.data, direction);
+                                }
+                            }}
                         >
-                            <span className="overflow-hidden text-ellipsis">{config.config.title}</span>
-                            <Icon iconNode={!isSorted ? ArrowUpDown : isSorted === "asc" ? ArrowDown : ArrowUp} className="size-3"/>
+                            <span className="overflow-hidden text-ellipsis">{config.title}</span>
+                            {config.direction ?
+                                <Icon
+                                    iconNode={config.direction === 'asc' ? ArrowUp : ArrowDown}
+                                    className="size-3"
+                                />
+                                :
+                                <Icon iconNode={ArrowUpDown} className="size-3"/>
+                            }
                         </Button>
                     </div>
                 )
@@ -31,5 +46,5 @@ export function useTableColumns(columnConfigs: Columns): ColumnDef<any>[] {
                 </div>
             )
         }));
-    }, [columnConfigs]);
+    }, [columnConfigs, onSort]);
 }

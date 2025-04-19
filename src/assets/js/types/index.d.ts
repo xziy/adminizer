@@ -15,14 +15,15 @@ export interface NavGroup {
     items: NavItem[];
 }
 
-export interface ColumnConfig {
-    config: {
-        title: string
-    };
-}
 
 export interface Columns {
-    [key: string]: ColumnConfig;
+    [key: string]: {
+        data: string
+        title: string
+        orderable?: boolean
+        searchable?: boolean
+        direction?: string
+    }
 }
 
 export interface NavItem extends MenuItem {}

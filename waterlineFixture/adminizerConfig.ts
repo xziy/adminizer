@@ -20,7 +20,8 @@ const models: AdminpanelConfig["models"] = {
             fields: {
                 owner: false
             }
-        }
+        },
+        icon: 'receipt'
     },
     example: {
         title: 'Exapmle Form example from file',
@@ -203,7 +204,18 @@ const models: AdminpanelConfig["models"] = {
             },
         },
         list: {
-            fields: {},
+            fields: {
+                json: false,
+                tui: false,
+                geojson: false,
+                editor: false,
+                testRelation: false,
+                tests: false,
+                selectMany: false,
+                price: false,
+                code: false,
+                datatable: false
+            },
             actions: {
                 global: [
                     {

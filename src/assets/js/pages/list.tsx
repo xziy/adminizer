@@ -77,6 +77,8 @@ export default function List() {
     const searchParams = new URLSearchParams(window.location.search);
     const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
     const [count, setCount] = useState(searchParams.get('count') || '5')
+    const [qColumns, setQColumns] = useState(searchParams.get('column') || '1')
+    const [sortQDerection, setQSortDirection] = useState(searchParams.get('direction') || 'desc')
 
     let columns: ColumnDef<any>[] = [
         {
@@ -123,7 +125,7 @@ export default function List() {
                                 </DropdownMenuGroup>
                                 {page.props.header.inlineActions && page.props.header.inlineActions.length > 0 && (
                                     <>
-                                        <DropdownMenuSeparator />
+                                        <DropdownMenuSeparator/>
                                         {page.props.header.inlineActions.map((action: Action) => (
                                             <DropdownMenuItem
                                                 key={action.id}
@@ -133,7 +135,8 @@ export default function List() {
                                                 <Link
                                                     href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
                                                 >
-                                                    {action.icon && <MaterialIcon name={action.icon} className="!text-[18px] mr-2" />}
+                                                    {action.icon && <MaterialIcon name={action.icon}
+                                                                                  className="!text-[18px] mr-2"/>}
                                                     <span>{action.title}</span>
                                                 </Link>
                                             </DropdownMenuItem>
@@ -147,20 +150,18 @@ export default function List() {
             }
         }
     ]
-    columns = [...columns, ...useTableColumns(page.props.columns)]
+
 
     const pagination = useMemo(() => {
         return generatePagination(
             data.recordsTotal,
             parseInt(count),
             currentPage,
-            {
-                path: '/dadsa',
-                showPages: Math.ceil(data.recordsTotal / parseInt(count)), // Pages count
-            }
+            5
         )
 
     }, [data.recordsTotal, count, currentPage])
+
 
     useEffect(() => {
         if (page.props.flash) {
@@ -194,12 +195,12 @@ export default function List() {
     const handlePageChange = useCallback((value: number) => {
         setCurrentPage(value)
         setLoading(true)
-        router.visit(`${page.props.header.entity.uri}?count=${count}&page=${value}`, {
+        router.visit(`${page.props.header.entity.uri}?count=${count}&page=${value}&column=${qColumns}&direction=${sortQDerection}`, {
             preserveState: true,
             only: ['data', 'columns', 'header'],
             onSuccess: () => setLoading(false)
         })
-    }, [count])
+    }, [count, qColumns, sortQDerection])
 
     const changeCount = useCallback((newCount: string) => {
         setCount(newCount)
@@ -211,6 +212,14 @@ export default function List() {
             onSuccess: () => setLoading(false)
         })
     }, [page.props.header.entity.uri])
+
+    const handleCustomSort = useCallback((column: string, sortDirection: string) => {
+        setQColumns(column)
+        setQSortDirection(sortDirection)
+        router.visit(`${page.props.header.entity.uri}?count=${count}&page=${currentPage}&column=${column}&direction=${sortDirection}`)
+    }, [count, currentPage, data.recordsTotal])
+
+    columns = [...columns, ...useTableColumns(page.props.columns, handleCustomSort)]
 
     const renderPagination = () => (
         <Pagination>
@@ -234,10 +243,8 @@ export default function List() {
                                 className={`cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${link.active ? '!bg-primary dark:!bg-muted-foreground !text-primary-foreground dark:!text-ring' : ''}`}
                                 onClick={(e) => {
                                     e.preventDefault()
-                                    if (link.url) {
-                                        const pageNumber = parseInt(link.label)
-                                        handlePageChange(pageNumber)
-                                    }
+                                    const pageNumber = parseInt(link.label)
+                                    handlePageChange(pageNumber)
                                 }}
                                 isActive={link.active}
                             >
@@ -285,7 +292,8 @@ export default function List() {
                         )) || null}
                     </div>
                 </div>
-                <DataTable columns={columns} data={data.data} notFoundContent={page.props.header.notFoundContent}/>
+                <DataTable columns={columns} data={data.data} notFoundContent={page.props.header.notFoundContent}
+                           key={`table-${currentPage}`}/>
                 <div className="mt-4 flex justify-between items-end">
                     <div>
                         <p className="text-sm text-foreground/70 mb-2">Show {pagination.from} - {pagination.to} of {pagination.total}</p>

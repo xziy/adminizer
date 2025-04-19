@@ -19,7 +19,7 @@ const formStateProxy = new Proxy(formState, {
                 // Reset all errors
                 target.errors = {};
             } else {
-                // Обновляем конкретные ошибки
+                // Update specific errors
                 target.errors = { ...target.errors, ...value };
             }
             // console.log('Form errors updated:', target.errors);

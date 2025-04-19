@@ -1,6 +1,5 @@
 import {
     ColumnDef,
-    SortingState,
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
@@ -16,8 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {useState} from "react";
-
 
 
 interface DataTableProps<TData, TValue> {
@@ -32,19 +29,13 @@ export function DataTable<TData, TValue>(
         data,
         notFoundContent,
     }: DataTableProps<TData, TValue>) {
-    "use no memo"
-    const [sorting, setSorting] = useState<SortingState>([])
-
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
-        state: {
-            sorting
-        },
+        enableSorting: false,
         manualPagination: true
     })
     return (
