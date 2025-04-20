@@ -343,9 +343,9 @@ const ListTable = () => {
                     globalSearch={showSearch}
                     onGlobalSearch={handleGlobalSearch}
                 />
-                <div className="mt-4 flex justify-between items-end">
-                    <div>
-                        <p className="text-sm text-foreground/70 mb-2">Show {pagination.from} - {pagination.to} of {pagination.total}</p>
+                <div className="mt-4 flex flex-wrap justify-center md:justify-between gap-4 items-end">
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-4 items-center justify-items-center md:justify-items-normal">
+                        <p className="text-sm text-foreground/70">Show {pagination.from} - {pagination.to} of {pagination.total}</p>
                         <div className="max-w-fit">
                             <Select onValueChange={(value) => changeCount(value)}
                                     value={count}>

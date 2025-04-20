@@ -13,6 +13,7 @@ export interface PaginationResult {
     from: number;
     to: number;
     links: PaginationLink[];
+    showPages: number;
 }
 
 
@@ -68,5 +69,6 @@ export function generatePagination(
         from,
         to,
         links,
+        showPages,
     };
 }

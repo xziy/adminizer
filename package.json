@@ -17,6 +17,7 @@
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
 		"buold:assets:modules": "npm run build:assets && npm run copy:modules",
+		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
 		"demo": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run build:react-quill && npm run build:module && npm run copy:modules && tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts"
 	},
 	"keywords": [],
@@ -44,6 +45,7 @@
 	},
 	"devDependencies": {
 		"@ckeditor/ckeditor5-react": "^9.5.0",
+		"@faker-js/faker": "^9.7.0",
 		"@handsontable/react": "^15.2.0",
 		"@inertiajs/react": "^2.0.0",
 		"@monaco-editor/react": "^4.7.0",
