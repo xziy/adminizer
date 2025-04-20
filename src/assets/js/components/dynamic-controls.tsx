@@ -5,6 +5,7 @@ export interface ComponentType {
         options?: Record<string, string>
         initialValue: string
         onChange?: (value: string) => void
+        name: string
     }>;
 }
 
@@ -12,10 +13,11 @@ interface Props {
     moduleComponent: string;
     options?: Record<string, string>
     initialValue: string
-    onChange: (value: string) => void
+    onChange: (value: any) => void
+    name: string
 }
 
-export default function DynamicControls({moduleComponent, initialValue, onChange}: Props) {
+export default function DynamicControls({moduleComponent, initialValue, onChange, name}: Props) {
     const [Component, setComponent] = useState<React.ReactElement | null>(null);
 
     const memoizedOnChange = useCallback(onChange, []);
@@ -28,6 +30,7 @@ export default function DynamicControls({moduleComponent, initialValue, onChange
                 <Component
                     initialValue={initialValue}
                     onChange={memoizedOnChange}
+                    name={name}
                 />
             );
         }

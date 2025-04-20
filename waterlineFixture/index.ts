@@ -6,11 +6,24 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
+import Test from "./models/Test";
+import JsonSchema from "./models/JsonSchema";
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
+
+import { faker } from '@faker-js/faker';
+import fs from 'fs/promises';
+import path from 'path';
+
+
+
+if (process.env.SEED_DATA === 'true') await cleanTempFolder();
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 const orm = new Waterline();
 orm.registerModel(Example);
+orm.registerModel(Test);
+orm.registerModel(JsonSchema);
+
 
 // TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
 //  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)
@@ -18,9 +31,8 @@ orm.registerModel(Example);
 await WaterlineAdapter.registerSystemModels(orm)
 
 
+
 // TODO getComponents ломается при отрисовке
-
-
 orm.initialize(waterlineConfig, async (err, ontology) => {
     if (err) {
         console.error("Error trying to start Waterline:", err);
@@ -28,6 +40,17 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     }
 
     console.log("Waterline ORM initialized!");
+
+    if (process.env.SEED_DATA === 'true') {
+        try {
+            // Очищаем .tmp и генерируем данные
+            await seedDatabase(ontology.collections, 40);
+            console.log("Database seeded with random data!");
+        } catch (seedErr) {
+            console.error("Error during database seeding:", seedErr);
+        }
+    }
+
 
     let routePrefix = adminpanelConfig.routePrefix;
     process.env.ROUTE_PREFIX = adminpanelConfig.routePrefix;
@@ -61,6 +84,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
                     title: 'Module Test',
                     moduleComponent: moduleComponent, // required
                     message: 'Hello from Adminizer',
+                    // ...{menu: {test: '12'}}
                     // other props
                 }
             })
@@ -72,7 +96,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
     // add custom control wysiwyg
     adminizer.emitter.on('adminizer:loaded', () => {
-        adminizer.controlsHandler.add(new ReactQuill(adminizer.config.routePrefix))
+        adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
     try {
@@ -116,7 +140,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
             adminizer.vite.middlewares(req, res);
         } else {
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');            
+            res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
         }
     });
 
@@ -125,3 +149,46 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
         if (!isViteDev) console.log('MainApp listening on http://localhost:3000');
     });
 });
+
+async function cleanTempFolder() {
+    const tmpPath = path.join(process.cwd(), '.tmp');
+    try {
+        const stats = await fs.stat(tmpPath);
+        if (stats.isDirectory()) {
+            await fs.rm(tmpPath, { recursive: true });
+            console.log(`Temporary folder ${tmpPath} cleaned successfully`);
+        }
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            console.error(`Error cleaning temporary folder: ${err.message}`);
+        }
+    }
+}
+
+
+
+async function seedDatabase(collections: any, count: number = 3) {
+
+    const getRandomTime = () => {
+        const hours = faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0');
+        const minutes = faker.number.int({ min: 0, max: 59 }).toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+    if (collections.example) {
+        const exampleModel = collections.example as WaterlineModel<typeof Example>;
+        const existingCount = await exampleModel.count({});
+
+        if (existingCount === 0) {
+            const fakeExamples = Array.from({ length: count }, () => ({
+                title: faker.lorem.word(),
+                description: faker.lorem.paragraph(),
+                sort: faker.datatype.boolean(),
+                time: getRandomTime(),
+                number: faker.number.int(300),
+                editor: faker.lorem.text(),
+            }));
+            //@ts-ignore
+            await exampleModel.createEach(fakeExamples);
+        }
+    }
+}

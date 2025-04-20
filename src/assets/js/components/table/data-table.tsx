@@ -1,8 +1,5 @@
-"use client"
-
 import {
     ColumnDef,
-    SortingState,
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
@@ -18,14 +15,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {useState} from "react";
-
 
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[],
-    notFoundContent: string
+    notFoundContent: string,
+    globalSearch?: boolean,
+    searchValue?: string
+    onGlobalSearch?: (value: string) => void
 }
 
 export function DataTable<TData, TValue>(
@@ -33,23 +31,37 @@ export function DataTable<TData, TValue>(
         columns,
         data,
         notFoundContent,
+        globalSearch = false,
+        onGlobalSearch,
+        searchValue
     }: DataTableProps<TData, TValue>) {
-    const [sorting, setSorting] = useState<SortingState>([])
-
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
-        state: {
-            sorting,
-        },
+        enableSorting: false,
+        manualPagination: true,
     })
-
     return (
         <div className="rounded-md border">
+            {globalSearch && onGlobalSearch && (
+                <div className="p-2 border-b">
+                    <input
+                        type="text"
+                        defaultValue={searchValue}
+                        autoFocus
+                        placeholder="Global search..."
+                        className="w-full p-2 border rounded"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                onGlobalSearch((e.target as HTMLInputElement).value);
+                            }
+                        }}
+                    />
+                </div>
+            )}
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (

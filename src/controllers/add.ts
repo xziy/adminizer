@@ -53,9 +53,6 @@ export default async function add(req: ReqType, res: ResType) {
 			}
 
 			let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
-			if (fieldConfigConfig.type === 'select-many') {
-				reqData[prop] = reqData[prop].split(",")
-			}
 
 			if (fields[prop] && fields[prop].model && fields[prop].model.type === 'json' && reqData[prop] !== '') {
 				try {
@@ -79,9 +76,14 @@ export default async function add(req: ReqType, res: ResType) {
 
 			// delete property from association-many and association if empty
 			if (fields[prop] && fields[prop].model && (fields[prop].model.type === 'association-many' || fields[prop].model.type === 'association')) {
-				if (!reqData[prop]) {
+                console.log('add: ', reqData[prop])
+				if (!reqData[prop] || !reqData[prop].length) {
 					delete reqData[prop];
-				}
+				} else{
+                    if (fields[prop].model.type === 'association') {
+                        reqData[prop] = (reqData[prop] as string[])[0]
+                    }
+                }
 			}
 
 			// split string for association-many
@@ -135,6 +137,11 @@ export default async function add(req: ReqType, res: ResType) {
 		// 	fields: fields,
 		// 	data: data
 		// });
+
+        // const sleep = (ms: number) => {
+        //     return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+        // await sleep(2000);
 
         const props = inertiaAddHelper(req, entity, fields)
         return req.Inertia.render({

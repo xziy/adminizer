@@ -58,7 +58,7 @@
     --destructive: oklch(0.396 0.141 25.723);
     --destructive-foreground: oklch(0.637 0.237 25.331);
     --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
+    --input: oklch(0.369 0 0);
     --ring: oklch(0.439 0 0);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
@@ -73,6 +73,27 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+
+    --ck-color-base-background: var(--background) !important;
+    --ck-color-text: var(--foreground) !important;
+    --ck-color-base-border: var(--sidebar-border) !important;
+    --ck-color-button-on-disabled-background: var(--background) !important;
+    --ck-color-input-disabled-background: var(--background) !important;
+    --ck-color-button-default-hover-background: var(--input) !important;
+    --ck-color-button-on-background: var(--background) !important;
+    --ck-color-button-default-active-background: var(--background) !important;
+    --ck-color-button-on-hover-background: var(--input) !important;
+    --ck-color-split-button-hover-background: var(--input) !important;
+    --ck-color-base-foreground: var(--input) !important;
+    --ck-color-split-button-hover-border: var(--input) !important;
+    --ck-color-toolbar-background: var(--muted) !important;
+    --ck-color-tooltip-background: var(--foreground) !important;
+    --ck-color-tooltip-text: var(--background) !important;
+    --ck-color-image-caption-background: var(--input) !important;
+    --ck-color-image-caption-text: var(--foreground) !important;
+    --ck-html-embed-source-disabled-color: var(--foreground) !important;
+    --ck-color-engine-placeholder-text: var(--foreground) !important;
+    --ck-color-focus-border: var(--input) !important;
 }
 
 @theme inline {
@@ -125,4 +146,13 @@
 
 .ck-content{
     @apply min-h-[400px];
+}
+
+.toastui-editor-defaultUI-toolbar {
+    flex-wrap: wrap;
+    height: auto !important;
+}
+
+.leaflet-control-attribution.leaflet-control{
+    display: none !important;
 }

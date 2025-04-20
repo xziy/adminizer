@@ -34,6 +34,7 @@ export type FieldsTypes =
     "array" |
     "object" |
     "ace" |
+    "code" |
     "html" |
     "xml" |
     "aceeditor" |
@@ -356,7 +357,7 @@ export interface BaseFieldConfig {
     /**
      * Options for widgets like 'Navigation', 'Schedule'
      * */
-    options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions | RangeType | WysiwygOptions | HandsontableOptions
+    options?: ScheduleOptionsField | MediaManagerOptionsField | TuiEditorOptions | RangeType | WysiwygOptions | HandsontableOptions | JsonEditorOptions
     /**
      * Function that makes data modification on list view
      * */
@@ -396,17 +397,26 @@ interface RangeType {
 }
 
 export interface TuiEditorOptions {
-    name: string;
+    name?: string;
     config: Partial<EditorOptions>;
 }
 
 export interface HandsontableOptions{
-    name: string;
+    name?: string;
     config?: HandsontableSettings
 }
 
+export interface JsonEditorOptions {
+    name?: string;
+    config?: {
+        mode?: 'tree' | 'text' | 'table'
+        schema?: Record<string, unknown>;
+        json?: Record<string, unknown> | unknown[];
+    }
+}
+
 export interface WysiwygOptions {
-    name: string;
+    name?: string;
     config?: {
         items: string[];
     } | {

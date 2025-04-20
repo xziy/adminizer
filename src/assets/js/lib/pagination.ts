@@ -1,40 +1,29 @@
 interface PaginationLink {
-    url: string | null;
     label: string;
     active: boolean;
 }
 
-interface PaginationResult {
+export interface PaginationResult {
     total: number;
     per_page: number;
     current_page: number;
     last_page: number;
-    first_page_url: string;
-    last_page_url: string;
-    next_page_url: string | null;
-    prev_page_url: string | null;
-    path: string;
+    next_page_url: boolean | null;
+    prev_page_url: boolean | null;
     from: number;
     to: number;
     links: PaginationLink[];
+    showPages: number;
 }
 
-interface PaginationOptions {
-    path?: string;
-    showPages?: number;
-}
 
 // Базовая функция (можно использовать вне React)
 export function generatePagination(
     recordsTotal: number,
     count: number,
     currentPage: number,
-    options: PaginationOptions = {}
+    showPages: number
 ): PaginationResult {
-    const {
-        path = 'http://localhost',
-        showPages = 5,
-    } = options;
 
     const lastPage = Math.ceil(recordsTotal / count);
     const from = (currentPage - 1) * count + 1;
@@ -44,7 +33,6 @@ export function generatePagination(
 
     // Previous link
     links.push({
-        url: currentPage > 1 ? `${path}?page=${currentPage - 1}` : null,
         label: 'Previous',
         active: false,
     });
@@ -60,7 +48,6 @@ export function generatePagination(
     // Page numbers
     for (let page = startPage; page <= endPage; page++) {
         links.push({
-            url: `${path}?page=${page}`,
             label: page.toString(),
             active: page === currentPage,
         });
@@ -68,7 +55,6 @@ export function generatePagination(
 
     // Next link
     links.push({
-        url: currentPage < lastPage ? `${path}?page=${currentPage + 1}` : null,
         label: 'Next',
         active: false,
     });
@@ -78,13 +64,11 @@ export function generatePagination(
         per_page: count,
         current_page: currentPage,
         last_page: lastPage,
-        first_page_url: `${path}?page=1`,
-        last_page_url: `${path}?page=${lastPage}`,
-        next_page_url: currentPage < lastPage ? `${path}?page=${currentPage + 1}` : null,
-        prev_page_url: currentPage > 1 ? `${path}?page=${currentPage - 1}` : null,
-        path,
+        next_page_url: currentPage < lastPage ? true : null,
+        prev_page_url: currentPage > 1 ? true : null,
         from,
         to,
         links,
+        showPages,
     };
 }

@@ -1,11 +1,17 @@
-export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table'
+import {Adminizer} from "../Adminizer";
+
+export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table' | 'codeEditor'
 
 export interface Path {
-    dev: string,
-    production: string
+    jsPath: {
+        dev: string
+        production: string
+    },
+    cssPath: string
 }
 
 export type Config = Record<string, string | string[] | object | number | boolean>
+
 
 /**
  * AbstractControls
@@ -17,13 +23,19 @@ export abstract class AbstractControls {
     public abstract readonly config: Config
     public readonly routPrefix: string
 
-    protected constructor(routPrefix: string) {
-        this.routPrefix = routPrefix
+    /**
+     * @requires
+     * @param adminizer
+     * @protected
+     */
+    protected constructor(adminizer: Adminizer) {
+        this.routPrefix = adminizer.config.routePrefix
     }
 
     public abstract getConfig(): Config | undefined
 
-    public abstract getPath(): Path | string | undefined
+    public abstract getJsPath(): string | undefined
+    public abstract getCssPath(): string | undefined
 
     public abstract getName(): string
 }

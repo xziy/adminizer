@@ -2,14 +2,9 @@ import {AbstractControls, ControlType, Path, Config } from "../AbstractControls"
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {Adminizer} from "../../Adminizer";
 
-export class ToastUiEditor extends AbstractControls{
-    readonly config: Partial<EditorOptions> = {
-        hideModeSwitch: true,
-        height: '400px',
-        initialEditType: 'markdown',
-        previewStyle: 'vertical',
-    };
-    readonly name: string = 'toast-ui';
+export class JsonEditor extends AbstractControls{
+    readonly config: Partial<EditorOptions> = {};
+    readonly name: string = 'jsoneditor';
     readonly path: Path = {
         cssPath: "",
         jsPath:
@@ -18,7 +13,7 @@ export class ToastUiEditor extends AbstractControls{
                 production: ""
             }
     }
-    readonly type: ControlType = 'markdown';
+    readonly type: ControlType = 'jsonEditor';
 
     constructor(adminizer: Adminizer) {
         super(adminizer);

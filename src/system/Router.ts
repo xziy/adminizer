@@ -76,6 +76,7 @@ export default class Router {
 
 		/**
 		 * Module Install Stepper
+         * @deprecated
 		 * */
 		adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
 		adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
@@ -168,6 +169,7 @@ export default class Router {
 		/**
 		 * Upload images CKeditor5
 		 */
+        //TODO check after mediamanager upgrade possible is not need
 		adminizer.app.all(`${baseRoute}/ckeditor5/upload`, adminizer.policyManager.bindPolicies(policies, _uploadCKeditor5));
 		/**
 		 * Create a default dashboard

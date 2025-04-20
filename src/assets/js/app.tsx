@@ -1,8 +1,11 @@
 /// <reference types="vite/client" />
 import '../css/app.css';
-import '@toast-ui/editor/dist/toastui-editor.css';
 import 'handsontable/styles/handsontable.min.css';
 import 'handsontable/styles/ht-theme-main.min.css';
+import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
+import '@toast-ui/editor/dist/toastui-editor.css';
+import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
+import "leaflet/dist/leaflet.css";
 
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
@@ -25,7 +28,6 @@ export async function resolvePageComponent<T>(path: string | string[], pages: Re
     throw new Error(`Page not found: ${path}`);
 }
 
-
 createInertiaApp({
     title: (title) => `${title}${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
@@ -34,6 +36,6 @@ createInertiaApp({
         root.render(<App {...props} />);
     },
     progress: {
-        color: '#0f4898',
+        color: '#0f4898'
     },
 })

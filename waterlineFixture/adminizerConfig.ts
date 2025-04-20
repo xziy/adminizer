@@ -3,13 +3,33 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 const routePrefix = "/adminizer";
 
 const models: AdminpanelConfig["models"] = {
+    test: {
+        title: 'Test model',
+        model: 'test',
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+            title: {
+                title: 'Title',
+                type: 'string',
+                required: true
+            },
+            owner: false
+        },
+        list: {
+            fields: {
+                owner: false
+            }
+        },
+        icon: 'receipt'
+    },
     example: {
         title: 'Exapmle Form example from file',
         model: 'example',
         tools: [
             {
                 id: '1',
-                link: '/test/404',
+                link: `#`,
                 title: 'Some new action',
                 icon: 'reorder',
             },
@@ -39,6 +59,7 @@ const models: AdminpanelConfig["models"] = {
             description: {
                 title: 'Textarea',
                 type: 'text',
+                required: true,
                 tooltip: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic, nisi.'
             },
             sort: {
@@ -85,32 +106,57 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Week',
                 type: 'week',
             },
+            json: {
+                type: 'jsoneditor'
+            },
             tui: {
                 type: 'tuieditor',
                 options: {
                     name: 'toast-ui',
-                    config:{
+                    config: {
                         hideModeSwitch: true,
+                        previewStyle: 'vertical',
                     },
                 }
             },
-            // datatable: {
-            //     title: 'Price',
-            //     type: 'table',
-            //     options: {
-            //         name: 'handsontable',
-            //         config: {
-            //             dataSchema: {name: null, footage: null, price: null},
-            //             colHeaders: ['One', 'Two', 'Three'],
-            //             columns: [
-            //                 {data: 'name'},
-            //                 {data: 'footage'},
-            //                 {data: 'price'}
-            //             ],
-            //             language: 'en-US',
-            //         }
-            //     },
-            // },
+            code: {
+                title: 'Code',
+                type: 'code',
+                options: {
+                    name: 'monaco',
+                    config: {
+                        language: 'typescript',
+                    }
+                }
+            },
+            geojson: {
+                type: 'geo-polygon',
+            },
+            datatable: {
+                title: 'Price',
+                type: 'table',
+                options: {
+                    config: {
+                        dataSchema: {name: null, footage: null, price: null},
+                        colHeaders: ['One', 'Two', 'Three'],
+                        columns: [
+                            {data: 'name'},
+                            {data: 'footage'},
+                            {data: 'price'}
+                        ],
+                        language: 'en-US',
+                    }
+                },
+            },
+            selectMany: {
+                title: 'Select many',
+                isIn: ['Sone', 'Stwo', 'Sthree', 'Sfour', 'Sfive'],
+                type: 'select-many'
+            },
+            checkboxes: {
+                title: 'Checkboxes',
+                isIn: ['one', 'two', 'three']
+            },
             editor: {
                 title: 'Editor',
                 type: 'wysiwyg',
@@ -143,10 +189,39 @@ const models: AdminpanelConfig["models"] = {
                         ]
                     }
                 }
-            }
+            },
+            testRelation: {
+                title: 'Test one association',
+                displayModifier: function (data) {
+                    return data?.title;
+                }
+            },
+            tests: {
+                title: 'One to many association',
+                displayModifier: function (data) {
+                    return data?.title;
+                }
+            },
         },
         list: {
-            fields: {},
+            fields: {
+                json: false,
+                tui: false,
+                geojson: false,
+                week: false,
+                color: false,
+                range: false,
+                date: false,
+                month: false,
+                selectMany: false,
+                select: false,
+                dateTime: false,
+                testRelation: false,
+                tests: false,
+                price: false,
+                code: false,
+                datatable: false
+            },
             actions: {
                 global: [
                     {
@@ -154,7 +229,7 @@ const models: AdminpanelConfig["models"] = {
                         link: '#',
                         title: 'Google',
                         icon: 'insert_link'
-                    }
+                    },
                 ],
                 inline: [
                     {
@@ -180,10 +255,67 @@ const models: AdminpanelConfig["models"] = {
         },
         icon: 'inbox'
     },
+    jsonschema: {
+        title: 'Json schema',
+        model: 'jsonschema',
+        fields: {
+            data: {
+                type: 'json',
+                options: {
+                    name: 'jsoneditor',
+                    config: {
+                        schema: {
+                            'type': 'array',
+                            "minItems": 1,
+                            'items': {
+                                '$ref': '#/definitions/badge'
+                            },
+                            'definitions': {
+                                'badge': {
+                                    'type': 'object',
+                                    'additionalProperties': false,
+                                    'properties': {
+                                        'text': {
+                                            'type': 'string',
+                                            'minLength': 3,
+                                            'maxLength': 18
+                                        },
+                                        'color': {
+                                            'type': 'string',
+                                            'pattern': '^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$'
+                                        },
+                                        'textColor': {
+                                            'type': 'string',
+                                            'pattern': '^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$'
+                                        }
+                                    },
+                                    'required': [
+                                        'color',
+                                        'text',
+                                        'textColor'
+                                    ]
+                                }
+                            }
+                        },
+                        mode: 'tree',
+                        // json: []
+                        // json: [
+                        //     {text: 'Gray badge', color: '#808080', textColor: '#FFFFFF'},
+                        //     {text: 'Silver badge', color: '#C0C0C0', textColor: '#000000'},
+                        //     {text: 'White badge', color: '#FFFFFF', textColor: '#000000'},
+                        //     {text: 'Fuchsia badge', color: '#FF00FF', textColor: '#000000'}
+                        // ]
+                    }
+                },
+            },
+            data2: {
+                type: 'json',
+            }
+        },
+        icon: 'pets'
+    },
 };
 
-// @ts-ignore
-// @ts-ignore
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",

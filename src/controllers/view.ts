@@ -5,6 +5,7 @@ import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
+import {FieldsHelper} from "../helpers/fieldsHelper";
 
 export default async function view(req: ReqType, res: ResType) {
     // Check id
@@ -95,6 +96,7 @@ export default async function view(req: ReqType, res: ResType) {
             })
 
         default:
+            fields = await FieldsHelper.loadAssociations(req, fields, "edit");
             const props = inertiaAddHelper(req, entity, fields, record, true)
             return req.Inertia.render({
                 component: 'add',

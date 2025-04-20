@@ -15,14 +15,16 @@ export interface NavGroup {
     items: NavItem[];
 }
 
-export interface ColumnConfig {
-    config: {
-        title: string
-    };
-}
 
 export interface Columns {
-    [key: string]: ColumnConfig;
+    [key: string]: {
+        data: string
+        title: string
+        orderable?: boolean
+        searchable?: boolean
+        direction?: string
+        searchColumnValue?: string
+    }
 }
 
 export interface NavItem extends MenuItem {}
@@ -51,4 +53,16 @@ declare global {
     interface Window {
         routePrefix: string;
     }
+}
+
+export interface Field {
+    label: string;
+    type: string;
+    name: string;
+    tooltip?: string;
+    value: FieldValue;
+    disabled?: boolean;
+    required?: boolean;
+    isIn?: string[];
+    options?: any;
 }

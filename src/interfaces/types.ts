@@ -27,9 +27,9 @@ export interface PropsField {
     type: string;
     name: string;
     tooltip?: string;
-    value: string | boolean | number;
+    value: string | boolean | number | string[];
     disabled?: boolean;
     required?: boolean;
     isIn?: string[] | number[] | boolean[];
-    options?: Record<string, unknown>
+    options?: Record<string, unknown> | Record<string, unknown>[]
 }

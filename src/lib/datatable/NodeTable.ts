@@ -17,7 +17,7 @@ interface Order {
     dir: string;
 }
 
-interface Column {
+export interface Column {
     data: string;
     searchable: string;
     orderable: string;
@@ -74,7 +74,8 @@ export class NodeTable {
                 return `${this.fieldsArray[parseInt(columnName)]} ${element.dir.toUpperCase()}`
             }
         }
-        return undefined;
+        // Set default order
+        return `${this.model.primaryKey ?? 'id'} DESC`;
     }
 
 
