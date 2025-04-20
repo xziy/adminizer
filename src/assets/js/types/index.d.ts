@@ -23,6 +23,7 @@ export interface Columns {
         orderable?: boolean
         searchable?: boolean
         direction?: string
+        searchColumnValue?: string
     }
 }
 

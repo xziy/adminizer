@@ -3,7 +3,7 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface PaginationResult {
+export interface PaginationResult {
     total: number;
     per_page: number;
     current_page: number;

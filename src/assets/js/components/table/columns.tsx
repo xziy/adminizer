@@ -8,20 +8,22 @@ import {Columns} from "@/types";
 
 export function useTableColumns(
     columnConfigs: Columns,
-    onSort?: (key: string, direction: 'asc' | 'desc') => void
+    onSort?: (key: string, direction: 'asc' | 'desc') => void,
+    onColumnSearch?: (key: string, value: string) => void,
+    showSearchInputs?: boolean
 ): ColumnDef<any>[] {
     return useMemo(() => {
         return Object.entries(columnConfigs).map(([key, config]) => ({
             accessorKey: key,
             header: () => {
                 return (
-                    <div className={`text-center max-w-[300px] ${config.direction ? 'text-ring' : ''}`}>
+                    <div
+                        className={`flex flex-col gap-1 text-center max-w-[300px] ${config.direction ? 'text-ring' : ''}`}>
                         <Button
                             variant="ghost"
                             className="cursor-pointer hover:text-inherit"
                             onClick={() => {
                                 if (onSort) {
-                                    // При первом клике - сортировка по возрастанию, при повторном - по убыванию
                                     const direction = config.direction === 'asc' ? 'desc' : 'asc';
                                     onSort(config.data, direction);
                                 }
@@ -37,6 +39,19 @@ export function useTableColumns(
                                 <Icon iconNode={ArrowUpDown} className="size-3"/>
                             }
                         </Button>
+                        {showSearchInputs && onColumnSearch && (
+                            <input
+                                type="text"
+                                defaultValue={config.searchColumnValue}
+                                placeholder={`Search ${config.title}`}
+                                className="text-xs p-1 border rounded mb-2 text-foreground"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        onColumnSearch(config.data, (e.target as HTMLInputElement).value);
+                                    }
+                                }}
+                            />
+                        )}
                     </div>
                 )
             },
@@ -46,5 +61,5 @@ export function useTableColumns(
                 </div>
             )
         }));
-    }, [columnConfigs, onSort]);
+    }, [columnConfigs, onSort, showSearchInputs, onColumnSearch]);
 }
