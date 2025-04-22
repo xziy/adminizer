@@ -18,7 +18,8 @@
 		"copy:modules": "node copy-modules.js",
 		"buold:assets:modules": "npm run build:assets && npm run copy:modules",
 		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
-		"demo": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules && npm run start:seed"
+		"demo": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules && npm run start:seed",
+		"demo:build": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules && npm run start:seed",
 	},
 	"keywords": [],
 	"author": "",
