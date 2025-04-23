@@ -14,7 +14,6 @@ import {ChevronRight} from "lucide-react";
 
 export function NavMain({items = []}: { items: NavItem[] }) {
     const page = usePage<SharedData>();
-
     // Function to normalize URLs by removing query parameters and trailing slashes
     const normalizeUrl = (url: string) => {
         // Remove query parameters
