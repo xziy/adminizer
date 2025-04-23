@@ -16,7 +16,7 @@
 		"build:module": "vite build --config modules/test/vite.config.module.ts",
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
-		"buold:assets:modules": "npm run build:assets && npm run copy:modules",
+		"build:assets:modules": "npm run build:assets && npm run copy:modules",
 		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
 		"demo:build": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules",
 		"demo": "npm run start:seed"

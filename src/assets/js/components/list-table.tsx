@@ -92,6 +92,10 @@ const ListTable = () => {
         }))
     }, [])
 
+    useEffect(() => {
+        // fix menu after deletion and redirect
+        document.body.removeAttribute('style')
+    }, [data])
 
     let columns: ColumnDef<any>[] = [
         {
@@ -105,7 +109,7 @@ const ListTable = () => {
                 return (
                     <div className="text-center">
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger asChild className="cursor-pointer">
                                 <Button variant="outline" size="icon">
                                     <BetweenHorizontalStart/>
                                 </Button>
@@ -132,7 +136,7 @@ const ListTable = () => {
                                         <DropdownMenuItem asChild className="cursor-pointer">
                                             <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
                                                          delModal={page.props.header.delModal}
-                                                         link={`${page.props.header.entity.uri}/remove/${row.original.id}`}/>
+                                                         link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
                                         </DropdownMenuItem>
                                     )}
                                 </DropdownMenuGroup>
@@ -183,20 +187,6 @@ const ListTable = () => {
             }
         }
     }, [page.props.flash])
-
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === "hidden") {
-                document.querySelectorAll('[data-state="open"]').forEach((el) => {
-                    el.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
-                });
-            }
-        };
-
-        document.body.removeAttribute('style')
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    }, [])
 
     const changeCount = useCallback((newCount: string) => {
         setCount(newCount)
@@ -249,22 +239,16 @@ const ListTable = () => {
     const handleGlobalSearch = useCallback((value: string) => {
         setSearchValue(value)
         setCurrentPage(1)
-        setLoading(true)
-        router.visit(`${page.props.header.entity.uri}?${buildQueryString(1, undefined, undefined, value)}`, {
-            preserveState: true,
-            only: ['data', 'columns', 'header'],
-            onSuccess: () => setLoading(false)
-        })
     }, [data])
 
-    const getColumnSearchData = useCallback(() => {
+    const handleSearch = useCallback(() => {
         setLoading(true)
         router.visit(`${page.props.header.entity.uri}?${buildQueryString(1) }`, {
             preserveState: true,
             only: ['data', 'columns', 'header'],
             onSuccess: () => setLoading(false)
         })
-    }, [buildQueryString, page.props.header.entity.uri])
+    }, [data, searchValue])
 
     const handleColumnSearch = useCallback((key: string, value: string) => {
         setCurrentPage(1)
@@ -275,8 +259,7 @@ const ListTable = () => {
         if (value) {
             queryColumnsRef.current.push({key, value})
         }
-        getColumnSearchData()
-    }, [getColumnSearchData])
+    }, [data])
 
     const resetForm = () => {
         setShowSearch(false)
@@ -297,6 +280,7 @@ const ListTable = () => {
         page.props.columns,
         handleCustomSort,
         handleColumnSearch,
+        handleSearch,
         showSearch // send state input visible
     )]
 
@@ -304,7 +288,7 @@ const ListTable = () => {
         <>
             <Toaster position="top-center" richColors closeButton/>
             <div className={`flex h-auto flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
-                <div className="flex gap-6 sticky top-0 z-10 bg-background py-3">
+                <div className="flex gap-2 sticky top-0 z-10 bg-background py-3">
                     {page.props.header.crudActions?.createTitle && (
                         <Button asChild>
                             <Link href={`${page.props.header.entity.uri}/add`} prefetch>
@@ -323,7 +307,7 @@ const ListTable = () => {
                         <Icon iconNode={showSearch ? RefreshCcw : Search}/>
                         {showSearch ? "Reset" : "Search"}
                     </Button>
-                    <div className="flex gap-2">
+                    <div className="gap-2 ml-6 hidden lg:flex">
                         {page.props.header.actions.map((action) => (
                             <Button asChild variant="outline" key={action.id}>
                                 <a href={action.link} target='_blank'>
@@ -332,6 +316,27 @@ const ListTable = () => {
                                 </a>
                             </Button>
                         )) || null}
+                    </div>
+                    <div className="block lg:hidden ml-6">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="cursor-pointer">
+                                    <BetweenHorizontalStart/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-fit" side="right" align="start">
+                                <DropdownMenuGroup className="grid gap-2">
+                                    {page.props.header.actions.map((action) => (
+                                        <Button asChild variant="outline" key={action.id}>
+                                            <a href={action.link} target='_blank'>
+                                                <MaterialIcon name={action.icon} className="!text-[18px]"/>
+                                                {action.title}
+                                            </a>
+                                        </Button>
+                                    )) || null}
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
                 <DataTable
@@ -342,6 +347,7 @@ const ListTable = () => {
                     key={new Date().getTime()}
                     globalSearch={showSearch}
                     onGlobalSearch={handleGlobalSearch}
+                    handleSearch={handleSearch}
                 />
                 <div className="mt-4 flex flex-wrap justify-center md:justify-between gap-4 items-end">
                     <div className="grid grid-cols-2 md:grid-cols-1 gap-4 items-center justify-items-center md:justify-items-normal">

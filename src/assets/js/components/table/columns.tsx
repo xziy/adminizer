@@ -10,6 +10,7 @@ export function useTableColumns(
     columnConfigs: Columns,
     onSort?: (key: string, direction: 'asc' | 'desc') => void,
     onColumnSearch?: (key: string, value: string) => void,
+    handleSearch?: () => void,
     showSearchInputs?: boolean
 ): ColumnDef<any>[] {
     return useMemo(() => {
@@ -45,9 +46,10 @@ export function useTableColumns(
                                 defaultValue={config.searchColumnValue}
                                 placeholder={`Search ${config.title}`}
                                 className="text-xs p-1 border rounded mb-2 text-foreground"
+                                onChange={(e) => {onColumnSearch(config.data, (e.target as HTMLInputElement).value);}}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        onColumnSearch(config.data, (e.target as HTMLInputElement).value);
+                                    if (e.key === 'Enter' && handleSearch) {
+                                        handleSearch()
                                     }
                                 }}
                             />

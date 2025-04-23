@@ -15,6 +15,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {Input} from "@/components/ui/input.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {Icon} from "@/components/icon.tsx";
+import { Search } from "lucide-react";
 
 
 interface DataTableProps<TData, TValue> {
@@ -24,6 +28,7 @@ interface DataTableProps<TData, TValue> {
     globalSearch?: boolean,
     searchValue?: string
     onGlobalSearch?: (value: string) => void
+    handleSearch?: () => void
 }
 
 export function DataTable<TData, TValue>(
@@ -33,7 +38,8 @@ export function DataTable<TData, TValue>(
         notFoundContent,
         globalSearch = false,
         onGlobalSearch,
-        searchValue
+        searchValue,
+        handleSearch
     }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
@@ -47,23 +53,27 @@ export function DataTable<TData, TValue>(
     return (
         <div className="rounded-md border">
             {globalSearch && onGlobalSearch && (
-                <div className="p-2 border-b">
-                    <input
+                <div className="flex gap-2 p-2">
+                    <Input
                         type="text"
                         defaultValue={searchValue}
                         autoFocus
                         placeholder="Global search..."
-                        className="w-full p-2 border rounded"
+                        className="w-full max-w-[200px] p-2 border rounded"
+                        onChange={(e) => {onGlobalSearch(e.target.value)}}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                onGlobalSearch((e.target as HTMLInputElement).value);
+                            if (e.key === 'Enter' && handleSearch) {
+                                handleSearch()
                             }
                         }}
                     />
+                    <Button className="cursor-pointer" variant="outline" size="icon" onClick={handleSearch}>
+                        <Icon iconNode={Search} className="size-5"/>
+                    </Button>
                 </div>
             )}
             <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-background shadow">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {

@@ -229,6 +229,26 @@ const models: AdminpanelConfig["models"] = {
                         link: '#',
                         title: 'Google',
                         icon: 'insert_link'
+                    }, {
+                        id: "2",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "3",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "4",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "5",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
                     },
                 ],
                 inline: [
