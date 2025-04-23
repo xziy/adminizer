@@ -13,7 +13,7 @@ import {Skeleton} from "@/components/ui/skeleton.tsx";
 import {getFieldError, hasFormErrors, resetFormErrors} from '@/hooks/form-state';
 import InputError from "@/components/input-error.tsx";
 
-type FieldValue = string | boolean | number | Date | any[] | Content;
+export type FieldValue = string | boolean | number | Date | any[] | Content;
 
 
 interface AddProps extends SharedData {
@@ -50,7 +50,7 @@ const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
                                 className="text-primary w-5 h-5 cursor-pointer"
                             />
                         </TooltipTrigger>
-                        <TooltipContent align="center" side="top">
+                        <TooltipContent align="center" side="top" className="z-[1002]">
                             <p>{field.tooltip}</p>
                         </TooltipContent>
                     </Tooltip>
@@ -94,8 +94,6 @@ const AddForm: FC = () => {
     const {
         data,
         setData,
-        // errors,
-        clearErrors,
         post,
         processing,
     } = useForm<Record<string, any>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
@@ -110,11 +108,8 @@ const AddForm: FC = () => {
 
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
-            clearErrors();
             setData(fieldName, value);
-        },
-        []
-    );
+        }, []);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -146,7 +141,7 @@ const AddForm: FC = () => {
                     <div className="flex flex-col gap-10">
                         {fields.map((field) => (
                             <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`} key={field.name}>
-                                {field.type === "markdown" || field.type === "table" || field.type === "json" || field.type === "code" || field.type === "geojson" ?
+                                {field.type === "markdown" || field.type === "table" || field.type === "jsonEditor" || field.type === "codeEditor" || field.type === "geoJson" ?
                                     <>
                                         <LabelRenderer field={field}/>
                                         <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
@@ -184,5 +179,10 @@ const AddForm: FC = () => {
         </div>
     );
 };
+
+export {
+    LazyField,
+    LabelRenderer,
+}
 
 export default AddForm;

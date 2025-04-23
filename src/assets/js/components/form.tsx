@@ -1,0 +1,98 @@
+import {useForm, usePage} from "@inertiajs/react";
+import {Field, SharedData} from "@/types";
+import {FormEventHandler, useCallback, useEffect} from "react";
+import {getFieldError, hasFormErrors, resetFormErrors} from "@/hooks/form-state.ts";
+import {FieldValue, LabelRenderer, LazyField} from "@/components/add-form.tsx";
+import InputError from "@/components/input-error.tsx";
+import FieldRenderer from "@/components/filed-renderer.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {LoaderCircle} from "lucide-react";
+
+interface FormProps extends SharedData {
+    fields: Field[];
+    btnSave: {
+        title: string;
+    },
+    postLink: string,
+}
+
+const Form = () => {
+    const page = usePage<FormProps>();
+    const {fields} = page.props;
+    const {
+        data,
+        setData,
+        // errors,
+        post,
+        processing,
+    } = useForm<Record<string, any>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
+
+    useEffect(() => {
+        // Reset errors
+        resetFormErrors();
+        return () => {
+            resetFormErrors();
+        };
+    }, []);
+
+    const handleFieldChange = useCallback(
+        (fieldName: string, value: FieldValue) => {
+            setData(fieldName, value);
+        }, []);
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        // console.log(data)
+        post(page.props.postLink);
+    };
+
+    return (
+        <div className="p-4 w-full">
+            <form
+                className="mt-8"
+                id="addUserForm"
+                onSubmit={submit}
+            >
+                <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8">
+                    <div className="flex flex-col gap-10">
+                        {fields.map((field) => (
+                            <div className={`grid gap-4 w-full`} key={field.name}>
+                                {field.type === "markdown" || field.type === "table" || field.type === "json" || field.type === "code" || field.type === "geojson" ?
+                                    <>
+                                        <LabelRenderer field={field}/>
+                                        <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
+                                        <LazyField
+                                            field={field}
+                                            value={data[field.name]}
+                                            onChange={handleFieldChange}
+                                            processing={processing}
+                                        />
+                                    </>
+                                    :
+                                    <>
+                                        <LabelRenderer field={field}/>
+                                        <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
+                                        <FieldRenderer
+                                            field={field}
+                                            value={data[field.name]}
+                                            onChange={handleFieldChange}
+                                            processing={processing}
+                                        />
+                                    </>
+                                }
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-4 rounded-md h-fit sticky top-[84px] shadow hidden lg:block">
+                        <Button variant="green" type="submit" className="w-fit cursor-pointer"
+                                disabled={processing || hasFormErrors()}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                            {page.props.btnSave.title}
+                        </Button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    )
+}
+export default Form

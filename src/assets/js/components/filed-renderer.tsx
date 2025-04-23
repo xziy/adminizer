@@ -213,7 +213,7 @@ const FieldRenderer: FC<{
                                      onChange={handleEditorChange}/>
                 )
             }
-        case 'json':
+        case 'jsonEditor':
             if (field.options?.name === 'jsoneditor') {
                 return (
                     <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
@@ -227,7 +227,7 @@ const FieldRenderer: FC<{
                                      onChange={handleJSONChange}/>
                 )
             }
-        case 'code':
+        case 'codeEditor':
             if (field.options?.name === 'monaco') {
                 return (
                     <MonacoLazy value={value as string ?? ''} onChange={handleCodeChange}
@@ -240,7 +240,7 @@ const FieldRenderer: FC<{
                                      onChange={handleJSONChange}/>
                 )
             }
-        case 'geojson':
+        case 'geoJson':
             if (field.options?.name === 'leaflet') {
                 return (
                     <GeoJsonEditorLazy

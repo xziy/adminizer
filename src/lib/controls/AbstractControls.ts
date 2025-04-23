@@ -1,6 +1,6 @@
 import {Adminizer} from "../Adminizer";
 
-export type ControlType = 'wysiwyg' | 'ace' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table' | 'codeEditor'
+export type ControlType = 'wysiwyg' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table' | 'codeEditor'
 
 export interface Path {
     jsPath: {

@@ -355,8 +355,17 @@ const config: AdminpanelConfig = {
                     type: 'string',
                     value: 'Some string',
                     required: true,
-                    tooltip: 'tooltip for field1',
-                    description: 'some description'
+                },
+                field2: {
+                    title: 'Field2',
+                    type: 'text',
+                    value: 'Some text',
+                    required: true,
+                    tooltip: 'tooltip for field2',
+                },
+                json: {
+                    title: 'Json',
+                    type: 'jsoneditor'
                 },
             }
         }
