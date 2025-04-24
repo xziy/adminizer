@@ -8,7 +8,7 @@ import { usePage } from '@inertiajs/react';
 import { ChevronsUpDown } from 'lucide-react';
 
 export function NavUser() {
-    const { auth, logout } = usePage<SharedData>().props;
+    const { auth, logout, logoutBtn } = usePage<SharedData>().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 
@@ -23,11 +23,11 @@ export function NavUser() {
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg z-[1002]"
                         align="end"
                         side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
                     >
-                        <UserMenuContent user={auth.user} logout={logout} />
+                        <UserMenuContent user={auth.user} logout={logout} logoutBtn={logoutBtn} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

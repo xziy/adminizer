@@ -4,7 +4,7 @@ import {FormEventHandler, useCallback, useEffect} from "react";
 import {getFieldError, hasFormErrors, resetFormErrors} from "@/hooks/form-state.ts";
 import {FieldValue, LabelRenderer, LazyField} from "@/components/add-form.tsx";
 import InputError from "@/components/input-error.tsx";
-import FieldRenderer from "@/components/filed-renderer.tsx";
+import FieldRenderer from "@/components/field-renderer.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle} from "lucide-react";
 
@@ -57,7 +57,7 @@ const Form = () => {
                     <div className="flex flex-col gap-10">
                         {fields.map((field) => (
                             <div className={`grid gap-4 w-full`} key={field.name}>
-                                {field.type === "markdown" || field.type === "table" || field.type === "json" || field.type === "code" || field.type === "geojson" ?
+                                {field.type === "markdown" || field.type === "table" || field.type === "jsonEditor" || field.type === "codeEditor" || field.type === "geoJson" ?
                                     <>
                                         <LabelRenderer field={field}/>
                                         <InputError message={getFieldError(`${field.type}-${field.name}`)}/>

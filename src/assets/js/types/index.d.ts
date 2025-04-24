@@ -38,6 +38,7 @@ export interface SharedData {
     menu: MenuItem[];
     brand: string,
     logout: string
+    logoutBtn: string
     flash: Record<FlashMessages, string>;
     auth: Auth;
     [key: string]: unknown;

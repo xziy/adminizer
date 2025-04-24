@@ -140,7 +140,6 @@ export class Adminizer {
         // add install stepper policy to check unfilled settings
         // bindInstallStepper(this);
 
-
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
 

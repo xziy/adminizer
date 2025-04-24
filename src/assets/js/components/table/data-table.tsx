@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
     searchValue?: string
     onGlobalSearch?: (value: string) => void
     handleSearch?: () => void
+    searchTxt?: string
 }
 
 export function DataTable<TData, TValue>(
@@ -39,7 +40,8 @@ export function DataTable<TData, TValue>(
         globalSearch = false,
         onGlobalSearch,
         searchValue,
-        handleSearch
+        handleSearch,
+        searchTxt
     }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
@@ -58,7 +60,7 @@ export function DataTable<TData, TValue>(
                         type="text"
                         defaultValue={searchValue}
                         autoFocus
-                        placeholder="Global search..."
+                        placeholder={searchTxt}
                         className="w-full max-w-[200px] p-2 border rounded"
                         onChange={(e) => {onGlobalSearch(e.target.value)}}
                         onKeyDown={(e) => {

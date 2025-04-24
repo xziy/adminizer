@@ -44,7 +44,6 @@ export function useTableColumns(
                             <input
                                 type="text"
                                 defaultValue={config.searchColumnValue}
-                                placeholder={`Search ${config.title}`}
                                 className="text-xs p-1 border rounded mb-2 text-foreground"
                                 onChange={(e) => {onColumnSearch(config.data, (e.target as HTMLInputElement).value);}}
                                 onKeyDown={(e) => {

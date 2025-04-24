@@ -127,6 +127,7 @@ export function bindInertia(adminizer: Adminizer) {
             menu: req.session.UserAP ? menuHelper.getMenuItems(req) : null,
             brand: menuHelper.getBrandTitle(),
             logout: menuHelper.getLogoutUrl(),
+            logoutBtn: req.session.UserAP?.locale == 'ru' ? 'Выход' : "Log out",
             section: req.session.UserAP ? [
                 {
                     title: req.i18n.__("Adminpanel"),

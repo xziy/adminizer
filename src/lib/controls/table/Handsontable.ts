@@ -8,7 +8,6 @@ export class Handsontable extends AbstractControls{
         width: 'auto',
         manualColumnResize: true,
         contextMenu: true,
-        language: 'en-US',
         licenseKey: 'non-commercial-and-evaluation', // for non-commercial use only
     };
     readonly name: string = "handsontable";

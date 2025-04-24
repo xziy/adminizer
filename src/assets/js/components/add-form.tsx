@@ -7,7 +7,7 @@ import {Icon} from "@/components/icon.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {type Content} from "vanilla-jsoneditor";
-import FieldRenderer from "@/components/filed-renderer.tsx";
+import FieldRenderer from "@/components/field-renderer.tsx";
 import {useInView} from 'react-intersection-observer';
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import {getFieldError, hasFormErrors, resetFormErrors} from '@/hooks/form-state';
@@ -23,6 +23,8 @@ interface AddProps extends SharedData {
         title: string;
         icon: string;
     }[];
+    notFound: string
+    search: string,
     btnBack: {
         title: string;
         link: string;
@@ -65,7 +67,9 @@ const LazyField: FC<{
     value: FieldValue;
     onChange: (name: string, value: FieldValue) => void;
     processing: boolean;
-}> = memo(({field, value, onChange, processing}) => {
+    notFound: string
+    search: string
+}> = memo(({field, value, onChange, processing, notFound, search}) => {
     const [ref, inView] = useInView({
         triggerOnce: true,
         rootMargin: '100px 0px', // Начинаем загружать заранее
@@ -78,6 +82,8 @@ const LazyField: FC<{
                     field={field}
                     value={value}
                     onChange={onChange}
+                    notFound={notFound}
+                    search={search}
                     processing={processing}
                 />
             ) : <Skeleton className="w-full h-[250px] rounded-sm"/>}
@@ -89,7 +95,7 @@ const LazyField: FC<{
 const AddForm: FC = () => {
 
     const page = usePage<AddProps>();
-    const {fields, btnBack, view} = page.props;
+    const {fields, btnBack, view, notFound} = page.props;
 
     const {
         data,
@@ -141,7 +147,7 @@ const AddForm: FC = () => {
                     <div className="flex flex-col gap-10">
                         {fields.map((field) => (
                             <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`} key={field.name}>
-                                {field.type === "markdown" || field.type === "table" || field.type === "jsonEditor" || field.type === "codeEditor" || field.type === "geoJson" ?
+                                {field.type === "markdown" ||  field.type === "table" || field.type === "jsonEditor" || field.type === "codeEditor" || field.type === "geoJson" ?
                                     <>
                                         <LabelRenderer field={field}/>
                                         <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
@@ -150,6 +156,8 @@ const AddForm: FC = () => {
                                             value={data[field.name]}
                                             onChange={handleFieldChange}
                                             processing={processing || view}
+                                            notFound={notFound}
+                                            search={page.props.search}
                                         />
                                     </>
                                     :
@@ -161,6 +169,8 @@ const AddForm: FC = () => {
                                             value={data[field.name]}
                                             onChange={handleFieldChange}
                                             processing={processing || view}
+                                            notFound={notFound}
+                                            search={page.props.search}
                                         />
                                     </>
                                 }

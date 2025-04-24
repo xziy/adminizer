@@ -18,6 +18,8 @@ interface listProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
     view: boolean;
     actions: Actions[],
+    notFound: string
+    search: string
     btnBack: {
         title: string;
         link: string;
@@ -35,6 +37,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         edit: !!record,
         view: view,
         actions: [],
+        notFound: req.i18n.__('Not found'),
+        search: req.i18n.__('Search'),
         btnBack: {
             title: req.i18n.__('Back'),
             link: entity.uri

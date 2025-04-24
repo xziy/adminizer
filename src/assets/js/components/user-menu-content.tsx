@@ -10,9 +10,10 @@ import { LogOut } from 'lucide-react';
 interface UserMenuContentProps {
     user: User;
     logout: string
+    logoutBtn: string
 }
 
-export function UserMenuContent({ user, logout }: UserMenuContentProps) {
+export function UserMenuContent({ user, logout, logoutBtn }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
 
     return (
@@ -35,7 +36,7 @@ export function UserMenuContent({ user, logout }: UserMenuContentProps) {
             <DropdownMenuItem asChild>
                 <Link className="block w-full cursor-pointer" method="get" href={logout} as="button" onClick={cleanup}>
                     <LogOut className="mr-2" />
-                    Log out
+                    {logoutBtn}
                 </Link>
             </DropdownMenuItem>
         </>

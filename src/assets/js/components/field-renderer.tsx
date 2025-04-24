@@ -27,7 +27,9 @@ const FieldRenderer: FC<{
     value: FieldValue;
     onChange: (name: string, value: FieldValue) => void;
     processing: boolean;
-}> = memo(({field, value, onChange, processing}) => {
+    notFound: string
+    search: string
+}> = memo(({field, value, onChange, processing, notFound, search}) => {
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -144,8 +146,8 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                     required={field.required}
                 >
-                    <SelectTrigger className="w-full cursor-pointer" id={field.name}>
-                        <SelectValue placeholder={field.name}/>
+                    <SelectTrigger className="w-full cursor-pointer min-h-10" id={field.name}>
+                        <SelectValue placeholder=""/>
                     </SelectTrigger>
                     <SelectContent>
                         {(field.isIn ?? []).map((option) => (
@@ -165,6 +167,8 @@ const FieldRenderer: FC<{
                     onValueChange={handleAssociationChange}
                     defaultValue={value as string[] ?? []}
                     variant="secondary"
+                    notFound={notFound}
+                    search={search}
                     processing={processing || field.disabled}
                     mode={field.type === 'association' ? 'single' : 'multiple'}
                     maxCount={10}
@@ -261,7 +265,7 @@ const FieldRenderer: FC<{
                 <Input
                     id={field.name}
                     type={field.type}
-                    className={inputClassName}
+                    className={`${inputClassName} min-h-10`}
                     required={field.required}
                     tabIndex={1}
                     value={value as any ?? ''}

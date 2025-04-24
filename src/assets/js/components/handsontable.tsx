@@ -5,8 +5,47 @@ import {ColumnSettings, GridSettings} from "handsontable/settings";
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {RowObject} from "handsontable/common";
 import {useAppearance} from "@/hooks/use-appearance.tsx";
+import {
+    registerLanguageDictionary,
+    deDE,
+    enUS,
+    esMX,
+    frFR,
+    itIT,
+    jaJP,
+    koKR,
+    nlNL,
+    plPL,
+    ptBR,
+    ruRU,
+    zhCN
+} from 'handsontable/i18n';
 
 registerAllModules();
+
+const languageDictionaries: Record<string, {
+    [p: string]: string | string[]
+    languageCode: string
+}> = {
+    'de': deDE,
+    'en': enUS,
+    'es': esMX,
+    'fr': frFR,
+    'it': itIT,
+    'ja': jaJP,
+    'ko': koKR,
+    'nl': nlNL,
+    'pl': plPL,
+    'pt': ptBR,
+    'ru': ruRU,
+    'zh': zhCN,
+};
+
+const docLang = document.documentElement.lang
+
+const lang = languageDictionaries[docLang] ?? languageDictionaries['en']
+
+registerLanguageDictionary(lang);
 
 interface TableProps {
     config: GridSettings;
@@ -44,6 +83,7 @@ const HandsonTable = ({config, data = [], onChange}: TableProps) => {
     return (
         <HotTable
             themeName={theme}
+            language={lang.languageCode}
             ref={hotTableRef}
             {...config}
             afterChange={handleChange}

@@ -59,6 +59,8 @@ interface MultiSelectProps
     placeholder?: string;
     animation?: number;
     maxCount?: number;
+    notFound?: string;
+    search?: string
     modalPopover?: boolean;
     asChild?: boolean;
     className?: string;
@@ -81,7 +83,9 @@ const MultiSelect = React.forwardRef<
             variant,
             processing,
             defaultValue = [],
-            placeholder = "Select options",
+            placeholder = "",
+            notFound = "",
+            search = "",
             animation = 0,
             maxCount = 3,
             modalPopover = false,
@@ -158,7 +162,7 @@ const MultiSelect = React.forwardRef<
                         {...props}
                         onClick={handleTogglePopover}
                         className={cn(
-                            "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+                            "flex w-full p-1 rounded-md border-input border-1 min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
                             className
                         )}
                     >
@@ -249,11 +253,11 @@ const MultiSelect = React.forwardRef<
                 >
                     <Command>
                         <CommandInput
-                            placeholder="Search..."
+                            placeholder={search}
                             onKeyDown={handleInputKeyDown}
                         />
                         <CommandList>
-                            <CommandEmpty>No results found.</CommandEmpty>
+                            <CommandEmpty>{notFound}</CommandEmpty>
                             <CommandGroup>
                                 {options.map((option) => {
                                     const isSelected = selectedValues.includes(option.value);

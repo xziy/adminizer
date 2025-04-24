@@ -17,6 +17,8 @@ interface listProps extends Record<string | number | symbol, unknown> {
         text: string
     },
     notFoundContent: string,
+    searchBtn: string,
+    resetBtn: string,
     entity: {
         name: string;
         uri: string
@@ -45,7 +47,9 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
             no: req.i18n.__('No'),
             text: req.i18n.__('Are you sure?')
         },
-        notFoundContent: req.i18n.__('No records found !')
+        notFoundContent: req.i18n.__('No records found !'),
+        searchBtn: req.i18n.__('Search'),
+        resetBtn: req.i18n.__('Reset'),
     } as listProps
 
     if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
