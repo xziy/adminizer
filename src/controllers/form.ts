@@ -1,5 +1,6 @@
 import {FormHelper} from "../helpers/formHelper";
 import {Adminizer} from "../lib/Adminizer";
+import inertiaFormHelper from "../helpers/inertiaFromHelper";
 
 export default async function form(req: ReqType, res: ResType) {
 	let slug = req.params.slug;
@@ -68,8 +69,11 @@ export default async function form(req: ReqType, res: ResType) {
 	}
 
 	// res.viewAdmin("form", {formData: form, slug: slug});
+
+    const props = inertiaFormHelper(req, `${req.adminizer.config.routePrefix}/form/${slug}`, form)
+    // console.log(props)
     return req.Inertia.render({
         component: 'form',
-        props: null
+        props: props
     });
 }

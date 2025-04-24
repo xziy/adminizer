@@ -11,6 +11,9 @@ import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
 
+export type PropsFieldType =
+   'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
+
 interface listProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
     view: boolean;
@@ -58,7 +61,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let label = fieldConfig.title ?? ''
         let tooltip = fieldConfig.tooltip ?? ''
         let name = key
-        let fieldType = ''
+        let fieldType: PropsFieldType = 'text'
         let disabled = false
         let required = fieldConfig.required ?? false
         let options: Record<string, unknown> | Record<string, unknown>[] = {}
@@ -80,7 +83,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         }
 
         if (type === 'color') {
-            fieldType = inputText(type, isIn)
+            fieldType = 'color'
             value = record ? (record[key] ? record[key] : '#000000') : '#000000'
         }
 
@@ -103,7 +106,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             value = initValue
         }
 
-        if(type === 'select-many'){
+        if (type === 'select-many') {
             fieldType = 'select-many'
             const {initValue, initOptions} = setSelectMany(isIn, value as string[])
             options = initOptions
@@ -112,102 +115,31 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
         if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
             fieldType = 'wysiwyg';
-
-            const fieldOptions = fieldConfig?.options as WysiwygOptions;
-
-            let control = getControl(req, 'wysiwyg', fieldOptions?.name, 'ckeditor');
-            let editorName = control.getName();
-
-            // Prepare options object
-            options = {
-                name: editorName,
-                config: control?.getConfig() || {},
-                path: control?.getJsPath() || {},
-            };
-
-            // If items are provided, use them instead of the editor's config
-            if (fieldOptions?.config?.items && editorName === 'ckeditor') {
-                options.config = {items: fieldOptions.config.items};
-            }
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'ckeditor')
         }
 
         if (['tui', 'tuieditor', 'toast-ui'].includes(type)) {
             fieldType = 'markdown';
-
-            const fieldOptions = fieldConfig?.options as TuiEditorOptions;
-
-            let control = getControl(req, 'markdown', fieldOptions?.name, 'toast-ui');
-
-            options = {
-                name: control.getName(),
-                config: {
-                    ...(control?.getConfig() || {}), // Base config of the editor
-                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
-                },
-                path: control?.getJsPath() || {},
-            };
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'toast-ui')
         }
 
         if (type === 'table') {
             fieldType = 'table';
-            const fieldOptions = fieldConfig?.options as HandsontableOptions
-            let control = getControl(req, 'table', fieldOptions?.name, 'handsontable');
-            options = {
-                name: control.getName(),
-                config: {
-                    ...(control?.getConfig() || {}), // Base config of the editor
-                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
-                },
-                path: control?.getJsPath() || {},
-            };
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'handsontable')
         }
         if (['jsoneditor', 'json', 'array', 'object'].includes(type)) {
-            fieldType = 'json';
-            const fieldOptions = fieldConfig?.options as {
-                name?: string,
-                config?: Record<string, unknown>
-            } | undefined;
-            let control = getControl(req, 'jsonEditor', fieldOptions?.name, 'jsoneditor');
-            options = {
-                name: control.getName(),
-                config: {
-                    ...(control?.getConfig() || {}), // Base config of the editor
-                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
-                },
-                path: control?.getJsPath() || {},
-            };
+            fieldType = 'jsonEditor';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'jsoneditor')
         }
 
         if (['ace', 'html', 'xml', 'aceeditor', 'code'].includes(type)) {
-            fieldType = 'code';
-            const fieldOptions = fieldConfig?.options as {
-                name?: string,
-                config?: Record<string, unknown>
-            } | undefined;
-            let control = getControl(req, 'codeEditor', fieldOptions?.name, 'monaco');
-            options = {
-                name: control.getName(),
-                config: {
-                    ...(control?.getConfig() || {}), // Base config of the editor
-                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
-                },
-            }
+            fieldType = 'codeEditor';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'monaco')
         }
 
         if (['geojson', 'geo-polygon', 'geo-marker'].includes(type)) {
-            fieldType = 'geojson';
-            const fieldOptions = fieldConfig?.options as {
-                name?: string,
-                config?: Record<string, unknown>
-            } | undefined;
-            let control = getControl(req, 'geoJson', fieldOptions?.name, 'leaflet');
-            options = {
-                name: control.getName(),
-                config: {
-                    ...(control?.getConfig() || {}), // Base config of the editor
-                    ...(fieldOptions?.config || {}), // Additional config provided in the field config
-                },
-            }
+            fieldType = 'geoJson';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'leaflet')
         }
 
         props.fields.push({
@@ -226,7 +158,37 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     return props
 }
 
-function inputText(type: string, isIn: string[]) {
+export function getControlsOptions(fieldConfig: BaseFieldConfig, req: ReqType, type: ControlType, defaultControlName: string) {
+    const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
+
+    let control = getControl(req, type, fieldOptions?.name, defaultControlName);
+    let editorName = control.getName();
+
+    let options = {
+        name: editorName,
+        config: {
+            ...(control?.getConfig() || {}), // Base config of the editor
+            ...(fieldOptions?.config || {}), // Additional config provided in the field config
+        },
+        path: control?.getJsPath() || {},
+    };
+
+    if (type === 'wysiwyg') {
+        let options = {
+            name: editorName,
+            config: control?.getConfig() || {},
+            path: control?.getJsPath() || {},
+        };
+
+        // If items are provided, use them instead of the editor's config
+        if ((fieldOptions as WysiwygOptions)?.config?.items && editorName === 'ckeditor') {
+            options.config = {items: (fieldOptions as WysiwygOptions).config.items};
+        }
+    }
+    return options
+}
+
+export function inputText(type: string, isIn: string[]) {
     if (type === "string" && isIn.length) {
         return "select"
     } else {
@@ -259,7 +221,7 @@ function inputText(type: string, isIn: string[]) {
     }
 }
 
-function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultControlName: string) {
+export function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultControlName: string) {
     let control: AbstractControls;
     let editorName = defaultControlName // default editor name
 
@@ -293,7 +255,7 @@ function setAssociationValues(field: Field, value: string[]) {
 
     const getAssociationValue = (value: ModelAnyField, config: Record<string, string>): string | string[] => {
         const displayField = config.displayField || 'id';
-        if(value === null) return []
+        if (value === null) return []
 
         if (Array.isArray(value)) {
             return value
@@ -315,7 +277,7 @@ function setAssociationValues(field: Field, value: string[]) {
                 : (config.displayField ? opt[config.displayField] : opt[config.identifierField]),
             value: opt[config.identifierField],
         })
-        if(isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
+        if (isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
             initValue.push(opt[config.identifierField])
         }
     }
@@ -325,15 +287,15 @@ function setAssociationValues(field: Field, value: string[]) {
     }
 }
 
-function setSelectMany(isIn: string[], value: string[] | undefined){
+export function setSelectMany(isIn: string[], value: string[] | undefined) {
     let options = []
     let initValue: string[] = []
-    for(let opt of isIn){
+    for (let opt of isIn) {
         options.push({
             label: opt,
             value: opt,
         })
-        if(value && value.includes(opt)) {
+        if (value && value.includes(opt)) {
             initValue.push(opt)
         }
     }

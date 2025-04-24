@@ -12,21 +12,13 @@ interface TuiEditorProps {
 const ToastEditor = ({ initialValue = '', onChange, options }: TuiEditorProps) => {
     const editorRef = useRef<Editor>(null);
     const { width } = useWindowSize();
-    const [theme, setTheme] = useState<string>('light')
     const {appearance} = useAppearance()
+    const theme = appearance === 'dark' ? 'dark' : 'light'
     const [editorOptions, setEditorOptions] = useState<EditorProps>({
         height: '600px',
         initialEditType: 'markdown',
         useCommandShortcut: true,
     });
-
-    useEffect(() => {
-        if (appearance === 'dark') {
-            setTheme('dark');
-        } else {
-            setTheme('light');
-        }
-    }, [appearance]);
 
     const handleEditorChange = useCallback(() => {
         const editorInstance = editorRef.current?.getInstance();

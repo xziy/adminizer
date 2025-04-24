@@ -10,6 +10,7 @@ export function useTableColumns(
     columnConfigs: Columns,
     onSort?: (key: string, direction: 'asc' | 'desc') => void,
     onColumnSearch?: (key: string, value: string) => void,
+    handleSearch?: () => void,
     showSearchInputs?: boolean
 ): ColumnDef<any>[] {
     return useMemo(() => {
@@ -18,7 +19,7 @@ export function useTableColumns(
             header: () => {
                 return (
                     <div
-                        className={`flex flex-col gap-1 text-center max-w-[300px] ${config.direction ? 'text-ring' : ''}`}>
+                        className={`flex flex-col gap-1 text-center max-w-[300px] ${config.direction ? 'text-chart-1' : ''}`}>
                         <Button
                             variant="ghost"
                             className="cursor-pointer hover:text-inherit"
@@ -45,9 +46,10 @@ export function useTableColumns(
                                 defaultValue={config.searchColumnValue}
                                 placeholder={`Search ${config.title}`}
                                 className="text-xs p-1 border rounded mb-2 text-foreground"
+                                onChange={(e) => {onColumnSearch(config.data, (e.target as HTMLInputElement).value);}}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        onColumnSearch(config.data, (e.target as HTMLInputElement).value);
+                                    if (e.key === 'Enter' && handleSearch) {
+                                        handleSearch()
                                     }
                                 }}
                             />

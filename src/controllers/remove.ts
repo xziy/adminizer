@@ -10,6 +10,7 @@ export default async function remove(req: ReqType, res: ResType) {
         Adminizer.log.error(new Error('Admin panel: No id for record provided'));
         return res.status(404).send({error: 'Not Found'});
     }
+    let referTo = decodeURIComponent(req.query.referTo as string)
 
     let entity = ControllerHelper.findEntityObject(req);
     if (!entity.model) {
@@ -80,6 +81,7 @@ export default async function remove(req: ReqType, res: ResType) {
         // req.session.messages.adminError.push('Record was not removed');
         req.flash.setFlashMessage('success', 'Record was not removed');
     }
-    return req.Inertia.redirect(`${entity.uri}`)
+    let referToUrl = referTo ? `${entity.uri}${referTo}` : `${entity.uri}`
+    return req.Inertia.redirect(`${referToUrl}`)
     // res.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
 };

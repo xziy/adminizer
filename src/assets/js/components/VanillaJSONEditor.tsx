@@ -9,8 +9,6 @@ import {useEffect, useRef, useState} from 'react';
 import {useAppearance} from "@/hooks/use-appearance.tsx";
 import {setFieldError} from "@/hooks/form-state.ts";
 
-
-
 export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Record<string, any>) {
     const refContainer = useRef<HTMLDivElement | null>(null);
     const refEditor = useRef<JsonEditor | null>(null);

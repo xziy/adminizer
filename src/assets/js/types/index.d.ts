@@ -1,4 +1,6 @@
 import {MenuItem} from "../../../helpers/menuHelper"
+import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
+
 
 
 export interface Auth {
@@ -57,7 +59,7 @@ declare global {
 
 export interface Field {
     label: string;
-    type: string;
+    type: PropsFieldType;
     name: string;
     tooltip?: string;
     value: FieldValue;

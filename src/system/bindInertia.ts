@@ -127,6 +127,16 @@ export function bindInertia(adminizer: Adminizer) {
             menu: req.session.UserAP ? menuHelper.getMenuItems(req) : null,
             brand: menuHelper.getBrandTitle(),
             logout: menuHelper.getLogoutUrl(),
+            section: req.session.UserAP ? [
+                {
+                    title: req.i18n.__("Adminpanel"),
+                    id: "adminpanel-0",
+                    link: req.adminizer.config.routePrefix,
+                    icon: "rocket_launch",
+                },
+                ...(req.adminizer.configHelper.getConfig().sections)
+            ] : null,
+            showVersion: req.adminizer.config.showVersion ?? false
         })
 
         next();

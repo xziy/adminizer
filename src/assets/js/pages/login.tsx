@@ -5,11 +5,12 @@ import {Icon} from "@/components/icon.tsx";
 import {Loader2, User} from "lucide-react";
 import {SharedData} from "@/types";
 import {Button} from "@/components/ui/button.tsx";
-import {FormEventHandler, useState} from "react";
+import {FormEventHandler, useEffect, useState} from "react";
 import Puzzle from 'crypto-puzzle';
 import {Toaster} from "@/components/ui/sonner.tsx";
 import {toast} from "sonner";
 import InputError from "@/components/input-error.tsx";
+import {initializeTheme} from "@/hooks/use-appearance.tsx";
 
 interface LoginProps extends SharedData {
     login: string
@@ -24,8 +25,12 @@ interface LoginProps extends SharedData {
     captchaTask: number[]
 }
 
-export default function Lodin() {
+export default function Login() {
     const [captchaProcessing, setCaptchaProcessing] = useState(false);
+
+    useEffect(() => {
+        initializeTheme()
+    }, []);
 
     const page = usePage<LoginProps>()
 
@@ -138,7 +143,7 @@ export default function Lodin() {
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <Button type="submit" className="w-fit"
+                            <Button type="submit" className="w-fit cursor-pointer"
                                     disabled={processing || captchaProcessing}>{page.props.submitButton}</Button>
                             {page.props.registerLink && <Button asChild variant="outline">
                                 <Link href={page.props.registerLink.link}
@@ -157,7 +162,7 @@ export default function Lodin() {
                                 </svg>
                             </div>
                             <div className={`${captchaProcessing ? '' : 'hidden'}`}>
-                                <Icon iconNode={Loader2} className="animate-spin size-6 absolute inset-0 m-auto"/>
+                                <Icon iconNode={Loader2} className="animate-spin size-6 absolute inset-0 m-auto !text-gray-600"/>
                             </div>
                         </div>
                         <div className="text-gray-600 font-semibold">

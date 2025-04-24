@@ -1,50 +1,42 @@
-import {Link, useForm, usePage} from "@inertiajs/react";
+import {useForm, usePage} from "@inertiajs/react";
 import {SharedData} from "@/types";
 import {FormEventHandler, useEffect} from "react";
+import {toast} from "sonner";
+import {Toaster} from "@/components/ui/sonner.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import InputError from "@/components/input-error.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {toast} from "sonner";
-import {Toaster} from "@/components/ui/sonner.tsx";
 import {initializeTheme} from "@/hooks/use-appearance.tsx";
 
-interface RegisterProps extends SharedData {
+interface InitUserProps extends SharedData {
     header: {
         title: string
         desc: string
     }
     submitLink: string
     loginLabel: string
-    fullNameLabel: string
     passwordLabel: string
     confirmPasswordLabel: string
     confirmError: string
-    emailLabel: string
     localeLabel: string
     submitButton: string
-    backToLogin: {
-        link: string
-        text: string
-    }
+    locales: string[]
+    defaultLocale: string
 }
 
-export default function Register() {
-    const page = usePage<RegisterProps>();
-
+export default function InitUser() {
+    const page = usePage<InitUserProps>()
+    const {post, data, setData, processing, setError, errors, clearErrors} = useForm({
+        locale: 'en',
+        confirmPassword: '',
+        password: '',
+        login: '',
+    })
     useEffect(() => {
         initializeTheme()
     }, []);
-
-    const {post, data, setData, processing, setError, errors, clearErrors} = useForm({
-        locale: 'en',
-        email: '',
-        confirmPassword: '',
-        password: '',
-        fullName: '',
-        login: '',
-    })
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault()
@@ -52,6 +44,7 @@ export default function Register() {
             setError('confirmPassword', page.props.confirmError)
             return
         }
+
         post(page.props.submitLink, {
             onSuccess: () => {
             },
@@ -62,12 +55,10 @@ export default function Register() {
             }
         })
     }
-
     const handleChangeDate = (fieldName: keyof typeof data, value: string) => {
         clearErrors()
         setData(fieldName, value);
     }
-
     return (
         <div className="bg-sidebar flex min-h-svh w-full justify-center items-center">
             <Toaster position="top-center" richColors closeButton/>
@@ -95,27 +86,6 @@ export default function Register() {
                                     placeholder={page.props.loginLabel}
                                 />
                                 <InputError message={errors.login}/>
-                            </div>
-                        </div>
-                        <div className="grid gap-4">
-                            <Label htmlFor="fullName">{page.props.fullNameLabel}<span
-                                className="text-red-500">*</span></Label>
-                            <div className="relative">
-                                <Input
-                                    id="fullName"
-                                    className={`${errors.fullName ? 'border-red-500' : ''}`}
-                                    type="text"
-                                    required
-                                    tabIndex={1}
-                                    autoComplete="fullName"
-                                    value={data.fullName}
-                                    disabled={processing}
-                                    onChange={(e) => {
-                                        handleChangeDate('fullName', e.target.value)
-                                    }}
-                                    placeholder={page.props.fullNameLabel}
-                                />
-                                <InputError message={errors.fullName}/>
                             </div>
                         </div>
                         <div className="grid gap-4">
@@ -161,49 +131,26 @@ export default function Register() {
                             </div>
                         </div>
                         <div className="grid gap-4">
-                            <Label htmlFor="email">{page.props.emailLabel}<span
-                                className="text-red-500">*</span></Label>
-                            <div className="relative">
-                                <Input
-                                    id="email"
-                                    className={`${errors.email ? 'border-red-500' : ''}`}
-                                    type="email"
-                                    required
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    value={data.email}
-                                    disabled={processing}
-                                    onChange={(e) => {
-                                        handleChangeDate('email', e.target.value)
-                                    }}
-                                    placeholder={page.props.emailLabel}
-                                />
-                                <InputError message={errors.email}/>
-                            </div>
-                        </div>
-                        <div className="grid gap-4">
                             <Label htmlFor="locale">{page.props.localeLabel}</Label>
                             <Select onValueChange={(value) => handleChangeDate('locale', value)}
-                                    defaultValue="en" disabled={processing}>
+                                    defaultValue={page.props.defaultLocale} disabled={processing}>
                                 <SelectTrigger className="w-full cursor-pointer">
                                     <SelectValue placeholder={page.props.localeLabel}/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="en">EN</SelectItem>
+                                    {page.props.locales.map((locale) => (
+                                        <SelectItem key={locale} value={locale}>{locale.toLocaleUpperCase()}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="flex gap-4">
                             <Button type="submit" className="w-fit cursor-pointer"
                                     disabled={processing}>{page.props.submitButton}</Button>
-                            <Button asChild variant="outline">
-                                <Link href={page.props.backToLogin.link}
-                                      className={`${processing} ? 'pointer-events-none opacity-50' : ''`}>{page.props.backToLogin.text}</Link>
-                            </Button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 }

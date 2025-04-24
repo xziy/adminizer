@@ -1,16 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import Form from "@/components/form.tsx";
 
-const breadcrumbs: BreadcrumbItem[] = [
+const breadcrumbs: BreadcrumbItem[] = [];
 
-];
-
-export default function Form() {
+export default function FormWrapper() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                Form
-            </div>
+            <Form />
         </AppLayout>
     );
 }

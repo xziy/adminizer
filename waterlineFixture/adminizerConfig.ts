@@ -229,6 +229,26 @@ const models: AdminpanelConfig["models"] = {
                         link: '#',
                         title: 'Google',
                         icon: 'insert_link'
+                    }, {
+                        id: "2",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "3",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "4",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "5",
+                        link: '#',
+                        title: 'Google',
+                        icon: 'insert_link'
                     },
                 ],
                 inline: [
@@ -325,7 +345,7 @@ const config: AdminpanelConfig = {
     //     defaultUserGroup: "test",
     //     confirmationRequired: false
     // },
-    dashboard: true,
+    dashboard: false,
     forms: {
         path: 'forms',
         data: {
@@ -335,8 +355,17 @@ const config: AdminpanelConfig = {
                     type: 'string',
                     value: 'Some string',
                     required: true,
-                    tooltip: 'tooltip for field1',
-                    description: 'some description'
+                },
+                field2: {
+                    title: 'Field2',
+                    type: 'text',
+                    value: 'Some text',
+                    required: true,
+                    tooltip: 'tooltip for field2',
+                },
+                json: {
+                    title: 'Json',
+                    type: 'jsoneditor'
                 },
             }
         }
@@ -446,7 +475,8 @@ const config: AdminpanelConfig = {
     migrations: {
         path: 'mg_path', // path to migrations
         //config: string | object // db-migrate config
-    }
+    },
+    showVersion: true,
 };
 
 export default config
