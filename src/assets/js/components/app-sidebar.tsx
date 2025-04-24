@@ -52,16 +52,18 @@ export function AppSidebar() {
                             <MenubarMenu>
                                 <MenubarTrigger asChild
                                                 className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md">
-                                    <Button variant="ghost" asChild className="cursor-pointer w-full">
-                                        <div>
-                                            <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
-                                            <span>{page.props.brand}</span>
-                                            <ChevronsUpDown className="ml-auto"/>
-                                        </div>
-                                    </Button>
+                                    <SidebarMenuButton asChild>
+                                        <Button variant="ghost" asChild className="cursor-pointer w-full">
+                                            <div>
+                                                <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
+                                                <span className="group-data-[state=collapsed]:hidden">{page.props.brand}</span>
+                                                <ChevronsUpDown className="ml-auto group-data-[state=collapsed]:hidden"/>
+                                            </div>
+                                        </Button>
+                                    </SidebarMenuButton>
                                 </MenubarTrigger>
                                 <MenubarContent side="right" className="z-[1003]">
-                                    {page.props.section.map((itemSection) => (
+                                    {page.props.section && page.props.section.map((itemSection) => (
                                         <div key={itemSection.id}>
                                             {itemSection.subItems ?
                                                 <MenubarSub>
@@ -88,7 +90,8 @@ export function AppSidebar() {
                                                 <MenubarItem>
                                                     <Link href={itemSection.link}
                                                           className="flex gap-2 items-center">
-                                                        <MaterialIcon name={itemSection.icon} className="!text-[18px]"/>
+                                                        <MaterialIcon name={itemSection.icon}
+                                                                      className="!text-[18px]"/>
                                                         <span className="hover:underline">{itemSection.title}</span>
                                                     </Link>
                                                 </MenubarItem>}
@@ -116,7 +119,7 @@ export function AppSidebar() {
                                         </CollapsibleTrigger>
                                         <CollapsibleContent>
                                             <SidebarMenuSub>
-                                                {page.props.section.map((itemSection) => (
+                                                {page.props.section && page.props.section.map((itemSection) => (
                                                     itemSection.subItems ? (
                                                         <SidebarMenu key={itemSection.id}>
                                                             <Collapsible
@@ -137,7 +140,8 @@ export function AppSidebar() {
                                                                     <CollapsibleContent>
                                                                         <SidebarMenuSub>
                                                                             {itemSection.subItems.map((subIten) => (
-                                                                                <SidebarMenuSubItem key={subIten.id}>
+                                                                                <SidebarMenuSubItem
+                                                                                    key={subIten.id}>
                                                                                     <SidebarMenuSubButton asChild>
                                                                                         <Link href={subIten.link}
                                                                                               className="flex gap-2 items-center">

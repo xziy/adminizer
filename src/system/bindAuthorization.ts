@@ -73,7 +73,8 @@ export default async function bindAuthorization(adminizer: Adminizer) {
         if (adminizer.config.auth) {
             Adminizer.log.debug(`Adminpanel does not have an administrator`)
             adminizer.config.policies.push(initUserPolicy)
-            adminizer.app.use('/init_user', _initUser);
+            //@ts-ignore
+            adminizer.app.use(`${adminizer.config.routePrefix}/init_user`, _initUser);
         }
     }
 

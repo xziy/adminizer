@@ -35,3 +35,21 @@ export function inertiaRegisterHelper(req: ReqType) {
     }
     return props
 }
+
+export function inertiaInitUserHelper(req: ReqType) {
+    let props: Record<string, unknown> = {};
+    props.submitLink = `${req.adminizer.config.routePrefix}/init_user`
+    props.header = {
+        title: req.i18n.__("Welcome"),
+        desc: req.i18n.__("Create a new administrator")
+    }
+    props.loginLabel = req.i18n.__("Login");
+    props.passwordLabel = req.i18n.__("Password");
+    props.confirmPasswordLabel = req.i18n.__("Confirm Password");
+    props.confirmError = req.i18n.__("Passwords do not match!");
+    props.localeLabel = req.i18n.__("Locale");
+    props.submitButton = req.i18n.__("Create");
+    props.locales = req.adminizer.config?.translation ? req.adminizer.config.translation.locales: ['en'];
+    props.defaultLocale = req.adminizer.config?.translation ? req.adminizer.config.translation.defaultLocale: 'en';
+    return props
+}

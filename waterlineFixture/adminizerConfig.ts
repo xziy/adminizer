@@ -345,7 +345,7 @@ const config: AdminpanelConfig = {
     //     defaultUserGroup: "test",
     //     confirmationRequired: false
     // },
-    dashboard: true,
+    dashboard: false,
     forms: {
         path: 'forms',
         data: {

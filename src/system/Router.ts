@@ -177,7 +177,7 @@ export default class Router {
 		if (Boolean(adminizer.config.dashboard)) {
 			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _dashboard));
 		} else {
-			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _welcome));
+			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _welcome));
 		}
 		// TODO emit can be used in tests
 		adminizer.emitter.emit("router:bound");

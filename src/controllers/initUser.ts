@@ -1,5 +1,6 @@
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
+import {inertiaInitUserHelper} from "../helpers/inertiaAutHelper";
 
 export default async function initUser(req: ReqType, res: ResType) {
     if (!req.adminizer.config.auth) {
@@ -13,15 +14,22 @@ export default async function initUser(req: ReqType, res: ResType) {
     }
 
     if (req.method.toUpperCase() === "POST") {
-        let login = req.params.login;
-        let locale = req.params.locale;
-        let password = req.params.password;
-        let confirm_password = req.params.confirm_password;
+        let login = req.body.login;
+        let locale = req.body.locale;
+        let password = req.body.password;
 
-        Adminizer.log.debug(login, password, confirm_password, 123)
-        if (password !== confirm_password) {
-            req.session.messages.adminError.push("Password mismatch");
-            return res.viewAdmin("init_user");
+        for (const key of ["login", "password", "confirmPassword"]) {
+            if (!req.body[key]) {
+                let errors: Record<string, string> = {};
+                errors[key] = "Missing required parameters";
+                return req.Inertia.render({
+                    component: "init-user",
+                    props: {
+                        errors: errors,
+                        ...inertiaInitUserHelper(req)
+                    }
+                })
+            }
         }
 
         try {
@@ -42,14 +50,24 @@ export default async function initUser(req: ReqType, res: ResType) {
             );
         } catch (e) {
             Adminizer.log.error("Could not create administrator profile", e)
-            req.session.messages.adminError.push("Could not create administrator profile");
-            return res.viewAdmin("init_user");
+            return req.Inertia.render({
+                component: "init-user",
+                props: {
+                    errors: {
+                        login: "Could not create administrator profile"
+                    },
+                    ...inertiaInitUserHelper(req)
+                }
+            })
         }
 
-        return res.redirect(`${req.adminizer.config.routePrefix}/`);
+        return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`)
     }
 
     if (req.method.toUpperCase() === "GET") {
-        return res.viewAdmin("init_user");
+        return req.Inertia.render({
+            component: "init-user",
+            props: inertiaInitUserHelper(req)
+        })
     }
 };

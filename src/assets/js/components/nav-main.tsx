@@ -35,7 +35,7 @@ export function NavMain({items = []}: { items: NavItem[] }) {
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) => (
+                {items && items.map((item) => (
                     item.actions?.length > 0 ? (
                         <Collapsible
                             key={item.title}
