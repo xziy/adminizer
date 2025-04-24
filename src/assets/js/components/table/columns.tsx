@@ -19,7 +19,7 @@ export function useTableColumns(
             header: () => {
                 return (
                     <div
-                        className={`flex flex-col gap-1 text-center max-w-[300px] ${config.direction ? 'text-ring' : ''}`}>
+                        className={`flex flex-col gap-1 text-center max-w-[300px] ${config.direction ? 'text-chart-1' : ''}`}>
                         <Button
                             variant="ghost"
                             className="cursor-pointer hover:text-inherit"

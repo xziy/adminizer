@@ -475,7 +475,8 @@ const config: AdminpanelConfig = {
     migrations: {
         path: 'mg_path', // path to migrations
         //config: string | object // db-migrate config
-    }
+    },
+    showVersion: true,
 };
 
 export default config

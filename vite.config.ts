@@ -2,6 +2,7 @@ import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
+import packageJson from './package.json';
 
 const ReactConfig = {
     babel: {
@@ -13,6 +14,9 @@ const ReactConfig = {
 
 
 export default defineConfig({
+    define: {
+        '__APP_VERSION__': JSON.stringify(packageJson.version),
+    },
     base: './',
     build: {
         outDir: path.resolve(import.meta.dirname, 'dist/assets'), // Output directory for the build

@@ -1,20 +1,31 @@
-// import { NavFooter } from '@/components/nav-footer';
 import {NavMain} from '@/components/nav-main';
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
+    SidebarFooter, SidebarGroup,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuItem
+    SidebarMenu, SidebarMenuButton,
+    SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem
 } from '@/components/ui/sidebar';
 import {type SharedData} from '@/types';
 import {Link, usePage} from '@inertiajs/react';
 import MaterialIcon from "@/components/material-icon.tsx";
-import {DropdownMenuContent, DropdownMenuGroup, DropdownMenuTrigger} from "@/components/ui/dropdown-menu.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {ChevronRight, ChevronsUpDown} from "lucide-react";
-import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
+import {
+    Menubar,
+    MenubarContent,
+    MenubarItem,
+    MenubarMenu,
+    MenubarSub,
+    MenubarSubContent,
+    MenubarSubTrigger,
+    MenubarTrigger,
+} from "@/components/ui/menubar"
+import {Collapsible, CollapsibleContent} from "@radix-ui/react-collapsible";
+import {CollapsibleTrigger} from "@/components/ui/collapsible.tsx";
+
+declare const __APP_VERSION__: string;
 
 type Section = {
     id: string
@@ -22,10 +33,12 @@ type Section = {
     link: string
     icon: string
     subItems?: Section[]
+
 }
 
 interface MenuProps extends SharedData {
     section: Section[]
+    showVersion?: boolean
 }
 
 export function AppSidebar() {
@@ -35,57 +48,133 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem key={page.props.brand}>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" asChild className="cursor-pointer w-full">
-                                    <div>
-                                        <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
-                                        <span>{page.props.brand}</span>
-                                        <ChevronsUpDown className="ml-auto"/>
-                                    </div>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-fit" side="right" align="start">
-                                <DropdownMenuGroup className="grid gap-2">
+                        <Menubar className="p-0 shadow-none border-none bg-transparent hidden md:block">
+                            <MenubarMenu>
+                                <MenubarTrigger asChild
+                                                className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md">
+                                    <Button variant="ghost" asChild className="cursor-pointer w-full">
+                                        <div>
+                                            <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
+                                            <span>{page.props.brand}</span>
+                                            <ChevronsUpDown className="ml-auto"/>
+                                        </div>
+                                    </Button>
+                                </MenubarTrigger>
+                                <MenubarContent side="right" className="z-[1003]">
                                     {page.props.section.map((itemSection) => (
-                                        <div key={itemSection.id} className="px-2 space-y-2">
+                                        <div key={itemSection.id}>
                                             {itemSection.subItems ?
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Link href={itemSection.link} onClick={(e) => {
-                                                            e.preventDefault()
-                                                        }}
-                                                              className="flex gap-2 items-center">
-                                                            <MaterialIcon name={itemSection.icon}
-                                                                          className="!text-[18px]"/>
-                                                            <span className="hover:underline">{itemSection.title}</span>
-                                                            <ChevronRight className="ml-auto size-4"/>
-                                                        </Link>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="w-fit" side="right" align="start">
-                                                        <DropdownMenuGroup className="grid gap-2">
-                                                            {itemSection.subItems.map((subItem) => (
+                                                <MenubarSub>
+                                                    <MenubarSubTrigger
+                                                        className="flex gap-2 items-center cursor-pointer">
+                                                        <MaterialIcon name={itemSection.icon}
+                                                                      className="!text-[18px]"/>
+                                                        <span className="hover:underline">{itemSection.title}</span>
+                                                    </MenubarSubTrigger>
+                                                    <MenubarSubContent>
+                                                        {itemSection.subItems.map((subItem) => (
+                                                            <MenubarItem key={subItem.id}>
                                                                 <Link href={subItem.link} key={subItem.id}
                                                                       className="flex gap-2 items-center">
-                                                                    <MaterialIcon name={subItem.icon} className="!text-[18px]"/>
-                                                                    <span className="hover:underline">{subItem.title}</span>
+                                                                    <MaterialIcon name={subItem.icon}
+                                                                                  className="!text-[18px]"/>
+                                                                    <span
+                                                                        className="hover:underline">{subItem.title}</span>
                                                                 </Link>
-                                                            ))}
-                                                        </DropdownMenuGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                                :
-                                                <Link href={itemSection.link}
-                                                      className="flex gap-2 items-center">
-                                                    <MaterialIcon name={itemSection.icon} className="!text-[18px]"/>
-                                                    <span className="hover:underline">{itemSection.title}</span>
-                                                </Link>
-                                            }
+                                                            </MenubarItem>
+                                                        ))}
+                                                    </MenubarSubContent>
+                                                </MenubarSub> :
+                                                <MenubarItem>
+                                                    <Link href={itemSection.link}
+                                                          className="flex gap-2 items-center">
+                                                        <MaterialIcon name={itemSection.icon} className="!text-[18px]"/>
+                                                        <span className="hover:underline">{itemSection.title}</span>
+                                                    </Link>
+                                                </MenubarItem>}
                                         </div>
-                                    )) || null}
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    ))}
+                                </MenubarContent>
+                            </MenubarMenu>
+                        </Menubar>
+                        {/*mobile menu*/}
+                        <SidebarGroup className="px-2 py-0 block md:hidden">
+                            <SidebarMenu>
+                                <Collapsible
+                                    asChild
+                                    className="group/collapsible"
+                                >
+                                    <SidebarMenuItem>
+                                        <CollapsibleTrigger asChild>
+                                            <SidebarMenuButton>
+                                                <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
+                                                <span
+                                                    className="overflow-hidden text-ellipsis whitespace-nowrap">{page.props.brand}</span>
+                                                <ChevronRight
+                                                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                                            </SidebarMenuButton>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            <SidebarMenuSub>
+                                                {page.props.section.map((itemSection) => (
+                                                    itemSection.subItems ? (
+                                                        <SidebarMenu key={itemSection.id}>
+                                                            <Collapsible
+                                                                asChild
+                                                                className="group/collapsible-sub"
+                                                            >
+                                                                <SidebarMenuItem>
+                                                                    <CollapsibleTrigger asChild>
+                                                                        <SidebarMenuButton>
+                                                                            <MaterialIcon name={itemSection.icon}
+                                                                                          className="!text-[18px]"/>
+                                                                            <span
+                                                                                className="overflow-hidden text-ellipsis whitespace-nowrap">{itemSection.title}</span>
+                                                                            <ChevronRight
+                                                                                className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible-sub:rotate-90"/>
+                                                                        </SidebarMenuButton>
+                                                                    </CollapsibleTrigger>
+                                                                    <CollapsibleContent>
+                                                                        <SidebarMenuSub>
+                                                                            {itemSection.subItems.map((subIten) => (
+                                                                                <SidebarMenuSubItem key={subIten.id}>
+                                                                                    <SidebarMenuSubButton asChild>
+                                                                                        <Link href={subIten.link}
+                                                                                              className="flex gap-2 items-center">
+                                                                                            <MaterialIcon
+                                                                                                name={subIten.icon}
+                                                                                                className="!text-[18px]"/>
+                                                                                            <span
+                                                                                                className="hover:underline">{subIten.title}</span>
+                                                                                        </Link>
+                                                                                    </SidebarMenuSubButton>
+                                                                                </SidebarMenuSubItem>
+                                                                            ))}
+                                                                        </SidebarMenuSub>
+                                                                    </CollapsibleContent>
+                                                                </SidebarMenuItem>
+                                                            </Collapsible>
+                                                        </SidebarMenu>
+                                                    ) : (
+                                                        <SidebarMenuSubItem key={itemSection.id}>
+                                                            <SidebarMenuSubButton asChild>
+                                                                <Link href={itemSection.link}
+                                                                      className="flex gap-2 items-center">
+                                                                    <MaterialIcon name={itemSection.icon}
+                                                                                  className="!text-[18px]"/>
+                                                                    <span
+                                                                        className="hover:underline">{itemSection.title}</span>
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                    )
+                                                ))}
+                                            </SidebarMenuSub>
+                                        </CollapsibleContent>
+                                    </SidebarMenuItem>
+                                </Collapsible>
+                            </SidebarMenu>
+                        </SidebarGroup>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
@@ -95,7 +184,9 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                {/*<NavFooter items={footerNavItems} className="mt-auto" />*/}
+                <div className="text-center opacity-70">
+                    {page.props.showVersion && `v.${__APP_VERSION__}`}
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

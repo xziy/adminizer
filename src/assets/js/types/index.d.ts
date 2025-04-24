@@ -1,6 +1,8 @@
 import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
 
+
+
 export interface Auth {
     user: User;
 }

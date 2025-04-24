@@ -136,6 +136,7 @@ export function bindInertia(adminizer: Adminizer) {
                 },
                 ...(req.adminizer.configHelper.getConfig().sections)
             ] : null,
+            showVersion: req.adminizer.config.showVersion ?? false
         })
 
         next();

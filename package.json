@@ -26,6 +26,7 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@radix-ui/react-menubar": "^1.1.12",
 		"body-parser": "^1.20.3",
 		"chalk": "^5.4.1",
 		"cmdk": "^1.1.1",
