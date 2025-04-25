@@ -16,8 +16,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= __("Install Stepper") %></title>
 
-    <link rel="stylesheet" href="<%- config.routePrefix %>/assets/style/style.min.css"/>
-    <script src="<%- config.routePrefix %>/assets/js/vue-installStepper.js"></script>
+    <link rel="stylesheet" href="<%- viteRender('src/assets/styles/style.css') %>">
+    <script type="module" src="<%- viteRender('src/assets/js/jsonForms/json-forms.js') %>"></script>
 
     <!--TODO: load from local bundle-->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

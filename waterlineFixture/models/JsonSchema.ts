@@ -7,7 +7,8 @@ const JsonSchema = Waterline.Collection.extend({
 	attributes: {
 		// @ts-ignore
 		id: { type: "number", autoMigrations: { autoIncrement: true } },
-		data: { type: "json" }
+		data: { type: "json" },
+		data2: { type: "json" },
 	}
 });
 

@@ -1,0 +1,5 @@
+{
+	"watch": ["dist", "waterlineFixture"],
+	"ext": "js, ts",
+	"ignore": ["dist/assets/**/*.*", "dist/migrations/**/*.*"]
+}

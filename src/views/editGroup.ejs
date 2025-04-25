@@ -4,14 +4,14 @@
     <div class="flex gap-3">
         <a href="<%= entity.uri %>/">
             <button class="btn btn-back">
-                <i class="las la-long-arrow-alt-left"></i>
+                <span class="material-icons-outlined">arrow_back</span>
                 <%= __("Back") %>
             </button>
         </a>
         <a href="<%= entity.uri %>/remove/<%= group.id %>" onclick="return confirm('<%= __('Are you sure?') %>')">
             <button class="btn btn-red">
                 <%= __("Delete") %>
-                <i class="las la-trash-alt"></i>
+                <span class="material-icons-outlined">delete</span>
             </button>
         </a>
     </div>
@@ -68,9 +68,9 @@
                             <div class="flex gap-3">
                                 <label class="admin-panel__title"
                                        for="token-checkbox-<%= token.id %>"><%= token.name %></label>
-                                <div class="tooltip tooltip-right group cursor-pointer">
-                                    <i class="las la-info-circle"></i>
-                                    <div class="tooltip__content group-hover:visible group-hover:opacity-100">
+                                <div class="tooltip tooltip-right group cursor-pointer flex items-center">
+                                    <span class="material-icons-outlined"> info </span>
+                                    <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                                         <span><%= token.description %></span>
                                     </div>
                                 </div>

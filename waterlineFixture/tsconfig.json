@@ -1,33 +1,32 @@
-// TODO WARNING!!! this config DOES NOT WORK properly
-
 {
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "sourceMap": false,
-    "declaration": true,
-    "removeComments": false,
-    "skipLibCheck": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "alwaysStrict": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "lib": ["dom", "esnext"],
-    "outDir": "."
-  },
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  },
-  "lib": ["esnext"],
-  "exclude": [
-    "node_modules",
-    "src"
-  ],
-  "include": [
-    "**/*.ts"
-  ]
+	"compilerOptions": {
+		"module": "ESNext",
+		"target": "ESNext",
+		"moduleResolution": "Node",
+		"esModuleInterop": true,
+		"sourceMap": false,
+		"declaration": true,
+		"removeComments": false,
+		"skipLibCheck": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"alwaysStrict": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"lib": [
+			"dom",
+			"esnext"
+		]
+	},
+	"lib": [
+		"esnext"
+	],
+	"exclude": [
+		"node_modules",
+		"src"
+	],
+	"include": [
+		"./**/*.ts",
+		"../dist/**/*.d.ts"
+	]
 }

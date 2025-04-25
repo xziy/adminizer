@@ -2,15 +2,10 @@ import { Adminizer } from "../lib/Adminizer";
 import {NextFunction, Request, Response} from "express";
 import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
+import {Inertia} from "../lib/inertia/inertiaAdapter";
+import {Flash} from "../lib/inertia/flash";
 
-type reqSession = {
-	UserAP: ModelsAP["UserAP"]
-	messages: {
-		adminError: string[],
-		adminSuccess: string[]
-	}
-	adminPretender?: ModelsAP["UserAP"]
-}
+
 
 declare global {
 	type ModelsAP = {
@@ -79,8 +74,21 @@ declare global {
 			isConfirmed?: boolean
 		}
 	}
+    type reqSession = {
+        flashMessages: Record<string, string[]>;
+        xInertiaCurrentComponent: string | undefined;
+        UserAP: ModelsAP["UserAP"]
+        messages: {
+            adminError: string[],
+            adminSuccess: string[]
+        }
+        adminPretender?: ModelsAP["UserAP"]
+    }
+    type FlashMessages = 'info' | 'error' | 'success' | string;
 
 	type ReqType = Request & {
+        Inertia: Inertia;
+        flash: Flash<FlashMessages>;
 		session: reqSession,
 		_parsedUrl: {
 			pathname: string

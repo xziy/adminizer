@@ -5,6 +5,7 @@ import {BaseFieldConfig, CreateUpdateConfig} from "../interfaces/adminpanelConfi
 import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
+import inertiaAddHelper from "../helpers/inertiaAddHelper";
 
 export default async function add(req: ReqType, res: ResType) {
 	let entity = ControllerHelper.findEntityObject(req);
@@ -14,12 +15,12 @@ export default async function add(req: ReqType, res: ResType) {
 	}
 
 	if (!entity.config?.add) {
-		return res.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
+		return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/${entity.uri}`);
 	}
 
 	if (req.adminizer.config.auth) {
 		if (!req.session.UserAP) {
-			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+			return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 		} else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
 			return res.sendStatus(403);
 		}
@@ -52,9 +53,6 @@ export default async function add(req: ReqType, res: ResType) {
 			}
 
 			let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
-			if (fieldConfigConfig.type === 'select-many') {
-				reqData[prop] = reqData[prop].split(",")
-			}
 
 			if (fields[prop] && fields[prop].model && fields[prop].model.type === 'json' && reqData[prop] !== '') {
 				try {
@@ -78,9 +76,13 @@ export default async function add(req: ReqType, res: ResType) {
 
 			// delete property from association-many and association if empty
 			if (fields[prop] && fields[prop].model && (fields[prop].model.type === 'association-many' || fields[prop].model.type === 'association')) {
-				if (!reqData[prop]) {
+				if (!reqData[prop] || !reqData[prop].length) {
 					delete reqData[prop];
-				}
+				} else{
+                    if (fields[prop].model.type === 'association') {
+                        reqData[prop] = (reqData[prop] as string[])[0]
+                    }
+                }
 			}
 
 			// split string for association-many
@@ -110,8 +112,11 @@ export default async function add(req: ReqType, res: ResType) {
 			if (req.body.jsonPopupCatalog) {
 				return res.json({record: record})
 			} else {
-				req.session.messages.adminSuccess.push('Your record was created !');
-				return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+				// req.session.messages.adminSuccess.push('Your record was created !');
+				// return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
+
+                req.flash.setFlashMessage('success', 'Your record was created !');
+                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
 			}
 		} catch (e) {
 			Adminizer.log.error(e);
@@ -126,10 +131,21 @@ export default async function add(req: ReqType, res: ResType) {
 			data: data
 		});
 	} else {
-		return res.viewAdmin(null,{
-			entity: entity,
-			fields: fields,
-			data: data
-		});
+		// return res.viewAdmin(null,{
+		// 	entity: entity,
+		// 	fields: fields,
+		// 	data: data
+		// });
+
+        // const sleep = (ms: number) => {
+        //     return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+        // await sleep(2000);
+
+        const props = inertiaAddHelper(req, entity, fields)
+        return req.Inertia.render({
+            component: 'add',
+            props: props
+        })
 	}
 };

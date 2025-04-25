@@ -44,7 +44,7 @@ export default async function processInstallStep(req: ReqType, res: ResType): Pr
 	if (req.method.toUpperCase() === 'POST') {
 
 		try {
-			Adminizer.log.debug("POST REQUEST TO PROCESS INSTALL STEP", req.body)
+			Adminizer.log.debug("POST REQUEST TO PROCESS INSTALL STEP", JSON.stringify(req.body, null, 2))
 			let installStepper = InstallStepper.getStepper(req.params.id);
 
 			const currentStepId = req.body.currentStepId;

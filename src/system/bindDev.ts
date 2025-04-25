@@ -8,7 +8,7 @@ export default function bindDev(adminizer: Adminizer) {
         adminizer.config.models[`dev-${modelName}`] = {
           title: `dev-${modelName}`,
           model: modelName,
-          icon: "cube"
+          icon: "view_in_ar"
         };
       }
     });

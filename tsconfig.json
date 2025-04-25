@@ -1,27 +1,26 @@
 {
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "sourceMap": false,
-    "declaration": true,
-    "removeComments": false,
-    "skipLibCheck": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    // "strict": true,
-    "alwaysStrict": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "lib": ["dom", "esnext"],
-    "outDir": "dist"
-  },
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  },
-  "lib": ["esnext"],
-  "exclude": ["node_modules"],
-  "include": ["src/**/*.ts"]
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/assets/js/*"]
+		}
+	},
+	"exclude": [
+		"node_modules",
+	]
 }

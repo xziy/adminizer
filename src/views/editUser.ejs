@@ -1,10 +1,11 @@
 <%- include("head") %>
 <%- include("headContent") %>
+<script type="module" src="<%- viteRender('src/assets/js/controls.js') %>"></script>
 <div class="content__body">
     <div class="flex gap-3">
         <a href="<%= entity.uri %>/">
             <button class="btn btn-back">
-                <i class="las la-long-arrow-alt-left"></i>
+                <span class="material-icons-outlined">arrow_back</span>
                 <%= __("Back") %>
             </button>
         </a>
@@ -12,7 +13,7 @@
            onclick="return confirm('<%= __('Are you sure?') %>')">
             <button class="btn btn-red">
                 <%= __("Delete") %>
-                <i class="las la-trash-alt"></i>
+                <span class="material-icons-outlined">delete</span>
             </button>
         </a>
     </div>
@@ -118,24 +119,23 @@
             <% if (req.session.UserAP.isAdministrator && !user.isAdministrator) { %>
                 <div class="flex flex-col gap-3">
                     <div class="widget_narrow">
-                        <a href="#" onclick="pretendByUser()"><i
-                                    class="las la-mask"></i> <%= __("Pretend to be a user") %></a>
+                        <a href="#" onclick="pretendByUser()"><span class="material-icons-outlined"> masks </span> <%= __("Pretend to be a user") %></a>
                     </div>
                 </div>
             <% } %>
             <div class="flex flex-col gap-3">
-                <div class="admin-panel__wrapper-title">
+                <div class="admin-panel__wrapper-title flex items-center">
                     <label class="admin-panel__title text-2xl"><%= __("Password") %></label>
-                    <div class="tooltip tooltip-right group cursor-pointer">
-                        <i class="las la-info-circle text-blue-400 text-2xl"></i>
-                        <div class="tooltip__content group-hover:visible group-hover:opacity-100">
+                    <div class="tooltip tooltip-right group cursor-pointer flex items-center">
+                        <span class="material-icons-outlined text-blue-400"> info </span>
+                        <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                             <span><%= __("Leave this field empty if you don't want to change the password") %></span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="admin-panel__wrapper-title">
+                <div class="admin-panel__wrapper-title flex items-center">
                     <label class="admin-panel__title"><%= __("Password") %></label>
                 </div>
                 <div class="widget_narrow">
@@ -144,7 +144,7 @@
                 </div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="admin-panel__wrapper-title">
+                <div class="admin-panel__wrapper-title flex items-center">
                     <label class="admin-panel__title"><%= __("Repeat password") %></label>
                 </div>
                 <div class="widget_narrow">

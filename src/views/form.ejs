@@ -1,11 +1,11 @@
 <%- include("head") %>
-<% var entity = {uri: '<%- config.routePrefix %>/form/' + slug, config: {model: false}} %>
+<% var entity = {uri: config.routePrefix + '/form/' + slug, config: {model: false}} %>
 <%- include("headContent", {entity: entity}) %>
 <div class="content__body">
     <div class="flex gap-3">
         <a href="<%- config.routePrefix %>">
             <button class="btn btn-back">
-                <i class="las la-long-arrow-alt-left"></i>
+                <span class="material-icons-outlined">arrow_back</span>
                 <%= __("Back") %>
             </button>
         </a>
@@ -21,12 +21,12 @@
         <div class="mt-14 flex flex-col gap-10 max-w-[1144px]">
             <% Object.keys(formData).forEach(function(key) { %>
                 <div class="flex flex-col gap-3">
-                    <div class="admin-panel__wrapper-title">
+                    <div class="admin-panel__wrapper-title flex items-center">
                         <label class="admin-panel__title" for="form-<%= key %>"><%= formData[key].title %></label>
                         <% if(formData[key].tooltip) { %>
-                            <div class="tooltip tooltip-right group cursor-pointer">
-                                <i class="las la-info-circle text-blue-400"></i>
-                                <div class="tooltip__content group-hover:visible group-hover:opacity-100">
+                            <div class="tooltip tooltip-right group cursor-pointer flex items-center">
+                                <span class="material-icons-outlined text-blue-400">info</span>
+                                <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                                     <span><%= formData[key].tooltip %></span>
                                 </div>
                             </div>

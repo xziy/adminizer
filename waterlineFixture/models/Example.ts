@@ -6,12 +6,29 @@ const Example = Waterline.Collection.extend({
 	primaryKey: "id",
 	attributes: {
 		// @ts-ignore
-		id: { type: "number", autoMigrations: { autoIncrement: true }, primaryKey: true },
+		id: { type: "number", autoMigrations: { autoIncrement: true } },
 		title: { type: "string" },
-		owner: { model: "test" },
-		gallery: { type: "json" },
-		files: { type: "json" }
-	}
+        description: { type: "string"},
+        sort: { type: "boolean" },
+        time: { type: "string" },
+        number: { type: "number" },
+        color: { type: "string" },
+        range: { type: "string" },
+        date: { type: "string" },
+        month: { type: "string" },
+        week: { type: "string" },
+        code: { type: "string" },
+        editor: { type: "string" },
+        selectMany: { type: "json" },
+        select: { type: "string" },
+        testRelation: { model: "example" },
+        tui: { type: "string" },
+        datatable: { type: "json" },
+        json: { type: "json" },
+        tests: { collection: "test", via: "owner" },
+        datetime: { type: "string" },
+        geojson: { type: "json" },
+    }
 });
 
 export default Example;
