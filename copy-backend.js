@@ -13,7 +13,7 @@ const CONFIG = {
 function cleanTargetDirectory() {
     try {
         if (shell.test('-d', CONFIG.targetDir)) {
-            shell.rm('-rf', path.join(CONFIG.targetDir, '*'));
+            shell.rm('-rf', `${CONFIG.targetDir}/*`);
             console.log(chalk.yellow('Target directory cleaned successfully'));
         } else {
             console.log(chalk.yellow('Target directory does not exist, skipping cleanup'));

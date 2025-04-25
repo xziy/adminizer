@@ -82,8 +82,6 @@ export default async function editGroup(req: ReqType, res: ResType) {
             });
             Adminizer.log.debug(`Group was updated: `, updatedGroup);
 
-            // req.session.messages.adminSuccess.push('Group was updated !');
-
             req.flash.setFlashMessage('success', 'Group was updated !');
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/groupap`)
 
@@ -115,7 +113,6 @@ export default async function editGroup(req: ReqType, res: ResType) {
 
     // console.log("GROUP", group)
 
-    // return res.viewAdmin("editGroup", {entity: entity, group: group, users: users, groupedTokens: groupedTokens});
     const props = inertiaGroupHelper(entity, req, users, groupedTokens, group)
     return req.Inertia.render({
         component: 'add-group',
