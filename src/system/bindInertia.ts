@@ -108,6 +108,11 @@ export function bindInertia(adminizer: Adminizer) {
             flashMessages: (req: ReqType) => {
                 return req.flash.flashAll();
             },
+            csrf: {
+                enabled: true,
+                cookieName: 'XSRF-TOKEN',
+                headerName: 'x-xsrf-token'
+            },
         })
     );
 

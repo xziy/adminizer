@@ -1,4 +1,5 @@
 import {RequestHandler, Response, Request} from 'express';
+import { randomBytes } from 'crypto';
 
 type props = Record<string | number | symbol, unknown>;
 
@@ -7,6 +8,11 @@ export type Options = {
     readonly version: string;
     readonly html: (page: Page, viewData: props) => string;
     readonly flashMessages?: (req: Request) => props;
+    readonly csrf?: {
+        enabled: boolean;
+        cookieName?: string;
+        headerName?: string;
+    };
 };
 
 export type Page = {
@@ -38,8 +44,33 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
         html,
         flashMessages,
         enableReload = false,
+        csrf = { enabled: false }, // by default disabled
     }) {
     return (req: ReqType, res, next) => {
+
+        if (csrf.enabled) {
+            const csrfToken = randomBytes(32).toString('hex');
+
+            res.cookie('XSRF-TOKEN', csrfToken, {
+                httpOnly: false,
+                secure: true,
+                sameSite: 'lax',
+            });
+
+            // Check CSRF token for non-GET requests
+            if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+                const csrfCookie = req.cookies['XSRF-TOKEN'];
+                const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
+
+                // console.log('headers:', req.headers['x-xsrf-token']);
+
+                if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+                    res.status(403).json({ message: 'Invalid CSRF token' });
+                    return
+                }
+            }
+        }
+
         if (
             req.method === 'GET' &&
             req.headers[headers.xInertia] &&
