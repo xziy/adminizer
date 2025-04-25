@@ -5,7 +5,7 @@ Hello world! This is the docs for Adminizer
 ## Adminizer Commands
 
 ## Development
-- **`npm run dev`****  
+- **`npm run dev`**  
   Starts the application in development mode with file watching, using the Waterline fixture configuration and `VITE_ENV=dev`.
 
 - **`npm run watch:backend`**  
