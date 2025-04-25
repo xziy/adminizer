@@ -12,14 +12,14 @@
     <div class="flex gap-3 flex-wrap">
         <a href="<%= entity.uri %>/">
             <button class="btn btn-back">
-                <i class="las la-undo"></i>
+                <span class="material-icons-outlined">undo</span>
                 <%= __("Back to list") %>
             </button>
         </a>
         <% if (entity.config.edit && hasPermission(`update-${entity.name}-model`, req.session.UserAP)) { %>
             <a href="<%= entity.uri %>/edit/<%= record[idField] %>">
                 <button class="btn btn-green">
-                    <i class="las la-plus"></i>
+                    <span class="material-icons-outlined">add</span>
                     <%= __("Edit record") %>
                 </button>
             </a>
@@ -27,7 +27,7 @@
         <% if (entity.config.remove && hasPermission(`delete-${entity.name}-model`, req.session.UserAP)) { %>
             <a href="<%= entity.uri %>/remove/<%= record[idField] %>" onclick="return confirm('Are you sure ?');">
                 <button class="btn btn-red">
-                    <i class="las la-trash"></i>
+                    <span class="material-icons-outlined">delete</span>
                     <%= __("Remove record") %>
                 </button>
             </a>
@@ -49,12 +49,12 @@
             <% var field = fields[key] %>
             <% var value = viewsHelper.getFieldValue(key, field, data) %>
             <div class="flex flex-col gap-3">
-                <div class="admin-panel__wrapper-title">
+                <div class="admin-panel__wrapper-title flex items-center">
                     <sapn><%= __(field.config.title) %></sapn>
                     <% if(fields[key].config.tooltip) { %>
-                        <div class="tooltip tooltip-right group cursor-pointer">
-                            <i class="las la-info-circle text-blue-400"></i>
-                            <div class="tooltip__content group-hover:visible group-hover:opacity-100">
+                        <div class="tooltip tooltip-right group cursor-pointer flex items-center">
+                            <span class="material-icons-outlined text-blue-400">info</span>
+                            <div class="tooltip__content invisible opacity-0 group-hover:visible group-hover:opacity-100">
                                 <span><%= __(fields[key].config.tooltip) %></span>
                             </div>
                         </div>

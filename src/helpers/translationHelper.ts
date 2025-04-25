@@ -26,7 +26,7 @@ export class TranslationHelper {
       for (let locale of localesList) {
         if (translations.includes(`${locale}.json`)) {
           try {
-            let jsonData = require(`${translationsDirectoryPath}/${locale}.json`);
+            let jsonData = JSON.parse(fs.readFileSync(`${translationsDirectoryPath}/${locale}.json`, 'utf8'));
             I18n.appendLocale(locale, jsonData);
             // I18n.defaultLocale = defaultLocale;
           } catch (error) {

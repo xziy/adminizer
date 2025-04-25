@@ -1,22 +1,30 @@
-<select-pure name="<%= key %>" id="form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %>>
-    <% if (!field.config.required) { %>
-        <option-pure value="null" <%= value === "null" ? "selected" : "" %>>
-            --- Nothing selected ---
-        </option-pure>
-    <% } %>
-
-    <% if (field.config.records && field.config.records.length) { %>
+<select name="<%= key %>" data-placeholder="Select item"
+        id="form-<%= key %>" <%= field.config.required ? 'required' : '' %> <%= field.config.disabled ? 'disabled' : '' %>>
+</select>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let choices = [{value: '', label: 'Nothing selected'}]
         <% for (let opt of field.config.records) { %>
-            <% let isSelected = opt[field.config.identifierField] === value; %>
-            <% let label = field.config.displayModifier && typeof field.config.displayModifier === 'function'
+        choices.push({
+            label: '<%- field.config.displayModifier && typeof field.config.displayModifier === 'function'
                     ? field.config.displayModifier(opt)
-                    : (field.config.displayField ? opt[field.config.displayField] : opt[field.config.identifierField]); %>
-
-            <option-pure value="<%= opt[field.config.identifierField] %>" <%= isSelected ? "selected" : "" %>>
-                <%= label %>
-            </option-pure>
+                    : (field.config.displayField ? opt[field.config.displayField] : opt[field.config.identifierField]); %>',
+            value: '<%= opt[field.config.identifierField] %>',
+            selected: <%- opt[field.config.identifierField] === value %>
+        })
         <% } %>
-    <% } else { %>
-        <option-pure value="" disabled hidden>--- No records found ---</option-pure>
-    <% } %>
-</select-pure>
+
+        const assoc = new Choices('#form-<%= key %>', {
+            choices: choices,
+            removeItemButton: true
+        });
+
+        assoc.passedElement.element.addEventListener(
+            'removeItem',
+            function (event) {
+                assoc.setChoiceByValue('')
+            },
+            false,
+        );
+    })
+</script>

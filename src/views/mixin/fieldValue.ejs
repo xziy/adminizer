@@ -1,6 +1,6 @@
 <% var value = record[key] %>
 <% if (field.model.type == 'boolean') { %>
-    <i class="las la-<%= value ? "check-circle" : "ban" %>"></i>
+    <span class="material-icons-outlined"><%= value ? "check_circle" : "block" %></span>
 <% } else if (field.model.type == 'text') { %>
     <%- value %>
 <% } else if (field.model.type == 'json') { %>

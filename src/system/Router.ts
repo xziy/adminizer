@@ -21,6 +21,7 @@ import { catalogController } from "../controllers/catalog/Catalog";
 import { mediaManagerController } from "../controllers/media-manager/mediaManagerApi";
 import { thumbController } from "../controllers/media-manager/ThumbController";
 import {Adminizer} from "../lib/Adminizer";
+import timezones from "../controllers/timezones";
 
 
 export default class Router {
@@ -75,6 +76,7 @@ export default class Router {
 
 		/**
 		 * Module Install Stepper
+         * @deprecated
 		 * */
 		adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
 		adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
@@ -82,10 +84,10 @@ export default class Router {
 		/**
 		 * Edit form
 		 * */
-		adminizer.app.all(`/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
+		adminizer.app.all(`${adminizer.config.routePrefix}/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
 
 		// Create a base entity route
-		let baseRoute = "/:entityType/:entityName";
+		let baseRoute = `${adminizer.config.routePrefix}/:entityType/:entityName`;
 
 		/**
 		 * Catalog
@@ -104,6 +106,8 @@ export default class Router {
 		 */
 		adminizer.app.all(baseRoute, adminizer.policyManager.bindPolicies(policies, _list));
 
+        adminizer.app.get(`${adminizer.config.routePrefix}/get-timezones`, adminizer.policyManager.bindPolicies(policies, timezones))
+
 		if (adminizer.config.models) {
 			for (let model in adminizer.config.models) {
 				const modelConfig = adminizer.config.models[model];
@@ -112,9 +116,9 @@ export default class Router {
 				 */
 				if (typeof modelConfig === "boolean" && modelConfig === true) {
 					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by boolean true`)
-					adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
-					adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
-					adminizer.app.all(`/model/${model}/remove/:id`, adminizer.policyManager.bindPolicies(policies, _remove));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+					adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/remove/:id`, adminizer.policyManager.bindPolicies(policies, _remove));
 				} else if (typeof modelConfig !== "boolean") {
 					Adminizer.log.debug(`Adminpanel create CRUD routes for \`${model}\` by ModelConfig`)
 
@@ -125,12 +129,12 @@ export default class Router {
 						let addHandler = modelConfig.add as CreateUpdateConfig;
 						if (addHandler.controller) {
 							let controller = await import(addHandler.controller);
-							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
 						} else {
-							adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
 						}
 					} else {
-						adminizer.app.all(`/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
+						adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
 					}
 					/**
 					 * Edit existing record
@@ -139,12 +143,12 @@ export default class Router {
 						let editHandler = modelConfig.edit as CreateUpdateConfig;
 						if (editHandler.controller) {
 							let controller = await import(editHandler.controller);
-							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
 						} else {
-							adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+							adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
 						}
 					} else {
-						adminizer.app.all(`/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
+						adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
 					}
 				} else {
 					Adminizer.log.silly(`Adminpanel skip create CRUD routes for model: ${model}`)
@@ -165,14 +169,15 @@ export default class Router {
 		/**
 		 * Upload images CKeditor5
 		 */
+        //TODO check after mediamanager upgrade possible is not need
 		adminizer.app.all(`${baseRoute}/ckeditor5/upload`, adminizer.policyManager.bindPolicies(policies, _uploadCKeditor5));
 		/**
 		 * Create a default dashboard
 		 */
 		if (Boolean(adminizer.config.dashboard)) {
-			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _dashboard));
+			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _dashboard));
 		} else {
-			adminizer.app.all("/", adminizer.policyManager.bindPolicies(policies, _welcome));
+			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _welcome));
 		}
 		// TODO emit can be used in tests
 		adminizer.emitter.emit("router:bound");

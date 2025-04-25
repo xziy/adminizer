@@ -41,9 +41,11 @@
     "Repeat password": "Повторить пароль",
     "Please log in": "Пожалуйста авторизируйтесь",
     "Log in": "Вход",
+    "Log out": "Выход",
 	"Select Item type": "Выберите Элемент",
 	"Select Items": "Ничего не выбрано",
 	"Search": "Поиск",
+	"Reset": "Сброс",
 	"Open in a new window": "Открывать в новом окне",
 	"No, cancel": "Нет, отменить",
 	"Are you sure?": "Вы уверены?",
@@ -51,5 +53,6 @@
 	"Navigation": "Навигация",
 	"Select": "Выберите",
 	"OR": "ИЛИ",
-	"Select Ids": "Выберите ID"
+	"Select Ids": "Выберите ID",
+	"Not found": "Ничего не найдено"
 }

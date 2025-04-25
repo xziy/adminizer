@@ -8,8 +8,8 @@ export default function bindInstallStepper(adminizer: Adminizer) {
       return proceed();
     }
 
-    let goingToProcessInstallStep = req._parsedUrl.pathname === `${adminizer.config.routePrefix}/install/${installStepper.id}`;
-    let goingToProcessInstallFinalize = req._parsedUrl.pathname === `${adminizer.config.routePrefix}/install/${installStepper.id}/finalize`;
+    let goingToProcessInstallStep = req._parsedUrl.pathname === `/install/${installStepper.id}`;
+    let goingToProcessInstallFinalize = req._parsedUrl.pathname === `/install/${installStepper.id}/finalize`;
 
     if (installStepper.hasUnprocessedSteps() && !goingToProcessInstallStep && !goingToProcessInstallFinalize) {
       return res.redirect(`${adminizer.config.routePrefix}/install/${installStepper.id}`)

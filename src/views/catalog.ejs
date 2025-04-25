@@ -1,6 +1,6 @@
 <%- include("head") %>
 <%- include("headContent") %>
-<script src="<%- config.routePrefix %>/assets/js/vue-catalog.js" defer></script>
+<script type="module" src="<%- viteRender('src/assets/js/catalog/catalog.js') %>"></script>
 <div class="custom-catalog h-full">
     <div id="catalog" class="h-full"></div>
 </div>

@@ -6,34 +6,34 @@
 <%- include("./partials/controls") %>
 
 <script>
-  var submitBtn = document.getElementById('submit');
-  submitBtn.disabled = true;
+    var submitBtn = document.getElementById('submit');
+    submitBtn.disabled = true;
 
-  if (currentStepData.payload.type === "multi") {
-    currentStepData.jsonSchema = currentStepData.payload.jsonSchema
-    currentStepData.uiSchema = currentStepData.payload.uiSchema
-  }
+    if (currentStepData.payload.type === "multi") {
+        currentStepData.jsonSchema = currentStepData.payload.jsonSchema
+        currentStepData.uiSchema = currentStepData.payload.uiSchema
+    }
 
-  if (currentStepData.payload.type === "single") {
-    currentStepData.uiSchema = currentStepData.payload.data.uiSchema
-    currentStepData.jsonSchema = currentStepData.payload.data.jsonSchema
-  }
-
-  MountJSONForm({
-    mountDivId: '#installStep',
-    uiSchema: currentStepData.uiSchema,
-    jsonSchema: currentStepData.jsonSchema,
-    mountDivOutput: 'installStepOutput',
-    validationCallback: (status) => {
-      let submitButton = document.getElementById("submit");
-      if (status === true) {
-        submitButton.setAttribute("disabled", true);
-      } else {
-        submitButton.removeAttribute("disabled");
-      }
-    },
-  })
-
+    if (currentStepData.payload.type === "single") {
+        currentStepData.uiSchema = currentStepData.payload.data.uiSchema
+        currentStepData.jsonSchema = currentStepData.payload.data.jsonSchema
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        MountJSONForm({
+            mountDivId: '#installStep',
+            uiSchema: currentStepData.uiSchema,
+            jsonSchema: currentStepData.jsonSchema,
+            mountDivOutput: 'installStepOutput',
+            validationCallback: (status) => {
+                let submitButton = document.getElementById("submit");
+                if (status === true) {
+                    submitButton.setAttribute("disabled", true);
+                } else {
+                    submitButton.removeAttribute("disabled");
+                }
+            },
+        })
+    })
 </script>
 <%- include("./partials/footer") %>
 

@@ -1,0 +1,310 @@
+import {Entity, PropsField} from "../interfaces/types";
+import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
+import {Fields, Field} from "./fieldsHelper";
+import {
+    BaseFieldConfig,
+    HandsontableOptions,
+    TuiEditorOptions,
+    WysiwygOptions
+} from "../interfaces/adminpanelConfig";
+import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
+import chalk from "chalk";
+import {ModelAnyField} from "../lib/v4/model/AbstractModel";
+
+export type PropsFieldType =
+   'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
+
+interface listProps extends Record<string | number | symbol, unknown> {
+    edit: boolean;
+    view: boolean;
+    actions: Actions[],
+    notFound: string
+    search: string
+    btnBack: {
+        title: string;
+        link: string;
+    },
+    fields: PropsField[],
+    btnSave: {
+        title: string;
+    },
+    postLink: string,
+}
+
+export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number | string[]>, view: boolean = false) {
+    const actionType = 'add';
+    let props: listProps = {
+        edit: !!record,
+        view: view,
+        actions: [],
+        notFound: req.i18n.__('Not found'),
+        search: req.i18n.__('Search'),
+        btnBack: {
+            title: req.i18n.__('Back'),
+            link: entity.uri
+        },
+        fields: [],
+        btnSave: {
+            title: req.i18n.__('Save')
+        },
+        postLink: record ? `${entity.uri}/edit/${record.id}` : `${entity.uri}/add`,
+    }
+    props.actions = inertiaActionsHelper(actionType, entity, req)
+
+    const config = req.adminizer.configHelper.getConfig();
+
+    for (const key of Object.keys(fields)) {
+        if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
+        let field = fields[key] as Field
+        let fieldConfig = field.config as BaseFieldConfig
+        const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
+
+        //@ts-ignore TODO: fix model validations
+        const isIn = typeof fieldConfig.isIn === 'object' ? fieldConfig.isIn : (field.model && typeof {...field.model.validations}.isIn === 'object' ? {...field.model.validations}.isIn : [])
+
+        let label = fieldConfig.title ?? ''
+        let tooltip = fieldConfig.tooltip ?? ''
+        let name = key
+        let fieldType: PropsFieldType = 'text'
+        let disabled = false
+        let required = fieldConfig.required ?? false
+        let options: Record<string, unknown> | Record<string, unknown>[] = {}
+        let value = record ? record[key] : undefined
+
+        //@ts-ignore TODO: fix field type
+        if (entity.config.model && req.adminizer.configHelper.isId(field, entity.config.model)) {
+            disabled = true
+        }
+
+        if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'email', 'month', 'week', 'range'].includes(type)) {
+            fieldType = inputText(type, isIn)
+            if (type === 'range') {
+                options = {...fieldConfig.options}
+                if ("min" in fieldConfig.options) {
+                    value = record ? record[key] : fieldConfig.options.min ? fieldConfig.options.min : 0
+                }
+            }
+        }
+
+        if (type === 'color') {
+            fieldType = 'color'
+            value = record ? (record[key] ? record[key] : '#000000') : '#000000'
+        }
+
+        if (type === 'select') {
+            fieldType = 'select'
+        }
+
+        if (type === 'boolean' || type === 'binary') {
+            fieldType = 'checkbox'
+        }
+
+        if (['text', 'longtext', 'mediumtext'].includes(type)) {
+            fieldType = 'textarea'
+        }
+
+        if (type === 'association' || type === 'association-many') {
+            fieldType = type === 'association' ? 'association' : 'association-many'
+            const {initValue, initOptions} = setAssociationValues(field, value as string[])
+            options = initOptions
+            value = initValue
+        }
+
+        if (type === 'select-many') {
+            fieldType = 'select-many'
+            const {initValue, initOptions} = setSelectMany(isIn, value as string[])
+            options = initOptions
+            value = initValue
+        }
+
+        if (['ckeditor', 'wysiwyg', 'texteditor', 'word'].includes(type)) {
+            fieldType = 'wysiwyg';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'ckeditor')
+        }
+
+        if (['tui', 'tuieditor', 'toast-ui'].includes(type)) {
+            fieldType = 'markdown';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'toast-ui')
+        }
+
+        if (type === 'table') {
+            fieldType = 'table';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'handsontable')
+        }
+        if (['jsoneditor', 'json', 'array', 'object'].includes(type)) {
+            fieldType = 'jsonEditor';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'jsoneditor')
+        }
+
+        if (['ace', 'html', 'xml', 'aceeditor', 'code'].includes(type)) {
+            fieldType = 'codeEditor';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'monaco')
+        }
+
+        if (['geojson', 'geo-polygon', 'geo-marker'].includes(type)) {
+            fieldType = 'geoJson';
+            options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'leaflet')
+        }
+
+        props.fields.push({
+            label: label,
+            tooltip: tooltip,
+            name: name,
+            type: fieldType,
+            value: value,
+            disabled: disabled,
+            required: required,
+            isIn: isIn,
+            options: options
+        })
+    }
+
+    return props
+}
+
+export function getControlsOptions(fieldConfig: BaseFieldConfig, req: ReqType, type: ControlType, defaultControlName: string) {
+    const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
+
+    let control = getControl(req, type, fieldOptions?.name, defaultControlName);
+    let editorName = control.getName();
+
+    let options = {
+        name: editorName,
+        config: {
+            ...(control?.getConfig() || {}), // Base config of the editor
+            ...(fieldOptions?.config || {}), // Additional config provided in the field config
+        },
+        path: control?.getJsPath() || {},
+    };
+
+    if (type === 'wysiwyg') {
+        let options = {
+            name: editorName,
+            config: control?.getConfig() || {},
+            path: control?.getJsPath() || {},
+        };
+
+        // If items are provided, use them instead of the editor's config
+        if ((fieldOptions as WysiwygOptions)?.config?.items && editorName === 'ckeditor') {
+            options.config = {items: (fieldOptions as WysiwygOptions).config.items};
+        }
+    }
+    return options
+}
+
+export function inputText(type: string, isIn: string[]) {
+    if (type === "string" && isIn.length) {
+        return "select"
+    } else {
+        switch (type) {
+            case "password":
+                return "password"
+            case "date":
+                return "date"
+            case "datetime":
+                return "datetime-local"
+            case "time":
+                return "time"
+            case "color":
+                return "color"
+            case "email":
+                return "email"
+            case "month":
+                return "month"
+            case "week":
+                return "week"
+            case "range":
+                return "range"
+            case "integer":
+            case "number":
+            case "float":
+                return "number"
+            default:
+                return "text"
+        }
+    }
+}
+
+export function getControl(req: ReqType, type: ControlType, name: string | undefined, defaultControlName: string) {
+    let control: AbstractControls;
+    let editorName = defaultControlName // default editor name
+
+    // Determine which editor to use
+    if (name) {
+        editorName = name;
+    }
+    // Get the editor instance
+    control = req.adminizer.controlsHandler.get(type, editorName);
+
+    // Fallback to ckeditor if specified editor not found
+    if (!control) {
+        console.log(chalk.yellow(`Control ${type} - ${name} not found, falling back to default`));
+        control = req.adminizer.controlsHandler.get(type, defaultControlName);
+    }
+    return control;
+}
+
+function setAssociationValues(field: Field, value: string[]) {
+    let options = []
+    let initValue: string[] = []
+    const config = field.config as Record<string, any>
+
+    const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
+        if (Array.isArray(value)) {
+            return value.includes(option);
+        } else {
+            return (option == value);
+        }
+    }
+
+    const getAssociationValue = (value: ModelAnyField, config: Record<string, string>): string | string[] => {
+        const displayField = config.displayField || 'id';
+        if (value === null) return []
+
+        if (Array.isArray(value)) {
+            return value
+                .map(val => (val as unknown as { [key: string]: any })[displayField])
+        }
+
+        if (typeof value === 'object') {
+            return (value as { [key: string]: any })[displayField];
+        }
+
+        return String(value);
+    }
+
+
+    for (let opt of config.records) {
+        options.push({
+            label: config.displayModifier && typeof config.displayModifier === 'function'
+                ? config.displayModifier(opt)
+                : (config.displayField ? opt[config.displayField] : opt[config.identifierField]),
+            value: opt[config.identifierField],
+        })
+        if (isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
+            initValue.push(opt[config.identifierField])
+        }
+    }
+    return {
+        initOptions: options,
+        initValue: initValue,
+    }
+}
+
+export function setSelectMany(isIn: string[], value: string[] | undefined) {
+    let options = []
+    let initValue: string[] = []
+    for (let opt of isIn) {
+        options.push({
+            label: opt,
+            value: opt,
+        })
+        if (value && value.includes(opt)) {
+            initValue.push(opt)
+        }
+    }
+    return {
+        initOptions: options,
+        initValue: initValue
+    }
+}

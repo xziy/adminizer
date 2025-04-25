@@ -7,9 +7,11 @@
         rows="10"><%- JSON.stringify(value) %></textarea>
 
 <script>
-  new GeoJsonEditor({
-    id: '<%= key %>-container',
-    field: '<%= key %>',
-    data: '#form-<%= key %>'
-  });
+    document.addEventListener('DOMContentLoaded', function () {
+        new GeoJsonEditor({
+            id: '<%= key %>-container',
+            field: '<%= key %>',
+            data: '#form-<%= key %>'
+        });
+    })
 </script>

@@ -1,0 +1,99 @@
+import {useCallback, useEffect, useState} from 'react';
+
+export type Appearance = 'light' | 'dark' | 'system';
+
+const prefersDark = () => {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+};
+
+const setCookie = (name: string, value: string, days = 365) => {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const maxAge = days * 24 * 60 * 60;
+    document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
+};
+
+const applyTheme = (appearance: Appearance) => {
+    const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
+
+    document.documentElement.classList.toggle('dark', isDark);
+};
+
+const mediaQuery = () => {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)');
+};
+
+const handleSystemThemeChange = () => {
+    const currentAppearance = localStorage.getItem('appearance') as Appearance;
+    applyTheme(currentAppearance || 'system');
+};
+
+export function initializeTheme() {
+    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
+
+    applyTheme(savedAppearance);
+
+    // Add the event listener for system theme changes...
+    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+}
+
+export function useAppearance() {
+    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [isThemeChanging, setIsThemeChanging] = useState(false);
+
+    const updateAppearance = useCallback((mode: Appearance) => {
+        setIsThemeChanging(true);
+        setAppearance(mode);
+        localStorage.setItem('appearance', mode);
+        setCookie('appearance', mode);
+        applyTheme(mode);
+
+        // Trigger custom event for current tab
+        setTimeout(() => {
+            setIsThemeChanging(false);
+            window.dispatchEvent(new Event('appearanceChanged'));
+        }, 0)
+    }, []);
+
+    useEffect(() => {
+        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
+        updateAppearance(savedAppearance || 'system');
+
+        // Listen for localStorage changes (from other tabs)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'appearance') {
+                const newAppearance = e.newValue as Appearance;
+                setAppearance(newAppearance);
+                applyTheme(newAppearance);
+            }
+        };
+
+        // Listen for custom event (from current tab)
+        const handleAppearanceChange = () => {
+            const savedAppearance = localStorage.getItem('appearance') as Appearance;
+            setAppearance(savedAppearance);
+            applyTheme(savedAppearance);
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('appearanceChanged', handleAppearanceChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('appearanceChanged', handleAppearanceChange);
+            mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
+        };
+    }, [updateAppearance]);
+
+    return {appearance, updateAppearance, isThemeChanging} as const;
+}

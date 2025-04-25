@@ -16,6 +16,7 @@ export class InstallStepper {
   private steps: InstallStepAbstract[] = [];
   public context: any = {};
   public readonly canBeClosed: boolean;
+  // TODO remove static fields for multi adminizer server
   public static instances: InstallStepper[] = [];
 
   constructor(id: string, canBeClosed: boolean = false) {
