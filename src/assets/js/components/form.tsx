@@ -64,6 +64,7 @@ const Form = () => {
                                         <LazyField
                                             field={field}
                                             value={data[field.name]}
+
                                             onChange={handleFieldChange}
                                             processing={processing}
                                         />

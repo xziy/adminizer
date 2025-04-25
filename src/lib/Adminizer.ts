@@ -10,7 +10,7 @@ import PolicyManager from "./v4/PolicyManager";
 import Router from "./../system/Router";
 import {ViewsHelper} from "../helpers/viewsHelper";
 import bindAssets from "../system/bindAssets";
-import bindInstallStepper from "../system/bindInstallStepper";
+import bindInstallStepper from "../system/bindInstallStepper"; //don't remove
 import bindViewsLocals from "../system/bindViewsLocals";
 import bindResFunctions from "../system/bindResFunctions";
 import bindDev from "../system/bindDev";
@@ -142,7 +142,7 @@ export class Adminizer {
         bindReqFunctions(this);
 
         // add install stepper policy to check unfilled settings
-        // bindInstallStepper(this);
+        // bindInstallStepper(this); // TODO It is necessary to provide an opportunity to be inserted by an intermediary after authorization, but before the admin panel, in order to block the user from managing the Installstepper's admin panel.
 
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
