@@ -42,11 +42,6 @@ export default async function view(req: ReqType, res: ResType) {
         return res.status(500).send({error: 'Internal Server Error'});
     }
 
-    // res.viewAdmin(null, {
-    //     entity: entity,
-    //     record: record,
-    //     fields: fields
-    // });
     switch (entity.config.model) {
 
         case 'userap':

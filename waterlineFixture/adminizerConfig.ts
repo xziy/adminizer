@@ -338,12 +338,12 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    auth: true,
-    registration: {
-        enable: true,
-        defaultUserGroup: "test",
-        confirmationRequired: false
-    },
+    // auth: true,
+    // registration: {
+    //     enable: true,
+    //     defaultUserGroup: "test",
+    //     confirmationRequired: false
+    // },
     dashboard: false,
     forms: {
         path: 'forms',
