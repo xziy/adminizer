@@ -1,4 +1,5 @@
 import express, {Express} from "express";
+import cookieParser from 'cookie-parser'
 import * as path from "path";
 import winston from "winston";
 import EventEmitter from 'events';
@@ -92,6 +93,9 @@ export class Adminizer {
     }
 
     public async init(config: AdminpanelConfig) {
+        // set cookie parser
+        this.app.use(cookieParser());
+
         // Set vite middleware
         const isViteDev = process.env.VITE_ENV === "dev";
         if (isViteDev) await this.viteMiddleware()
@@ -139,7 +143,6 @@ export class Adminizer {
 
         // add install stepper policy to check unfilled settings
         // bindInstallStepper(this);
-
 
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);

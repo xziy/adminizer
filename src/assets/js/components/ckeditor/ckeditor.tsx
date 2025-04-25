@@ -39,13 +39,49 @@ import {
     Underline, EditorConfig, EventInfo
 } from 'ckeditor5';
 
+import plTranslations from 'ckeditor5/translations/pl.js';
+import arTranslations from 'ckeditor5/translations/ar.js';
+import znTranslations from 'ckeditor5/translations/zh.js';
+import deTranslations from 'ckeditor5/translations/de.js';
+import esTranslations from 'ckeditor5/translations/es.js';
+import frTranslations from 'ckeditor5/translations/fr.js';
+import hiTranslations from 'ckeditor5/translations/hi.js';
+import koTranslations from 'ckeditor5/translations/ko.js';
+import ptTranslations from 'ckeditor5/translations/pt.js';
+import ruTanslations from 'ckeditor5/translations/ru.js';
+import viTanslations from 'ckeditor5/translations/vi.js';
+import enTanslations from 'ckeditor5/translations/en.js';
+
 import 'ckeditor5/ckeditor5.css';
+
 
 interface EditorProps {
     initialValue: string,
     onChange: (value: string) => void
     options: { items: string[]}
 }
+
+
+const languageMap: Record<string, any> = {
+    'pl': plTranslations,
+    'ar': arTranslations,
+    'zn': znTranslations,
+    'de': deTranslations,
+    'es': esTranslations,
+    'fr': frTranslations,
+    'hi': hiTranslations,
+    'ko': koTranslations,
+    'pt': ptTranslations,
+    'ru': ruTanslations,
+    'vi': viTanslations,
+    'en': enTanslations,
+};
+
+
+const docLang = document.documentElement.lang
+
+const translations = languageMap[docLang] || languageMap['en']
+
 
 /**
  * Create a free account with a trial: https://portal.ckeditor.com/checkout?plan=free
@@ -66,6 +102,7 @@ export default function AdminCKEditor({initialValue, onChange, options}: EditorP
             return {};
         }
         return {
+            translations: [translations],
             toolbar: {
                 items: options?.items ?? [],
                 shouldNotGroupWhenFull: true
@@ -174,7 +211,7 @@ export default function AdminCKEditor({initialValue, onChange, options}: EditorP
                     reversed: true
                 }
             },
-            placeholder: 'Type or paste your content here!',
+            placeholder: '',
             table: {
                 contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
             }

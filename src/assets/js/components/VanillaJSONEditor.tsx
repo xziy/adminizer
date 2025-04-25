@@ -35,13 +35,14 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Recor
                 validator,
                 content,
                 onChange: (content: any, previousContent: any, status: OnChangeStatus) => {
-                    const isEmpty = content.json === undefined
-                    const validationError = isEmpty
-                        ? ['error']
-                        : (status.contentErrors as ContentValidationErrors)?.validationErrors;
+                    if (validator) {
+                        const isEmpty = content.json === undefined
+                        const validationError = isEmpty
+                            ? ['error']
+                            : (status.contentErrors as ContentValidationErrors)?.validationErrors;
 
-                    setFieldError(props.name, !!validationError?.length, 'Error validation JSON schema');
-
+                        setFieldError(props.name, !!validationError?.length, 'Error validation JSON schema');
+                    }
                     if (props.onChange) {
                         props.onChange(content, previousContent, status);
                     }

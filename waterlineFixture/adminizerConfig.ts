@@ -144,7 +144,6 @@ const models: AdminpanelConfig["models"] = {
                             {data: 'footage'},
                             {data: 'price'}
                         ],
-                        language: 'en-US',
                     }
                 },
             },
@@ -464,7 +463,7 @@ const config: AdminpanelConfig = {
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
         path: 'config/locales', // relative path to translations directory
-        defaultLocale: 'en'
+        defaultLocale: 'ru'
     },
     models: models,
     //@ts-ignore

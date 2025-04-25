@@ -49,6 +49,8 @@ interface ExtendedSharedData extends SharedData {
             uri: string
         },
         notFoundContent: string,
+        searchBtn: string,
+        resetBtn: string
         delModal: {
             yes: string,
             no: string
@@ -305,7 +307,7 @@ const ListTable = () => {
                         }}
                     >
                         <Icon iconNode={showSearch ? RefreshCcw : Search}/>
-                        {showSearch ? "Reset" : "Search"}
+                        {showSearch ? page.props.header.resetBtn : page.props.header.searchBtn}
                     </Button>
                     <div className="gap-2 ml-6 hidden lg:flex">
                         {page.props.header.actions.map((action) => (
@@ -343,6 +345,7 @@ const ListTable = () => {
                     columns={columns}
                     data={data.data}
                     searchValue={searchValue}
+                    searchTxt={page.props.header.searchBtn}
                     notFoundContent={page.props.header.notFoundContent}
                     key={new Date().getTime()}
                     globalSearch={showSearch}
