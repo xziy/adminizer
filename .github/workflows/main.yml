@@ -23,6 +23,7 @@ jobs:
       # Prepare dist folder
       - run: |
           cp ./package.json ./dist/
+          cp ./Readme.md ./dist/
           echo '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}' > ./dist/.npmrc
 
       # Resolve version: bump patch number
