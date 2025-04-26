@@ -62,7 +62,6 @@ export default async function login(req: ReqType, res: ResType) {
         if (req.method.toUpperCase() === "GET") {
             // Generate new CAPTCHA job
             const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
-            // return res.viewAdmin("login", {captchaTask: captchaTask});
             return req.Inertia.render({
                 component: 'login',
                 props: {
@@ -87,9 +86,6 @@ export default async function login(req: ReqType, res: ResType) {
 async function inertiaAdminMessage(req: ReqType, message: string, messageType: string) {
     const powCaptcha = new POWCaptcha();
     const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
-
-    // req.session.messages.adminError.push(message);
-    // return res.viewAdmin("login", {captchaTask: captchaTask});
 
     let errors: Record<string, string> = {};
     errors[messageType] = message
