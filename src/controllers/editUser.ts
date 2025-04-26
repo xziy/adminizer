@@ -79,7 +79,6 @@ export default async function (req: ReqType, res: ResType) {
                 });
             }
             Adminizer.log.debug(`User was updated: `, updatedUser);
-            // req.session.messages.adminSuccess.push('User was updated !');
 
             req.flash.setFlashMessage('success', 'User was updated !');
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap`)
@@ -109,8 +108,6 @@ export default async function (req: ReqType, res: ResType) {
             Adminizer.log.error(e)
         }
     }
-
-    // return res.viewAdmin("editUser", {entity: entity, user: user, groups: groups});
 
     const props = inertiaUserHelper(entity, req, groups, user)
     return req.Inertia.render({

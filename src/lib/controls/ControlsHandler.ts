@@ -52,7 +52,7 @@ export class ControlsHandler {
         ) as Record<ControlType, AbstractControls[]>;
     }
 
-    public collectAndGenerateStyleLinks(routePrefix: string): string[] {
+    public collectAndGenerateStyleLinks(): string[] {
         const stylesheets: string[] = [];
 
         const allControls = this.getAll();

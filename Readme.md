@@ -1,89 +1,26 @@
-# Form Error Management
+# Adminizer
 
-## Overview
-A lightweight reactive error management system for forms using JavaScript Proxy.
+<span class="badge-npmversion"><a href="https://npmjs.org/package/adminizer" title="View this project on NPM"><img src="https://img.shields.io/npm/v/adminizer.svg" alt="NPM version" /></a></span>
 
-## API Reference
+**Adminizer** is a modern Node.js admin panel designed as **middleware** and completely **framework-agnostic**.  
+It is built for quickly setting up, managing, and configuring server-side applications.
 
-### Methods
+Adminizer allows you to:
+- Read and write data from **any resource model (RM)**.
+- Connect **multiple resource models** across different sources.
+- Flexibly manage **user access rights** for reading and writing data.
+- Quickly build **personal dashboards**, admin panels, and **TMDP solutions** for industrial use cases.
+- Easily extend and customize for any project requirements.
 
-#### `setFieldError(fieldName: string, hasError: boolean, message?: string)`
-Sets or clears field-level errors.
+Key features:
+- **Modern tech stack:** ESM modules, React-based interface, flexible control components.
+- **Production ready:** Supports complex configurations with multiple databases or models.
+- **Scalable and extensible:** Create your own controls, modules, and customize admin logic.
 
-**Parameters:**
+**Adminizer** is the perfect choice for quickly building powerful administrative interfaces and server infrastructure.
+
+---
 
 
-- `fieldName`&nbsp;&nbsp;**string**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field identifier
-- `hasError`&nbsp;&nbsp;&nbsp;&nbsp;**boolean**&nbsp;&nbsp;Whether error exists
-- `message?`&nbsp;&nbsp;&nbsp;&nbsp;**string**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optional error message
 
-#### `getFieldError(fieldName: string): string | undefined`
-Retrieves error message for a field.
-
-**Returns:** Error message string or undefined
-
-#### `hasFormErrors(): boolean`
-Checks if form contains any errors.
-
-**Returns:** `true` if any field has errors
-
-#### `resetFormErrors()`
-Clears all form errors.
-
-### Type Definitions
-
-```typescript
-interface ErrorState {
-  hasError: boolean;
-  message?: string;
-}
-
-interface FormState {
-  errors: Record<string, ErrorState>;
-}
-```
-## Example
-``` typescript
-// Set error
-setFieldError('email', true, 'Invalid email format');
-
-// Check errors
-if (hasFormErrors()) {
-console.log('Form has validation errors');
-}
-
-// Get specific error
-console.log(getFieldError('email')); // 'Invalid email format'
-
-// Clear errors
-resetFormErrors();
-```
-In custom controls, add errors like this:
-```typescript
-setFieldError(props.name, true, 'message');
-```
-The custom control is called dynamically and receives the following props:
-```jsx
-   <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-    initialValue={value} name={`${field.type}-${field.name}`}
-    onChange={handleEditorChange}/>
-```
-Therefore, you should use `props.name` when adding errors<br/>
-Error output is implemented in the form like this:
-```jsx
-//...
- <>
-    <LabelRenderer field={field}/>
-    <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
-    <LazyField
-    field={field}
-    value={data[field.name]}
-    onChange={handleFieldChange}
-    processing={processing || view}
-    />
-</>
-//...
-```
-### implementation
-**See the implementation here** `src/assets/js/components/VanillaJSONEditor.tsx`<br/>
-
+[Go to the documentation](https://github.com/adminization/adminizer/blob/main/docs/index.md)

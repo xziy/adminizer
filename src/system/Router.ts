@@ -3,7 +3,6 @@ import _processInstallFinalize from "../controllers/processInstallFinalize";
 import _dashboard from "../controllers/dashboard";
 import _welcome from "../controllers/welcome";
 import _list from "../controllers/list";
-import _listJson from "../controllers/listJson";
 import _edit from "../controllers/edit";
 import _add from "../controllers/add";
 import _view from "../controllers/view";
@@ -160,7 +159,6 @@ export default class Router {
 		 * View record details
 		 */
 		adminizer.app.all(baseRoute + "/view/:id", adminizer.policyManager.bindPolicies(policies, _view));
-		adminizer.app.all(baseRoute + "/json", adminizer.policyManager.bindPolicies(policies, _listJson));
 
 		/**
 		 * Remove record

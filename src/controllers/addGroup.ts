@@ -67,8 +67,6 @@ export default async function addGroup(req: ReqType, res: ResType) {
             })
 
             Adminizer.log.debug(`A new group was created: `, group);
-            // req.session.messages.adminSuccess.push('A new group was created !');
-            // return res.redirect(`${req.adminizer.config.routePrefix}/model/groupap`);
 
             req.flash.setFlashMessage('success', 'A new group was created !');
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/groupap`)
@@ -85,5 +83,4 @@ export default async function addGroup(req: ReqType, res: ResType) {
         component: 'add-group',
         props: props as unknown as Record<string | number | symbol, unknown>
     })
-    // return res.viewAdmin("addGroup", {entity: entity, users: users, groupedTokens: groupedTokens});
 };

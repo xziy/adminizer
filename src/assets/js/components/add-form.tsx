@@ -23,8 +23,8 @@ interface AddProps extends SharedData {
         title: string;
         icon: string;
     }[];
-    notFound: string
-    search: string,
+    notFound?: string
+    search?: string,
     btnBack: {
         title: string;
         link: string;
@@ -67,8 +67,8 @@ const LazyField: FC<{
     value: FieldValue;
     onChange: (name: string, value: FieldValue) => void;
     processing: boolean;
-    notFound: string
-    search: string
+    notFound?: string
+    search?: string
 }> = memo(({field, value, onChange, processing, notFound, search}) => {
     const [ref, inView] = useInView({
         triggerOnce: true,

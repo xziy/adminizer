@@ -29,7 +29,7 @@ interface InitUserProps extends SharedData {
 export default function InitUser() {
     const page = usePage<InitUserProps>()
     const {post, data, setData, processing, setError, errors, clearErrors} = useForm({
-        locale: 'en',
+        locale: page.props.defaultLocale,
         confirmPassword: '',
         password: '',
         login: '',
