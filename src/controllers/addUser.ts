@@ -55,9 +55,6 @@ export default async function (req: ReqType, res: ResType) {
             })
             Adminizer.log.debug(`A new user was created: `, user);
 
-            // req.session.messages.adminSuccess.push('A new user was created !');
-            // return res.redirect(`${req.adminizer.config.routePrefix}/model/userap`);
-
             req.flash.setFlashMessage('success', 'A new user was created !');
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap`)
 
@@ -68,7 +65,6 @@ export default async function (req: ReqType, res: ResType) {
 
         // console.log(user)
     }
-    // return res.viewAdmin("addUser", {entity: entity, groups: groups});
     const props = inertiaUserHelper(entity, req, groups)
     return req.Inertia.render({
         component: 'add-user',

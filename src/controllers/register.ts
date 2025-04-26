@@ -9,10 +9,6 @@ export default async function register(req: ReqType, res: ResType) {
     if (req.method.toUpperCase() === "POST") {
         // console.log("req.body", req.body);
 
-        // if (!req.body.login || !req.body.fullName || !req.body.password) {
-        //     return res.status(400).send({error: 'Missing required parameters'});
-        // }
-
         for (const key of ["login", "fullName", "password"]) {
             if (!req.body[key]) {
                 let errors: Record<string, string> = {};
@@ -74,7 +70,6 @@ export default async function register(req: ReqType, res: ResType) {
     }
 
     if (req.method.toUpperCase() === "GET") {
-        // return res.viewAdmin("register");
         return req.Inertia.render({
             component: "register",
             props: inertiaRegisterHelper(req),

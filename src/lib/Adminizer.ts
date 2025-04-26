@@ -8,11 +8,7 @@ import chalk from 'chalk';
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import PolicyManager from "./v4/PolicyManager";
 import Router from "./../system/Router";
-import {ViewsHelper} from "../helpers/viewsHelper";
 import bindAssets from "../system/bindAssets";
-import bindInstallStepper from "../system/bindInstallStepper";
-import bindViewsLocals from "../system/bindViewsLocals";
-import bindResFunctions from "../system/bindResFunctions";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
 // import bindNavigation from "../system/bindNavigation";
@@ -123,7 +119,6 @@ export class Adminizer {
         await bindModels(this);
         await bindForms(this);
 
-        this.config.templateRootPath = ViewsHelper.BASE_VIEWS_PATH;
         this.config.rootPath = path.resolve(import.meta.dirname + "/..")
 
         this.policyManager = new PolicyManager(this);
@@ -138,11 +133,10 @@ export class Adminizer {
         this.widgetHandler = new WidgetHandler(this);
 
         bindExpressUtils(this.app);
-        // bindResFunctions(this);
         bindReqFunctions(this);
 
         // add install stepper policy to check unfilled settings
-        // bindInstallStepper(this);
+        // bindInstallStepper(this); // TODO It is necessary to provide an opportunity to be inserted by an intermediary after authorization, but before the admin panel, in order to block the user from managing the Installstepper's admin panel.
 
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
@@ -159,8 +153,6 @@ export class Adminizer {
 
         await bindAccessRights(this);
 
-
-        // bindViewsLocals(this); // must be after setting all helpers that binds in here
 
         if (I18n.appendLocale) {
             bindTranslations(this);

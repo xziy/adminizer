@@ -338,7 +338,7 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    auth: true,
+    // auth: true,
     // registration: {
     //     enable: true,
     //     defaultUserGroup: "test",
@@ -463,7 +463,7 @@ const config: AdminpanelConfig = {
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
         path: 'config/locales', // relative path to translations directory
-        defaultLocale: 'ru'
+        defaultLocale: 'en'
     },
     models: models,
     //@ts-ignore

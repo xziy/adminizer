@@ -1,89 +1,49 @@
-# Form Error Management
+Hello world! This is the docs for Adminizer
 
-## Overview
-A lightweight reactive error management system for forms using JavaScript Proxy.
+[Go to the documentation](./docs/index.md)
 
-## API Reference
+## Adminizer Commands
 
-### Methods
+## Development
+- **`npm run dev`**  
+  Starts the application in development mode with file watching, using the Waterline fixture configuration and `VITE_ENV=dev`.
 
-#### `setFieldError(fieldName: string, hasError: boolean, message?: string)`
-Sets or clears field-level errors.
+- **`npm run watch:backend`**  
+  Watches for changes in backend files and recompiles TypeScript continuously.
 
-**Parameters:**
+## Build Commands
+- **`npm run build:assets`**  
+  Builds frontend assets using Vite.
 
+- **`npm run build:backend`**  
+  Combines backend copy and compilation steps.
 
-- `fieldName`&nbsp;&nbsp;**string**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field identifier
-- `hasError`&nbsp;&nbsp;&nbsp;&nbsp;**boolean**&nbsp;&nbsp;Whether error exists
-- `message?`&nbsp;&nbsp;&nbsp;&nbsp;**string**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optional error message
+- **`npm run build`**  
+  Full build process: copies backend, compiles backend, and builds assets.
 
-#### `getFieldError(fieldName: string): string | undefined`
-Retrieves error message for a field.
+## Module-specific Builds (this is just for tests, as an example, you should create your own commands to build modules)
+- **`npm run build:module`**  
+  Builds test modules using a custom Vite config.
 
-**Returns:** Error message string or undefined
+- **`npm run build:react-quill`**  
+  Builds the React-Quill WYSIWYG module using a custom Vite config.
 
-#### `hasFormErrors(): boolean`
-Checks if form contains any errors.
+- **`npm run copy:modules`**  
+  Copies modules using `copy-modules.js` script.
 
-**Returns:** `true` if any field has errors
+- **`npm run build:assets:modules`**  
+  Builds assets and copies modules.
 
-#### `resetFormErrors()`
-Clears all form errors.
+## Demo & Seeding
+- **`npm run start:seed`**  
+  Starts the application with seed data enabled (using `SEED_DATA=true`).
 
-### Type Definitions
+- **`npm run demo:build`**  
+  Prepares a demo build: copies backend, compiles backend, builds assets, and copies modules.
 
-```typescript
-interface ErrorState {
-  hasError: boolean;
-  message?: string;
-}
+- **`npm run demo`**  
+  Alias for `start:seed` - runs the demo with seeded data.
 
-interface FormState {
-  errors: Record<string, ErrorState>;
-}
-```
-## Example
-``` typescript
-// Set error
-setFieldError('email', true, 'Invalid email format');
-
-// Check errors
-if (hasFormErrors()) {
-console.log('Form has validation errors');
-}
-
-// Get specific error
-console.log(getFieldError('email')); // 'Invalid email format'
-
-// Clear errors
-resetFormErrors();
-```
-In custom controls, add errors like this:
-```typescript
-setFieldError(props.name, true, 'message');
-```
-The custom control is called dynamically and receives the following props:
-```jsx
-   <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
-    initialValue={value} name={`${field.type}-${field.name}`}
-    onChange={handleEditorChange}/>
-```
-Therefore, you should use `props.name` when adding errors<br/>
-Error output is implemented in the form like this:
-```jsx
-//...
- <>
-    <LabelRenderer field={field}/>
-    <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
-    <LazyField
-    field={field}
-    value={data[field.name]}
-    onChange={handleFieldChange}
-    processing={processing || view}
-    />
-</>
-//...
-```
-### implementation
-**See the implementation here** `src/assets/js/components/VanillaJSONEditor.tsx`<br/>
-
+## Preview mode
+- **`npm start`**  
+  Starts the application using TSX with the Waterline fixture configuration.
