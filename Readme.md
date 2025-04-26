@@ -1,49 +1,26 @@
-Hello world! This is the docs for Adminizer
+# Adminizer
 
-[Go to the documentation](./docs/index.md)
+<span class="badge-npmversion"><a href="https://npmjs.org/package/adminizer" title="View this project on NPM"><img src="https://img.shields.io/npm/v/adminizer.svg" alt="NPM version" /></a></span>
 
-## Adminizer Commands
+**Adminizer** is a modern Node.js admin panel designed as **middleware** and completely **framework-agnostic**.  
+It is built for quickly setting up, managing, and configuring server-side applications.
 
-## Development
-- **`npm run dev`**  
-  Starts the application in development mode with file watching, using the Waterline fixture configuration and `VITE_ENV=dev`.
+Adminizer allows you to:
+- Read and write data from **any resource model (RM)**.
+- Connect **multiple resource models** across different sources.
+- Flexibly manage **user access rights** for reading and writing data.
+- Quickly build **personal dashboards**, admin panels, and **TMDP solutions** for industrial use cases.
+- Easily extend and customize for any project requirements.
 
-- **`npm run watch:backend`**  
-  Watches for changes in backend files and recompiles TypeScript continuously.
+Key features:
+- **Modern tech stack:** ESM modules, React-based interface, flexible control components.
+- **Production ready:** Supports complex configurations with multiple databases or models.
+- **Scalable and extensible:** Create your own controls, modules, and customize admin logic.
 
-## Build Commands
-- **`npm run build:assets`**  
-  Builds frontend assets using Vite.
+**Adminizer** is the perfect choice for quickly building powerful administrative interfaces and server infrastructure.
 
-- **`npm run build:backend`**  
-  Combines backend copy and compilation steps.
+---
 
-- **`npm run build`**  
-  Full build process: copies backend, compiles backend, and builds assets.
 
-## Module-specific Builds (this is just for tests, as an example, you should create your own commands to build modules)
-- **`npm run build:module`**  
-  Builds test modules using a custom Vite config.
 
-- **`npm run build:react-quill`**  
-  Builds the React-Quill WYSIWYG module using a custom Vite config.
-
-- **`npm run copy:modules`**  
-  Copies modules using `copy-modules.js` script.
-
-- **`npm run build:assets:modules`**  
-  Builds assets and copies modules.
-
-## Demo & Seeding
-- **`npm run start:seed`**  
-  Starts the application with seed data enabled (using `SEED_DATA=true`).
-
-- **`npm run demo:build`**  
-  Prepares a demo build: copies backend, compiles backend, builds assets, and copies modules.
-
-- **`npm run demo`**  
-  Alias for `start:seed` - runs the demo with seeded data.
-
-## Preview mode
-- **`npm start`**  
-  Starts the application using TSX with the Waterline fixture configuration.
+[Go to the documentation](https://github.com/adminization/adminizer/blob/main/docs/index.md)
