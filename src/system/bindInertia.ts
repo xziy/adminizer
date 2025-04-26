@@ -59,7 +59,7 @@ export function bindInertia(adminizer: Adminizer) {
 
 
             // Load modules CSS
-            const modulesCss = adminizer.controlsHandler.collectAndGenerateStyleLinks(adminizer.config.routePrefix)
+            const modulesCss = adminizer.controlsHandler.collectAndGenerateStyleLinks()
             modulesCss.forEach(cssPath => {
                 preloadLinks.push(`<link rel="preload" href="${cssPath}" as="style">`);
                 stylesheets.push(`<link rel="stylesheet" href="${cssPath}">`);

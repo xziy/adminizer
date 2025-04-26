@@ -16,10 +16,8 @@ export default defineConfig({
     ],
     build: {
         outDir: path.resolve(import.meta.dirname, ''),
-        // outDir: path.resolve(import.meta.dirname, 'dist/assets'),
         emptyOutDir: false,
         lib: {
-            // Точка входа для библиотеки
             entry: path.resolve(import.meta.dirname, 'react-quill-editor.tsx'),
             name: 'ComponentB',
             formats: ['es'],
@@ -31,7 +29,7 @@ export default defineConfig({
                     if (names && names[0].endsWith('.css')) {
                         return 'react-quill-editor.css';
                     }
-                    return 'assets/[name]-[hash][extname]';
+                    return '[name]-[hash][extname]';
                 },
             },
         },

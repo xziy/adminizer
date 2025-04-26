@@ -27,8 +27,8 @@ const FieldRenderer: FC<{
     value: FieldValue;
     onChange: (name: string, value: FieldValue) => void;
     processing: boolean;
-    notFound: string
-    search: string
+    notFound?: string
+    search?: string
 }> = memo(({field, value, onChange, processing, notFound, search}) => {
 
     const handleInputChange = useCallback(

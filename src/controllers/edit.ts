@@ -153,9 +153,6 @@ export default async function edit(req: ReqType, res: ResType) {
                     }
                 }
 
-                // req.session.messages.adminSuccess.push('Your record was updated !');
-                // return res.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`);
-
                 req.flash.setFlashMessage('success', 'Your record was updated !');
                 return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
             }
@@ -181,17 +178,13 @@ export default async function edit(req: ReqType, res: ResType) {
         }
     }
     if (req.query.without_layout) {
-        return res.viewAdmin("./../ejs/partials/content/editPopup.ejs", {
-            entity: entity,
-            record: record,
-            fields: fields
-        });
-    } else {
-        // return res.viewAdmin(null,{
-        // 	entity: entity,
-        // 	record: record,
-        // 	fields: fields
+        // return res.viewAdmin("./../ejs/partials/content/editPopup.ejs", {
+        //     entity: entity,
+        //     record: record,
+        //     fields: fields
         // });
+        return null
+    } else {
         const props = inertiaAddHelper(req, entity, fields, record)
         return req.Inertia.render({
             component: 'add',
