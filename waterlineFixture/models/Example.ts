@@ -9,6 +9,7 @@ const Example = Waterline.Collection.extend({
 		id: { type: "number", autoMigrations: { autoIncrement: true } },
 		title: { type: "string" },
         description: { type: "string"},
+        disabled_text: { type: "string"},
         sort: { type: "boolean" },
         time: { type: "string" },
         number: { type: "number" },

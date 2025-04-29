@@ -16,6 +16,7 @@ interface LoginProps extends SharedData {
     login: string
     password: string
     title: string
+    description: string
     submitButton: string
     submitLink: string
     registerLink?: {
@@ -102,6 +103,7 @@ export default function Login() {
                         <InputError message={errors.captchaSolution}/>
                         <div className="grid gap-4">
                             <Label htmlFor="login">{page.props.login}</Label>
+                            <p>{page.props.description}</p>
                             <div className="relative">
                                 <Icon iconNode={User} className="size-5 absolute inset-2"/>
                                 <Input

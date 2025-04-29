@@ -1,3 +1,4 @@
+import { tr } from "@faker-js/faker/.";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 
 const routePrefix = "/adminizer";
@@ -24,7 +25,7 @@ const models: AdminpanelConfig["models"] = {
         icon: 'receipt'
     },
     example: {
-        title: 'Exapmle Form example from file',
+        title: 'All controls',
         model: 'example',
         tools: [
             {
@@ -65,6 +66,12 @@ const models: AdminpanelConfig["models"] = {
             sort: {
                 type: 'boolean',
                 title: 'Boolean'
+            },
+            disabled_text: {
+                title: 'Disabled',
+                type: 'text',
+                disabled: true,
+                tooltip: 'This field should be disabled'
             },
             range: {
                 type: 'range',
@@ -476,6 +483,10 @@ const config: AdminpanelConfig = {
         //config: string | object // db-migrate config
     },
     showVersion: true,
+    auth: {
+      enable: true,
+      description: "Login password demo:demo"
+    },
 };
 
 export default config
