@@ -2,8 +2,18 @@
 
 <span class="badge-npmversion"><a href="https://npmjs.org/package/adminizer" title="View this project on NPM"><img src="https://img.shields.io/npm/v/adminizer.svg" alt="NPM version" /></a></span>
 
-**Adminizer** is a modern Node.js admin panel designed as **middleware** and completely **framework-agnostic**.  
-It is built for quickly setting up, managing, and configuring server-side applications.
+
+Adminizer is a modern admin panel built as an independent module for Node.js.  
+The backend is written in TypeScript, and the frontend uses React, providing high modularity and flexibility.  
+The system is specifically designed to be **framework- and ORM-agnostic**, running directly inside the Node.js Runtime.  
+Thanks to this approach, Adminizer can be integrated into any server-side application, regardless of its architecture.
+
+The project is **open-source**, **free to use**, and focused on building an **open community**.  
+We would like to express special thanks to **Konstantin Zolotarev**, who laid the foundation with the **sails-adminpanel** project, which we later reworked and generalized.
+
+The core principle of Adminizer is **maximum extensibility**.  
+The admin panel can be configured and expanded **at runtime** without requiring rebuilds or server restarts.  
+We aimed to make the system as easy to integrate as possible: just install the package and immediately gain access to a powerful admin interface.  
 
 Adminizer allows you to:
 - Read and write data from **any resource model (RM)**.

@@ -1,6 +1,7 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {GridSettings as HandsontableSettings} from "handsontable/settings";
+import { Adminizer } from "lib/Adminizer";
 
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
@@ -508,3 +509,5 @@ export interface MediaManagerConfig {
         }
     },
 }
+
+export type AdminizerConfig = AdminpanelConfig
