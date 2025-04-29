@@ -155,7 +155,7 @@ function checkAuth(req: ReqType, adminizer: Adminizer) {
     if (typeof adminizer.config.translation !== 'boolean') {
         locale = adminizer.config.translation.defaultLocale
     }
-    if (!adminizer.config.auth) {
+    if (!adminizer.config.auth.enable) {
         if (req.session.UserAP) {
             req.session.UserAP.isAdministrator = true;
         } else {

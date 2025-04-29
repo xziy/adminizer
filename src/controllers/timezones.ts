@@ -1,5 +1,5 @@
 export default async function timezones(req: ReqType, res: ResType) {
-    if (req.adminizer.config.auth) {
+    if (req.adminizer.config.auth.enable) {
         if (!req.session.UserAP) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
         }

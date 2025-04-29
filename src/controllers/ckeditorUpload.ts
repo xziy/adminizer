@@ -7,7 +7,7 @@ export default function upload(req: ReqType, res: ResType): void {
 	//console.log('admin > CK-upload');
 	let entity = ControllerHelper.findEntityObject(req);
 
-	if (req.adminizer.config.auth) {
+	if (req.adminizer.config.auth.enable) {
 		if (!req.session.UserAP) {
 			res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 			return

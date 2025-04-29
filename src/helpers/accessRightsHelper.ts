@@ -56,7 +56,7 @@ export class AccessRightsHelper {
 	}
 
 	public hasPermission(tokenId: string, user: ModelsAP["UserAP"]): boolean {
-		if (!this.adminizer.config.auth) {
+		if (!this.adminizer.config.auth.enable) {
 			return true;
 		}
 

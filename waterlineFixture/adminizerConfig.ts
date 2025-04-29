@@ -485,7 +485,7 @@ const config: AdminpanelConfig = {
     showVersion: true,
     auth: {
       enable: true,
-      description: "Login password demo:demo"
+      description: "Login `demo`, password `demo`"
     },
 };
 

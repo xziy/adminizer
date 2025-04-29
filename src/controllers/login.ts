@@ -5,7 +5,7 @@ import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
 export default async function login(req: ReqType, res: ResType) {
     const powCaptcha = new POWCaptcha();
     if (req.originalUrl.indexOf("login") >= 0) {
-        if (!req.adminizer.config.auth) {
+        if (!req.adminizer.config.auth.enable) {
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
 
@@ -65,6 +65,7 @@ export default async function login(req: ReqType, res: ResType) {
             return req.Inertia.render({
                 component: 'login',
                 props: {
+                    description: req.adminizer.config.auth.description,
                     captchaTask: captchaTask,
                     ...inertiaLoginHelper(req),
                 }
@@ -92,6 +93,7 @@ async function inertiaAdminMessage(req: ReqType, message: string, messageType: s
     return req.Inertia.render({
         component: 'login',
         props: {
+            description: req.adminizer.config.auth.description,
             captchaTask: captchaTask,
             errors: errors,
             ...inertiaLoginHelper(req),

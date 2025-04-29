@@ -102,7 +102,6 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
 
     try {
         adminpanelConfig.auth.enable = !!process.env.SEED_DATA
-        console.log(adminpanelConfig)
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
     } catch (e) {
@@ -197,16 +196,5 @@ async function seedDatabase(adminizer: Adminizer, collections: any, count: numbe
     }
     let passwordHashed = generate("demodemo");
 
-
-    await adminizer.modelHandler.model.get("UserAP")["_create"](
-        {
-            login: "demo",
-            password: "demo",
-            passwordHashed: "",
-            fullName: "Administrator",
-            isActive: true,
-            locale: 'en',
-            isAdministrator: true
-        }
-    );
+    process.env.ADMINPANEL_DEMO_ADMIN_ENABLE = '1'
 }

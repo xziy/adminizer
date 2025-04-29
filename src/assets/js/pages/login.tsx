@@ -98,12 +98,16 @@ export default function Login() {
             <Toaster position="top-center" richColors closeButton/>
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6 max-w-sm w-full h-fit mt-[15%]">
                 <h1 className="font-medium mb-6 text-xl">{page.props.title}</h1>
+                {page.props.description && (
+                <p className="font-thin mb-6 text-xs pb-10">
+                    {page.props.description}
+                </p>
+                )}
                 <form onSubmit={submit}>
                     <div className="grid gap-5">
                         <InputError message={errors.captchaSolution}/>
                         <div className="grid gap-4">
                             <Label htmlFor="login">{page.props.login}</Label>
-                            <p>{page.props.description}</p>
                             <div className="relative">
                                 <Icon iconNode={User} className="size-5 absolute inset-2"/>
                                 <Input
