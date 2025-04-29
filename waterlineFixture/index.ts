@@ -13,6 +13,7 @@ import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 import { faker } from '@faker-js/faker';
 import fs from 'fs/promises';
 import path from 'path';
+import { generate } from "password-hash";
 
 
 
@@ -67,7 +68,7 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     adminizer.emitter.on('adminizer:loaded', () => {
         let policies: MiddlewareType[] = adminizer.config.policies;
         const module = (req: ReqType, res: ResType) => {
-            if (req.adminizer.config.auth) {
+            if (req.adminizer.config.auth.enable) {
                 if (!req.session.UserAP) {
                     return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
                 }
@@ -100,6 +101,8 @@ orm.initialize(waterlineConfig, async (err, ontology) => {
     })
 
     try {
+        adminpanelConfig.auth.enable = !!process.env.SEED_DATA
+        console.log(adminpanelConfig)
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
     } catch (e) {
@@ -167,7 +170,7 @@ async function cleanTempFolder() {
 
 
 
-async function seedDatabase(collections: any, count: number = 3) {
+async function seedDatabase(adminizer: Adminizer, collections: any, count: number = 3) {
 
     const getRandomTime = () => {
         const hours = faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0');
@@ -175,6 +178,7 @@ async function seedDatabase(collections: any, count: number = 3) {
         return `${hours}:${minutes}`;
     }
     if (collections.example) {
+        // TODO: Use adminizer.modelHandler.model.get for adapt for multiORM fixture
         const exampleModel = collections.example as WaterlineModel<typeof Example>;
         const existingCount = await exampleModel.count({});
 
@@ -191,4 +195,18 @@ async function seedDatabase(collections: any, count: number = 3) {
             await exampleModel.createEach(fakeExamples);
         }
     }
+    let passwordHashed = generate("demodemo");
+
+
+    await adminizer.modelHandler.model.get("UserAP")["_create"](
+        {
+            login: "demo",
+            password: "demo",
+            passwordHashed: "",
+            fullName: "Administrator",
+            isActive: true,
+            locale: 'en',
+            isAdministrator: true
+        }
+    );
 }

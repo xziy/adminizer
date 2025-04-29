@@ -1,6 +1,6 @@
 export default async function widgetsDB(req: ReqType, res: ResType) {
     let id: number = 0
-    let auth = req.adminizer.config.auth
+    let auth = req.adminizer.config.auth.enable
     if (auth) {
         if (!req.session.UserAP) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);

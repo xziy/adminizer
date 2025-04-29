@@ -119,6 +119,10 @@ var adminpanelConfig: AdminpanelConfig = {
         enable: false,
         defaultUserGroup: "guest",
         confirmationRequired: true
+    },
+
+    auth: {
+        enable: false
     }
 }
 

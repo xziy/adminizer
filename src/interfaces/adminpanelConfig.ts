@@ -80,8 +80,12 @@ export interface AdminpanelConfig {
     theme?: string
     /**
      * Enable or disable auth for adminpanel
+     * by default is false
      */
-    auth?: boolean
+    auth?: {
+        enable: boolean,
+        description?: string
+    }
     /**
      * @alpha
      * Models configuration
