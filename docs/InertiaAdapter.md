@@ -1,7 +1,48 @@
 [Back](index.md)
 # Inertia Express Adapter Documentation
-## Overview
-The Inertia Express Adapter provides server-side support for Inertia.js applications in an Express.js environment. It handles Inertia-specific requests, manages shared props, and provides response utilities for seamless integration between your Express backend and Inertia frontend.
+## What is it Inertia.js ?
+Inertia.js is a tool for creating modern single—page applications (SPA) without having to work with a full-fledged API (as in the traditional REST or GraphQL approach). It allows you to develop the frontend and backend as a single application using classic server routes and controllers, but with dynamic page updates without a complete reboot.
+## How it works Inertia.js ?
+Inertia.js acts as a bridge between the frontend (React, Vue, Svelte) and the backend (Laravel, Rails, Django, etc.). Here are the key principles of its operation:
+
+1. The client side (Frontend)
+* The application uses standard components (React/Vue/Svelte), but is not a full-fledged SPA in the classical sense.
+* When clicking on links or submitting forms, Inertia intercepts these events and makes AJAX requests instead of completely reloading the page.
+* The response from the server contains component data and its properties (props), not HTML.
+2. Backend
+* Instead of returning HTML or JSON API, the server returns an Inertia response (a special JSON object).
+* This object contains:
+  * The name of the component (for example, Users/Index).
+  * The data (props) to be passed to the component.
+  * The URL and other metadata.
+* Example:
+```typescript
+return req.Inertia.render({
+component: 'component',
+props: props
+})
+```
+3. Data exchange mechanism
+* The first time you visit the page, the standard SSR (Server-Side Rendering) works.
+* Subsequent transitions use fetch/XHR:
+  * The user clicks on the <Link href="/users"> (provided by Inertia).
+  * Inertia intercepts the click and sends an AJAX request to the server.
+  * The server returns JSON with the data of the new component.
+  * Inertia updates only the data and component on the page without reloading.
+
+4. State (State Management)
+* Inertia does not use complex state management systems (Redux, Pinia).
+* All data is stored in the props components and updated with each transition.
+
+5. Forms and POST requests
+* Inertia provides the useForm hook for form processing:
+```jsx
+const { data, post } = useForm({ name: '' });
+
+const submit = () => post('/users');
+```
+* When submitting the form, Inertia makes a POST request, the server processes it and returns the updated component data.
+# Inertia Express Adapter
 ## Configuration Options
 The adapter accepts the following configuration options:
 ```typescript
