@@ -1,6 +1,66 @@
 # Admin Panel configuration
 
-[Full adminpanel configuration schema](#configuration-schema)
+
+### Abstract
+
+The core principle of configuring Adminizer is based on building a global JSON object, structured according to a specific [TypeScript interface](..\src\interfaces\adminpanelConfig.ts). This object defines and manages the entire behavior and layout of the admin panel.
+
+The configuration is designed to be simple and declarative: by describing the system through a JavaScript object, you can fully customize the admin panel without modifying the underlying code. Additionally, Adminizer supports extensions — developers can create catalogs, managers, and modules by implementing instances of abstract classes. These extensions are automatically integrated into the interface or runtime of Adminizer when registered in the appropriate handlers.
+
+In this section, we focus specifically on the fundamental concept — the configuration JSON object.
+
+
+Typescript example:
+
+
+```typescript
+
+import { AdminizerConfig } from "adminizer";
+
+const config: AdminizerConfig = {
+  routePrefix: "/admin",
+  auth: true,
+  dashboard: true,
+  models: {
+    ExampleModel: {
+      title: "Example Models",
+      model: "ExampleModel",
+      fields: {
+        id: { title: "ID", type: "integer" },
+        name: { title: "Name", type: "string" },
+        description: { title: "Description", type: "text" },
+        createdAt: { title: "Created At", type: "datetime" },
+        updatedAt: { title: "Updated At", type: "datetime" },
+      },
+      list: {
+        fields: {
+          id: true,
+          name: true,
+          createdAt: true,
+        }
+      },
+      add: true,
+      edit: true,
+      remove: true,
+      view: true,
+    }
+  },
+  welcome: {
+    title: "Welcome to Adminizer",
+    text: "Manage your application easily with Adminizer Admin Panel."
+  },
+  translation: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
+  administrator: {
+    login: "admin",
+    password: "admin123",
+  },
+  showVersion: true,
+};
+```
+
 
 ## Global configs
 
@@ -354,7 +414,61 @@ This configuration loads all sail models as they are. Just place  in `config\adm
 
 ## Configuration schema
 
+
 ```javascript
+// @ts-check
+// import { AdminizerConfig } from "adminizer"; // Тип импортируем через комментарий
+
+/** @type {import("adminizer").AdminizerConfig} */
+const config = {
+  routePrefix: "/admin",
+  auth: true,
+  dashboard: true,
+  models: {
+    ExampleModel: {
+      title: "Example Models",
+      model: "ExampleModel",
+      fields: {
+        id: { title: "ID", type: "integer" },
+        name: { title: "Name", type: "string" },
+        description: { title: "Description", type: "text" },
+        createdAt: { title: "Created At", type: "datetime" },
+        updatedAt: { title: "Updated At", type: "datetime" },
+      },
+      list: {
+        fields: {
+          id: true,
+          name: true,
+          createdAt: true,
+        }
+      },
+      add: true,
+      edit: true,
+      remove: true,
+      view: true,
+    }
+  },
+  welcome: {
+    title: "Welcome to Adminizer",
+    text: "Manage your application easily with Adminizer Admin Panel."
+  },
+  translation: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
+  administrator: {
+    login: "admin",
+    password: "admin123",
+  },
+  showVersion: true,
+};
+
+module.exports = config;
+```
+
+
+```javascript
+
 {
     models: {
         [key:string]: {
