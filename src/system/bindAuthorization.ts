@@ -69,8 +69,21 @@ export default async function bindAuthorization(adminizer: Adminizer) {
         console.table(adminsCredentials);
         console.groupEnd()
 
+    } else if (process.env.ADMINPANEL_DEMO_ADMIN_ENABLE !== undefined) {
+        try {
+            let passwordHashed = generate("demodemo");
+            let password = 'masked';
+            // TODO refactor CRUD functions for DataAccessor usage
+            await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
+                login: 'demo', password: 'demo', passwordHashed: passwordHashed, fullName: "Administrator",
+                isActive: true, isAdministrator: true
+            });
+        } catch (e) {
+            Adminizer.log.error("Could not create demo administrator profile", e)
+            return;
+        }
     } else { // try to create one if we don't
-        if (adminizer.config.auth) {
+        if (adminizer.config.auth.enable) {
             Adminizer.log.debug(`Adminpanel does not have an administrator`)
             adminizer.config.policies.push(initUserPolicy)
             //@ts-ignore
@@ -78,7 +91,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
         }
     }
 
-    if (adminizer.config.auth) {
+    if (adminizer.config.auth.enable) {
         adminizer.app.use(baseRoute + '/login', adminizer.policyManager.bindPolicies(policies, _login));
         adminizer.app.use(baseRoute + '/logout', adminizer.policyManager.bindPolicies(policies, _login));
         adminizer.app.use(baseRoute + '/register', adminizer.policyManager.bindPolicies(policies, _register));

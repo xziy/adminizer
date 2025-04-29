@@ -3,7 +3,7 @@ import {generate} from "password-hash";
 import {inertiaInitUserHelper} from "../helpers/inertiaAutHelper";
 
 export default async function initUser(req: ReqType, res: ResType) {
-    if (!req.adminizer.config.auth) {
+    if (!req.adminizer.config.auth.enable) {
         return res.redirect(`${req.adminizer.config.routePrefix}/`);
     }
 

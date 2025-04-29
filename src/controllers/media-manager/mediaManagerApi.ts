@@ -5,7 +5,7 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	const method = req.method.toUpperCase();
 	let id = req.params.id ? req.params.id : '';
 
-	if (req.adminizer.config.auth) {
+	if (req.adminizer.config.auth.enable) {
 		if (!req.session.UserAP) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 		} else if (!req.adminizer.accessRightsHelper.hasPermission(`catalog-${id}`, req.session.UserAP)) {

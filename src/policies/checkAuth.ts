@@ -5,7 +5,7 @@ export default async function checkAuth(req: ReqType, res: ResType, proceed: () 
         locale = req.adminizer.config.translation.defaultLocale
     }
 
-    if (!req.adminizer.config.auth) {
+    if (!req.adminizer.config.auth.enable) {
         if (req.session.UserAP) {
             req.session.UserAP.isAdministrator = true;
         } else {

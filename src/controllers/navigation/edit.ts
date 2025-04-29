@@ -2,7 +2,7 @@ import {ControllerHelper} from "../../helpers/controllerHelper";
 import {DataAccessor} from "../../lib/v4/DataAccessor";
 
 export default async function edit(req: ReqType, res: ResType) {
-	if (req.adminizer.config.auth) {
+	if (req.adminizer.config.auth.enable) {
 		if (!req.session.UserAP) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 		}

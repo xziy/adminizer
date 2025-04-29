@@ -2,7 +2,7 @@ import {generate} from "password-hash";
 import{ inertiaRegisterHelper} from "../helpers/inertiaAutHelper";
 
 export default async function register(req: ReqType, res: ResType) {
-    if (!req.adminizer.config.auth || req.adminizer.config.registration?.enable !== true) {
+    if (!req.adminizer.config.auth.enable || req.adminizer.config.registration?.enable !== true) {
         return res.redirect(`${req.adminizer.config.routePrefix}/`);
     }
 

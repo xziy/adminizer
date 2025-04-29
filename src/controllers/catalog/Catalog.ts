@@ -7,7 +7,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 	let id = req.params.id ? req.params.id : '';
 
 	const postfix = id ? `${slug}-${id}` : `${slug}`
-	if (req.adminizer.config.auth) {
+	if (req.adminizer.config.auth.enable) {
 		if (!req.session.UserAP) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 		} else if (!req.adminizer.accessRightsHelper.hasPermission(`catalog-${postfix}`, req.session.UserAP)) {

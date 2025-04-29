@@ -7,7 +7,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
 
     let entity = ControllerHelper.findEntityObject(req);
 
-    if (req.adminizer.config.auth) {
+    if (req.adminizer.config.auth.enable) {
         if (!req.session.UserAP) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
         } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.session.UserAP)) {

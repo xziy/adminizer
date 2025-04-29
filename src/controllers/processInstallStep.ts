@@ -3,7 +3,7 @@ import * as path from "path";
 import {Adminizer} from "../lib/Adminizer";
 
 export default async function processInstallStep(req: ReqType, res: ResType): Promise<void> {
-	if (req.adminizer.config.auth) {
+	if (req.adminizer.config.auth.enable) {
 		if (!req.session.UserAP) {
 			res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 			return

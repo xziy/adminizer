@@ -13,7 +13,7 @@ export default async function list(req: ReqType, res: ResType) {
         return res.status(404).send({error: 'Not Found'});
     }
 
-    if (req.adminizer.config.auth) {
+    if (req.adminizer.config.auth.enable) {
         if (!req.session.UserAP) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
         } else if (!req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.session.UserAP)) {
