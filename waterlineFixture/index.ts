@@ -30,12 +30,16 @@ if (process.env.SEED_DATA === 'true') await cleanTempFolder();
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize' || true) {
-    const orm = new Sequelize('sqlite::memory:', {
-        logging: false
-      });
+    const tmpDir = path.join(process.cwd(), ".tmp");
+    const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
+    const orm = new Sequelize({
+      dialect: "sqlite",
+      storage: dbPath,
+      logging: false,
+    });
     orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize])
     await orm.authenticate();
-    await orm.sync({ force: true });
+    await orm.sync({ alter: true });
     await SequelizeAdapter.registerSystemModels(orm)
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
