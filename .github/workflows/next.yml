@@ -33,7 +33,8 @@ jobs:
               VEROUT=$(printf "$VERNPM\n$VERLOC\n" | sort -V -r | awk 'NR==1 {print; exit}')
           fi
           jq -r '.version = "'${VEROUT}'-build.'$BUILD_VERSION'"' package.json > /tmp/package.json && mv /tmp/package.json ./package.json
-      
+        working-directory: ./dist
+        
       - run: npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
