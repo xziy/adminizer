@@ -17,9 +17,9 @@
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
 		"build:assets:modules": "npm run build:assets && npm run copy:modules",
-		"start:seed": "cross-env SEED_DATA=true DEMO=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
+		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
 		"demo:build": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules",
-		"demo": "npm run start:seed"
+		"demo": "cross-env DEMO=true npm run start:seed"
 	},
 	"keywords": [],
 	"author": "",
@@ -117,6 +117,9 @@
 		"vite": "^6.1.0",
 		"vite-plugin-externals": "^0.6.2",
 		"vite-plugin-full-reload": "^1.2.0",
-		"waterline": "^0.15.2"
+		"waterline": "^0.15.2",
+		"sqlite3": "^5.1.7",
+		"sequelize": "^6.37.5",
+		"sequelize-typescript": "^2.1.6"
 	}
 }
