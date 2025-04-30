@@ -114,6 +114,7 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
   offset?: number;
   order?: any[];
 } {
+  console.log("WATERLINE CRITERIA", criteria)
   const { where = {}, skip, limit, sort } = criteria;
   const result: any = {
     where: convertCriteriaToSequelize(where),
@@ -135,6 +136,8 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
   return result;
 }
 
+
+
 export class SequelizeModel<T> extends AbstractModel<T> {
   private model: ModelStatic<any>;
 
@@ -148,67 +151,113 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     this.model = model;
   }
 
+  // --- CREATE ---
   protected async _create(data: Record<string, any>): Promise<T> {
-    return await this.model.create(data);
+    console.debug(`[SequelizeModel] _create "${this.modelname}"`);
+    console.debug("DATA:", data);
+    const result = await this.model.create(data);
+    console.debug("RESULT:", result?.toJSON?.() ?? result);
+    console.debug("---");
+    return result;
   }
 
+  // --- FIND ONE ---
   protected async _findOne(criteria: Partial<T>): Promise<T | null> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
-    return await this.model.findOne({ where, include: this._buildIncludes() });
+    console.debug(`[SequelizeModel] _findOne "${this.modelname}"`);
+    console.debug("WHERE:", where);
+    const result = await this.model.findOne({ where, include: this._buildIncludes() });
+    console.debug("RESULT:", result?.toJSON?.() ?? result);
+    console.debug("---");
+    return result;
   }
 
+  // --- FIND MANY ---
   protected async _find(criteria: Partial<T> = {}, options: FindOptions = {}): Promise<T[]> {
     const { where, limit, offset, order } = convertWaterlineCriteriaToSequelizeOptions(criteria);
     const include = options.populate
       ? options.populate.map(([field, opts]) => ({ association: field, ...opts }))
       : this._buildIncludes();
 
-    return await this.model.findAll({
-      where,
-      limit,
-      offset,
-      order,
-      include,
-    });
+    console.debug(`[SequelizeModel] _find "${this.modelname}"`);
+    console.debug("WHERE:", where);
+    if (limit !== undefined) console.debug("LIMIT:", limit);
+    if (offset !== undefined) console.debug("OFFSET:", offset);
+    if (order !== undefined) console.debug("ORDER:", order);
+    if (include.length > 0) console.debug("INCLUDE:", include);
+
+    const result = await this.model.findAll({ where, limit, offset, order, include });
+    console.debug("RESULT:", result.map(r => r.toJSON?.() ?? r));
+    console.debug("---");
+    return result;
   }
 
+  // --- UPDATE ONE ---
   protected async _updateOne(criteria: Partial<T>, data: Partial<T>): Promise<T | null> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    console.debug(`[SequelizeModel] _updateOne "${this.modelname}"`);
+    console.debug("WHERE:", where);
+    console.debug("DATA:", data);
     const record = await this.model.findOne({ where });
-    if (record) {
-      return await record.update(data);
-    }
-    return null;
+    const result = record ? await record.update(data) : null;
+    console.debug("RESULT:", result?.toJSON?.() ?? result);
+    console.debug("---");
+    return result;
   }
 
+  // --- UPDATE MANY ---
   protected async _update(criteria: Partial<T>, data: Partial<T>): Promise<T[]> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    console.debug(`[SequelizeModel] _update "${this.modelname}"`);
+    console.debug("WHERE:", where);
+    console.debug("DATA:", data);
     await this.model.update(data, { where });
-    return await this.model.findAll({ where });
+    const result = await this.model.findAll({ where });
+    console.debug("RESULT:", result.map(r => r.toJSON?.() ?? r));
+    console.debug("---");
+    return result;
   }
 
+  // --- DESTROY ONE ---
   protected async _destroyOne(criteria: Partial<T>): Promise<T | null> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    console.debug(`[SequelizeModel] _destroyOne "${this.modelname}"`);
+    console.debug("WHERE:", where);
     const record = await this.model.findOne({ where });
     if (record) {
       await record.destroy();
-      return record;
+      console.debug("DESTROYED:", record.toJSON?.() ?? record);
+    } else {
+      console.debug("NO MATCH TO DESTROY");
     }
-    return null;
+    console.debug("---");
+    return record;
   }
 
+  // --- DESTROY MANY ---
   protected async _destroy(criteria: Partial<T>): Promise<T[]> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    console.debug(`[SequelizeModel] _destroy "${this.modelname}"`);
+    console.debug("WHERE:", where);
     const records = await this.model.findAll({ where });
     await this.model.destroy({ where });
+    console.debug("DESTROYED:", records.map(r => r.toJSON?.() ?? r));
+    console.debug("---");
     return records;
   }
 
+  // --- COUNT ---
   protected async _count(criteria: Partial<T> = {}): Promise<number> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
-    return await this.model.count({ where });
+    console.debug(`[SequelizeModel] _count "${this.modelname}"`);
+    console.debug("WHERE:", where);
+    const result = await this.model.count({ where });
+    console.debug("RESULT:", result);
+    console.debug("---");
+    return result;
   }
 
+  // --- HELPER ---
   private _buildIncludes(): IncludeOptions[] {
     return Object.keys(this.model.associations).map(key => ({ association: key }));
   }
