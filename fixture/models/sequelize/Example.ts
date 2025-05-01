@@ -1,0 +1,98 @@
+import {
+    Table,
+    Column,
+    Model,
+    DataType,
+    PrimaryKey,
+    AutoIncrement,
+    ForeignKey,
+    BelongsTo,
+    HasMany,
+  } from 'sequelize-typescript';
+  import { InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
+  import { Test } from './Test'; // Предполагаем, что модель Test есть и будет создана отдельно
+  
+  
+  @Table({ tableName: 'example', timestamps: true })
+  export class Example extends Model<
+        InferAttributes<Example>,
+        InferCreationAttributes<Example>
+  > {
+
+  
+    @PrimaryKey
+    @AutoIncrement
+    @Column({ type: DataType.INTEGER })
+    declare id: number;
+  
+    @Column(DataType.STRING)
+    declare title: string;
+  
+    @Column(DataType.STRING)
+    declare description: string;
+  
+    @Column(DataType.STRING)
+    declare disabled_text: string;
+  
+    @Column(DataType.BOOLEAN)
+    declare sort: boolean;
+  
+    @Column(DataType.STRING)
+    declare time: string;
+  
+    @Column(DataType.INTEGER)
+    declare number: number;
+  
+    @Column(DataType.STRING)
+    declare color: string;
+  
+    @Column(DataType.STRING)
+    declare range: string;
+  
+    @Column(DataType.STRING)
+    declare date: string;
+  
+    @Column(DataType.STRING)
+    declare month: string;
+  
+    @Column(DataType.STRING)
+    declare week: string;
+  
+    @Column(DataType.STRING)
+    declare code: string;
+  
+    @Column(DataType.STRING)
+    declare editor: string;
+  
+    @Column(DataType.JSON)
+    declare selectMany: object;
+  
+    @Column(DataType.STRING)
+    declare select: string;
+  
+    @ForeignKey(() => Example)
+    @Column(DataType.INTEGER)
+    declare testRelation: number;
+  
+    @BelongsTo(() => Example)
+    declare testRelationExample?: Example;
+  
+    @Column(DataType.STRING)
+    declare tui: string;
+  
+    @Column(DataType.JSON)
+    declare datatable: object;
+  
+    @Column(DataType.JSON)
+    declare json: object;
+  
+    @HasMany(() => Test, 'owner')
+    declare tests: Test[];
+  
+    @Column(DataType.STRING)
+    declare datetime: string;
+  
+    @Column(DataType.JSON)
+    declare geojson: object;
+  }
+  

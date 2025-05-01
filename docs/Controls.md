@@ -279,7 +279,7 @@ After that, you can use in the configuration:
     }
 }
 ```
-See the implementation example here `waterlineFixture` & here `modules/controls/wysiwyg`
+See the implementation example here `fixture` & here `modules/controls/wysiwyg`
 
 To build the module, you will need custom `vite.config`
 ```typescript

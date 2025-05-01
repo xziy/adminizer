@@ -58,8 +58,9 @@ export class WaterlineModel<T> extends AbstractModel<T> {
     if (options.limit && typeof options.limit === "number") {
       query = query.limit(options.limit);
     }
-
-    return await query;
+    let result = await query;
+    console.log(result, "result")
+    return result;
   }
 
   protected async _updateOne(criteria: Partial<T>, data: Partial<T>): Promise<T | null> {
