@@ -24,6 +24,7 @@ interface Action {
     id: string,
     title: string,
     icon: string,
+    type: 'blank' | 'self',
     link: string
 }
 
@@ -63,7 +64,6 @@ const ListTable = () => {
     const page = usePage<ExtendedSharedData>()
     const data = page.props.data
     const [loading, setLoading] = useState(false)
-
     // Состояния для параметров
     const [searchValue, setSearchValue] = useState('')
     const [showSearch, setShowSearch] = useState(false)
@@ -151,13 +151,24 @@ const ListTable = () => {
                                                 asChild
                                                 className="cursor-pointer"
                                             >
-                                                <Link
-                                                    href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
-                                                >
-                                                    {action.icon && <MaterialIcon name={action.icon}
-                                                                                  className="!text-[18px] mr-2"/>}
-                                                    <span>{action.title}</span>
-                                                </Link>
+                                                {action.type === 'blank' ? (
+                                                    <a target="_blank"
+                                                       href={action.link}
+                                                    >
+                                                        {action.icon && <MaterialIcon name={action.icon}
+                                                                                      className="!text-[18px] mr-2"/>}
+                                                        <span>{action.title}</span>
+                                                    </a>
+                                                ) : (
+                                                    <Link
+                                                        href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
+                                                    >
+                                                        {action.icon && <MaterialIcon name={action.icon}
+                                                                                      className="!text-[18px] mr-2"/>}
+                                                        <span>{action.title}</span>
+                                                    </Link>
+                                                )}
+
                                             </DropdownMenuItem>
                                         ))}
                                     </>
@@ -245,7 +256,7 @@ const ListTable = () => {
 
     const handleSearch = useCallback(() => {
         setLoading(true)
-        router.visit(`${page.props.header.entity.uri}?${buildQueryString(1) }`, {
+        router.visit(`${page.props.header.entity.uri}?${buildQueryString(1)}`, {
             preserveState: true,
             only: ['data', 'columns', 'header'],
             onSuccess: () => setLoading(false)
@@ -312,10 +323,17 @@ const ListTable = () => {
                     <div className="gap-2 ml-6 hidden lg:flex">
                         {page.props.header.actions.map((action) => (
                             <Button asChild variant="outline" key={action.id}>
-                                <a href={action.link} target='_blank'>
-                                    <MaterialIcon name={action.icon} className="!text-[18px]"/>
-                                    {action.title}
-                                </a>
+                                {action.type === 'blank' ? (
+                                    <a href={action.link} target='_blank'>
+                                        {action.icon && <MaterialIcon name={action.icon} className="!text-[18px]"/>}
+                                        {action.title}
+                                    </a>
+                                ) : (
+                                    <Link href={action.link} prefetch>
+                                        {action.icon && <MaterialIcon name={action.icon} className="!text-[18px]"/>}
+                                        {action.title}
+                                    </Link>
+                                )}
                             </Button>
                         )) || null}
                     </div>
@@ -353,7 +371,8 @@ const ListTable = () => {
                     handleSearch={handleSearch}
                 />
                 <div className="mt-4 flex flex-wrap justify-center md:justify-between gap-4 items-end">
-                    <div className="grid grid-cols-2 md:grid-cols-1 gap-4 items-center justify-items-center md:justify-items-normal">
+                    <div
+                        className="grid grid-cols-2 md:grid-cols-1 gap-4 items-center justify-items-center md:justify-items-normal">
                         <p className="text-sm text-foreground/70">Show {pagination.from} - {pagination.to} of {pagination.total}</p>
                         <div className="max-w-fit">
                             <Select onValueChange={(value) => changeCount(value)}
@@ -371,8 +390,8 @@ const ListTable = () => {
                         </div>
                     </div>
                     <div>
-                        <PaginationRender pagination={pagination} pageChange={handlePageChange}
-                                          currentPage={currentPage}/>
+                        {data.data.length > 0 && <PaginationRender pagination={pagination} pageChange={handlePageChange}
+                                          currentPage={currentPage}/> }
                     </div>
                 </div>
             </div>

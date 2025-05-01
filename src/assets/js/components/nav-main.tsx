@@ -37,47 +37,66 @@ export function NavMain({items = []}: { items: NavItem[] }) {
             <SidebarMenu>
                 {items && items.map((item) => (
                     item.actions?.length > 0 ? (
-                        <Collapsible
-                            key={item.title}
-                            asChild
-                            defaultOpen={isActiveItem(item.link)}
-                            className="group/collapsible"
-                        >
-                            <SidebarMenuItem>
-                                <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton tooltip={item.title}>
-                                        <MaterialIcon name={item.icon} className="!text-[18px]"/>
-                                        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{item.title}</span>
-                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                    </SidebarMenuButton>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <SidebarMenuSub>
-                                        {item.actions?.map((subItem) => (
-                                            <SidebarMenuSubItem key={subItem.id}>
-                                                <SidebarMenuSubButton asChild isActive={isActiveItem(subItem.link)}>
-                                                    <Link href={subItem.link} prefetch>
-                                                        <MaterialIcon name={subItem.icon ?? ''} className="!text-[18px]"/>
-                                                        <span>{subItem.title}</span>
-                                                    </Link>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        ))}
-                                    </SidebarMenuSub>
-                                </CollapsibleContent>
-                            </SidebarMenuItem>
-                        </Collapsible>
-                        ):
+                            <Collapsible
+                                key={item.title}
+                                asChild
+                                defaultOpen={isActiveItem(item.link)}
+                                className="group/collapsible"
+                            >
+                                <SidebarMenuItem>
+                                    <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton tooltip={item.title}>
+                                            <MaterialIcon name={item.icon} className="!text-[18px]"/>
+                                            <span
+                                                className="overflow-hidden text-ellipsis whitespace-nowrap">{item.title}</span>
+                                            <ChevronRight
+                                                className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                                        </SidebarMenuButton>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <SidebarMenuSub>
+                                            {item.actions?.map((subItem) => (
+                                                <SidebarMenuSubItem key={subItem.id}>
+                                                    <SidebarMenuSubButton asChild isActive={isActiveItem(subItem.link)}>
+                                                        {subItem.type === 'blank' ? (
+                                                            <a href={subItem.link} target="_blank"
+                                                               rel="noopener noreferrer">
+                                                                {subItem.icon && <MaterialIcon name={subItem.icon}
+                                                                                               className="!text-[18px]"/>}
+                                                                <span>{subItem.title}</span>
+                                                            </a>
+                                                        ) : (
+                                                            <Link href={subItem.link}>
+                                                                {subItem.icon && <MaterialIcon name={subItem.icon}
+                                                                                               className="!text-[18px]"/>}
+                                                                <span>{subItem.title}</span>
+                                                            </Link>
+                                                        )}
+                                                    </SidebarMenuSubButton>
+                                                </SidebarMenuSubItem>
+                                            ))}
+                                        </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                </SidebarMenuItem>
+                            </Collapsible>
+                        ) :
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
                                 isActive={isActiveItem(item.link)}
                                 tooltip={{children: item.title}}
                             >
-                                <Link href={item.link} prefetch>
-                                    <MaterialIcon name={item.icon} className="!text-[18px]"/>
-                                    <span>{item.title}</span>
-                                </Link>
+                                {item.type === 'blank' ? (
+                                    <a href={item.link} target="_blank" rel="noopener noreferrer">
+                                        {item.icon && <MaterialIcon name={item.icon} className="!text-[18px]"/>}
+                                        <span>{item.title}</span>
+                                    </a>
+                                ) : (
+                                    <Link href={item.link}>
+                                        {item.icon && <MaterialIcon name={item.icon} className="!text-[18px]"/>}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                )}
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                 ))}

@@ -66,7 +66,7 @@ export default async function list(req: ReqType, res: ResType) {
         value,
     }))
 
-    const {columns, nodeTreeColumns} = setColumns(fields, orderColumn, direction, searchPairs)
+    const {columns, nodeTreeColumns} = setColumns(fields, orderColumn, direction, searchPairs, req)
 
     const RequestBody = {
         draw: "1",
@@ -112,7 +112,8 @@ function setColumns(
     fields: Fields,
     orderColumn: string,
     direction: string,
-    searchPairs: Array<{ column: string; value: string }>
+    searchPairs: Array<{ column: string; value: string }>,
+    req: ReqType
 ) {
     const columns: Record<string, object> = {};
     const nodeTreeColumns: Column[] = [];
@@ -124,9 +125,9 @@ function setColumns(
         // Check if this field is searchable
         const searchForThisColumn = searchPairs.find(pair => pair.column === String(i));
         const searchValue = searchForThisColumn ? searchForThisColumn.value : "";
-
         columns[key] = {
             ...field.config as BaseFieldConfig,
+            title: req.i18n.__((field.config as BaseFieldConfig).title),
             data: String(i),
             direction: String(i) === orderColumn ? direction : undefined,
             searchColumnValue: searchValue || undefined, // undefined, если поиска нет
