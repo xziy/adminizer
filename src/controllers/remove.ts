@@ -74,10 +74,10 @@ export default async function remove(req: ReqType, res: ResType) {
     }
 
     if (destroyedRecord) {
-        req.flash.setFlashMessage('success', 'Record was removed successfully !');
+        req.flash.setFlashMessage('success', req.i18n.__('Record was removed successfully !'));
 
     } else {
-        req.flash.setFlashMessage('success', 'Record was not removed');
+        req.flash.setFlashMessage('error', req.i18n.__('Record was not removed'));
     }
     let referToUrl = referTo ? `${entity.uri}${referTo}` : `${entity.uri}`
     return req.Inertia.redirect(`${referToUrl}`)

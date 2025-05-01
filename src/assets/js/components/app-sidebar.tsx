@@ -32,8 +32,8 @@ type Section = {
     title: string
     link: string
     icon: string
+    type: 'blank' | 'self'
     subItems?: Section[]
-
 }
 
 interface MenuProps extends SharedData {
@@ -44,7 +44,7 @@ interface MenuProps extends SharedData {
 export function AppSidebar() {
     const page = usePage<MenuProps>();
     return (
-        <Sidebar collapsible="icon" variant="inset" >
+        <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem key={page.props.brand}>
@@ -56,8 +56,10 @@ export function AppSidebar() {
                                         <Button variant="ghost" asChild className="cursor-pointer w-full">
                                             <div>
                                                 <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
-                                                <span className="group-data-[state=collapsed]:hidden">{page.props.brand}</span>
-                                                <ChevronsUpDown className="ml-auto group-data-[state=collapsed]:hidden"/>
+                                                <span
+                                                    className="group-data-[state=collapsed]:hidden">{page.props.brand}</span>
+                                                <ChevronsUpDown
+                                                    className="ml-auto group-data-[state=collapsed]:hidden"/>
                                             </div>
                                         </Button>
                                     </SidebarMenuButton>
@@ -76,24 +78,46 @@ export function AppSidebar() {
                                                     <MenubarSubContent>
                                                         {itemSection.subItems.map((subItem) => (
                                                             <MenubarItem key={subItem.id}>
-                                                                <Link href={subItem.link} key={subItem.id}
-                                                                      className="flex gap-2 items-center">
-                                                                    <MaterialIcon name={subItem.icon}
-                                                                                  className="!text-[18px]"/>
-                                                                    <span
-                                                                        className="hover:underline">{subItem.title}</span>
-                                                                </Link>
+                                                                {subItem.type === 'blank' ? (
+                                                                    <a href={subItem.link} key={subItem.id}
+                                                                       target="_blank"
+                                                                       className="flex gap-2 items-center">
+                                                                        {subItem.icon &&
+                                                                            <MaterialIcon name={subItem.icon}
+                                                                                          className="!text-[18px]"/>}
+                                                                        <span
+                                                                            className="hover:underline">{subItem.title}</span>
+                                                                    </a>
+                                                                ) : (
+                                                                    <Link href={subItem.link} key={subItem.id}
+                                                                          className="flex gap-2 items-center">
+                                                                        {subItem.icon &&
+                                                                            <MaterialIcon name={subItem.icon}
+                                                                                          className="!text-[18px]"/>}
+                                                                        <span
+                                                                            className="hover:underline">{subItem.title}</span>
+                                                                    </Link>
+                                                                )}
                                                             </MenubarItem>
                                                         ))}
                                                     </MenubarSubContent>
                                                 </MenubarSub> :
                                                 <MenubarItem>
-                                                    <Link href={itemSection.link}
-                                                          className="flex gap-2 items-center">
-                                                        <MaterialIcon name={itemSection.icon}
-                                                                      className="!text-[18px]"/>
-                                                        <span className="hover:underline">{itemSection.title}</span>
-                                                    </Link>
+                                                    {itemSection.type === 'blank' ? (
+                                                        <a href={itemSection.link} target="_blank"
+                                                           className="flex gap-2 items-center">
+                                                            {itemSection.icon && <MaterialIcon name={itemSection.icon}
+                                                                                               className="!text-[18px]"/>}
+                                                            <span className="hover:underline">{itemSection.title}</span>
+                                                        </a>
+                                                    ) : (
+                                                        <Link href={itemSection.link}
+                                                              className="flex gap-2 items-center">
+                                                            {itemSection.icon && <MaterialIcon name={itemSection.icon}
+                                                                                               className="!text-[18px]"/>}
+                                                            <span className="hover:underline">{itemSection.title}</span>
+                                                        </Link>
+                                                    )}
                                                 </MenubarItem>}
                                         </div>
                                     ))}
@@ -143,14 +167,28 @@ export function AppSidebar() {
                                                                                 <SidebarMenuSubItem
                                                                                     key={subIten.id}>
                                                                                     <SidebarMenuSubButton asChild>
-                                                                                        <Link href={subIten.link}
-                                                                                              className="flex gap-2 items-center">
-                                                                                            <MaterialIcon
-                                                                                                name={subIten.icon}
-                                                                                                className="!text-[18px]"/>
-                                                                                            <span
-                                                                                                className="hover:underline">{subIten.title}</span>
-                                                                                        </Link>
+                                                                                        {subIten.type === 'blank' ? (
+                                                                                            <a href={subIten.link}
+                                                                                               target="_blank"
+                                                                                               className="flex gap-2 items-center">
+                                                                                                {subIten.icon &&
+                                                                                                    <MaterialIcon
+                                                                                                        name={subIten.icon}
+                                                                                                        className="!text-[18px]"/>}
+                                                                                                <span
+                                                                                                    className="hover:underline">{subIten.title}</span>
+                                                                                            </a>
+                                                                                        ) : (
+                                                                                            <Link href={subIten.link}
+                                                                                                  className="flex gap-2 items-center">
+                                                                                                {subIten.icon &&
+                                                                                                    <MaterialIcon
+                                                                                                        name={subIten.icon}
+                                                                                                        className="!text-[18px]"/>}
+                                                                                                <span
+                                                                                                    className="hover:underline">{subIten.title}</span>
+                                                                                            </Link>
+                                                                                        )}
                                                                                     </SidebarMenuSubButton>
                                                                                 </SidebarMenuSubItem>
                                                                             ))}
@@ -162,13 +200,25 @@ export function AppSidebar() {
                                                     ) : (
                                                         <SidebarMenuSubItem key={itemSection.id}>
                                                             <SidebarMenuSubButton asChild>
-                                                                <Link href={itemSection.link}
-                                                                      className="flex gap-2 items-center">
-                                                                    <MaterialIcon name={itemSection.icon}
-                                                                                  className="!text-[18px]"/>
-                                                                    <span
-                                                                        className="hover:underline">{itemSection.title}</span>
-                                                                </Link>
+                                                                {itemSection.type === 'blank' ? (
+                                                                    <a href={itemSection.link} target="_blank"
+                                                                       className="flex gap-2 items-center">
+                                                                        {itemSection.icon &&
+                                                                            <MaterialIcon name={itemSection.icon}
+                                                                                          className="!text-[18px]"/>}
+                                                                        <span
+                                                                            className="hover:underline">{itemSection.title}</span>
+                                                                    </a>
+                                                                ) : (
+                                                                    <Link href={itemSection.link}
+                                                                          className="flex gap-2 items-center">
+                                                                        {itemSection.icon &&
+                                                                            <MaterialIcon name={itemSection.icon}
+                                                                                          className="!text-[18px]"/>}
+                                                                        <span
+                                                                            className="hover:underline">{itemSection.title}</span>
+                                                                    </Link>
+                                                                )}
                                                             </SidebarMenuSubButton>
                                                         </SidebarMenuSubItem>
                                                     )

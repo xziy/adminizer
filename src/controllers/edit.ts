@@ -41,6 +41,7 @@ export default async function edit(req: ReqType, res: ResType) {
         const id = req.params.id as string;
         dataAccessor = new DataAccessor(req, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
+        if (!record) return res.status(404).send("Adminpanel > Record not found");;
     } catch (e) {
         Adminizer.log.error('Admin edit error: ');
         Adminizer.log.error(e);
@@ -153,7 +154,7 @@ export default async function edit(req: ReqType, res: ResType) {
                     }
                 }
 
-                req.flash.setFlashMessage('success', 'Your record was updated !');
+                req.flash.setFlashMessage('success', req.i18n.__('Record was updated'));
                 return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
             }
         } catch (e) {

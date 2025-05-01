@@ -474,6 +474,10 @@ export interface HrefConfig {
     id: string
     title: string
     link: string
+    /**
+     * Blank or self
+     */
+    type: 'blank' | 'self',
     icon?: MaterialIcon
     /**
      * Only for view, controller still uses his own access rights token
