@@ -5,8 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
-		"dev": "cross-env VITE_ENV=dev tsx watch --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
+		"start": "tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+		"dev": "cross-env VITE_ENV=dev tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
 		"compile:backend": "tsc -p src/tsconfig.json",
 		"watch:backend": "tsc -w -p src/tsconfig.json",
@@ -17,7 +17,7 @@
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
 		"build:assets:modules": "npm run build:assets && npm run copy:modules",
-		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./waterlineFixture/tsconfig.json ./waterlineFixture/index.ts",
+		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"demo:build": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules",
 		"demo": "cross-env DEMO=true npm run start:seed"
 	},

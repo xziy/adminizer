@@ -70,7 +70,7 @@ After that, the Adminizer panel will be available at a URL like `http://localhos
 # Troubleshooting Adminizer Startup
 
 If you encounter difficulties launching **Adminizer**,  
-you can use the ready-made **fixture** (template project) available in the repository folder [`waterlineFixture`](https://github.com/adminization/adminizer/tree/main/waterlineFixture).
+you can use the ready-made **fixture** (template project) available in the repository folder [`fixture`](https://github.com/adminization/adminizer/tree/main/fixture).
 
 This project already includes:
 - a fully configured Adminizer setup,
