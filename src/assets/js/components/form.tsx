@@ -48,6 +48,13 @@ const Form = () => {
 
     return (
         <div className="p-4 w-full">
+            <div className="w-full sticky z-[1001] py-4 pb-8 top-0 h-fit bg-background flex gap-4 lg:hidden">
+                <Button variant="green" type="submit" className="w-fit cursor-pointer" form="addUserForm"
+                        disabled={processing || hasFormErrors()}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    {page.props.btnSave.title}
+                </Button>
+            </div>
             <form
                 className="mt-8"
                 id="addUserForm"

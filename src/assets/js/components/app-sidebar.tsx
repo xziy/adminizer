@@ -44,7 +44,7 @@ interface MenuProps extends SharedData {
 export function AppSidebar() {
     const page = usePage<MenuProps>();
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem key={page.props.brand}>

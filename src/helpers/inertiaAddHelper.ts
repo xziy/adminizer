@@ -14,7 +14,7 @@ import {ModelAnyField} from "../lib/v4/model/AbstractModel";
 export type PropsFieldType =
    'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
 
-interface listProps extends Record<string | number | symbol, unknown> {
+interface FieldProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
     view: boolean;
     actions: Actions[],
@@ -33,7 +33,7 @@ interface listProps extends Record<string | number | symbol, unknown> {
 
 export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number | string[]>, view: boolean = false) {
     const actionType = 'add';
-    let props: listProps = {
+    let props: FieldProps = {
         edit: !!record,
         view: view,
         actions: [],
@@ -66,7 +66,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let tooltip = fieldConfig.tooltip ?? ''
         let name = key
         let fieldType: PropsFieldType = 'text'
-        let disabled = false
+        let disabled = fieldConfig.disabled ?? false
         let required = fieldConfig.required ?? false
         let options: Record<string, unknown> | Record<string, unknown>[] = {}
         let value = record ? record[key] : undefined

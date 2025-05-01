@@ -58,6 +58,7 @@ export default async function form(req: ReqType, res: ResType) {
 				await req.adminizer.config.forms.set(slug, field, false);
 			}
 		}
+        return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/form/${slug}`);
 	}
 
 	for (let key of Object.keys(form)) {

@@ -353,7 +353,6 @@ const config: AdminpanelConfig = {
     // },
     dashboard: false,
     forms: {
-        path: 'forms',
         data: {
             global: {
                 field1: {
