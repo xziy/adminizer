@@ -169,7 +169,7 @@ async function cleanTempFolder() {
 
 
 
-async function seedDatabase(adminizer: Adminizer, collections: any, count: number = 3) {
+async function seedDatabase(collections: any, count: number = 3) {
 
     const getRandomTime = () => {
         const hours = faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0');
@@ -179,8 +179,8 @@ async function seedDatabase(adminizer: Adminizer, collections: any, count: numbe
     if (collections.example) {
         // TODO: Use adminizer.modelHandler.model.get for adapt for multiORM fixture
         const exampleModel = collections.example as WaterlineModel<typeof Example>;
-        const existingCount = await exampleModel.count({});
 
+        const existingCount = await exampleModel.count({});
         if (existingCount === 0) {
             const fakeExamples = Array.from({ length: count }, () => ({
                 title: faker.lorem.word(),

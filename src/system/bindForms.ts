@@ -10,7 +10,7 @@ export default async function bindForms(adminizer: Adminizer) {
         }
     }
 
-    adminizer.emitter.on("orm:loaded", async () => {
+    adminizer.emitter.on("adminizer:loaded", async () => {
         // Seeding forms data
         for (let form in adminizer.config.forms.data) {
             for (let key in adminizer.config.forms.data[form]) {

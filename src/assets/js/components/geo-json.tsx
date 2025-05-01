@@ -12,7 +12,7 @@ import L from "leaflet";
 import { Button } from "@/components/ui/button.tsx";
 import { Hexagon, MapPin, RectangleHorizontal, Trash2, Check } from "lucide-react";
 
-// Фикс для иконок маркеров
+// F
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -53,6 +53,7 @@ interface GeoJsonEditorProps {
     onFeaturesChange?: (features: MapFeature[]) => void;
     className?: string;
     style?: React.CSSProperties;
+    disabled?: boolean;
 }
 
 const ControlPanel = ({
@@ -443,6 +444,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                                                          onFeaturesChange,
                                                          className,
                                                          style,
+                                                         disabled,
                                                      }) => {
     const [features, setFeatures] = useState<MapFeature[]>(initialFeatures);
     const [drawingMode, setDrawingMode] = useState<
@@ -482,7 +484,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
     }, [handleFeaturesChange, drawingInProgress]);
 
     return (
-        <div className={className} style={{ position: "relative", ...style }}>
+        <div className={`${className} ${disabled ? "pointer-events-none opacity-50" : ""}`} style={{ position: "relative", ...style }}>
             <MapContainer
                 center={center}
                 zoom={zoom}

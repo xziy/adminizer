@@ -169,7 +169,7 @@ const FieldRenderer: FC<{
                     variant="secondary"
                     notFound={notFound}
                     search={search}
-                    processing={processing || field.disabled}
+                    disabled={processing || field.disabled}
                     mode={field.type === 'association' ? 'single' : 'multiple'}
                     maxCount={10}
                     className={`${processing ? 'pointer-events-none' : ''}`}
@@ -182,66 +182,67 @@ const FieldRenderer: FC<{
                         initialValue={value as string ?? ''}
                         onChange={handleEditorChange}
                         options={field.options?.config as { items: string[] }}
+                        disabled={processing || field.disabled}
                     />
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleEditorChange}/>
+                                     onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             }
         case 'markdown':
             if (field.options?.name === 'toast-ui') {
                 return (
                     <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
-                             onChange={handleEditorChange}/>
+                             onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleEditorChange}/>
+                                     onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             }
         case 'table':
             if (field.options?.name === 'handsontable') {
                 return (
                     <HandsonTableLazy data={value as any[]} config={field.options?.config}
-                                      onChange={handleTableChange}/>
+                                      onChange={handleTableChange} disabled={processing || field.disabled}/>
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleEditorChange}/>
+                                     onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             }
         case 'jsonEditor':
             if (field.options?.name === 'jsoneditor') {
                 return (
                     <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
-                                    onChange={handleJSONChange} {...field.options?.config}
+                                    onChange={handleJSONChange} {...field.options?.config} disabled={processing || field.disabled}
                     />
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleJSONChange}/>
+                                     onChange={handleJSONChange} disabled={processing || field.disabled}/>
                 )
             }
         case 'codeEditor':
             if (field.options?.name === 'monaco') {
                 return (
                     <MonacoLazy value={value as string ?? ''} onChange={handleCodeChange}
-                                options={field.options?.config}/>
+                                options={field.options?.config} disabled={processing || field.disabled}/>
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleJSONChange}/>
+                                     onChange={handleJSONChange} disabled={processing || field.disabled}/>
                 )
             }
         case 'geoJson':
@@ -251,13 +252,14 @@ const FieldRenderer: FC<{
                         mode="all"
                         initialFeatures={value as [] ?? undefined}
                         onFeaturesChange={handleGeoJsonChange}
+                        disabled={processing || field.disabled}
                     />
                 )
             } else {
                 return (
                     <DynamicControls moduleComponent={field.options?.path as string} options={field.options?.config}
                                      initialValue={value as string ?? ''} name={`${field.type}-${field.name}`}
-                                     onChange={handleJSONChange}/>
+                                     onChange={handleJSONChange} disabled={processing || field.disabled}/>
                 )
             }
         default:
