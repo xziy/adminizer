@@ -188,24 +188,9 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     }
 
 
-    function expressHandler(subApp: any) {
-        return (req: any, res: any) => {
-            subApp(req, res, (err: any) => {
-                if (err) {
-                    console.log("Err in SubApp", err);
-                    res.writeHead(500, {'Content-Type': 'text/plain'});
-                    res.end('Internal Server Error');
-                } else {
-                    res.writeHead(404, {'Content-Type': 'text/plain'});
-                    res.end('Route Not Found in SubApp');
-                }
-            });
-        };
-    }
-
     // Main app on http
     const mainApp = http.createServer((req, res) => {
-        const adminizerHandler = expressHandler(adminizer.app);
+        const adminizerHandler = adminizer.getMiddleware();
         if (req.url.startsWith(routePrefix)) {
             // Delete /adminizer from url --------------------->>>>>>>>>>!!!!!!!!!!!!
             // req.url = req.url.replace(routePrefix, '') || '/';
