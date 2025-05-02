@@ -8,4 +8,5 @@ export * from "./interfaces/adminpanelConfig";
 export * from "./lib/v4/model/AbstractModel";
 export * from "./lib/v4/model/adapter/waterline";
 export * from "./lib/v4/model/adapter/typeorm";
+export * from "./lib/v4/model/adapter/sequelize"
 export * from "./lib/Adminizer";
