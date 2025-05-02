@@ -101,12 +101,19 @@ export default function AddUserForm() {
 
     return (
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <Button className="mb-3 w-fit" asChild>
-                <Link href={page.props.btnBack.link}>
-                    <Icon iconNode={MoveLeft}/>
-                    {page.props.btnBack.title}
-                </Link>
-            </Button>
+            <div className="w-full sticky z-[1001] py-4 pb-8 top-0 h-fit bg-background flex gap-4">
+                <Button className="mb-3 w-fit" asChild>
+                    <Link href={page.props.btnBack.link}>
+                        <Icon iconNode={MoveLeft}/>
+                        {page.props.btnBack.title}
+                    </Link>
+                </Button>
+                <Button variant="green" type="submit" className="w-fit cursor-pointer" form="addUserForm"
+                        disabled={processing || page.props.view}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    {page.props.btnSave.title}
+                </Button>
+            </div>
             <form id="addUserForm" onSubmit={submit} className={page.props.view ? 'cursor-not-allowed' : ''}>
                 <div className="flex flex-col gap-10 max-w-[1144px]">
                     <h2 className="font-bold text-xl">{page.props.head}</h2>
@@ -302,11 +309,6 @@ export default function AddUserForm() {
                             </div>
                         </>
                     )}
-                    <Button variant="green" type="submit" className="mt-4 w-fit cursor-pointer"
-                            disabled={processing || page.props.view}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                        {page.props.btnSave.title}
-                    </Button>
                 </div>
             </form>
         </div>

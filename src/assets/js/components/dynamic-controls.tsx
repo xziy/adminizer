@@ -14,7 +14,8 @@ interface Props {
     options?: Record<string, string>
     initialValue: string
     onChange: (value: any) => void
-    name: string
+    name: string,
+    disabled?: boolean
 }
 
 export default function DynamicControls({moduleComponent, initialValue, onChange, name}: Props) {

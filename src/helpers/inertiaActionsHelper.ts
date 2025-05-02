@@ -4,6 +4,7 @@ import {ActionType} from "../interfaces/adminpanelConfig";
 export interface Actions {
     link: string;
     id: string;
+    type: 'blank' | 'self';
     title: string;
     icon: string;
 }
@@ -18,6 +19,7 @@ export default  function inertiaActionsHelper(actionType: ActionType, entity: En
                     resActions.push({
                         link: action.link,
                         id: action.id,
+                        type: action.type,
                         title: action.title,
                         icon: action.icon
                     })

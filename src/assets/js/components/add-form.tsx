@@ -96,7 +96,6 @@ const AddForm: FC = () => {
 
     const page = usePage<AddProps>();
     const {fields, btnBack, view, notFound} = page.props;
-
     const {
         data,
         setData,
@@ -132,7 +131,7 @@ const AddForm: FC = () => {
                         {btnBack.title}
                     </Link>
                 </Button>
-                <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden"
+                <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden" form="addUserForm"
                         disabled={processing || page.props.view || hasFormErrors()}>
                     {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                     {page.props.btnSave.title}

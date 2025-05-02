@@ -12,11 +12,6 @@ export interface BreadcrumbItem {
     href: string;
 }
 
-export interface NavGroup {
-    title: string;
-    items: NavItem[];
-}
-
 
 export interface Columns {
     [key: string]: {
@@ -29,13 +24,15 @@ export interface Columns {
     }
 }
 
-export interface NavItem extends MenuItem {}
+export interface NavItem extends MenuItem {
+    type: 'blank' | 'self'
+}
 
 type FlashMessages = 'info' | 'error' | 'success' | string;
 
 export interface SharedData {
     name: string;
-    menu: MenuItem[];
+    menu: NavItem[];
     brand: string,
     logout: string
     logoutBtn: string

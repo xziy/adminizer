@@ -59,6 +59,7 @@ interface EditorProps {
     initialValue: string,
     onChange: (value: string) => void
     options: { items: string[]}
+    disabled?: boolean
 }
 
 
@@ -87,7 +88,7 @@ const translations = languageMap[docLang] || languageMap['en']
  * Create a free account with a trial: https://portal.ckeditor.com/checkout?plan=free
  */
 
-export default function AdminCKEditor({initialValue, onChange, options}: EditorProps) {
+export default function AdminCKEditor({initialValue, onChange, options, disabled}: EditorProps) {
     const editorContainerRef = useRef(null);
     const editorRef = useRef(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);
@@ -224,7 +225,7 @@ export default function AdminCKEditor({initialValue, onChange, options}: EditorP
     }, [initialValue]);
 
     return (
-        <div className="max-fit">
+        <div className={`max-fit ${disabled ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}`}>
             <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
                 <div className="editor-container__editor">
                     <div ref={editorRef}>{editorConfig &&

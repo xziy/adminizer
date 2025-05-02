@@ -73,6 +73,7 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
                 props.inlineActions.push({
                     icon: inlineAction.icon,
                     id: inlineAction.id,
+                    type: inlineAction.type,
                     link: inlineAction.link,
                     title: req.i18n.__(inlineAction.title),
                 })

@@ -6,10 +6,11 @@ import useWindowSize from "@/hooks/use-window-size.ts";
 interface MonacoEditorProps {
     onChange: (value: string) => void;
     value: string
-    options: {language: string}
+    options: {language: string},
+    disabled?: boolean
 }
 
-const MonacoEditor: FC<MonacoEditorProps> = ({ onChange, value, options }) => {
+const MonacoEditor: FC<MonacoEditorProps> = ({ onChange, value, options, disabled }) => {
     const { appearance } = useAppearance();
     const [theme, setTheme] = useState<string>('light');
     const editorRef = useRef<any>(null);
@@ -78,7 +79,7 @@ const MonacoEditor: FC<MonacoEditorProps> = ({ onChange, value, options }) => {
                 }}
                 onChange={handleEditorChange}
                 onMount={handleEditorDidMount}
-                className="transition-all duration-200 ease-in-out"
+                className={`transition-all duration-200 ease-in-out ${disabled ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}`}
             />
         </div>
     );

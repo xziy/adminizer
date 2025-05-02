@@ -30,6 +30,7 @@ interface TuiEditorProps {
     initialValue?: string;
     onChange?: (value: string) => void;
     options?: EditorProps;
+    disabled?: boolean;
 }
 
 const supportedLanguages: string[] = [
@@ -60,7 +61,7 @@ const docLang = document.documentElement.lang
 
 const lang = supportedLanguages.includes(docLang) ? docLang : 'en'
 
-const ToastEditor = ({initialValue = '', onChange, options}: TuiEditorProps) => {
+const ToastEditor = ({initialValue = '', onChange, options, disabled}: TuiEditorProps) => {
     const editorRef = useRef<Editor>(null);
     const {width} = useWindowSize();
     const {appearance} = useAppearance();
@@ -105,15 +106,17 @@ const ToastEditor = ({initialValue = '', onChange, options}: TuiEditorProps) => 
     }, [width, options, theme]);
 
     return (
-        <Editor
-            key={`editor-${theme}-${lang}`}
-            ref={editorRef}
-            initialValue={initialValue}
-            onChange={handleEditorChange}
-            autofocus={false}
-            theme={theme}
-            {...editorOptions}
-        />
+        <div className={`${disabled ? 'pointer-events-none opacity-50' : ''}`}>
+            <Editor
+                key={`editor-${theme}-${lang}`}
+                ref={editorRef}
+                initialValue={initialValue}
+                onChange={handleEditorChange}
+                autofocus={false}
+                theme={theme}
+                {...editorOptions}
+            />
+        </div>
     );
 };
 

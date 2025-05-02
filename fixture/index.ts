@@ -25,11 +25,14 @@ import { JsonSchema as JsonSchemaSequelize  } from "./models/sequelize/JsonSchem
 import { Test as TestSequelize } from "./models/sequelize/Test";
 import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
 
+// Clean temp folder
 if (process.env.SEED_DATA === 'true') await cleanTempFolder();
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
-if(process.env.ORM === 'sequelize' || true) {
+if(process.env.ORM === 'sequelize'
+    // || true
+) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
     const orm = new Sequelize({
@@ -63,7 +66,6 @@ if(process.env.ORM === 'sequelize' || true) {
 
         if (process.env.SEED_DATA === 'true') {
             try {
-                // Очищаем .tmp и генерируем данные
                 await seedDatabase(ontology.collections, 40);
                 console.log("Database seeded with random data!");
             } catch (seedErr) {
@@ -88,8 +90,6 @@ if(process.env.ORM === 'sequelize' || true) {
 
 
 
-
-
 async function cleanTempFolder() {
     const tmpPath = path.join(process.cwd(), '.tmp');
     try {
@@ -104,8 +104,6 @@ async function cleanTempFolder() {
         }
     }
 }
-
-
 
 async function seedDatabase(collections: any, count: number = 3) {
 
@@ -139,7 +137,7 @@ async function seedDatabase(collections: any, count: number = 3) {
 }
 /**
  * Shared method for all orm's
- * @param adminizer 
+ * @param adminizer
  */
 async function ormSharedFixtureLift(adminizer: Adminizer) {
     let routePrefix = adminpanelConfig.routePrefix;
@@ -218,6 +216,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
             req.url.startsWith('/src/assets') ||   // Requests to source files
             req.url.startsWith('/@react-refresh') ||   // Requests to source files
             req.url.startsWith('/node_modules') ||
+            req.url.startsWith('/@fs') ||
             req.url.startsWith('/modules')
         ) {
             adminizer.vite.middlewares(req, res);

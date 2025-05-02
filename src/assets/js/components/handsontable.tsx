@@ -51,9 +51,10 @@ interface TableProps {
     config: GridSettings;
     data?: any[][] | RowObject[] | undefined;
     onChange: (data: any) => void;
+    disabled?: boolean;
 }
 
-const HandsonTable = ({config, data = [], onChange}: TableProps) => {
+const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
     const {appearance} = useAppearance()
     const [theme, setTheme] = useState<string>('ht-theme-main')
 
@@ -82,6 +83,7 @@ const HandsonTable = ({config, data = [], onChange}: TableProps) => {
 
     return (
         <HotTable
+            className={disabled ? 'pointer-events-none opacity-50' : ''}
             themeName={theme}
             language={lang.languageCode}
             ref={hotTableRef}
