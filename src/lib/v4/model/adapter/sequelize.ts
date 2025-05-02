@@ -64,7 +64,7 @@ function resolveType(type: any): AbstractFieldType {
 
 
 function convertCriteriaToSequelize(criteria: any): any {
-  console.log("waterline criteria", criteria)
+  console.debug("waterline criteria", criteria)
   const result: any = {};
 
   for (const key in criteria) {
@@ -114,7 +114,7 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
   offset?: number;
   order?: any[];
 } {
-  console.log("WATERLINE CRITERIA", criteria)
+  console.debug("WATERLINE CRITERIA", criteria)
   const { where = {}, skip, limit, sort } = criteria;
   const result: any = {
     where: convertCriteriaToSequelize(where),

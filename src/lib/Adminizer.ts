@@ -68,6 +68,21 @@ export class Adminizer {
         this.ormAdapters = ormAdapters;
     }
 
+    getMiddleware() {
+        return (req: any, res: any) => {
+            this.app(req, res, (err: any) => {
+                if (err) {
+                    console.log("Error in Adminizer", err);
+                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.end('Internal Server Error');
+                } else {
+                    res.writeHead(404, {'Content-Type': 'text/plain'});
+                    res.end('Route Not Found in Adminizer');
+                }
+            });
+        };
+    }
+
     /**
      * Vite middleware
      * @protected
