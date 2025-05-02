@@ -368,6 +368,10 @@ const config: AdminpanelConfig = {
     //     defaultUserGroup: "test",
     //     confirmationRequired: false
     // },
+    auth: {
+        enable: true,
+        description: "Login `demo`, password `demo`"
+    },
     dashboard: false,
     forms: {
         data: {
@@ -511,10 +515,6 @@ const config: AdminpanelConfig = {
         //config: string | object // db-migrate config
     },
     showVersion: true,
-    auth: {
-      enable: true,
-      description: "Login `demo`, password `demo`"
-    },
 };
 
 export default config
