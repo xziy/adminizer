@@ -180,7 +180,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     })
 
     try {
-        adminpanelConfig.auth.enable = !!process.env.SEED_DATA
+        // adminpanelConfig.auth.enable = !!process.env.SEED_DATA
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
     } catch (e) {
