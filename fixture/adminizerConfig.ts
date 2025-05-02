@@ -1,4 +1,3 @@
-import { tr } from "@faker-js/faker/.";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 
 const routePrefix = "/adminizer";
@@ -30,20 +29,23 @@ const models: AdminpanelConfig["models"] = {
         tools: [
             {
                 id: '1',
-                link: `#`,
+                link: `https://google.com`,
+                type: 'blank',
                 title: 'Some new action',
                 icon: 'reorder',
             },
             {
                 id: '2',
                 link: `${routePrefix}/form/global`,
+                type: 'self',
                 title: 'Form example',
                 icon: 'payment',
                 accessRightsToken: 'read-example-form'
             },
             {
                 id: '3',
-                link: '#',
+                link: 'https://google.com',
+                type: 'blank',
                 title: 'Form example from file Form example from file',
                 icon: 'touch_app',
                 accessRightsToken: 'read-exampleFromFile-form'
@@ -232,48 +234,63 @@ const models: AdminpanelConfig["models"] = {
                 global: [
                     {
                         id: "1",
-                        link: '#',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google',
                         icon: 'insert_link'
                     }, {
                         id: "2",
-                        link: '#',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google',
                         icon: 'insert_link'
                     }, {
                         id: "3",
-                        link: '#',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google',
                         icon: 'insert_link'
                     }, {
                         id: "4",
-                        link: '#',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google',
                         icon: 'insert_link'
                     }, {
                         id: "5",
-                        link: '#',
-                        title: 'Google',
+                        link: `${routePrefix}/form/global`,
+                        type: 'self',
+                        title: 'Form',
                         icon: 'insert_link'
                     },
                 ],
                 inline: [
                     {
                         id: "1",
-                        link: 'test',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google',
                         icon: 'insert_link'
                     },
                     {
                         id: "2",
-                        link: 'test2',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google1',
                         icon: 'insert_link'
                     },
                     {
                         id: "3",
-                        link: 'test3',
+                        link: 'https://google.com',
+                        type: 'blank',
                         title: 'Google2',
+                        icon: 'insert_link'
+                    },
+                    {
+                        id: "4",
+                        link: `${routePrefix}/model/example/edit`,
+                        type: 'self',
+                        title: 'Test Edit',
                         icon: 'insert_link'
                     }
                 ]
@@ -353,7 +370,6 @@ const config: AdminpanelConfig = {
     // },
     dashboard: false,
     forms: {
-        path: 'forms',
         data: {
             global: {
                 field1: {
@@ -382,12 +398,14 @@ const config: AdminpanelConfig = {
                 id: '1',
                 link: `${routePrefix}/form/global`,
                 title: 'Global Settings',
+                type: 'self',
                 icon: 'build',
                 accessRightsToken: 'read-global-form'
             },
             {
                 id: '2',
                 link: `${routePrefix}/module-test`,
+                type: 'self',
                 title: 'Test Module',
                 icon: '360',
                 accessRightsToken: 'read-global-form'
@@ -399,30 +417,35 @@ const config: AdminpanelConfig = {
             id: "0",
             title: 'Website 1',
             link: '#',
+            type: 'self',
             icon: 'circle',
             subItems: [
                 {
                     id: "0",
                     title: 'Sub 1',
+                    type: 'blank',
                     link: 'https://example.com',
                     icon: 'language'
                 },
                 {
                     id: "1",
                     title: 'Sub 2',
-                    link: '#',
+                    link: 'https://google.com',
+                    type: 'blank',
                     icon: 'share'
                 },
                 {
                     id: "2",
                     title: 'Sub 3 Sub 3 Sub 3 Sub 3',
-                    link: '#',
+                    link: `${routePrefix}/form/global`,
+                    type: 'self',
                     icon: 'insert_link'
                 },
                 {
                     id: "3",
                     title: 'Sub 4',
-                    link: '#',
+                    link: 'https://google.com',
+                    type: 'blank',
                     icon: 'insert_link'
                 }
             ]
@@ -431,23 +454,27 @@ const config: AdminpanelConfig = {
             id: "1",
             title: 'Website 2 Website 2 Website 2',
             link: 'https://example.com',
+            type: 'blank',
             icon: 'insert_link'
         },
         {
             id: "2",
             title: 'Website 3',
+            type: 'blank',
             link: 'https://example.com',
             icon: 'share'
         },
         {
             id: "3",
             title: 'Website 1',
+            type: 'blank',
             link: 'https://example.com',
             icon: 'language'
         },
         {
             id: "4",
             title: 'Website 2 Website 2 Website 2',
+            type: 'blank',
             link: 'https://example.com',
             icon: 'insert_link'
         },
@@ -455,6 +482,7 @@ const config: AdminpanelConfig = {
     brand: {
         link: {
             id: "0",
+            type: 'blank',
             title: 'Demo adminpanel',
             link: 'https://example.com',
         }

@@ -112,7 +112,7 @@ export default async function add(req: ReqType, res: ResType) {
             if (req.body.jsonPopupCatalog) {
                 return res.json({record: record})
             } else {
-                req.flash.setFlashMessage('success', 'Your record was created !');
+                req.flash.setFlashMessage('success', req.i18n.__('New record was created'));
                 return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
             }
         } catch (e) {

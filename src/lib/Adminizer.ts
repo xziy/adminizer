@@ -104,14 +104,34 @@ export class Adminizer {
 
         // Merge custom config with default, additionally merge models
         const defaultConfig = getDefaultConfig();
+
+        const {
+            forms: configForms = {} as AdminpanelConfig['forms'],
+            ...restConfig
+        } = config;
+
+        const {
+            forms: defaultForms = {} as AdminpanelConfig['forms'],
+        } = defaultConfig;
+
         this.config = {
             ...defaultConfig,
-            ...config,
+            ...restConfig,
             models: {
                 ...defaultConfig.models,
                 ...config.models
+            },
+            forms: {
+                path: configForms.path ?? defaultForms.path,
+                data: {
+                    ...defaultForms.data,
+                    ...configForms.data
+                },
+                get: configForms.get ?? defaultForms.get,
+                set: configForms.set ?? defaultForms.set
             }
         };
+
         // console.log("CONFIG", this.config)
 
         this.modelHandler = new ModelHandler();

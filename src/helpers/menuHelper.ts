@@ -9,6 +9,7 @@ export type MenuItem = {
     link: string;
     title: string;
     id: string;
+    type?: 'blank' | 'self';
     actions: HrefConfig[];
     icon: string;
     accessRightsToken: string;
@@ -143,6 +144,7 @@ export class MenuHelper {
                 title: string;
                 disabled: any;
                 id: any;
+                type: 'self' | 'blank';
                 subItems: any;
                 icon: any;
                 accessRightsToken: any;
@@ -153,6 +155,7 @@ export class MenuHelper {
                 menus.push({
                     link: additionalLink.link,
                     title: additionalLink.title,
+                    type: additionalLink.type,
                     id: additionalLink.id || additionalLink.title.replace(" ", "_"),
                     actions: additionalLink.subItems || null,
                     icon: additionalLink.icon || null,
@@ -168,6 +171,7 @@ export class MenuHelper {
                             id: "overview",
                             link: MenuHelper.config.routePrefix + '/model/' + key,
                             title: 'Overview',
+                            type: 'self',
                             icon: "list",
                             accessRightsToken: `read-${key}-model`
                         })

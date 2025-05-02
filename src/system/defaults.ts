@@ -46,6 +46,23 @@ var adminpanelConfig: AdminpanelConfig = {
             edit: {
                 controller: "../controllers/editUser"
             },
+            fields:{
+                login: {
+                    title: 'User login',
+                },
+                fullName: {
+                    title: 'Full Name'
+                },
+                password: {
+                    title: 'Password',
+                },
+                isAdministrator: {
+                    title: 'is administrator'
+                },
+                isConfirme:{
+                    title: 'is confirme'
+                }
+            },
             list: {
                 fields: {
                     createdAt: false,

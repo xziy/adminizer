@@ -100,7 +100,7 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Recor
         }
     }, [props]);
 
-    return <div className={`vanilla-jsoneditor-react ${theme}`} ref={refContainer}></div>;
+    return <div className={`vanilla-jsoneditor-react ${theme} ${props.disabled ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}`} ref={refContainer}></div>;
 }
 
 function filterUnchangedProps(
