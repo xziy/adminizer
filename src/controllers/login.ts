@@ -14,12 +14,6 @@ export default async function login(req: ReqType, res: ResType) {
             let password = req.body.password;
             let captchaSolution = req.body.captchaSolution;
 
-            // Verify CAPTCHA solution
-            const isCaptchaValid = powCaptcha.check(captchaSolution, `login:${req.ip}`);
-            if (!isCaptchaValid) {
-                return inertiaAdminMessage(req, "Invalid CAPTCHA solution", 'captchaSolution');
-            }
-
             let user: ModelsAP["UserAP"];
             try {
                 // TODO refactor CRUD functions for DataAccessor usage
@@ -27,6 +21,7 @@ export default async function login(req: ReqType, res: ResType) {
             } catch (e) {
                 return res.status(500).send({error: e.message || 'Internal Server Error'});
             }
+
             if (req.body.pretend) {
                 if (!user) {
                     return res.sendStatus(404);
@@ -34,9 +29,18 @@ export default async function login(req: ReqType, res: ResType) {
                 if (req.session.UserAP.isAdministrator) {
                     req.session.adminPretender = req.session.UserAP;
                     req.session.UserAP = user;
-                    return res.sendStatus(200);
+                    // return res.sendStatus(200);
+                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
                 }
+                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
             }
+
+            // Verify CAPTCHA solution
+            const isCaptchaValid = powCaptcha.check(captchaSolution, `login:${req.ip}`);
+            if (!isCaptchaValid) {
+                return inertiaAdminMessage(req, "Invalid CAPTCHA solution", 'captchaSolution');
+            }
+
 
             if (!user) {
                 return inertiaAdminMessage(req, "Wrong username", 'login');

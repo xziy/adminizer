@@ -1,6 +1,6 @@
 import {Entity, PropsField} from "../interfaces/types";
 
-interface listProps extends Record<string | number | symbol, unknown>{
+interface listProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
     view: boolean;
     btnBack: {
@@ -17,6 +17,10 @@ interface listProps extends Record<string | number | symbol, unknown>{
     fields: PropsField[]
     groups: PropsField[]
     locales: Record<string, string>[],
+    userPretend: {
+        label: string,
+        postLink: string,
+    }
 }
 
 export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP["GroupAP"][], user?: ModelsAP["UserAP"], view: boolean = false) {
@@ -26,6 +30,10 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
         btnBack: {
             title: req.i18n.__('Back'),
             link: entity.uri
+        },
+        userPretend: {
+            label: req.i18n.__('Pretend to be a user'),
+            postLink: `${req.adminizer.config.routePrefix}/model/userap/login`
         },
         passwordError: req.i18n.__('Values in "password" and "repeatPassword" fields should be the same'),
         btnSave: {
