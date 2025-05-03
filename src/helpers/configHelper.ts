@@ -91,10 +91,10 @@ export class ConfigHelper {
     if (typeof config === "undefined" || typeof key === "undefined") {
       throw new Error('No `config` or `key` passed!');
     }
-
+    
     // Boolean notation: `true` means field is visible; `false` means field is hidden.
     if (typeof config === "boolean") {
-      return config ? {title: key} : false;
+      return config ? {title: key} : { visible: false };
     }
 
     // String notation: Interpreted as the field title.
@@ -106,6 +106,8 @@ export class ConfigHelper {
     if (typeof config === "object" && config !== null) {
       config.title = config.title || key;
 
+      config.visible = Boolean(config.visible)
+      
       // For association types, determine display field by checking model attributes.
       if (["association", "association-many"].includes(config.type)) {
         let associatedModelAttributes = {};

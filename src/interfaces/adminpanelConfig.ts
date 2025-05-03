@@ -343,7 +343,10 @@ export interface FieldsForms {
 export type ModelFieldConfig = (BaseFieldConfig | TuiEditorFieldConfig) & { groupsAccessRights?: string[] }
 
 export interface FieldsModels {
-    [key: string]: boolean | string | ModelFieldConfig
+    [key: string]: 
+    boolean | 
+    string | 
+    ModelFieldConfig
 }
 
 interface FormFieldConfig extends BaseFieldConfig {
@@ -385,6 +388,9 @@ export interface BaseFieldConfig {
 
     /** Show as required element HTML */
     required?: boolean
+
+    /** show or hode element */
+    visible?: boolean
 }
 
 export interface TuiEditorFieldConfig extends BaseFieldConfig {

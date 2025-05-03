@@ -44,6 +44,7 @@
 		"sharp": "^0.33.5",
 		"typeorm": "^0.3.20",
 		"uuid": "^11.0.5",
+		"waterline": "^0.15.2",
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
@@ -117,7 +118,6 @@
 		"vite": "^6.1.0",
 		"vite-plugin-externals": "^0.6.2",
 		"vite-plugin-full-reload": "^1.2.0",
-		"waterline": "^0.15.2",
 		"sqlite3": "^5.1.7",
 		"sequelize": "^6.37.5",
 		"sequelize-typescript": "^2.1.6"
