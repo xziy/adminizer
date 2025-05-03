@@ -22,6 +22,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import InputError from "@/components/input-error.tsx";
+import MaterialIcon from "@/components/material-icon.tsx";
 
 type value = string | boolean | Date | Record<string, string>[]
 
@@ -47,6 +48,10 @@ interface AddUserProps extends SharedData {
     postLink: string,
     head: string,
     groupHead: string,
+    userPretend: {
+        label: string,
+        postLink: string,
+    }
     fields: Field[]
     groups: Field[]
     locales: Record<string, string>[]
@@ -56,8 +61,7 @@ export default function AddUserForm() {
     const page = usePage<AddUserProps>()
     const [timezones, setTimezones] = useState<Record<string, string>[]>()
 
-    const {fields, groups} = page.props;
-
+    const {fields, groups, auth} = page.props;
     const {
         data,
         setData,
@@ -243,6 +247,14 @@ export default function AddUserForm() {
                             )}
                         </div>
                     </div>
+                    {auth.user.isAdministrator && (
+                        <Button className="w-fit" asChild variant="outline">
+                            <Link href={page.props.userPretend.postLink} method="post" data={{ login: data.login, pretend: true }}>
+                                <MaterialIcon name="masks" className="!text-[18px]"/>
+                                {page.props.userPretend.label}
+                            </Link>
+                        </Button>
+                    )}
                     <div className="flex gap-3">
                         <label className="font-bold text-xl">{getField('userPassword')?.label}</label>
                         <TooltipProvider>
