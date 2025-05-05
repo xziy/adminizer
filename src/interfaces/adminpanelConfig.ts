@@ -389,7 +389,7 @@ export interface BaseFieldConfig {
     /** Show as required element HTML */
     required?: boolean
 
-    /** show or hode element */
+    /** show or hode element, default `true` */
     visible?: boolean
 }
 
