@@ -44,12 +44,12 @@ export default async function (req: ReqType, res: ResType) {
         }
 
         try {
-            let passwordHashed = generate(req.body.login + req.body.userPassword);
+            let passwordHashed = generate(req.body.login + req.body.userPassword + process.env.AP_PASSWORD_SALT);
             let password = 'masked';
             // TODO refactor CRUD functions for DataAccessor usage
             user = await req.adminizer.modelHandler.model.get("UserAP")["_create"]({
                 login: req.body.login, fullName: req.body.fullName, email: req.body.email,
-                password: password, passwordHashed: passwordHashed, timezone: req.body.timezone, expires: req.body.date,
+                passwordHashed: passwordHashed, timezone: req.body.timezone, expires: req.body.date,
                 locale: locale, isAdministrator: isAdministrator, isConfirmed: isConfirmed, groups: userGroups
             })
             Adminizer.log.debug(`A new user was created: `, user);

@@ -1,6 +1,7 @@
 import {POWCaptcha} from "../lib/v4/POWCaptcha";
 import passwordHash from "password-hash";
 import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
+import { Adminizer } from "../lib/Adminizer";
 
 export default async function login(req: ReqType, res: ResType) {
     const powCaptcha = new POWCaptcha();
@@ -50,7 +51,8 @@ export default async function login(req: ReqType, res: ResType) {
                     return inertiaAdminMessage(req, "Profile is not confirmed, please contact to administrator", 'captchaSolution');
                 }
 
-                if (passwordHash.verify(login + password, user.passwordHashed)) {
+                // TODO: Add salt
+                if (passwordHash.verify(login + password + process.env.AP_PASSWORD_SALT, user.passwordHashed)) {
                     if (user.expires && Date.now() > Date.parse(user.expires)) {
                         //Here we use the captchaSolution key to output messages unrelated to the form fields.
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
@@ -89,6 +91,7 @@ export default async function login(req: ReqType, res: ResType) {
 }
 
 async function inertiaAdminMessage(req: ReqType, message: string, messageType: string) {
+    Adminizer.log.warn(message)
     const powCaptcha = new POWCaptcha();
     const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
 

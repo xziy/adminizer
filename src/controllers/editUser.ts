@@ -69,12 +69,11 @@ export default async function (req: ReqType, res: ResType) {
                 locale: locale, isAdministrator: isAdministrator, isConfirmed: isConfirmed, groups: userGroups
             });
             if (req.body.userPassword) {
-                let passwordHashed = generate(req.body.login + req.body.userPassword);
+                let passwordHashed = generate(req.body.login + req.body.userPassword + process.env.AP_PASSWORD_SALT);
                 let password = 'masked';
                 // TODO refactor CRUD functions for DataAccessor usage
                 updatedUser = await req.adminizer.modelHandler.model.get("UserAP")["_updateOne"]({id: user.id}, {
                     login: req.body.login,
-                    password: password,
                     passwordHashed: passwordHashed
                 });
             }

@@ -34,13 +34,12 @@ export default async function initUser(req: ReqType, res: ResType) {
 
         try {
             Adminizer.log.debug(`Created admin`)
-            let passwordHashed = generate(login + password);
+            let passwordHashed = generate(login + password +  process.env.AP_PASSWORD_SALT);
             password = 'masked';
             // TODO refactor CRUD functions for DataAccessor usage
             await req.adminizer.modelHandler.model.get("UserAP")["_create"](
                 {
                     login: login,
-                    password: password,
                     passwordHashed: passwordHashed,
                     fullName: "Administrator",
                     isActive: true,
