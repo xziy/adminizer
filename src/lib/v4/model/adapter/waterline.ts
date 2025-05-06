@@ -59,7 +59,7 @@ export class WaterlineModel<T> extends AbstractModel<T> {
       query = query.limit(options.limit);
     }
     let result = await query;
-    // console.log(result, "result")
+    
     return result;
   }
 

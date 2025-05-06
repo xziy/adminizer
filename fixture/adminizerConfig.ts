@@ -1,4 +1,5 @@
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
+import Example from "./models/Example";
 
 const routePrefix = "/adminizer";
 
@@ -13,12 +14,24 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Title',
                 type: 'string',
                 required: true
-            },
-            owner: false
+            }
         },
         list: {
             fields: {
-                owner: false
+                owner: false,
+                example: {
+                    // displayModifier(d) {
+                    //     console.log("________________________________")
+                    //     console.dir(d)
+                    //     return d
+                    // }
+                } 
+            }
+        },
+        add: {
+            fields: {
+                ownerId: false,
+                exampleId: false
             }
         },
         icon: 'receipt'

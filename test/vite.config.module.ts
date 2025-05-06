@@ -19,7 +19,7 @@ export default defineConfig({
         // outDir: path.resolve(import.meta.dirname, 'dist/assets'),
         emptyOutDir: false,
         lib: {
-            // Точка входа для библиотеки
+            // Library entrance point
             entry: path.resolve(import.meta.dirname, 'ComponentB.tsx'),
             name: 'ComponentB',
             formats: ['es'],

@@ -10,7 +10,7 @@ import {
     HasMany,
   } from 'sequelize-typescript';
   import { InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
-  import { Test } from './Test'; // Предполагаем, что модель Test есть и будет создана отдельно
+  import { Test } from './Test';
   
   
   @Table({ tableName: 'example', timestamps: true })
@@ -86,7 +86,7 @@ import {
     @Column(DataType.JSON)
     declare json: object;
   
-    @HasMany(() => Test, 'owner')
+    @HasMany(() => Test, 'exampleId')
     declare tests: Test[];
   
     @Column(DataType.STRING)
