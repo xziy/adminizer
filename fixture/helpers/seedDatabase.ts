@@ -1,6 +1,5 @@
-import { Model as SequelizeModel } from 'sequelize';
-import { WaterlineModel } from '../../dist';
 import { faker } from '@faker-js/faker';
+import { generate } from 'password-hash'; // путь к вашей функции generate()
 
 export async function seedDatabase(
   collections: Record<string, any>,
@@ -12,30 +11,22 @@ export async function seedDatabase(
     return `${hours}:${minutes}`;
   };
 
-  const exampleModel = collections.example;
-  if (!exampleModel) {
-    return;
+  const exampleModel = collections.example ?? collections.Example;
+  const userModel = collections.userap ?? collections.UserAP;
+
+  const isSequelize = typeof exampleModel?.bulkCreate === 'function';
+  const isWaterline = typeof exampleModel?.createEach === 'function';
+
+  if (!exampleModel || !userModel || (!isSequelize && !isWaterline)) {
+    throw new Error('Модели должны поддерживать ORM-интерфейс (Sequelize или Waterline)');
   }
 
-  // We determine with which ORM we work
-  const isSequelize = typeof exampleModel.bulkCreate === 'function';
-  const isWaterline = typeof exampleModel.createEach === 'function';
+  // ------------------ Example Records ------------------ //
+  const exampleCount = isSequelize
+    ? await exampleModel.count()
+    : await exampleModel.count({});
 
-  if (!isSequelize && !isWaterline) {
-    throw new Error('Модель не поддерживает ни bulkCreate (Sequelize), ни createEach (Waterline)');
-  }
-
-  let existingCount: number;
-  if (isSequelize) {
-    // For Sequelize Count () without arguments he will count all the notes
-    // @ts-ignore
-    existingCount = await (exampleModel as SequelizeModel<any, any>).count();
-  } else {
-    // For Waterline Count ({}) -also all notes
-    existingCount = await (exampleModel as WaterlineModel<typeof exampleModel>).count({});
-  }
-  //if empty -generate and insert "fixtures"
-  if (existingCount === 0) {
+  if (exampleCount === 0) {
     const fakeExamples = Array.from({ length: count }, () => ({
       title:       faker.lorem.word(),
       description: faker.lorem.paragraph(),
@@ -46,15 +37,42 @@ export async function seedDatabase(
     }));
 
     if (isSequelize) {
-      // @ts-ignore
-      await (exampleModel as SequelizeModel<any, any>).bulkCreate(fakeExamples);
+      await exampleModel.bulkCreate(fakeExamples);
     } else {
-      // @ts-ignore
-      await (exampleModel as WaterlineModel<typeof exampleModel>).createEach(fakeExamples);
+      await exampleModel.createEach(fakeExamples);
     }
   }
+ 
+  // ------------------ Users ------------------ //
+  const users = [
+    { login: 'pass', password: 'pass', fullName: 'User Pass' },
+    { login: 'demo', password: 'demo', fullName: 'Administrator', isAdministrator: true },
+    { login: 'user1', password: 'user1', fullName: 'User One' },
+    { login: 'admin', password: 'admin', fullName: 'Admin User', isAdministrator: true },
+    { login: 'user2', password: 'user2', fullName: 'User Two' },
+    { login: 'user3', password: 'user3', fullName: 'User Three' },
+  ];
 
-  if (process.env.DEMO) {
-    process.env.ADMINPANEL_DEMO_ADMIN_ENABLE = '1';
+  for (const u of users) {
+    const exists = isSequelize
+      ? await userModel.findOne({ where: { login: u.login } })
+      : await userModel.find({ login: u.login });
+
+    if (!exists || (Array.isArray(exists) && exists.length === 0)) {
+      const userData = {
+        login: u.login,
+        password: u.password,
+        passwordHashed: generate(u.password),
+        fullName: u.fullName,
+        isActive: true,
+        isAdministrator: u.isAdministrator || false,
+      };
+
+      if (isSequelize) {
+        await userModel.create(userData);
+      } else {
+        await userModel.create(userData);
+      }
+    }
   }
 }

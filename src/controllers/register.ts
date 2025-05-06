@@ -43,12 +43,11 @@ export default async function register(req: ReqType, res: ResType) {
             })
         } else {
             try {
-                let passwordHashed = generate(req.body.login + req.body.password);
+                let passwordHashed = generate(req.body.login + req.body.password + process.env.AP_PASSWORD_SALT);
                 let password = 'masked';
                 // TODO refactor CRUD functions for DataAccessor usage
                 let userap: ModelsAP["UserAP"] = await req.adminizer.modelHandler.model.get("UserAP")["_create"]({
                     login: req.body.login,
-                    password: password,
                     passwordHashed: passwordHashed,
                     fullName: req.body.fullName,
                     email: req.body.email,

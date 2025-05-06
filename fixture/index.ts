@@ -51,7 +51,7 @@ if(process.env.ORM === 'sequelize'
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
     await ormSharedFixtureLift(adminizer);
-    await seedDatabase({ example: ExampleSequelize, test: TestSequelize }, 77);
+    await seedDatabase(orm.models, 77);
 
     // Finish
 } else {
@@ -158,7 +158,9 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     })
 
     try {
-        // adminpanelConfig.auth.enable = !!process.env.SEED_DATA
+        adminpanelConfig.auth.enable = !!process.env.SEED_DATA
+        adminpanelConfig.auth.enable = true
+
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
     } catch (e) {

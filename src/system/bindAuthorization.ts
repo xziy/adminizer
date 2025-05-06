@@ -57,7 +57,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
             let password = 'masked';
             // TODO refactor CRUD functions for DataAccessor usage
             await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
-                login: adminData.login, password: password, passwordHashed: passwordHashed, fullName: "Administrator",
+                login: adminData.login, passwordHashed: passwordHashed, fullName: "Administrator",
                 isActive: true, isAdministrator: true
             });
         } catch (e) {
