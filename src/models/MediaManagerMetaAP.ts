@@ -1,3 +1,5 @@
+import { MediaManagerAP } from "./MediaManagerAP";
+
 export default {
   id: {
     type: "string",
@@ -18,4 +20,13 @@ export default {
   parent: {
     model: "MediaManagerAP"
   }
+}
+
+
+export interface MediaManagerMetaAP {
+  id: string;
+  key?: string;
+  value?: Record<string, unknown>;
+  isPublic?: boolean;
+  parent?: MediaManagerAP;
 }

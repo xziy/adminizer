@@ -1,3 +1,5 @@
+import { MediaManagerAP } from "./MediaManagerAP";
+
 export default {
   id: {
     type: "string",
@@ -24,4 +26,14 @@ export default {
   file: {
     model: "MediaManagerAP"
   }
+}
+
+export interface MediaManagerAssociationsAP {
+  id: string;
+  mediaManagerId?: string;
+  model?: Record<string, unknown>;
+  modelId?: Record<string, unknown>;
+  widgetName?: string;
+  sortOrder?: number;
+  file?: MediaManagerAP;
 }
