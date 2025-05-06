@@ -378,11 +378,11 @@ const config: AdminpanelConfig = {
     auth: {
         enable: false
     },
-    // registration: {
-    //     enable: true,
-    //     defaultUserGroup: "test",
-    //     confirmationRequired: false
-    // },
+    registration: {
+        enable: true,
+        defaultUserGroup: "guest",
+        confirmationRequired: false
+    },
     // auth: {
     //     enable: true,
     //     description: "Login `demo`, password `demo`"

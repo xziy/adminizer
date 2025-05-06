@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { generate } from 'password-hash'; // путь к вашей функции generate()
-
+import { generate } from 'password-hash';
 export async function seedDatabase(
   collections: Record<string, any>,
   count: number = 3
@@ -13,12 +12,14 @@ export async function seedDatabase(
 
   const exampleModel = collections.example ?? collections.Example;
   const userModel = collections.userap ?? collections.UserAP;
+  const groupModel = collections.groupap ?? collections.GroupAP;
+
 
   const isSequelize = typeof exampleModel?.bulkCreate === 'function';
   const isWaterline = typeof exampleModel?.createEach === 'function';
 
-  if (!exampleModel || !userModel || (!isSequelize && !isWaterline)) {
-    throw new Error('Модели должны поддерживать ORM-интерфейс (Sequelize или Waterline)');
+  if (!exampleModel || !userModel || !groupModel || (!isSequelize && !isWaterline)) {
+    throw new Error('Models should support the ORM interface (Sequelize or Waterline)');
   }
 
   // ------------------ Example Records ------------------ //
@@ -43,6 +44,27 @@ export async function seedDatabase(
     }
   }
  
+  // ------------------ Groups ------------------ //
+  const groupNames = [
+    { name: 'Admins', description: 'System administrators' },
+    { name: 'Users', description: 'Registered users' },
+    { name: 'Guests', description: 'Guest access' },
+  ];
+
+  for (const group of groupNames) {
+    const exists = isSequelize
+      ? await groupModel.findOne({ where: { name: group.name } })
+      : await groupModel.find({ name: group.name });
+
+    if (!exists || (Array.isArray(exists) && exists.length === 0)) {
+      if (isSequelize) {
+        await groupModel.create(group);
+      } else {
+        await groupModel.create(group).fetch();
+      }
+    }
+  }
+
   // ------------------ Users ------------------ //
   const users = [
     { login: 'pass', password: 'pass', fullName: 'User Pass' },
@@ -62,16 +84,29 @@ export async function seedDatabase(
       const userData = {
         login: u.login,
         password: u.password,
-        passwordHashed: generate(u.password),
+        passwordHashed: generate(u.login+u.password+process.env.AP_PASSWORD_SALT),
         fullName: u.fullName,
         isActive: true,
         isAdministrator: u.isAdministrator || false,
       };
 
-      if (isSequelize) {
-        await userModel.create(userData);
-      } else {
-        await userModel.create(userData);
+      const userInstance = isSequelize
+        ? await userModel.create(userData)
+        : await userModel.create(userData).fetch();
+
+
+      console.log(userInstance)
+      // Привязка к группам (упрощённая логика)
+      const groupName = u.isAdministrator ? 'Admins' : 'Users';
+
+      const group = isSequelize
+        ? await groupModel.findOne({ where: { name: groupName } })
+        : (await groupModel.find({ name: groupName }))[0];
+
+      if (group && group.addUser) {
+        await group.addUser(userInstance); // Sequelize M:N
+      } else if (isWaterline && group && typeof groupModel.addToCollection === 'function') {
+        await groupModel.addToCollection(group.id, 'users', userInstance.id);
       }
     }
   }
