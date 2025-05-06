@@ -106,7 +106,7 @@ export class ConfigHelper {
     if (typeof config === "object" && config !== null) {
       config.title = config.title || key;
 
-      config.visible = Boolean(config.visible)
+      config.visible = config.visible === undefined ? true : Boolean(config.visible)
       
       // For association types, determine display field by checking model attributes.
       if (["association", "association-many"].includes(config.type)) {
