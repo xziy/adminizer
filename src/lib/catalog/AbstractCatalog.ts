@@ -400,7 +400,7 @@ export abstract class AbstractCatalog {
 		} else {
 			action = this.actionHandlers.find((it) => it.id === actionId);
 		}
-		// console.log(this.actionHandlers)
+		
 		if (!action) throw `Action with id \`${actionId}\` not found`
 		return await action.handler(items, config);
 	}

@@ -24,7 +24,7 @@ export function bindInertia(adminizer: Adminizer) {
         } else {
             const manifestPath = path.resolve(import.meta.dirname, '../assets/manifest.json');
             if (!fs.existsSync(manifestPath)) {
-                console.log('[vite]: Warning: manifest.json not found in dist folder! Please run "npm run build:assets" first.');
+                console.warn('[vite]: Warning: manifest.json not found in dist folder! Please run "npm run build:assets" first.');
                 return '';
             }
 

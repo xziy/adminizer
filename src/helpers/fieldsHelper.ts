@@ -14,7 +14,7 @@ export type Field = {
     type?: FieldsTypes
     groupsAccessRights?: string[]
   } | string | boolean
-  /** for populated fields' configs */
+  /** For render associalitons fields */
   populated: {
     [key: string]: Field
   } | undefined

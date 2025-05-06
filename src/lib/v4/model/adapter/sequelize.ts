@@ -1,5 +1,5 @@
-import { Sequelize, DataTypes, ModelAttributes, ModelStatic, IncludeOptions, Op } from "sequelize";
-import { AbstractAdapter, AbstractModel, FindOptions } from "../AbstractModel";
+import { Sequelize, DataTypes, ModelAttributes, ModelStatic, IncludeOptions, Op, HasMany, BelongsTo, BelongsToMany, HasOne } from "sequelize";
+import { AbstractAdapter, AbstractModel, Attribute, FindOptions } from "../AbstractModel";
 import path from "path";
 import fs from "fs";
 import { pathToFileURL } from "url";
@@ -7,22 +7,101 @@ import { v4 as uuid } from "uuid";
 
 
 
+function resolveType(type: any): Attribute["type"] {
+  const sqlType = typeof type.toString === "function"
+    ? type.toString().toLowerCase()
+    : "";
+  if (sqlType.includes("string") || sqlType.includes("uuid")) return "string";
+  if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
+  if (sqlType.includes("bool")) return "boolean";
+  if (sqlType.includes("json")) return "json";
+  if (sqlType.includes("date")) return "string";
+  return "ref";
+}
 
-function mapSequelizeAttributesToAbstract(attrs: ReturnType<ModelStatic<any>["getAttributes"]>): Record<string, AbstractAttribute> {
-  const result: Record<string, AbstractAttribute> = {};
-  for (const key in attrs) {
-    const attr = attrs[key];
-    const resolvedType = resolveType(attr.type);
+export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string, Attribute> {
+  const result: Record<string, Attribute> = {};
 
-    result[key] = {
-      type: resolvedType as AbstractFieldType,
-      required: !attr.allowNull,
-      primaryKey: !!attr.primaryKey,
-      unique: !!attr.unique,
+  
+  const rawAttrs = model.getAttributes();
+  for (const name in rawAttrs) {
+    const meta = rawAttrs[name];
+    result[name] = {
+      type: resolveType(meta.type),
+      required: meta.allowNull !== undefined ? !meta.allowNull: false,
+      allowNull: meta.allowNull,
+      unique: !!meta.unique,
+      defaultsTo: meta.defaultValue,
+      columnName: meta.field || name,
     };
   }
+
+  
+  for (const alias in model.associations) {
+    const assoc = model.associations[alias];
+
+    switch (assoc.associationType) {
+      case "BelongsTo": {
+        const a = assoc as BelongsTo;
+        result[alias] = {
+          type: "association",
+          model: a.target.name.toLowerCase(),
+          via: a.foreignKey as string,
+        };
+        break;
+      }
+      case "HasOne": {
+        const a = assoc as HasOne;
+        result[alias] = {
+          type: "association",
+          model: a.target.name.toLowerCase(),
+          via: a.foreignKey as string,
+        };
+        break;
+      }
+      case "HasMany": {
+        const a = assoc as HasMany;
+        result[alias] = {
+          type: "association-many",
+          collection: a.target.name.toLowerCase(),
+          via: a.foreignKey as string,
+        };
+        break;
+      }
+      case "BelongsToMany": {
+        const a = assoc as BelongsToMany;
+        result[alias] = {
+          type: "association-many",
+          collection: a.target.name.toLowerCase(),
+          via: a.otherKey as string,
+        };
+        break;
+      }
+      default:
+        
+        break;
+    }
+  }
+
   return result;
 }
+
+
+// function mapSequelizeAttributesToAbstract(attrs: ReturnType<ModelStatic<any>["getAttributes"]>): Record<string, AbstractAttribute> {
+//   const result: Record<string, AbstractAttribute> = {};
+//   for (const key in attrs) {
+//     const attr = attrs[key];
+//     const resolvedType = resolveType(attr.type);
+
+//     result[key] = {
+//       type: resolvedType as AbstractFieldType,
+//       required: !attr.allowNull,
+//       primaryKey: !!attr.primaryKey,
+//       unique: !!attr.unique,
+//     };
+//   }
+//   return result;
+// }
 
 type AbstractFieldType =
   | "string"
@@ -40,31 +119,33 @@ type AbstractAttribute = {
   unique?: boolean;
 };
 
-function resolveType(type: any): AbstractFieldType {
-  try {
-    const sqlType = typeof type.toString === "function"
-      ? type.toString().toLowerCase()
-      : "";
+// function resolveType(type: any): AbstractFieldType {
+//   try {
+//     const sqlType = typeof type.toString === "function"
+//       ? type.toString().toLowerCase()
+//       : "";
 
-    if (sqlType.includes("string")) return "string";
-    if (sqlType.includes("uuid")) return "string";
-    if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
-    if (sqlType.includes("bool")) return "boolean";
-    if (sqlType.includes("json")) return "json";
-    if (sqlType.includes("date")) return "string"; // 👈 фикс: дата как строка
+//     if (sqlType.includes("string")) return "string";
+//     if (sqlType.includes("uuid")) return "string";
+//     if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
+//     if (sqlType.includes("bool")) return "boolean";
+//     if (sqlType.includes("json")) return "json";
+//     if (sqlType.includes("date")) return "string"; 
 
-    return "ref";
-  } catch {
-    return "ref";
-  }
-}
+//     return "ref";
+//   } catch {
+//     return "ref";
+//   }
+// }
 /** SequelizeModel — реализация модели, совместимая с AbstractModel */
 
 
-
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 function convertCriteriaToSequelize(criteria: any): any {
-  console.debug("waterline criteria", criteria)
+  // console.debug("waterline criteria", criteria)
   const result: any = {};
 
   for (const key in criteria) {
@@ -75,7 +156,7 @@ function convertCriteriaToSequelize(criteria: any): any {
       value === null ||
       (typeof value === "object" && Object.keys(value).length === 0)
     ) {
-      continue; // ⛔ пропускаем пустые условия
+      continue; 
     }
 
     if (typeof value === "object" && !Array.isArray(value)) {
@@ -114,7 +195,49 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
   offset?: number;
   order?: any[];
 } {
-  console.debug("WATERLINE CRITERIA", criteria)
+  // console.debug("WATERLINE CRITERIA (raw):", criteria);
+
+  
+  const { where: nestedWhere, skip, limit, sort, ...rest } = criteria;
+
+  
+  const rawWhere = (nestedWhere && Object.keys(nestedWhere).length > 0)
+    ? nestedWhere
+    : rest;
+
+  // console.debug("WATERLINE CRITERIA: using rawWhere =", rawWhere);
+
+  
+  const where = convertCriteriaToSequelize(rawWhere);
+  // console.debug("convertCriteriaToSequelize →", where);
+
+  
+  const result: any = { where };
+
+  if (typeof skip === "number") {
+    result.offset = skip;
+    // console.debug("→ offset =", skip);
+  }
+  if (typeof limit === "number") {
+    result.limit = limit;
+    // console.debug("→ limit =", limit);
+  }
+  if (typeof sort === "string") {
+    const [field, dir] = sort.trim().split(/\s+/);
+    result.order = [[field, dir?.toUpperCase() === "DESC" ? "DESC" : "ASC"]];
+    // console.debug("→ order =", result.order);
+  }
+
+  return result;
+}
+
+function convertWaterlineCriteriaToSequelizeOptions____OLD(criteria: any): {
+  where?: any;
+  limit?: number;
+  offset?: number;
+  order?: any[];
+} {
+  // console.debug("WATERLINE CRITERIA", criteria)
   const { where = {}, skip, limit, sort } = criteria;
   const result: any = {
     where: convertCriteriaToSequelize(where),
@@ -143,7 +266,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
   constructor(modelName: string, model: ModelStatic<any>) {
     super(
       modelName,
-      mapSequelizeAttributesToAbstract(model.getAttributes()),
+      mapSequelizeToWaterline(model),
       model.primaryKeyAttribute,
       model.name
     );
@@ -151,50 +274,180 @@ export class SequelizeModel<T> extends AbstractModel<T> {
   }
 
   // --- CREATE ---
+  
   protected async _create(data: Record<string, any>): Promise<T> {
+    // console.clear()
+    
+    const assocNames = Object.keys(this.model.associations);
+    const plainData: Record<string, any> = {};
+    const assocData: Record<string, any> = {};
+  
+    // console.debug(">> _create: входные данные:", data);
+    // console.debug(">> Доступные ассоциации:", assocNames);
+  
+    for (const [key, val] of Object.entries(data)) {
+      if (assocNames.includes(key)) {
+        assocData[key] = val;
+      } else {
+        plainData[key] = val;
+      }
+    }
+  
+    // console.debug(">> Обычные поля для create():", plainData);
+    // console.debug(">> Данные ассоциаций:", assocData);
+  
+    
+    let instance: any;
+    try {
+      instance = await this.model.create(plainData);
+      // console.debug(">> Создан экземпляр (без ассоциаций):", instance.toJSON());
+    } catch (err) {
+      // console.error("!! Ошибка при create(plainData):", err);
+      throw err;
+    }
+  
+    // assocData = { example: 5, userAPs: [1,2,3], category: 7, tags: [11,22] }
+    // this.model.associations — ваш объект ассоциаций
+    for (const [alias, ids] of Object.entries(assocData)) {
+      const assoc = this.model.associations[alias];
+      if (!assoc) {
+        // console.warn(`Association "${alias}" not defined on model`);
+        continue;
+      }
 
-    const created = await this.model.create(data);
-    const result = await this.model.findByPk(created.get(this.primaryKey), { raw: true });
+      // @ts-ignore accessors is present
+      const { set: setAccessor, add: addAccessor } = assoc.accessors;
 
-    return result;
+      if (Array.isArray(ids)) {
+        if (typeof instance[setAccessor] === 'function') {
+          await instance[setAccessor](ids);
+          continue;
+        }
+        if (typeof instance[addAccessor] === 'function') {
+          for (const id of ids) {
+            await instance[addAccessor](id);
+          }
+          continue;
+        }
+      }
+
+      if (typeof instance[setAccessor] === 'function') {
+        await instance[setAccessor](ids);
+      } else if (typeof instance[addAccessor] === 'function') {
+        await instance[addAccessor](ids);
+      } else {
+        // console.warn(`No suitable accessor for "${alias}": tried set=${setAccessor}, add=${addAccessor}`);
+      }
+    }
+
+    await instance.reload({ include: Object.values(this.model.associations) });
+
+    const pk = this.primaryKey;
+    const fresh = await this.model.findByPk(
+      instance.get(pk),
+      { include: assocNames.map(a => ({ association: a })) }
+    );
+  
+    // console.debug(">> Результат после reload:", fresh?.toJSON());
+    return fresh as any;
+  }
+  
+  
+
+// --- FIND ONE ---
+protected async _findOne(criteria: Partial<T>): Promise<T | null> {
+  // console.debug(">> _findOne: входные критерии:", criteria);
+
+  const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+  const includes = this._buildIncludes();
+  // console.debug(">> _findOne: преобразованные where:", where);
+  // console.debug(">> _findOne: includes:", includes);
+
+  let instance = null;
+  try {
+    instance = await this.model.findOne({ where, include: includes });
+    // console.debug(">> _findOne: сырое instance:", instance ? instance.toJSON() : null);
+  } catch (err) {
+    // console.error("!! _findOne: ошибка при вызове findOne:", err);
+    throw err;
   }
 
-  // --- FIND ONE ---
-  protected async _findOne(criteria: Partial<T>): Promise<T | null> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
-
-    const result = await this.model.findOne({
-      where,
-      include: this._buildIncludes(),
-      raw: true,
-    });
-
-    return result;
+  if (!instance) {
+    // console.debug(">> _findOne: ничего не найдено");
+    return null;
   }
 
-  // --- FIND MANY ---
-  protected async _find(criteria: Partial<T> = {}, options: FindOptions = {}): Promise<T[]> {
-    const { where, limit, offset, order } = convertWaterlineCriteriaToSequelizeOptions(criteria);
-    const include = options.populate
-      ? options.populate.map(([field, opts]) => ({ association: field, ...opts }))
-      : this._buildIncludes();
+  const plain = instance.get({ plain: true }) as T;
+  // console.debug(">> _findOne: plain результат:", plain);
+  return plain;
+}
 
+// --- FIND MANY ---
+protected async _find(
+  criteria: Partial<T> = {},
+  options: FindOptions = {}
+): Promise<T[]> {
+  const assocNames = Object.keys(this.model.associations);
+  // console.debug(">> _find: входные criteria:", criteria, "options:", options);
 
+  
+  const { where, limit, offset, order } =
+    convertWaterlineCriteriaToSequelizeOptions(criteria);
+  const includes = options.populate
+    ? options.populate.map(([field, opts]) => ({ association: field, ...opts }))
+    : assocNames.map(a => ({ association: a }));
 
+  // console.debug(">> _find: where, limit, offset, order, includes:", {
+  //   where,
+  //   limit,
+  //   offset,
+  //   order,
+  //   includes,
+  // });
 
-
-    const result = await this.model.findAll({
+  let instances: any[];
+  try {
+    instances = await this.model.findAll({
       where,
       limit,
       offset,
       order,
-      include,
-      raw: true,
+      include: includes
     });
-
-
-    return result;
+    // console.debug(">> _find: получено моделей:", instances.length);
+  } catch (err) {
+    // console.error("!! _find: ошибка в findAll:", err);
+    throw err;
   }
+
+
+  
+
+  for (const inst of instances) {
+    //For each association, we call getxxx () once again    
+    for (const alias of assocNames) {
+      // @ts-ignore accessors is present
+      const getAccessor = this.model.associations[alias].accessors.get;
+      if (typeof inst[getAccessor] === "function") {
+        try {
+          const related = await inst[getAccessor]();
+          const mapped = Array.isArray(related)
+            ? related.map((r: any) => r.toJSON())
+            : related?.toJSON();
+          // console.debug(`---- get${alias}():`, mapped);
+        } catch (e) {
+          // console.error(`!! ошибка при вызове ${getAccessor}():`, e);
+        }
+      }
+    }
+  }
+
+  const plain = instances.map(i => i.get({ plain: true }) as T);
+  // console.debug(">> _find: plain результаты:", plain);
+  
+
+  return plain;
+}
 
   // --- UPDATE ONE ---
   protected async _updateOne(criteria: Partial<T>, data: Partial<T>): Promise<T | null> {
@@ -284,18 +537,18 @@ export class SequelizeAdapter extends AbstractAdapter {
     if (!matchedKey) {
       return undefined;
     }
-    console.log("this.sequelize.models[matchedKey]",this.sequelize.models[matchedKey])
+    
 
     return this.sequelize.models[matchedKey];
   }
 
   getAttributes(modelName: string): any {
     const model = this.getModel(modelName);
-    console.log(1111,model?.getAttributes())
+    
     return model?.getAttributes();
   }
 
-  /** Регистрация системных моделей */
+  /**Registration of system models*/
   static async registerSystemModels(sequelize: Sequelize): Promise<void> {
     const modelsDir = path.resolve(import.meta.dirname, "../../../../models");
     const files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
@@ -312,7 +565,7 @@ export class SequelizeAdapter extends AbstractAdapter {
   }
 }
 
-/** Генерация модели Sequelize из определения, аналог WaterlineCollection.extend */
+/**Generation of the SEQUELIZE model from the definition, analogue of Waterinecollection.extenD*/
 function generateSequelizeModel(
   sequelize: Sequelize,
   modelName: string,

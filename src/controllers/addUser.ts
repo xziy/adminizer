@@ -24,7 +24,6 @@ export default async function (req: ReqType, res: ResType) {
     let user: ModelsAP["UserAP"];
 
     if (req.method.toUpperCase() === 'POST') {
-        // console.log(req.body);
         let userGroups = [];
         for (let key in req.body) {
             if (key.startsWith("group-checkbox-") && req.body[key] === true) {
@@ -62,8 +61,6 @@ export default async function (req: ReqType, res: ResType) {
             Adminizer.log.error(e);
             req.session.messages.adminError.push(e.message || 'Something went wrong...');
         }
-
-        // console.log(user)
     }
     const props = inertiaUserHelper(entity, req, groups)
     return req.Inertia.render({

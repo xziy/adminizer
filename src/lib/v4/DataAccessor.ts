@@ -42,12 +42,13 @@ export class DataAccessor {
 
         // get action and field configs
         const actionConfig = ControllerHelper.findActionConfig(this.entity, this.action);
-        const fieldsConfig = this.entity.config.fields || {};
+        const fieldsConfig = this.entity.config?.fields || {};
         const modelAttributes = this.entity.model.attributes;
 
         const result: Fields = {};
-
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
+            
+
             // Checks for short type in Waterline: fieldName: 'string'
             if (typeof modelField === "string") {
                 modelField = {type: modelField};
@@ -95,6 +96,7 @@ export class DataAccessor {
                     const Model = this.adminizer.modelHandler.model.get(modelName);
                     if (Model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
+                        
                     } else {
                         Adminizer.log.error(`Model not found: ${modelName}`);
                     }
@@ -111,6 +113,8 @@ export class DataAccessor {
 
             // Add new field to result set
             result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig};
+            
+
         });
 
         this.fields = result;
@@ -118,8 +122,10 @@ export class DataAccessor {
     }
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
+        
         const Model = this.adminizer.modelHandler.model.get(modelName);
         if (!Model || !this.adminizer.config.models[modelName] || typeof this.adminizer.config.models[modelName] === "boolean") {
+            
             return undefined;
         }
 
@@ -226,7 +232,6 @@ export class DataAccessor {
         if (!this.fields) {
             this.fields = this.getFieldsConfig();
         }
-
         const filteredRecord: Partial<T> = {};
 
         // Set the primary key value
@@ -236,7 +241,6 @@ export class DataAccessor {
         for (const fieldKey in record) {
             const fieldConfig = this.fields[fieldKey];
             const fieldValue = record[fieldKey];
-
             // Skip fields if they are not in the configuration
             if (!fieldConfig) continue;
 
@@ -244,7 +248,6 @@ export class DataAccessor {
             if (this.checkFieldAccess(fieldKey, fieldConfig.config)) {
                 const fieldConfigConfig = fieldConfig.config as BaseFieldConfig; // in this.fields configs are only objects
                 const fieldType = fieldConfigConfig.type;
-
                 // Handle fields that are not associations
                 if (fieldType !== 'association' && fieldType !== 'association-many') {
                     filteredRecord[fieldKey] = fieldValue;
@@ -297,7 +300,6 @@ export class DataAccessor {
         if (!associatedFieldsConfig) {
             return {}
         }
-
         const filteredAssociatedRecord: Partial<T> = {};
         for (const assocFieldKey in associatedRecord) {
             const assocFieldConfig = associatedFieldsConfig[assocFieldKey];

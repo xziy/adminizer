@@ -24,6 +24,7 @@ import { Example as ExampleSequelize } from "./models/sequelize/Example";
 import { JsonSchema as JsonSchemaSequelize  } from "./models/sequelize/JsonSchema";
 import { Test as TestSequelize } from "./models/sequelize/Test";
 import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
+import { seedDatabase } from "./helpers/seedDatabase";
 
 // Clean temp folder
 if (process.env.SEED_DATA === 'true') await cleanTempFolder();
@@ -46,10 +47,12 @@ if(process.env.ORM === 'sequelize'
     TestSequelize.associate(orm)
     console.log('Test associations:', Object.keys(TestSequelize.associations));
 
-    await orm.sync({ alter: true });
+    await orm.sync({ });
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
     await ormSharedFixtureLift(adminizer);
+    await seedDatabase({ example: ExampleSequelize, test: TestSequelize }, 77);
+
     // Finish
 } else {
     const orm = new Waterline();
@@ -88,8 +91,9 @@ if(process.env.ORM === 'sequelize'
 }
 
 
-// TODO нужно регистрировать системные модели именно в defaultAdapter или как-то указать в bindModels какой адаптер использовать,
-//  потому что bindModels должны знать из какого адаптера их доставать (в обычных моделях это можно задать конфигом) (лучше в default)
+//Todo you need to register the system models in Defaultadapter or somehow specify in Bindmodels which adapter to use,
+//Because bindmodels should know from which adapter to get them (in ordinary models this can be set with a config) (preferably in Default)
+// 
 /** Don't forget to register adminizer system models before initialize */
 
 
@@ -109,36 +113,6 @@ async function cleanTempFolder() {
     }
 }
 
-async function seedDatabase(collections: any, count: number = 3) {
-
-    const getRandomTime = () => {
-        const hours = faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0');
-        const minutes = faker.number.int({ min: 0, max: 59 }).toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-    }
-    if (collections.example) {
-        // TODO: Use adminizer.modelHandler.model.get for adapt for multiORM fixture
-        const exampleModel = collections.example as WaterlineModel<typeof Example>;
-        const existingCount = await exampleModel.count({});
-
-        if (existingCount === 0) {
-            const fakeExamples = Array.from({ length: count }, () => ({
-                title: faker.lorem.word(),
-                description: faker.lorem.paragraph(),
-                sort: faker.datatype.boolean(),
-                time: getRandomTime(),
-                number: faker.number.int(300),
-                editor: faker.lorem.text(),
-            }));
-            //@ts-ignore
-            await exampleModel.createEach(fakeExamples);
-        }
-    }
-    if(process.env.DEMO) {
-        process.env.ADMINPANEL_DEMO_ADMIN_ENABLE = '1'
-    }
-
-}
 /**
  * Shared method for all orm's
  * @param adminizer

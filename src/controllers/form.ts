@@ -70,7 +70,7 @@ export default async function form(req: ReqType, res: ResType) {
 	}
 
     const props = inertiaFormHelper(req, `${req.adminizer.config.routePrefix}/form/${slug}`, form)
-    // console.log(props)
+    
     return req.Inertia.render({
         component: 'form',
         props: props
