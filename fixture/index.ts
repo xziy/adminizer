@@ -26,13 +26,15 @@ import { Test as TestSequelize } from "./models/sequelize/Test";
 import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
 import { seedDatabase } from "./helpers/seedDatabase";
 
+process.env.AP_PASSWORD_SALT = "FIXTURE"
+
 // Clean temp folder
-if (process.env.SEED_DATA === 'true') await cleanTempFolder();
+if (!process.env.NO_SEED_DATA) await cleanTempFolder();
 
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize'
-    || true
+    // || true
 ) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
@@ -71,14 +73,14 @@ if(process.env.ORM === 'sequelize'
 
         console.log("Waterline ORM initialized!");
 
-        if (process.env.SEED_DATA === 'true') {
+        if (!process.env.NO_SEED_DATA) {
             try {
                 await seedDatabase(ontology.collections, 40);
                 console.log("Database seeded with random data!");
             } catch (seedErr) {
                 console.error("Error during database seeding:", seedErr);
             }
-        }
+        } 
 
         /**
          * In case you want to use adminizer built-in adapter, but if not, create your own adapter that extends AbstractAdapter
@@ -158,7 +160,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     })
 
     try {
-        adminpanelConfig.auth.enable = !!process.env.SEED_DATA
+        // adminpanelConfig.auth.enable = !!process.env.NO_SEED_DATA
         adminpanelConfig.auth.enable = true
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)

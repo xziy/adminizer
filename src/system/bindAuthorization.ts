@@ -53,7 +53,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
         }
 
         try {
-            let passwordHashed = generate(adminData.login + adminData.password);
+            let passwordHashed = generate(adminData.login + adminData.password + process.env.AP_PASSWORD_SALT);
             let password = 'masked';
             // TODO refactor CRUD functions for DataAccessor usage
             await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
@@ -71,7 +71,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
 
     } else if (process.env.ADMINPANEL_DEMO_ADMIN_ENABLE !== undefined) {
         try {
-            let passwordHashed = generate("demodemo");
+            let passwordHashed = generate("demodemo" + process.env.AP_PASSWORD_SALT);
             let password = 'masked';
             // TODO refactor CRUD functions for DataAccessor usage
             await adminizer.modelHandler.model.get("UserAP")?.["_create"]({
