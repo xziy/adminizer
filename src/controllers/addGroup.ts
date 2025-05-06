@@ -34,8 +34,6 @@ export default async function addGroup(req: ReqType, res: ResType) {
     }
 
     if (req.method.toUpperCase() === 'POST') {
-        // console.log(req.body);
-
         let allTokens = req.adminizer.accessRightsHelper.getTokens();
 
         let usersInThisGroup = [];
@@ -74,8 +72,6 @@ export default async function addGroup(req: ReqType, res: ResType) {
             Adminizer.log.error(e);
             req.session.messages.adminError.push(e.message || 'Something went wrong...');
         }
-
-        // console.log(group)
     }
 
     const props = inertiaGroupHelper(entity, req, users, groupedTokens)

@@ -64,7 +64,7 @@ export class POWCaptcha {
         if (!task || task.label !== label) return false;
 
         // Verify the solution (should be equal to puzzleOptions.message)
-        // console.log("QUESTION", `${taskId}:${label}`)
+        
         if (`${taskId}:${label}` === captchaSolution) {
             this.deleteTask(taskId);
             return true;

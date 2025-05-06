@@ -10,3 +10,9 @@ export * from "./lib/v4/model/adapter/waterline";
 export * from "./lib/v4/model/adapter/typeorm";
 export * from "./lib/v4/model/adapter/sequelize"
 export * from "./lib/Adminizer";
+export * from "./models/GroupAP"
+export * from "./models/UserAP"
+export * from "./models/MediaManagerAP"
+export * from "./models/MediaManagerAssociationsAP"
+export * from "./models/MediaManagerMetaAP"
+export * from "./models/NavigationAP"

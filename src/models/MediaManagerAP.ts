@@ -1,3 +1,6 @@
+import { MediaManagerAssociationsAP } from "./MediaManagerAssociationsAP";
+import { MediaManagerMetaAP } from "./MediaManagerMetaAP";
+
 export default {
   id: {
     type: "string",
@@ -42,4 +45,18 @@ export default {
     collection: "MediaManagerAssociationsAP",
     via: "file"
   }
+}
+export interface MediaManagerAP {
+  id: string;
+  parent?: MediaManagerAP;
+  variants?: MediaManagerAP[];
+  mimeType?: string;
+  path?: string;
+  size?: number;
+  group?: string;
+  tag?: string;
+  url?: string;
+  filename?: string;
+  meta?: MediaManagerMetaAP[];
+  modelAssociation?: MediaManagerAssociationsAP[];
 }
