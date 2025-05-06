@@ -31,7 +31,7 @@ if (process.env.SEED_DATA === 'true') await cleanTempFolder();
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize'
-    // || true
+    || true
 ) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
@@ -40,21 +40,25 @@ if(process.env.ORM === 'sequelize'
       storage: dbPath,
       logging: false,
     });
-    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize])
     await orm.authenticate();
-    await orm.sync({ alter: true });
     await SequelizeAdapter.registerSystemModels(orm)
+    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize])
+    TestSequelize.associate(orm)
+    console.log('Test associations:', Object.keys(TestSequelize.associations));
+
+    await orm.sync({ alter: true });
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
     await ormSharedFixtureLift(adminizer);
     // Finish
 } else {
     const orm = new Waterline();
+
+    await WaterlineAdapter.registerSystemModels(orm)
+    await sleep(1000)
     orm.registerModel(Example);
     orm.registerModel(Test);
     orm.registerModel(JsonSchema);
-    await WaterlineAdapter.registerSystemModels(orm)
-
     // TODO getComponents ломается при отрисовке
     orm.initialize(waterlineConfig, async (err, ontology) => {
         if (err) {
@@ -215,4 +219,9 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         const isViteDev = process.env.VITE_ENV === "dev";
         if (!isViteDev) console.log('MainApp listening on http://localhost:3000');
     });
+}
+
+
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

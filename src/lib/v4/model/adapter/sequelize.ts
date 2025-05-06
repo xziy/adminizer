@@ -284,12 +284,14 @@ export class SequelizeAdapter extends AbstractAdapter {
     if (!matchedKey) {
       return undefined;
     }
+    console.log("this.sequelize.models[matchedKey]",this.sequelize.models[matchedKey])
 
     return this.sequelize.models[matchedKey];
   }
 
   getAttributes(modelName: string): any {
     const model = this.getModel(modelName);
+    console.log(1111,model?.getAttributes())
     return model?.getAttributes();
   }
 

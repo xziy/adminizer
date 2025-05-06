@@ -1,3 +1,5 @@
+import { GroupAP } from "./GroupAP";
+
 export default {
   id: {
     type: "number",
@@ -50,4 +52,27 @@ export default {
   isConfirmed: {
     type: "boolean"
   }
+}
+
+
+// Предполагается, что тип GroupAP уже определён где-то в коде:
+// import { GroupAP } from './group-ap.interface';
+
+export interface UserAP {
+  id: number;
+  login: string;
+  fullName: string;
+  email?: string;
+  passwordHashed?: string;
+  /** @deprecated */
+  password?: string;
+  timezone?: string;
+  expires?: string;
+  locale?: string;
+  isDeleted?: boolean;
+  isActive?: boolean;
+  isAdministrator?: boolean;
+  groups?: GroupAP[];
+  widgets?: Record<string, unknown>;
+  isConfirmed?: boolean;
 }
