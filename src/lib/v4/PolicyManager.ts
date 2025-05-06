@@ -33,7 +33,7 @@ class PolicyManager {
 
             Adminizer.log.info("Adminizer policies loaded")
         } catch (e) {
-            console.log(e)
+            
             Adminizer.log.error("Adminizer > Could not load policies", e);
         }
     }

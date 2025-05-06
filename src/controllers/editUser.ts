@@ -39,7 +39,7 @@ export default async function (req: ReqType, res: ResType) {
 
     let reloadNeeded = false;
     if (req.method.toUpperCase() === 'POST') {
-        // console.log(req.body);
+        
 
         let userGroups = [];
         for (let key in req.body) {

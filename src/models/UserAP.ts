@@ -54,10 +54,6 @@ export default {
   }
 }
 
-
-// Предполагается, что тип GroupAP уже определён где-то в коде:
-// import { GroupAP } from './group-ap.interface';
-
 export interface UserAP {
   id: number;
   login: string;

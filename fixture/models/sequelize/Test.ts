@@ -7,27 +7,23 @@ import {
 	DataType,
 	ForeignKey,
 	BelongsTo,
-	BelongsToMany,
-
   } from 'sequelize-typescript';
   import {
 	InferAttributes,
 	InferCreationAttributes,
 	CreationOptional,
 	Sequelize,
-	ModelCtor,
 	ModelStatic,
   } from 'sequelize';
   import { Example } from './Example';
-  import { UserAP }  from  "../../../src/models/UserAP"
-
+import { UserAP } from '../../../dist';
+import { tr } from '@faker-js/faker/.';
+  
   @Table({ tableName: 'test', timestamps: true })
   export class Test extends Model<
 	InferAttributes<Test>,
 	InferCreationAttributes<Test>
   > {
-  
-	
 	@PrimaryKey
 	@AutoIncrement
 	@Column(DataType.INTEGER)
@@ -36,33 +32,45 @@ import {
 	@Column({ type: DataType.STRING, allowNull: false })
 	declare title: string;
   
+	// ——————————————————————————————————————————————
+	// Example (1-to-1)
+	// ——————————————————————————————————————————————
 	@ForeignKey(() => Example)
-	@Column(DataType.INTEGER)
-	declare owner: number;
+	@Column({ type: DataType.INTEGER, allowNull: true })
+	declare exampleId: number;
   
-	@BelongsTo(() => Example)
+	@BelongsTo(() => Example, { foreignKey: 'exampleId', as: 'example' })
 	declare example: Example;
-
- 	/**
-   * Static method to set up model associations dynamically.
-   * Call after all models are registered in Sequelize.
-   */
-	 static associate(sequelize: Sequelize) {
-
-		try {
-			const _UserAP = sequelize.model('UserAP') as ModelStatic<Model<UserAP>>;
-			this.belongsToMany(_UserAP, {
-			  through: 'test_useraps',
-			  foreignKey: 'testId',
-			  otherKey: 'userAPId',
-			  as: 'userAPs',
-			});
-		} catch (error) {
-			console.log(error)
-		}
-	  }
-
-	declare userAPs: any[];
-
+  
+	// ——————————————————————————————————————————————
+	// Owner (1-to-1 with UserAP at runtime)
+	// ——————————————————————————————————————————————
+	@Column({ type: DataType.INTEGER, allowNull: true })
+	declare ownerId: number;
+  
+	declare owner?: any;
+  
+	// ——————————————————————————————————————————————
+	// Many-to-many с UserAP через `test_useraps`
+	// ——————————————————————————————————————————————
+	declare userAPs?: UserAP[];
+  
+	static associate(sequelize: Sequelize) {
+	  const UserAPModel = sequelize.model('UserAP') as ModelStatic<Model<UserAP>>;
+  
+	  // 1-to-1: ownerId → один UserAP
+	  this.belongsTo(UserAPModel, {
+		foreignKey: 'ownerId',
+		as: 'owner',
+	  });
+  
+	  // M-to-N: через таблицу test_useraps
+	  this.belongsToMany(UserAPModel, {
+		through: 'test_useraps',
+		foreignKey: 'testId',
+		otherKey: 'userAPId',
+		as: 'userAPs',
+	  });
+	}
   }
   

@@ -11,8 +11,6 @@ export class ModelHandler {
     }
     this.models.set(modelname, modelInstance);
     Adminizer.log.debug(`Model with name [${modelname}] was registered`)
-    console.log(`Model with name [${modelname}] was registered`)
-
   }
 
   /** Improved model getter, so you can write both model.get("UserAP") and model.get("userap") */

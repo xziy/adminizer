@@ -49,8 +49,6 @@ export default async function editGroup(req: ReqType, res: ResType) {
 
     let reloadNeeded = false;
     if (req.method.toUpperCase() === 'POST') {
-        // console.log(req.body);
-
         let allTokens = req.adminizer.accessRightsHelper.getTokens();
 
         let usersInThisGroup = [];
@@ -111,7 +109,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
         }
     }
 
-    // console.log("GROUP", group)
+    
 
     const props = inertiaGroupHelper(entity, req, users, groupedTokens, group)
     return req.Inertia.render({
