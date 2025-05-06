@@ -5,7 +5,7 @@ import * as Portal from '@radix-ui/react-portal';
 import {
     Children,
     cloneElement,
-    createContext,
+    createContext, isValidElement,
     useContext,
     useEffect,
     useState,
@@ -134,10 +134,10 @@ export const DialogStackTrigger = ({
         onClick?.(e);
     };
 
-    if (asChild && children) {
-        return cloneElement(children as ReactElement, {
+    if (asChild && isValidElement<{ onClick?: MouseEventHandler, className?: string }>(children)) {
+        return React.cloneElement(children, {
             onClick: handleClick,
-            className: cn(className, (children as ReactElement).props.className),
+            className: cn(className, children.props.className),
             ...props,
         });
     }
@@ -230,7 +230,9 @@ export const DialogStackBody = ({
                 >
                     <div className="pointer-events-auto relative flex w-full flex-col items-center justify-center">
                         {Children.map(children, (child, index) =>
-                            cloneElement(child as ReactElement, {index})
+                            isValidElement<DialogStackChildProps>(child)
+                                ? cloneElement(child, { index })
+                                : child
                         )}
                     </div>
                 </div>
@@ -305,6 +307,7 @@ export const DialogStackContent = ({
                 zIndex: 50 - Math.abs(context.activeIndex - (index ?? 0)),
                 position: distanceFromActive ? 'absolute' : 'relative',
                 opacity: distanceFromActive > 0 ? 0 : 1,
+                pointerEvents: distanceFromActive > 0 ? 'none' : 'auto',
                 cursor:
                     context.clickable && context.activeIndex > index
                         ? 'pointer'
@@ -404,10 +407,10 @@ export const DialogStackNext = ({
         }
     };
 
-    if (asChild && children) {
-        return cloneElement(children as ReactElement, {
+    if (asChild && isValidElement<{ onClick?: MouseEventHandler, className?: string }>(children)) {
+        return React.cloneElement(children, {
             onClick: handleNext,
-            className: cn(className, (children as ReactElement).props.className),
+            className: cn(className, children.props.className),
             ...props,
         });
     }
@@ -450,10 +453,10 @@ export const DialogStackPrevious = ({
         }
     };
 
-    if (asChild && children) {
-        return cloneElement(children as ReactElement, {
+    if (asChild && isValidElement<{ onClick?: MouseEventHandler, className?: string }>(children)) {
+        return React.cloneElement(children, {
             onClick: handlePrevious,
-            className: cn(className, (children as ReactElement).props.className),
+            className: cn(className, children.props.className),
             ...props,
         });
     }
