@@ -60,8 +60,6 @@ export interface UserAP {
   fullName: string;
   email?: string;
   passwordHashed?: string;
-  /** @deprecated */
-  password?: string;
   timezone?: string;
   expires?: string;
   locale?: string;
