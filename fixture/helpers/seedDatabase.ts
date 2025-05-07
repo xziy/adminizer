@@ -1,7 +1,5 @@
-import { Model as SequelizeModel } from 'sequelize';
-import { WaterlineModel } from '../../dist';
 import { faker } from '@faker-js/faker';
-
+import { generate } from 'password-hash';
 export async function seedDatabase(
   collections: Record<string, any>,
   count: number = 3
@@ -12,30 +10,24 @@ export async function seedDatabase(
     return `${hours}:${minutes}`;
   };
 
-  const exampleModel = collections.example;
-  if (!exampleModel) {
-    return;
+  const exampleModel = collections.example ?? collections.Example;
+  const userModel = collections.userap ?? collections.UserAP;
+  const groupModel = collections.groupap ?? collections.GroupAP;
+
+
+  const isSequelize = typeof exampleModel?.bulkCreate === 'function';
+  const isWaterline = typeof exampleModel?.createEach === 'function';
+
+  if (!exampleModel || !userModel || !groupModel || (!isSequelize && !isWaterline)) {
+    throw new Error('Models should support the ORM interface (Sequelize or Waterline)');
   }
 
-  // We determine with which ORM we work
-  const isSequelize = typeof exampleModel.bulkCreate === 'function';
-  const isWaterline = typeof exampleModel.createEach === 'function';
+  // ------------------ Example Records ------------------ //
+  const exampleCount = isSequelize
+    ? await exampleModel.count()
+    : await exampleModel.count({});
 
-  if (!isSequelize && !isWaterline) {
-    throw new Error('Модель не поддерживает ни bulkCreate (Sequelize), ни createEach (Waterline)');
-  }
-
-  let existingCount: number;
-  if (isSequelize) {
-    // For Sequelize Count () without arguments he will count all the notes
-    // @ts-ignore
-    existingCount = await (exampleModel as SequelizeModel<any, any>).count();
-  } else {
-    // For Waterline Count ({}) -also all notes
-    existingCount = await (exampleModel as WaterlineModel<typeof exampleModel>).count({});
-  }
-  //if empty -generate and insert "fixtures"
-  if (existingCount === 0) {
+  if (exampleCount === 0) {
     const fakeExamples = Array.from({ length: count }, () => ({
       title:       faker.lorem.word(),
       description: faker.lorem.paragraph(),
@@ -46,15 +38,76 @@ export async function seedDatabase(
     }));
 
     if (isSequelize) {
-      // @ts-ignore
-      await (exampleModel as SequelizeModel<any, any>).bulkCreate(fakeExamples);
+      await exampleModel.bulkCreate(fakeExamples);
     } else {
-      // @ts-ignore
-      await (exampleModel as WaterlineModel<typeof exampleModel>).createEach(fakeExamples);
+      await exampleModel.createEach(fakeExamples);
+    }
+  }
+ 
+  // ------------------ Groups ------------------ //
+  const groupNames = [
+    { name: 'Admins', description: 'System administrators' },
+    { name: 'Users', description: 'Registered users' },
+    { name: 'Guests', description: 'Guest access' },
+  ];
+
+  for (const group of groupNames) {
+    const exists = isSequelize
+      ? await groupModel.findOne({ where: { name: group.name } })
+      : await groupModel.find({ name: group.name });
+
+    if (!exists || (Array.isArray(exists) && exists.length === 0)) {
+      if (isSequelize) {
+        await groupModel.create(group);
+      } else {
+        await groupModel.create(group).fetch();
+      }
     }
   }
 
-  if (process.env.DEMO) {
-    process.env.ADMINPANEL_DEMO_ADMIN_ENABLE = '1';
+  // ------------------ Users ------------------ //
+  const users = [
+    { login: 'pass', password: 'pass', fullName: 'User Pass' },
+    { login: 'demo', password: 'demo', fullName: 'Administrator', isAdministrator: true },
+    { login: 'user1', password: 'user1', fullName: 'User One' },
+    { login: 'admin', password: 'admin', fullName: 'Admin User', isAdministrator: true },
+    { login: 'user2', password: 'user2', fullName: 'User Two' },
+    { login: 'user3', password: 'user3', fullName: 'User Three' },
+  ];
+
+  for (const u of users) {
+    const exists = isSequelize
+      ? await userModel.findOne({ where: { login: u.login } })
+      : await userModel.find({ login: u.login });
+
+    if (!exists || (Array.isArray(exists) && exists.length === 0)) {
+      const userData = {
+        login: u.login,
+        password: u.password,
+        passwordHashed: generate(u.login+u.password+process.env.AP_PASSWORD_SALT),
+        fullName: u.fullName,
+        isActive: true,
+        isAdministrator: u.isAdministrator || false,
+      };
+
+      const userInstance = isSequelize
+        ? await userModel.create(userData)
+        : await userModel.create(userData).fetch();
+
+
+      console.log(userInstance)
+      // Привязка к группам (упрощённая логика)
+      const groupName = u.isAdministrator ? 'Admins' : 'Users';
+
+      const group = isSequelize
+        ? await groupModel.findOne({ where: { name: groupName } })
+        : (await groupModel.find({ name: groupName }))[0];
+
+      if (group && group.addUser) {
+        await group.addUser(userInstance); // Sequelize M:N
+      } else if (isWaterline && group && typeof groupModel.addToCollection === 'function') {
+        await groupModel.addToCollection(group.id, 'users', userInstance.id);
+      }
+    }
   }
 }
