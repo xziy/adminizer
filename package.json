@@ -7,6 +7,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev": "cross-env VITE_ENV=dev tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+		"dev:sequelize": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=sequelize tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
 		"compile:backend": "tsc -p src/tsconfig.json",
 		"watch:backend": "tsc -w -p src/tsconfig.json",
@@ -17,9 +18,9 @@
 		"build:react-quill": "vite build --config modules/controls/wysiwyg/vite.config.react-quill.ts",
 		"copy:modules": "node copy-modules.js",
 		"build:assets:modules": "npm run build:assets && npm run copy:modules",
-		"start:seed": "cross-env SEED_DATA=true tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+		"start:seed": "cross-env ORM=sequelize tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"demo:build": "npm run copy:backend && npm run compile:backend && npm run build:assets && npm run copy:modules",
-		"demo": "cross-env SEED_DATA=true DEMO=true tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts"
+		"demo": "cross-env tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -28,6 +29,7 @@
 	"dependencies": {
 		"@radix-ui/react-menubar": "^1.1.12",
 		"@radix-ui/react-portal": "^1.1.6",
+		"@radix-ui/react-switch": "^1.2.4",
 		"body-parser": "^1.20.3",
 		"chalk": "^5.4.1",
 		"cmdk": "^1.1.1",
