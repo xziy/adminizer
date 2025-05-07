@@ -184,8 +184,11 @@ export const DialogStackOverlay = ({
                 className
             )}
             onClick={() => {
-                context.setIsOpen(false)
-                context.setActiveIndex(0);
+                if (context.activeIndex === 0) {
+                    context.setIsOpen(false)
+                } else {
+                    context.setActiveIndex(context.activeIndex - 1);
+                }
             }}
             {...props}
         />
@@ -231,7 +234,7 @@ export const DialogStackBody = ({
                     <div className="pointer-events-auto relative flex w-full flex-col items-center justify-center">
                         {Children.map(children, (child, index) =>
                             isValidElement<DialogStackChildProps>(child)
-                                ? cloneElement(child, { index })
+                                ? cloneElement(child, {index})
                                 : child
                         )}
                     </div>
@@ -245,7 +248,7 @@ export const DialogStackContent = ({
                                        children,
                                        className,
                                        index = 0,
-                                       offset = 60,
+                                       offset = 20,
                                        ...props
                                    }: HTMLAttributes<HTMLDivElement> & {
     index?: number;
@@ -284,7 +287,7 @@ export const DialogStackContent = ({
         if (showAnimation) {
             const timer = setTimeout(() => {
                 context.setShouldAnimate(false);
-            }, 100);
+            }, 200);
 
             return () => clearTimeout(timer);
         }
@@ -294,7 +297,7 @@ export const DialogStackContent = ({
         <div
             onClick={handleClick}
             className={cn(
-                'h-[98vh] w-full rounded-l-md border bg-background p-6 shadow-lg transition-all duration-100',
+                'h-[98vh] w-full rounded-l-md border bg-background p-6 shadow-lg transition-all duration-200',
                 showAnimation && 'animate-in slide-in-from-right-1/2',
                 distanceFromActive < 0 && 'brightness-75 blur-[2px]',
                 className
@@ -324,7 +327,7 @@ export const DialogStackContent = ({
 
             <div
                 className={cn(
-                    'h-full w-full transition-all duration-100',
+                    'h-full w-full transition-all duration-200',
                     context.activeIndex !== index &&
                     'pointer-events-none select-none'
                 )}

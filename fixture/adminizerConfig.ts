@@ -25,7 +25,7 @@ const models: AdminpanelConfig["models"] = {
                     //     console.dir(d)
                     //     return d
                     // }
-                } 
+                }
             }
         },
         add: {
@@ -375,9 +375,9 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    auth: {
-        enable: false
-    },
+    // auth: {
+    //     enable: false
+    // },
     registration: {
         enable: true,
         defaultUserGroup: "guest",

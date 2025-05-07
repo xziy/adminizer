@@ -43,7 +43,7 @@ export async function seedDatabase(
       await exampleModel.createEach(fakeExamples);
     }
   }
- 
+
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators' },
@@ -95,7 +95,7 @@ export async function seedDatabase(
         : await userModel.create(userData).fetch();
 
 
-      console.log(userInstance)
+      console.log('userInstance: ', userInstance)
       // Привязка к группам (упрощённая логика)
       const groupName = u.isAdministrator ? 'Admins' : 'Users';
 

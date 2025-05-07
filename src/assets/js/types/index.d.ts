@@ -2,7 +2,6 @@ import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
 
 
-
 export interface Auth {
     user: User;
 }
@@ -50,9 +49,30 @@ export interface User {
     [key: string]: unknown;
 }
 
+export interface Widget {
+    id: string;
+    title?: string;
+    size?: { w: number; h: number };
+    added?: boolean;
+    [key: string]: any;
+}
+
+export interface WidgetLayoutItem {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    i: string;
+    id: string;
+}
+
 declare global {
     interface Window {
         routePrefix: string;
+        widgetsInit: {
+            layout: WidgetLayoutItem[],
+            widgets: Widget[]
+        }
     }
 }
 
