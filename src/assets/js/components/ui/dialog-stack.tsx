@@ -88,10 +88,19 @@ export const DialogStack = ({
     };
 
     useEffect(() => {
-        onOpenChange?.(isOpen);
+        const htmlElement = document.documentElement;
         if (isOpen) {
+            htmlElement.style.overflow = 'hidden';
             setShouldAnimate(true);
+        } else {
+            htmlElement.style.overflow = '';
         }
+
+        onOpenChange?.(isOpen);
+
+        return () => {
+            htmlElement.style.overflow = '';
+        };
     }, [isOpen, onOpenChange]);
 
     return (
@@ -231,13 +240,11 @@ export const DialogStackBody = ({
                     )}
                     {...props}
                 >
-                    <div className="pointer-events-auto relative flex w-full flex-col items-center justify-center">
-                        {Children.map(children, (child, index) =>
-                            isValidElement<DialogStackChildProps>(child)
-                                ? cloneElement(child, {index})
-                                : child
-                        )}
-                    </div>
+                    {Children.map(children, (child, index) =>
+                        isValidElement<DialogStackChildProps>(child)
+                            ? cloneElement(child, {index})
+                            : child
+                    )}
                 </div>
             </Portal.Root>
         </DialogStackContext.Provider>

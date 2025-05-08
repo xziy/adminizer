@@ -7,13 +7,15 @@ import {Input} from "@/components/ui/input.tsx";
 
 interface AddWidget {
     initWidgets: Widget[];
+    onAddWidgets: (id: string) => void;
+    disabled: boolean
 }
 
 type WidgetGroup = Record<string, { items: Widget[], title: string }>;
 
 type Head = { type: string, title: string };
 
-const addWidgets = ({initWidgets}: AddWidget) => {
+const AddWidgets = ({initWidgets, onAddWidgets, disabled}: AddWidget) => {
     const [widgets, setWidgets] = useState<WidgetGroup>({
         switchers: {items: [], title: ''},
         info: {items: [], title: ''},
@@ -42,35 +44,30 @@ const addWidgets = ({initWidgets}: AddWidget) => {
                 if (newHead.find(e => e.type === 'switchers')) continue
                 newWidgets.switchers.title = 'Switcher'
                 newHead.push({type: 'switchers', title: 'Switcher'});
-
             }
             if (widget.type === 'info') {
                 newWidgets.info.items.push(widget);
                 if (newHead.find(e => e.type === 'info')) continue
                 newWidgets.info.title = 'Info'
                 newHead.push({type: 'info', title: 'Info'});
-
             }
             if (widget.type === 'action') {
                 newWidgets.actions.items.push(widget);
                 if (newHead.find(e => e.type === 'actions')) continue
                 newWidgets.actions.title = 'Actions'
                 newHead.push({type: 'actions', title: 'Actions'});
-
             }
             if (widget.type === 'link') {
                 newWidgets.links.items.push(widget);
                 if (newHead.find(e => e.type === 'links')) continue
                 newWidgets.links.title = 'Fast links'
                 newHead.push({type: 'links', title: 'Fast links'});
-
             }
             if (widget.type === 'custom') {
                 newWidgets.custom.items.push(widget);
                 if (newHead.find(e => e.type === 'custom')) continue
                 newWidgets.custom.title = 'Custom'
                 newHead.push({type: 'custom', title: 'Custom'});
-
             }
         }
 
@@ -78,11 +75,29 @@ const addWidgets = ({initWidgets}: AddWidget) => {
         setHead(newHead);
     }, [initWidgets]);
 
-
     const filteredWidgets = useCallback(() => {
-        if (filter && search.length < 1) {
-            return {[filter]: widgets[filter]};
-        } else if (search.length >= 1) {
+        // if active filter
+        if (filter) {
+            const filteredGroup = widgets[filter];
+
+            // if search query
+            if (search.length >= 1) {
+                return {
+                    [filter]: {
+                        ...filteredGroup,
+                        items: filteredGroup.items.filter(e =>
+                            e.name.toLowerCase().includes(search.toLowerCase())
+                        )
+                    }
+                };
+            }
+
+            // if no search query
+            return {[filter]: filteredGroup};
+        }
+
+        // if no filter and search query
+        if (search.length >= 1) {
             let newWidgets = {
                 search: {
                     items: [] as Widget[],
@@ -97,13 +112,18 @@ const addWidgets = ({initWidgets}: AddWidget) => {
                 newWidgets.search.items = [...newWidgets.search.items, ...items];
             }
             return newWidgets;
-        } else {
-            return widgets;
         }
+
+        // If the filter is All and there is no search query - return all widgets
+        return widgets;
     }, [widgets, filter, search]);
 
+    const addWidget = useCallback((id: string) => {
+        onAddWidgets(id);
+    }, [widgets, onAddWidgets]);
+
     return (
-        <>
+        <div className={disabled ? 'opacity-50 pointer-events-none' : ''}>
             <div className="flex flex-col gap-4 pl-1">
                 <div className="flex gap-7 flex-wrap font-medium text-lg">
                     <div
@@ -124,29 +144,33 @@ const addWidgets = ({initWidgets}: AddWidget) => {
                 {Object.entries(filteredWidgets()).map(([key, widget]) => (
                     <div key={key}>
                         <h2 className="text-xl font-medium mb-4">{widget.title}</h2>
-                        <div className="mt-2 grid grid-cols-4 gap-2">
-                            {widget.items.map(item => (
-                                <Card key={item.id} className="min-h-[225px] justify-between">
-                                    <CardHeader>
-                                        <CardTitle className="flex justify-between items-center">
-                                            {item.name}
-                                            <MaterialIcon name={item.icon} className="text-primary"/>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardFooter className="justify-end">
-                                        {item.added ? (
-                                            <Button className="cursor-pointer" variant="secondary">Hide</Button>
-                                        ) : (
-                                            <Button className="cursor-pointer">Show</Button>
-                                        )}
-                                    </CardFooter>
-                                </Card>
-                            ))}
-                        </div>
+                        {widget.items.length > 0 ? (
+                            <div className="mt-2 grid grid-cols-4 gap-2">
+                                {widget.items.map(item => (
+                                    <Card key={item.id} className="min-h-[225px] justify-between">
+                                        <CardHeader>
+                                            <CardTitle className="flex justify-between items-center">
+                                                {item.name}
+                                                <MaterialIcon name={item.icon} className="text-primary"/>
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardFooter className="justify-end">
+                                            {item.added ? (
+                                                <Button className="cursor-pointer" variant="destructive" onClick={() => addWidget(item.id)}>Hide</Button>
+                                            ) : (
+                                                <Button className="cursor-pointer" onClick={() => addWidget(item.id)}>Show</Button>
+                                            )}
+                                        </CardFooter>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">No widgets found</p>
+                        )}
                     </div>
                 ))}
             </div>
-        </>
+        </div>
     )
 }
-export default addWidgets;
+export default AddWidgets;
