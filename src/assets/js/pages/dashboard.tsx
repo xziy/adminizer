@@ -18,6 +18,7 @@ import {
     DialogStackTrigger
 } from "@/components/ui/dialog-stack.tsx";
 import AddWidgets from "@/components/add-widgets.tsx";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 const breadcrumbs: BreadcrumbItem[] = [];
 
@@ -28,6 +29,8 @@ export default function Dashboard() {
     const [widgets, setWidgets] = useState<Widget[]>([])
     const [popUpDisabled, setPopUpDisabled] = useState(false)
     const [keyRender, setKeyRender] = useState(0);
+    const [loading, setIsLoading] = useState(true)
+
 
     useEffect(() => {
         async function loadWidgets() {
@@ -35,6 +38,7 @@ export default function Dashboard() {
                 const {layout: widgetsLayout, widgets: widgetsData} = await initializeWidgets();
                 setWidgets(widgetsData)
                 setLayout(widgetsLayout)
+                setIsLoading(false)
             } catch (error) {
                 console.error('Failed to load widgets:', error);
             } finally {
@@ -156,7 +160,10 @@ export default function Dashboard() {
                         </DialogStack>
                     </div>
                 </div>
-                <div>
+                {loading ? (
+                    <Skeleton className="h-full w-full rounded-md" />
+                ) : (
+                    <div>
                     {layout.length > 0 ? (
                         <ResponsiveGridLayout
                             layouts={{lg: layout}}
@@ -182,6 +189,8 @@ export default function Dashboard() {
                             right.</p>
                     )}
                 </div>
+                )}
+
             </div>
         </AppLayout>
     );

@@ -377,7 +377,7 @@ const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     // auth: {
-    //     enable: false
+    //     enable: true
     // },
     registration: {
         enable: true,
