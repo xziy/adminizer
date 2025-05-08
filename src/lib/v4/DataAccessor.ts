@@ -11,17 +11,19 @@ import {
 import {Field, Fields} from "../../helpers/fieldsHelper";
 import {ControllerHelper} from "../../helpers/controllerHelper";
 import {Adminizer} from "../Adminizer";
+import { GroupAP } from "models/GroupAP";
+import { UserAP } from "models/UserAP";
 
 export class DataAccessor {
     private readonly adminizer: Adminizer;
-    user: ModelsAP["UserAP"];
+    user: UserAP;
     entity: Entity;
     action: ActionType
     private fields: Fields = null;
 
     constructor(req: ReqType, entity: Entity, action: ActionType) {
         this.adminizer = req.adminizer;
-        this.user = req.session.UserAP;
+        this.user = req.user;
         this.entity = entity;
         this.action = action
     }
@@ -213,7 +215,7 @@ export class DataAccessor {
             return true;
         }
 
-        const userGroups = this.user.groups?.map((group: ModelsAP["GroupAP"]) => group.name.toLowerCase());
+        const userGroups = this.user.groups?.map((group: GroupAP) => group.name.toLowerCase());
         // Check if `groupsAccessRights` is set in the fieldConfig
         if (fieldConfig.groupsAccessRights) {
             const allowedGroups = fieldConfig.groupsAccessRights.map((item: string) => item.toLowerCase());
@@ -347,7 +349,7 @@ export class DataAccessor {
                         sanitizedCriteria = {...sanitizedCriteria, [accessField]: this.user.id};
                     } else if (relation.model.toLowerCase() === 'groupap') {
                         // Filter by user's group membership if related to GroupAP as a model
-                        const userGroups = this.user.groups?.map((group: ModelsAP["GroupAP"]) => group.id);
+                        const userGroups = this.user.groups?.map((group: GroupAP) => group.id);
                         sanitizedCriteria = {...sanitizedCriteria, [accessField]: {in: userGroups}};
                     }
                 }
@@ -360,7 +362,7 @@ export class DataAccessor {
                         sanitizedCriteria = {...sanitizedCriteria, [accessField]: {contains: this.user.id}};
                     } else if (relation.collection.toLowerCase() === 'groupap') {
                         // Ensure user's groups intersect with the collection to GroupAP
-                        const userGroups = this.user.groups?.map((group: ModelsAP["GroupAP"]) => group.id);
+                        const userGroups = this.user.groups?.map((group: GroupAP) => group.id);
                         sanitizedCriteria = {...sanitizedCriteria, [accessField]: {intersects: userGroups}};
                     }
                 }
@@ -451,7 +453,7 @@ export class DataAccessor {
 
                     } else if (relation.model.toLowerCase() === 'groupap') {
                         // Works only for users with only one group, later it can be resolved with group weight
-                        const userGroups = this.user.groups as ModelsAP["GroupAP"][] || [];
+                        const userGroups = this.user.groups as GroupAP[] || [];
                         if (userGroups.length === 1) {
                             updatedRecord[accessField as keyof T] = userGroups[0].id as T[keyof T];
                         } else {

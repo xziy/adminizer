@@ -8,6 +8,7 @@ export class InertiaMenuHelper {
     }
 
     public getMenuItems(req: ReqType) {
+
         let menu = []
         for (const menuItem of this.adminizer.menuHelper.getMenuItems()) {
             const menuItemTokens = menuItem.actions ? menuItem.actions.map(item => {
@@ -16,7 +17,7 @@ export class InertiaMenuHelper {
                 return item
             }) : []
             if (menuItem.accessRightsToken) menuItemTokens.push(menuItem.accessRightsToken)
-            if (this.adminizer.accessRightsHelper.enoughPermissions(menuItemTokens, req.session.UserAP)) {
+            if (this.adminizer.accessRightsHelper.enoughPermissions(menuItemTokens, req.user)) {
                 menu.push(menuItem)
             }
         }

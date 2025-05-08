@@ -1,3 +1,5 @@
+import { GroupAP } from "models/GroupAP";
+import { UserAP } from "models/UserAP";
 import {Entity, PropsField} from "../interfaces/types";
 
 interface listProps extends Record<string | number | symbol, unknown> {
@@ -23,7 +25,7 @@ interface listProps extends Record<string | number | symbol, unknown> {
     }
 }
 
-export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP["GroupAP"][], user?: ModelsAP["UserAP"], view: boolean = false) {
+export function inertiaUserHelper(entity: Entity, req: ReqType, groups: GroupAP[], user?: UserAP, view: boolean = false) {
     let props: listProps = {
         edit: !!user,
         view: view,
@@ -87,7 +89,7 @@ export function inertiaUserHelper(entity: Entity, req: ReqType, groups: ModelsAP
             value: user?.locale ?? ''
         })
     }
-    if (req.session.UserAP.isAdministrator) {
+    if (req.user.isAdministrator) {
         props.fields.push({
             label: req.i18n.__('Profile expires'),
             type: 'date',

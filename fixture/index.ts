@@ -30,7 +30,7 @@ process.env.AP_PASSWORD_SALT = "FIXTURE"
 
 // Clean temp folder
 if (!process.env.NO_SEED_DATA) await cleanTempFolder();
-
+process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize'
@@ -128,7 +128,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         let policies: MiddlewareType[] = adminizer.config.policies;
         const module = (req: ReqType, res: ResType) => {
             if (req.adminizer.config.auth.enable) {
-                if (!req.session.UserAP) {
+                if (!req.user) {
                     return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
                 }
             }

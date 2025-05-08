@@ -4,18 +4,21 @@ import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
 import {Inertia} from "../lib/inertia/inertiaAdapter";
 import {Flash} from "../lib/inertia/flash";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 
 
 declare global {
+	/** @deprecated use import from TS model decalration */
 	type ModelsAP = {
-		GroupAP: {
-			id?: number
-			name: string,
-			description?: string
-			tokens?:string[]
-			users?: ModelsAP["UserAP"][]
-		}
+		// GroupAP: {
+		// 	id?: number
+		// 	name: string,
+		// 	description?: string
+		// 	tokens?:string[]
+		// 	users?: UserAP[]
+		// }
 
 		MediaManagerAP: {
 			id?: string
@@ -56,37 +59,38 @@ declare global {
 			tree: any
 		}
 
-		UserAP: {
-			id?: number
-			login?: string
-			fullName?: string
-			email?: string
-			passwordHashed?: string
-			password?: string
-			timezone?: string
-			expires?: string
-			locale?: string
-			isDeleted?: boolean
-			isActive?: boolean
-			isAdministrator?: boolean
-			groups?: ModelsAP["GroupAP"][]
-			widgets?: any
-			isConfirmed?: boolean
-		}
+		// UserAP: {
+		// 	id: number
+		// 	login: string
+		// 	fullName: string
+		// 	email?: string
+		// 	passwordHashed?: string
+		// 	password?: string
+		// 	timezone?: string
+		// 	expires?: string
+		// 	locale?: string
+		// 	isDeleted?: boolean
+		// 	isActive?: boolean
+		// 	isAdministrator?: boolean
+		// 	groups?: GroupAP[]
+		// 	widgets?: any
+		// 	isConfirmed?: boolean
+		// }
 	}
     type reqSession = {
         flashMessages: Record<string, string[]>;
         xInertiaCurrentComponent: string | undefined;
-        UserAP: ModelsAP["UserAP"]
+        UserAP: UserAP
         messages: {
             adminError: string[],
             adminSuccess: string[]
         }
-        adminPretender?: ModelsAP["UserAP"]
+        userPretended?: UserAP
     }
     type FlashMessages = 'info' | 'error' | 'success' | string;
 
 	type ReqType = Request & {
+		user: UserAP;
         Inertia: Inertia;
         flash: Flash<FlashMessages>;
 		session: reqSession,
