@@ -2,18 +2,20 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from 'password-hash';
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 export default async function (req: ReqType, res: ResType) {
     let entity = ControllerHelper.findEntityObject(req);
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }
 
-    let groups: ModelsAP["GroupAP"][];
+    let groups: GroupAP[];
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         groups = await req.adminizer.modelHandler.model.get("GroupAP")["_find"]({});
@@ -21,7 +23,7 @@ export default async function (req: ReqType, res: ResType) {
         Adminizer.log.error(e)
     }
 
-    let user: ModelsAP["UserAP"];
+    let user: UserAP;
 
     if (req.method.toUpperCase() === 'POST') {
         let userGroups = [];

@@ -6,7 +6,7 @@ export default function upload(req: ReqType, res: ResType): void {
 	let entity = ControllerHelper.findEntityObject(req);
 
 	if (req.adminizer.config.auth.enable) {
-		if (!req.session.UserAP) {
+		if (!req.user) {
 			res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
 			return
 		} else if (!req.adminizer.accessRightsHelper.enoughPermissions([
@@ -14,7 +14,7 @@ export default function upload(req: ReqType, res: ResType): void {
 			`create-${entity.name}-model`,
 			`update-${entity.name}-form`,
 			`create-${entity.name}-form`
-		], req.session.UserAP)) {
+		], req.user)) {
 			res.sendStatus(403);
 			return
 		}

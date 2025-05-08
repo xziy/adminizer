@@ -1,6 +1,7 @@
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
 import {inertiaInitUserHelper} from "../helpers/inertiaAutHelper";
+import { UserAP } from "models/UserAP";
 
 export default async function initUser(req: ReqType, res: ResType) {
     if (!req.adminizer.config.auth.enable) {
@@ -8,7 +9,7 @@ export default async function initUser(req: ReqType, res: ResType) {
     }
 
     // TODO refactor CRUD functions for DataAccessor usage
-    let admins: ModelsAP["UserAP"][] = await req.adminizer.modelHandler.model.get("UserAP")["_find"]({isAdministrator: true});
+    let admins: UserAP[] = await req.adminizer.modelHandler.model.get("UserAP")["_find"]({isAdministrator: true});
     if (admins.length) {
         res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }

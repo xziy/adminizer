@@ -2,12 +2,12 @@ export default async function widgetsDB(req: ReqType, res: ResType) {
     let id: number = 0
     let auth = req.adminizer.config.auth.enable
     if (auth) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`widgets`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`widgets`, req.user)) {
             return res.sendStatus(403);
         }
-        id = req.session.UserAP.id
+        id = req.user.id
     }
 
     if (req.method.toUpperCase() === 'GET') {

@@ -325,7 +325,7 @@
 // 		let items = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
 //
 // 		// This dirty hack is here because the field of view is disappearing
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
 // 		}
@@ -353,7 +353,7 @@
 // 		let type: 'html' = 'html'
 //
 // 		// This dirty hack is here because the field of view is disappearing
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
 // 		}
@@ -432,7 +432,7 @@
 // 		let type: 'html' = 'html'
 //
 // 		// This dirty hack is here because the field of view is disappearing
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
 // 		}
@@ -459,7 +459,7 @@
 // 		let item = await this.find(id, catalogId)
 //
 // 		// This dirty hack is here because the field of view is disappearing
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
 // 		}
@@ -495,7 +495,7 @@
 //
 // 	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
 // 		let type: 'html' = 'html'
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 //
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
@@ -513,7 +513,7 @@
 // 		let type: 'html' = 'html'
 // 		let item = await this.find(id, catalogId)
 //
-// 		req.i18n.setLocale(req.session.UserAP.locale);
+// 		req.i18n.setLocale(req.user.locale);
 // 		const __ = (s: string) => {
 // 			return req.i18n.__(s)
 // 		}

@@ -2,6 +2,11 @@ import {POWCaptcha} from "../lib/v4/POWCaptcha";
 import passwordHash from "password-hash";
 import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
 import { Adminizer } from "../lib/Adminizer";
+import { signUser } from "../lib/v4/helper/jwt";
+import { serialize } from "cookie";
+import { UserAP } from "models/UserAP";
+
+
 
 export default async function login(req: ReqType, res: ResType) {
     const powCaptcha = new POWCaptcha();
@@ -15,7 +20,7 @@ export default async function login(req: ReqType, res: ResType) {
             let password = req.body.password;
             let captchaSolution = req.body.captchaSolution;
 
-            let user: ModelsAP["UserAP"];
+            let user: UserAP;
             try {
                 // TODO refactor CRUD functions for DataAccessor usage
                 user = await req.adminizer.modelHandler.model.get("UserAP")["_findOne"]({login: login});
@@ -27,9 +32,9 @@ export default async function login(req: ReqType, res: ResType) {
                 if (!user) {
                     return res.sendStatus(404);
                 }
-                if (req.session.UserAP.isAdministrator) {
-                    req.session.adminPretender = req.session.UserAP;
-                    req.session.UserAP = user;
+                if (req.user.isAdministrator) {
+                    req.session.userPretended = user;
+
                     // return res.sendStatus(200);
                     return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
                 }
@@ -51,13 +56,19 @@ export default async function login(req: ReqType, res: ResType) {
                     return inertiaAdminMessage(req, "Profile is not confirmed, please contact to administrator", 'captchaSolution');
                 }
 
-                // TODO: Add salt
                 if (passwordHash.verify(login + password + process.env.AP_PASSWORD_SALT, user.passwordHashed)) {
                     if (user.expires && Date.now() > Date.parse(user.expires)) {
                         //Here we use the captchaSolution key to output messages unrelated to the form fields.
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
-                    req.session.UserAP = user;
+
+                    const token = signUser(user, req.adminizer.jwtSecret);
+                        res.setHeader('Set-Cookie', serialize('adminizer_jwt', token, {
+                        httpOnly: true,
+                        sameSite: 'lax',
+                        path: '/',
+                        maxAge: 60 * 60 * 24 * 7 * 2,
+                    }));
                     return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
                 } else {
                     return inertiaAdminMessage(req, "Wrong password", 'password');
@@ -79,12 +90,11 @@ export default async function login(req: ReqType, res: ResType) {
         }
 
     } else if (req.originalUrl.indexOf("logout") >= 0) {
-        if (req.session.adminPretender && req.session.adminPretender.id && req.session.UserAP && req.session.UserAP.id) {
-            req.session.UserAP = req.session.adminPretender;
-            req.session.adminPretender = {};
+        if (req.session.userPretended && req.session.userPretended.id && req.user && req.user.id) {
+            delete(req.session.userPretended);
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
-        req.session.UserAP = undefined;
+        req.user = undefined;
         req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }
     return res.status(404);

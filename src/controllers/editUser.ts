@@ -2,14 +2,16 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 export default async function (req: ReqType, res: ResType) {
     let entity = ControllerHelper.findEntityObject(req);
 
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }
@@ -19,7 +21,7 @@ export default async function (req: ReqType, res: ResType) {
         return res.status(404).send({error: 'Not Found'});
     }
 
-    let user: ModelsAP["UserAP"];
+    let user: UserAP;
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         user = await req.adminizer.modelHandler.model.get("UserAP")["_findOne"]({id: req.params.id});
@@ -29,7 +31,7 @@ export default async function (req: ReqType, res: ResType) {
         res.status(500).send({error: 'Internal Server Error'});
     }
 
-    let groups: ModelsAP["GroupAP"][];
+    let groups: GroupAP[];
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         groups = await req.adminizer.modelHandler.model.get("GroupAP")["_find"]({});
@@ -60,7 +62,7 @@ export default async function (req: ReqType, res: ResType) {
             locale = req.body.locale === 'default' ? req.adminizer.config.translation.defaultLocale : req.body.locale;
         }
 
-        let updatedUser: ModelsAP["UserAP"];
+        let updatedUser: UserAP;
         try {
             // TODO refactor CRUD functions for DataAccessor usage
             updatedUser = await req.adminizer.modelHandler.model.get("UserAP")["_updateOne"]({id: user.id}, {

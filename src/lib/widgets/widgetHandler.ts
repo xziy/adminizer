@@ -5,6 +5,7 @@ import LinkBase from "./abstractLink";
 import CustomBase from "./abstractCustom";
 import { AdminpanelIcon } from "../../interfaces/adminpanelConfig";
 import {Adminizer} from "../Adminizer";
+import { UserAP } from "models/UserAP";
 
 export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
 export interface WidgetConfig {
@@ -59,7 +60,7 @@ export class WidgetHandler {
 		}
 	}
 
-	public getAll(user: ModelsAP["UserAP"]): Promise<WidgetConfig[]> {
+	public getAll(user: UserAP): Promise<WidgetConfig[]> {
 		let widgets: WidgetConfig[] = []
 		if (this.widgets.length) {
 			let id_key = 0
@@ -145,7 +146,7 @@ export class WidgetHandler {
 	}
 
 	public async getWidgetsDB(id: number, auth: boolean): Promise<WidgetConfig[]> {
-		let user: ModelsAP["UserAP"];
+		let user: UserAP;
 		let widgets: WidgetConfig[];
 
 		if (!auth) {
@@ -177,11 +178,11 @@ export class WidgetHandler {
 	public async setWidgetsDB(id: number, widgets: WidgetConfig[], auth: boolean): Promise<number> {
 		if (!auth) {
 			// TODO refactor CRUD functions for DataAccessor usage
-			let updatedUser: ModelsAP["UserAP"] = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ login: this.adminizer.config.administrator?.login ?? 'admin' }, { widgets: widgets })
+			let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ login: this.adminizer.config.administrator?.login ?? 'admin' }, { widgets: widgets })
 			return updatedUser.id
 		} else {
 			// TODO refactor CRUD functions for DataAccessor usage
-			let updatedUser: ModelsAP["UserAP"] = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ id: id }, { widgets: widgets })
+			let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ id: id }, { widgets: widgets })
 			return updatedUser.id
 		}
 
