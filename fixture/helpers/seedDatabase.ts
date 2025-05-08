@@ -50,7 +50,7 @@ export async function seedDatabase(
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators' },
-    { name: 'Users', description: 'Registered users' },
+    { name: 'Users', description: 'Registered users', tokens: ["create-test-model","read-test-model","update-test-model","delete-test-model"] },
     { name: 'Guests', description: 'Guest access' },
   ];
 
