@@ -2,6 +2,8 @@ import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {GridSettings as HandsontableSettings} from "handsontable/settings";
 import { Adminizer } from "lib/Adminizer";
+import { GroupAP } from "models/GroupAP";
+import { UserAP } from "models/UserAP";
 
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
@@ -334,7 +336,7 @@ export interface ModelConfig {
     userAccessRelationCallback?: (userWithGroups: UserWithGroups, record: any) => boolean
 }
 
-type UserWithGroups = ModelsAP["UserAP"] & { groups: ModelsAP["GroupAP"][] }
+type UserWithGroups = UserAP & { groups: GroupAP[] }
 
 export interface FieldsForms {
     [key: string]: FormFieldConfig

@@ -7,6 +7,7 @@ const models: AdminpanelConfig["models"] = {
     test: {
         title: 'Test model',
         model: 'test',
+        userAccessRelation: 'owner',
         fields: {
             createdAt: false,
             updatedAt: false,

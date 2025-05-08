@@ -32,6 +32,7 @@ import {bindInertia} from "../system/bindInertia";
 import {MenuHelper} from "../helpers/menuHelper";
 import {bindControls} from "../system/bindControls";
 import {ControlsHandler} from "./controls/ControlsHandler";
+import {v4 as uuid} from "uuid";
 
 export class Adminizer {
     app: Express
@@ -46,6 +47,8 @@ export class Adminizer {
     widgetHandler: WidgetHandler
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
+    
+    jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
     static logger = winston.createLogger({
         level: "info",
@@ -72,7 +75,7 @@ export class Adminizer {
         return (req: any, res: any) => {
             this.app(req, res, (err: any) => {
                 if (err) {
-                    console.log("Error in Adminizer", err);
+                    console.error("Error in Adminizer", err);
                     res.writeHead(500, {'Content-Type': 'text/plain'});
                     res.end('Internal Server Error');
                 } else {

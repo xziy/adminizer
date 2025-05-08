@@ -4,10 +4,11 @@ import _initUser from "../controllers/initUser";
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
+import { UserAP } from "models/UserAP";
 
 export default async function bindAuthorization(adminizer: Adminizer) {
 
-    let admins: ModelsAP["UserAP"][];
+    let admins: UserAP[];
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         admins = await adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
@@ -24,7 +25,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
     let baseRoute = `${adminizer.config.routePrefix}/model/:entity`;
 
 
-    let adminsCredentials: { fullName: string, login: string, password: string }[] = [];
+    let adminsCredentials: { fullName: string, login: string }[] = [];
     // if we have administrator profiles
     let config: AdminpanelConfig = adminizer.config;
 
@@ -32,8 +33,7 @@ export default async function bindAuthorization(adminizer: Adminizer) {
         for (let admin of admins) {
             adminsCredentials.push({
                 fullName: admin.fullName,
-                login: admin.login,
-                password: admin.password
+                login: admin.login
             })
         }
 
@@ -107,7 +107,7 @@ function getRandomInt(min: number, max: number) {
 
 async function initUserPolicy(req: ReqType, res: ResType, proceed: any) {
     // TODO refactor CRUD functions for DataAccessor usage
-    let admins: ModelsAP["UserAP"][] = await req.adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
+    let admins: UserAP[] = await req.adminizer.modelHandler.model.get("UserAP")?.["_find"]({isAdministrator: true});
     if (!admins || !admins.length) {
         return res.redirect(`${req.adminizer.config.routePrefix}/init_user`)
     }

@@ -52,16 +52,16 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
         resetBtn: req.i18n.__('Reset'),
     } as listProps
 
-    if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
+    if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.user)) {
         props.crudActions.createTitle = req.i18n.__('create')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.session.UserAP)) {
+    if (req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.user)) {
         props.crudActions.editTitle = req.i18n.__('Edit')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.session.UserAP)) {
+    if (req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.user)) {
         props.crudActions.viewsTitle = req.i18n.__('View')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.session.UserAP)) {
+    if (req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.user)) {
         props.crudActions.deleteTitle = req.i18n.__('Delete')
     }
 
@@ -69,7 +69,7 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
 
     if (req.adminizer.menuHelper.hasInlineActions(entity.config, 'list')) {
         for (const inlineAction of req.adminizer.menuHelper.getInlineActions(entity.config, 'list')) {
-            if (req.adminizer.accessRightsHelper.hasPermission(inlineAction.accessRightsToken, req.session.UserAP)) {
+            if (req.adminizer.accessRightsHelper.hasPermission(inlineAction.accessRightsToken, req.user)) {
                 props.inlineActions.push({
                     icon: inlineAction.icon,
                     id: inlineAction.id,

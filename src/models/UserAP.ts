@@ -1,3 +1,4 @@
+import { WidgetConfig } from "lib/widgets/widgetHandler";
 import { GroupAP } from "./GroupAP";
 
 export default {
@@ -18,10 +19,10 @@ export default {
   email: {
     type: "string"
   },
-  passwordHashed: {
+  avatar: {
     type: "string"
   },
-  password: {
+  passwordHashed: {
     type: "string"
   },
   timezone: {
@@ -57,8 +58,9 @@ export default {
 export interface UserAP {
   id: number;
   login: string;
-  fullName: string;
+  fullName?: string;
   email?: string;
+  avatar?: string;
   passwordHashed?: string;
   timezone?: string;
   expires?: string;
@@ -67,6 +69,6 @@ export interface UserAP {
   isActive?: boolean;
   isAdministrator?: boolean;
   groups?: GroupAP[];
-  widgets?: Record<string, unknown>;
+  widgets?: WidgetConfig[];
   isConfirmed?: boolean;
 }

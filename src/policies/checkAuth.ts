@@ -1,3 +1,6 @@
+import { parse } from "cookie";
+import { verifyUser } from "../lib/v4/helper/jwt";
+
 export default async function checkAuth(req: ReqType, res: ResType, proceed: () => void) {
     let locale: string = ""
 
@@ -6,11 +9,12 @@ export default async function checkAuth(req: ReqType, res: ResType, proceed: () 
     }
 
     if (!req.adminizer.config.auth.enable) {
-        if (req.session.UserAP) {
-            req.session.UserAP.isAdministrator = true;
+        if (req.user) {
+            req.user.isAdministrator = true;
         } else {
-            req.session.UserAP = {
+            req.user = {
                 id: 0,
+                login: "No Auth",
                 isAdministrator: true,
                 locale: locale
             }

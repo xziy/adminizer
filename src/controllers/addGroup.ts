@@ -2,20 +2,22 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 export default async function addGroup(req: ReqType, res: ResType) {
 
     let entity = ControllerHelper.findEntityObject(req);
 
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }
 
-    let users: ModelsAP["UserAP"][];
+    let users: UserAP[];
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         users = await req.adminizer.modelHandler.model.get("UserAP")["_find"]({isAdministrator: false});
@@ -56,7 +58,7 @@ export default async function addGroup(req: ReqType, res: ResType) {
             }
         }
 
-        let group: ModelsAP["GroupAP"];
+        let group: GroupAP;
         try {
             // TODO refactor CRUD functions for DataAccessor usage
             group = await req.adminizer.modelHandler.model.get("GroupAP")?.["_create"]({
