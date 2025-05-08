@@ -121,19 +121,19 @@ export function bindInertia(adminizer: Adminizer) {
         checkAuth(req, adminizer)
 
         req.Inertia.setViewData({
-            lang: req.session.UserAP?.locale || 'en',
+            lang: req.user?.locale || 'en',
         })
         const menuHelper = new InertiaMenuHelper(adminizer)
 
         req.Inertia.shareProps({
             auth: {
-                user: req.session.UserAP
+                user: req.session.userPretended ?? req.user
             },
-            menu: req.session.UserAP ? menuHelper.getMenuItems(req) : null,
+            menu: req.user ? menuHelper.getMenuItems(req) : null,
             brand: menuHelper.getBrandTitle(),
             logout: menuHelper.getLogoutUrl(),
-            logoutBtn: req.session.UserAP?.locale == 'ru' ? 'Выход' : "Log out",
-            section: req.session.UserAP ? [
+            logoutBtn: req.user?.locale == 'ru' ? 'Выход' : "Log out",
+            section: req.user ? [
                 {
                     title: req.i18n.__("Adminpanel"),
                     id: "adminpanel-0",
@@ -156,10 +156,10 @@ function checkAuth(req: ReqType, adminizer: Adminizer) {
         locale = adminizer.config.translation.defaultLocale
     }
     if (!adminizer.config.auth.enable) {
-        if (req.session.UserAP) {
-            req.session.UserAP.isAdministrator = true;
+        if (req.user) {
+            req.user.isAdministrator = true;
         } else {
-            req.session.UserAP = {
+            req.user = {
                 id: 0,
                 isAdministrator: true,
                 locale: locale,

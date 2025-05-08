@@ -11,9 +11,9 @@ export default async function form(req: ReqType, res: ResType) {
 	}
 
 	if (req.adminizer.config.auth.enable) {
-		if (!req.session.UserAP) {
+		if (!req.user) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-		} else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${slug}-form`, req.session.UserAP)) {
+		} else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${slug}-form`, req.user)) {
 			return res.sendStatus(403);
 		}
 	}

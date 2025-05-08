@@ -1,5 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { generate } from 'password-hash';
+import { UserAP } from '../../dist';
+import { Example } from '../models/sequelize/Example';
 export async function seedDatabase(
   collections: Record<string, any>,
   count: number = 3
@@ -11,6 +13,7 @@ export async function seedDatabase(
   };
 
   const exampleModel = collections.example ?? collections.Example;
+  const testModel = collections.test ?? collections.Test;
   const userModel = collections.userap ?? collections.UserAP;
   const groupModel = collections.groupap ?? collections.GroupAP;
 
@@ -40,7 +43,7 @@ export async function seedDatabase(
     if (isSequelize) {
       await exampleModel.bulkCreate(fakeExamples);
     } else {
-      await exampleModel.createEach(fakeExamples);
+      await exampleModel.createEach(fakeExamples).fetch();
     }
   }
 
@@ -108,6 +111,38 @@ export async function seedDatabase(
       } else if (isWaterline && group && typeof groupModel.addToCollection === 'function') {
         await groupModel.addToCollection(group.id, 'users', userInstance.id);
       }
+    }
+  }
+
+    // ------------------ Tests ------------------ //
+    const testCount = isSequelize
+    ? await testModel.count()
+    : await testModel.count({});
+
+  if (testCount === 0) {
+    const allUsers: UserAP[] = isSequelize
+      ? await userModel.findAll()
+      : await userModel.find();
+
+    const allExamples: Example[] = isSequelize
+      ? await exampleModel.findAll()
+      : await exampleModel.find();
+
+    const fakeTests = Array.from({ length: count }, () => {
+      const randomUser = faker.helpers.arrayElement(allUsers);
+      const randomExample = faker.helpers.arrayElement(allExamples);
+
+      return {
+        title: faker.lorem.words(3),
+        ownerId: randomUser.id,
+        exampleId: randomExample?.id ?? null,
+      };
+    });
+
+    if (isSequelize) {
+      await testModel.bulkCreate(fakeTests);
+    } else {
+      await testModel.createEach(fakeTests).fetch();
     }
   }
 }

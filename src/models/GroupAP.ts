@@ -27,6 +27,6 @@ export interface GroupAP {
   id: number;
   name: string;
   description?: string;
-  tokens?: Record<string, unknown>;
+  tokens?: string[];
   users?: UserAP[];
 }

@@ -81,7 +81,7 @@ export class VueCatalog {
 		}
 
 		let messages = obj
-		req.i18n.setLocale(req.session.UserAP.locale);
+		req.i18n.setLocale(req.user.locale);
 		let outMessages:obj = {}
 		for (const mess of Object.keys(messages)) {
 			outMessages[mess] = req.i18n.__(mess)

@@ -48,7 +48,7 @@ import { tr } from '@faker-js/faker/.';
 	@Column({ type: DataType.INTEGER, allowNull: true })
 	declare ownerId: number;
   
-	declare owner?: any;
+	declare owner?: UserAP;
   
 	// ——————————————————————————————————————————————
 	// Many-to-many с UserAP через `test_useraps`

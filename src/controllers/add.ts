@@ -19,9 +19,9 @@ export default async function add(req: ReqType, res: ResType) {
     }
 
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }
