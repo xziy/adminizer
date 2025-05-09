@@ -131,11 +131,19 @@ export async function seedDatabase(
       const randomUser = faker.helpers.arrayElement(allUsers);
       const randomExample = faker.helpers.arrayElement(allExamples);
 
-      return {
-        title: faker.lorem.words(3),
-        ownerId: randomUser.id,
-        exampleId: randomExample?.id ?? null,
-      };
+      if(isSequelize) {
+        return {
+          title: faker.lorem.words(3),
+          ownerId: randomUser.id,
+          exampleId: randomExample?.id ?? null,
+        };
+      } else {
+        return {
+          title: faker.lorem.words(3),
+          owner: randomUser.id,
+          example: randomExample?.id ?? null,
+        }
+      }
     });
 
     if (isSequelize) {

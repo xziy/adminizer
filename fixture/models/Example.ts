@@ -26,7 +26,7 @@ const Example = Waterline.Collection.extend({
         tui: { type: "string" },
         datatable: { type: "json" },
         json: { type: "json" },
-        tests: { collection: "test", via: "owner" },
+        tests: { collection: "test", via: "example" },
         datetime: { type: "string" },
         geojson: { type: "json" },
     }
