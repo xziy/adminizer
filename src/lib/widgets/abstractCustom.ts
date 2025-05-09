@@ -1,7 +1,7 @@
 import BaseWidget from "./abstractWidgetBase";
 
 export default abstract class CustomBase extends BaseWidget {
-  /** Widget background css (color, Image) */
+    /** Widget background css color */
   public abstract readonly backgroundCSS: string | null;
 
   /** Fullpath script for loading in dashboard in browser */

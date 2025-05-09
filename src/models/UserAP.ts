@@ -1,5 +1,6 @@
 import { WidgetConfig } from "lib/widgets/widgetHandler";
 import { GroupAP } from "./GroupAP";
+import {WidgetLayoutItem} from "../assets/js/types";
 
 export default {
   id: {
@@ -69,6 +70,9 @@ export interface UserAP {
   isActive?: boolean;
   isAdministrator?: boolean;
   groups?: GroupAP[];
-  widgets?: WidgetConfig[];
+  widgets?: {
+      widgets: WidgetConfig[],
+      layout: WidgetLayoutItem[]
+  };
   isConfirmed?: boolean;
 }
