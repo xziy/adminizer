@@ -95,6 +95,12 @@ export default async function login(req: ReqType, res: ResType) {
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
         req.user = undefined;
+        res.setHeader('Set-Cookie', serialize('adminizer_jwt', '', {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            expires: new Date(0),
+        }));
         req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }
     return res.status(404);
