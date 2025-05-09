@@ -7,8 +7,8 @@ export async function initializeWidgets(): Promise<{
 }> {
     try {
         const widgetsDBResponse = await axios.get(`${window.routePrefix}/widgets-get-all-db`)
-        let widgetsDB = widgetsDBResponse.data?.widgetsDB ?? [];
-
+        let widgetsDB = widgetsDBResponse.data?.widgetsDB.widgets ?? [];
+        let layoutDB = widgetsDBResponse.data?.widgetsDB.layout ?? [];
         const widgetsResponse = await axios.get(`${window.routePrefix}/widgets-get-all`);
         const allWidgets = widgetsResponse.data.widgets as Widget[];
 
@@ -18,31 +18,31 @@ export async function initializeWidgets(): Promise<{
         });
 
         const filtered = initWidgets.filter(e => e.added);
-        let newLayout: WidgetLayoutItem[] = [];
+        let newLayout: WidgetLayoutItem[] = layoutDB;
+        if (newLayout.length === 0) {
+            filtered.forEach((widget, index) => {
+                const w = widget.size?.w || 1;
+                const h = widget.size?.h || 1;
 
-        filtered.forEach((widget, index) => {
-            const w = widget.size?.w || 1;
-            const h = widget.size?.h || 1;
-
-            let x = 0;
-            if (index > 0) {
-                const prevItem = newLayout[index - 1];
-                if (prevItem) {
-                    const potentialX = prevItem.x + prevItem.w;
-                    x = (potentialX > 8 || (potentialX + w) > 8) ? 0 : potentialX;
+                let x = 0;
+                if (index > 0) {
+                    const prevItem = newLayout[index - 1];
+                    if (prevItem) {
+                        const potentialX = prevItem.x + prevItem.w;
+                        x = (potentialX > 8 || (potentialX + w) > 8) ? 0 : potentialX;
+                    }
                 }
-            }
 
-            newLayout.push({
-                x,
-                y: 0,
-                w,
-                h,
-                i: index.toString(),
-                id: widget.id
+                newLayout.push({
+                    x,
+                    y: 0,
+                    w,
+                    h,
+                    i: index.toString(),
+                    id: widget.id
+                });
             });
-        });
-
+        }
         return {
             layout: newLayout,
             widgets: initWidgets

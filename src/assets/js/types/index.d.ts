@@ -51,9 +51,23 @@ export interface User {
 
 export interface Widget {
     id: string;
-    title?: string;
-    size?: { w: number; h: number };
-    added?: boolean;
+    name: string;
+    description: string;
+    icon?: string;
+    backgroundCSS?: string;
+    type: WidgetType;
+    api?: string;
+    link?: string;
+    state?: boolean;
+    scriptUrl?: string;
+    constructorOption?: any;
+    constructorName?: string;
+    hideAdminPanelUI?: boolean;
+    size?: {
+        w: number
+        h: number
+    }
+    added?: boolean
     [key: string]: any;
 }
 
@@ -69,10 +83,6 @@ export interface WidgetLayoutItem {
 declare global {
     interface Window {
         routePrefix: string;
-        widgetsInit: {
-            layout: WidgetLayoutItem[],
-            widgets: Widget[]
-        }
     }
 }
 
