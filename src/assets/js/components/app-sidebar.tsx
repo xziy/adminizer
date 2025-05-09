@@ -53,19 +53,19 @@ export function AppSidebar() {
                                 <MenubarTrigger asChild
                                                 className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md">
                                     <SidebarMenuButton asChild>
-                                        <Button variant="ghost" asChild className="cursor-pointer w-full">
+                                        <Button variant="ghost" asChild className={`cursor-pointer w-full ${!page.props.section ? 'pointer-events-none' : ''}`}>
                                             <div>
                                                 <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
                                                 <span
                                                     className="group-data-[state=collapsed]:hidden">{page.props.brand}</span>
-                                                <ChevronsUpDown
-                                                    className="ml-auto group-data-[state=collapsed]:hidden"/>
+                                                {page.props.section && <ChevronsUpDown
+                                                    className="ml-auto group-data-[state=collapsed]:hidden"/>}
                                             </div>
                                         </Button>
                                     </SidebarMenuButton>
                                 </MenubarTrigger>
-                                <MenubarContent side="right" className="z-[1003]">
-                                    {page.props.section && page.props.section.map((itemSection) => (
+                                {page.props.section && <MenubarContent side="right" className="z-[1003]">
+                                    {page.props.section.map((itemSection) => (
                                         <div key={itemSection.id}>
                                             {itemSection.subItems ?
                                                 <MenubarSub>
@@ -121,7 +121,7 @@ export function AppSidebar() {
                                                 </MenubarItem>}
                                         </div>
                                     ))}
-                                </MenubarContent>
+                                </MenubarContent>}
                             </MenubarMenu>
                         </Menubar>
                         {/*mobile menu*/}
@@ -137,11 +137,11 @@ export function AppSidebar() {
                                                 <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
                                                 <span
                                                     className="overflow-hidden text-ellipsis whitespace-nowrap">{page.props.brand}</span>
-                                                <ChevronRight
-                                                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                                                {page.props.section &&<ChevronRight
+                                                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>}
                                             </SidebarMenuButton>
                                         </CollapsibleTrigger>
-                                        <CollapsibleContent>
+                                        {page.props.section && <CollapsibleContent>
                                             <SidebarMenuSub>
                                                 {page.props.section && page.props.section.map((itemSection) => (
                                                     itemSection.subItems ? (
@@ -224,7 +224,7 @@ export function AppSidebar() {
                                                     )
                                                 ))}
                                             </SidebarMenuSub>
-                                        </CollapsibleContent>
+                                        </CollapsibleContent>}
                                     </SidebarMenuItem>
                                 </Collapsible>
                             </SidebarMenu>

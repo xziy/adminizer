@@ -58,6 +58,7 @@ export interface Widget {
     type: WidgetType;
     api?: string;
     link?: string;
+    linkType?: 'self' | 'blank'
     state?: boolean;
     scriptUrl?: string;
     constructorOption?: any;

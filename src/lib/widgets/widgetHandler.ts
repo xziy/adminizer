@@ -19,6 +19,7 @@ export interface WidgetConfig {
     name: string;
     backgroundCSS: string;
     scriptUrl?: string;
+    linkType?: 'self' | 'blank'
     constructorName?: string,
     constructorOption?: any,
     size?: { h: number; w: number; };
@@ -122,6 +123,7 @@ export class WidgetHandler {
                                 name: link.name,
                                 id: `${widget.id}__${links_id_key}`,
                                 type: 'link',
+                                linkType: link.linkType,
                                 description: link.description,
                                 link: link.link,
                                 icon: link.icon,

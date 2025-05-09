@@ -214,6 +214,7 @@ const WidgetLayout = () => {
                                 isResizable={false}
                                 isDraggable={isDraggable}
                                 key={keyRender}
+                                className="overflow-hidden"
                             >
                                 {layout.map((widget) => (
                                     <div key={widget.i}
