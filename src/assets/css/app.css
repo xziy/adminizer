@@ -157,3 +157,28 @@
     display: none !important;
 }
 
+.widget--switching{
+    @apply brightness-75 pointer-events-none;
+}
+
+.widget-flexible--flex {
+    animation: tilt-shaking 0.3s ease-in-out;
+}
+
+@keyframes tilt-shaking {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    25% {
+        transform: translate(5px, 5px) rotate(5deg);
+    }
+    50% {
+        transform: translate(0, 0) rotate(0);
+    }
+    75% {
+        transform: translate(-5px, 5px) rotate(-5deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+}

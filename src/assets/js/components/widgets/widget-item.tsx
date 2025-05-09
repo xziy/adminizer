@@ -2,6 +2,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import axios from "axios";
 import {getDefaultColorByID} from "./colorPallete.ts";
 import {Widget as WidgetData} from "@/types";
+import MaterialIcon from "@/components/material-icon.tsx";
+import {router} from "@inertiajs/react";
+
 type WidgetType = 'info' | 'switcher' | 'action' | 'link' | 'custom';
 
 interface WidgetProps {
@@ -11,7 +14,7 @@ interface WidgetProps {
 }
 
 
-const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
+const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     const [widgetState, setWidgetState] = useState<{
         name: string | null;
         info: string | null;
@@ -44,7 +47,7 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
             ...prev,
             name: currentWidget.name,
             description: currentWidget.description,
-            icon: currentWidget.icon || 'box',
+            icon: currentWidget.icon || 'widgets',
             backgroundColor: currentWidget.backgroundCSS || getDefaultColorByID(ID),
             type: currentWidget.type,
             constructorOption: currentWidget.constructorOption,
@@ -56,9 +59,9 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
         } else if (currentWidget.type === 'switcher' && currentWidget.api) {
             getState(currentWidget.api);
         } else if (currentWidget.type === 'custom') {
-            if (currentWidget.scriptUrl && currentWidget.constructorName) {
-                runScript(currentWidget, currentWidget.constructorOption);
-            }
+            // if (currentWidget.scriptUrl && currentWidget.constructorName) {
+            //     runScript(currentWidget, currentWidget.constructorOption);
+            // }
             if (currentWidget.hideAdminPanelUI) {
                 setWidgetState((prev) => ({
                     ...prev,
@@ -94,9 +97,13 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
         if (!widgetState.type || widgetState.type === 'info' || draggable) return;
 
         if (widgetState.type === 'link') {
-            const link = widgets.find((e) => e.id === ID)?.link;
-            if (link) {
-                window.location.href = link;
+            const widget = widgets.find((e) => e.id === ID);
+            if (widget?.link) {
+                if (widget?.linkType === 'self') {
+                    router.visit(widget.link);
+                } else {
+                    window.open(widget.link, '_blank', 'noopener,noreferrer');
+                }
             }
             return;
         }
@@ -104,7 +111,7 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
         const widgetElement = widgetRef.current;
         if (!widgetElement) return;
 
-        widgetElement.classList.add('admin-widgets__wrapper--switching');
+        widgetElement.classList.add('widget--switching');
 
         const api = widgets.find((e) => e.id === ID)?.api;
         if (!api) return;
@@ -128,70 +135,63 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
         } catch (error) {
             console.error('Error performing widget action:', error);
         } finally {
-            widgetElement.classList.remove('admin-widgets__wrapper--switching');
+            widgetElement.classList.remove('widget--switching');
         }
     };
 
-    const runScript = (currentWidget: WidgetData, constructorOption: any) => {
-        if (!currentWidget.scriptUrl || !currentWidget.constructorName) return;
+    // const runScript = (currentWidget: WidgetData, constructorOption: any) => {
+    //     if (!currentWidget.scriptUrl || !currentWidget.constructorName) return;
+    //
+    //     const api = currentWidget.scriptUrl;
+    //
+    //     // Remove existing script if it exists
+    //     const existingScript = document.querySelector(`script[src="${api}"]`);
+    //     if (existingScript) {
+    //         existingScript.parentNode?.removeChild(existingScript);
+    //     }
+    //
+    //     const script = document.createElement('script');
+    //     script.src = api;
+    //     script.onload = () => {
+    //         const containerElement = document.getElementById(ID);
+    //         if (containerElement && currentWidget.constructorName && window[currentWidget.constructorName]) {
+    //             new (window as any)[currentWidget.constructorName](containerElement, constructorOption);
+    //         } else {
+    //             console.error(
+    //                 `Widget with ID:${ID} has no constructorName from ${api}:${currentWidget.constructorName}`
+    //             );
+    //         }
+    //     };
+    //     document.body.appendChild(script);
+    // };
 
-        const api = currentWidget.scriptUrl;
-
-        // Remove existing script if it exists
-        const existingScript = document.querySelector(`script[src="${api}"]`);
-        if (existingScript) {
-            existingScript.parentNode?.removeChild(existingScript);
-        }
-
-        const script = document.createElement('script');
-        script.src = api;
-        script.onload = () => {
-            const containerElement = document.getElementById(ID);
-            if (containerElement && currentWidget.constructorName && window[currentWidget.constructorName]) {
-                new (window as any)[currentWidget.constructorName](containerElement, constructorOption);
-            } else {
-                console.error(
-                    `Widget with ID:${ID} has no constructorName from ${api}:${currentWidget.constructorName}`
-                );
-            }
-        };
-        document.body.appendChild(script);
-    };
-
-    const getClass = (): string => {
-        if (widgetState.type === 'info' && !draggable) {
-            return 'admin-widgets__wrapper--info';
-        } else if (
-            (widgetState.type === 'switcher' || widgetState.type === 'action') &&
-            !draggable
-        ) {
-            return 'admin-widgets__wrapper--switcher';
-        }
-        return 'admin-widgets__wrapper--link';
-    };
+    const getClass = (): string =>
+        !draggable && widgetState.type === 'info'
+            ? ''
+            : 'cursor-pointer hover:brightness-110';
 
     return (
         <div
             id={ID}
-            className={`w-full h-full ${getClass()}`}
+            className={`transition rounded-md w-full h-full ${getClass()} ${draggable ? 'widget-flexible--flex' : ''}`}
             style={{backgroundColor: widgetState.backgroundColor}}
             onClick={widgetAction}
             ref={widgetRef}
         >
-            <div>
+            <div className="text-amber-50 flex flex-col justify-between gap-2.5 p-3 w-full h-full">
                 <div>
-                    <span className="admin-widgets__name">{widgetState.name}</span>
-                    <p className="admin-widgets__desc">{widgetState.description}</p>
+                    <span className="font-bold">{widgetState.name}</span>
+                    <p className="text-sm">{widgetState.description}</p>
                 </div>
-                <div className="admin-widgets__bottom">
+                <div className="flex items-end justify-between gap-5">
                     {widgetState.type === 'info' && <div>{widgetState.info}</div>}
                     {widgetState.type === 'switcher' && (
-                        <span className="admin-widgets__state">
+                        <span className="text-lg font-bold">
               {widgetState.state ? 'ON' : 'OFF'}
             </span>
                     )}
                     <span className="admin-widgets__icon">
-            <span className="material-icons-outlined">{widgetState.icon}</span>
+                        <MaterialIcon name={widgetState.icon}/>
           </span>
                 </div>
             </div>
@@ -199,4 +199,4 @@ const Widget: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     );
 };
 
-export default Widget;
+export default WidgetItem;
