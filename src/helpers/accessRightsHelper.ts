@@ -69,7 +69,7 @@ export class AccessRightsHelper {
 		const tokenIsValid = this._tokens.some((token) => token.id === tokenId);
 
 		if (!tokenIsValid) {
-			Adminizer.log.error("Adminpanel > Token is not valid");
+			Adminizer.log.error("Adminpanel > Token is not valid", tokenId, user.login);
 			return false;
 		}
 
