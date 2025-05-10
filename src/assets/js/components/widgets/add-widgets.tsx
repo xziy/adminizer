@@ -9,13 +9,15 @@ interface AddWidget {
     initWidgets: Widget[];
     onAddWidgets: (id: string) => void;
     disabled: boolean
+    searchPlaceholder: string
+    actionsTitles: Record<string, string>
 }
 
 type WidgetGroup = Record<string, { items: Widget[], title: string }>;
 
 type Head = { type: string, title: string };
 
-const AddWidgets = ({initWidgets, onAddWidgets, disabled}: AddWidget) => {
+const AddWidgets = ({initWidgets, onAddWidgets, disabled, searchPlaceholder, actionsTitles}: AddWidget) => {
     const [widgets, setWidgets] = useState<WidgetGroup>({
         switchers: {items: [], title: ''},
         info: {items: [], title: ''},
@@ -42,32 +44,32 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled}: AddWidget) => {
             if (widget.type === 'switcher') {
                 newWidgets.switchers.items.push(widget);
                 if (newHead.find(e => e.type === 'switchers')) continue
-                newWidgets.switchers.title = 'Switcher'
-                newHead.push({type: 'switchers', title: 'Switcher'});
+                newWidgets.switchers.title = actionsTitles['Switcher']
+                newHead.push({type: 'switchers', title: actionsTitles['Switcher']});
             }
             if (widget.type === 'info') {
                 newWidgets.info.items.push(widget);
                 if (newHead.find(e => e.type === 'info')) continue
-                newWidgets.info.title = 'Info'
-                newHead.push({type: 'info', title: 'Info'});
+                newWidgets.info.title = actionsTitles['Info']
+                newHead.push({type: 'info', title: actionsTitles['Info']});
             }
             if (widget.type === 'action') {
                 newWidgets.actions.items.push(widget);
                 if (newHead.find(e => e.type === 'actions')) continue
-                newWidgets.actions.title = 'Actions'
-                newHead.push({type: 'actions', title: 'Actions'});
+                newWidgets.actions.title = actionsTitles['Actions']
+                newHead.push({type: 'actions', title: actionsTitles['Actions']});
             }
             if (widget.type === 'link') {
                 newWidgets.links.items.push(widget);
                 if (newHead.find(e => e.type === 'links')) continue
-                newWidgets.links.title = 'Fast links'
-                newHead.push({type: 'links', title: 'Fast links'});
+                newWidgets.links.title = actionsTitles['Fast links']
+                newHead.push({type: 'links', title: actionsTitles['Fast links']});
             }
             if (widget.type === 'custom') {
                 newWidgets.custom.items.push(widget);
                 if (newHead.find(e => e.type === 'custom')) continue
-                newWidgets.custom.title = 'Custom'
-                newHead.push({type: 'custom', title: 'Custom'});
+                newWidgets.custom.title = actionsTitles['Custom']
+                newHead.push({type: 'custom', title: actionsTitles['Custom']});
             }
         }
 
@@ -137,7 +139,7 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled}: AddWidget) => {
                              onClick={() => setFilter(item.type)}>{item.title}</div>
                     ))}
                 </div>
-                <Input type="search" className="max-w-md" placeholder="Search" value={search}
+                <Input type="search" className="max-w-md" placeholder={searchPlaceholder} value={search}
                        onChange={(e) => setSearch(e.target.value)}/>
             </div>
             <div className="mt-6 flex flex-col gap-6">
@@ -151,7 +153,7 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled}: AddWidget) => {
                                         <CardHeader>
                                             <CardTitle className="flex justify-between items-center">
                                                 {item.name}
-                                                <MaterialIcon name={item.icon} className="text-primary"/>
+                                                {item.icon && <MaterialIcon name={item.icon} className="text-primary"/>}
                                             </CardTitle>
                                         </CardHeader>
                                         <CardFooter className="justify-end">

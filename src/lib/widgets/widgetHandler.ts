@@ -7,6 +7,7 @@ import {AdminpanelIcon} from "../../interfaces/adminpanelConfig";
 import {Adminizer} from "../Adminizer";
 import {UserAP} from "models/UserAP";
 import * as process from "node:process";
+import {I18n} from "../v4/I18n";
 
 export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
 
@@ -72,7 +73,7 @@ export class WidgetHandler {
         }
     }
 
-    public getAll(user: UserAP): Promise<WidgetConfig[]> {
+    public getAll(user: UserAP, i18n: I18n): Promise<WidgetConfig[]> {
         let widgets: WidgetConfig[] = []
         if (this.widgets.length) {
             let id_key = 0
@@ -83,9 +84,9 @@ export class WidgetHandler {
                             id: `${widget.id}__${id_key}`,
                             type: widget.widgetType,
                             api: `${this.adminizer.config.routePrefix}/widgets-switch/${widget.id}`,
-                            description: widget.description,
+                            description: i18n.__(widget.description),
                             icon: widget.icon as AdminpanelIcon,
-                            name: widget.name,
+                            name: i18n.__(widget.name),
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null
                         })
@@ -96,9 +97,9 @@ export class WidgetHandler {
                             id: `${widget.id}__${id_key}`,
                             type: widget.widgetType,
                             api: `${this.adminizer.config.routePrefix}/widgets-info/${widget.id}`,
-                            description: widget.description,
+                            description: i18n.__(widget.description),
                             icon: widget.icon as AdminpanelIcon,
-                            name: widget.name,
+                            name: i18n.__(widget.name),
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null
                         })
@@ -109,9 +110,9 @@ export class WidgetHandler {
                             id: `${widget.id}__${id_key}`,
                             type: widget.widgetType,
                             api: `${this.adminizer.config.routePrefix}/widgets-action/${widget.id}`,
-                            description: widget.description,
+                            description: i18n.__(widget.description),
                             icon: widget.icon as AdminpanelIcon,
-                            name: widget.name,
+                            name: i18n.__(widget.name),
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null
                         })
@@ -121,11 +122,11 @@ export class WidgetHandler {
                         let links_id_key = 0
                         for (const link of widget.links) {
                             widgets.push({
-                                name: link.name,
+                                name: i18n.__(link.name),
                                 id: `${widget.id}__${links_id_key}`,
                                 type: 'link',
                                 linkType: link.linkType,
-                                description: link.description,
+                                description: i18n.__(link.description),
                                 link: link.link,
                                 icon: link.icon,
                                 backgroundCSS: link.backgroundCSS
@@ -139,9 +140,9 @@ export class WidgetHandler {
                             id: `${widget.id}_${id_key}`,
                             type: widget.widgetType,
                             api: `${this.adminizer.config.routePrefix}/widgets-custom/${widget.id}`,
-                            description: widget.description,
+                            description: i18n.__(widget.description),
                             icon: widget.icon as AdminpanelIcon,
-                            name: widget.name,
+                            name: i18n.__(widget.name),
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null,
                             scriptUrl: process.env.VITE_ENV === 'dev' ? widget.jsPath.dev : widget.jsPath.production,
@@ -155,7 +156,7 @@ export class WidgetHandler {
         return Promise.resolve(widgets)
     }
 
-    public async getWidgetsDB(id: number, auth: boolean): Promise<{
+    public async getWidgetsDB(id: number, auth: boolean, i18n: I18n): Promise<{
         widgets: WidgetConfig[],
         layout: WidgetLayoutItem[]
     }> {
@@ -173,7 +174,7 @@ export class WidgetHandler {
         if (!user || !user.widgets || user.widgets.widgets.length === 0) {
             if (this.adminizer.config.dashboard && typeof this.adminizer.config.dashboard !== "boolean" && this.adminizer.config.dashboard.defaultWidgets) {
                 let defaultWidgets = this.adminizer.config.dashboard.defaultWidgets;
-                result.widgets = await this.getAll(user);
+                result.widgets = await this.getAll(user, i18n);
                 result.widgets.forEach(widget => {
                     if (defaultWidgets.includes(widget.id.split("__")[0])) {
                         widget.added = true;
