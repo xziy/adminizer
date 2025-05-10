@@ -12,7 +12,7 @@ import {
 import MaterialIcon from "@/components/material-icon.tsx";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {Responsive, WidthProvider} from "react-grid-layout";
-import {Widget, WidgetLayoutItem} from "@/types";
+import {SharedData, Widget, WidgetLayoutItem} from "@/types";
 import {initializeWidgets} from "@/lib/widgets-service.ts";
 import axios from "axios";
 import AddWidgets from "@/components/widgets/add-widgets.tsx";
@@ -20,7 +20,16 @@ import WidgetItem from "@/components/widgets/widget-item.tsx";
 
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import {usePage} from "@inertiajs/react";
 
+interface WidgetLayoutProps extends SharedData {
+    title: string
+    tooltip: string
+    notWidgets: string
+    notFound: string
+    actionsTitles: Record<string, string>
+    searchPlaceholder: string
+}
 
 const WidgetLayout = () => {
     const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), []);
@@ -30,6 +39,8 @@ const WidgetLayout = () => {
     const [keyRender, setKeyRender] = useState(0);
     const [loading, setIsLoading] = useState(true)
     const [isDraggable, setIsDraggable] = useState(false)
+
+    const page = usePage<WidgetLayoutProps>()
 
     useEffect(() => {
         async function loadWidgets() {
@@ -163,7 +174,7 @@ const WidgetLayout = () => {
             ) : (
                 <>
                     <div className="flex justify-between items-center mr-16">
-                        <h1 className="font-bold text-xl">Quick actions</h1>
+                        <h1 className="font-bold text-xl">{page.props.title}</h1>
                         <div className="flex gap-4 items-center">
                             <TooltipProvider>
                                 <Tooltip>
@@ -172,7 +183,7 @@ const WidgetLayout = () => {
                                                 className="rounded-full !p-2 size-6 cursor-pointer">?</Button>
                                     </TooltipTrigger>
                                     <TooltipContent align="end" side="bottom">
-                                        <p>Add to library</p>
+                                        <p>{page.props.tooltip}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -191,11 +202,11 @@ const WidgetLayout = () => {
                                         <div className="h-full">
                                             <DialogStackTitle
                                                 className="font-bold leading-none tracking-tight py-4 mr-8 sticky border-b text-xl">
-                                                Widget Settings
+                                                {page.props.title}
                                             </DialogStackTitle>
                                             <div className="overflow-auto h-[calc(100%-64px)] pr-4 pt-4">
                                                 <AddWidgets initWidgets={widgets} onAddWidgets={addWidgets}
-                                                            disabled={popUpDisabled}/>
+                                                            disabled={popUpDisabled} searchPlaceholder={page.props.searchPlaceholder} actionsTitles={page.props.actionsTitles}/>
                                             </div>
                                         </div>
                                     </DialogStackContent>
@@ -223,12 +234,7 @@ const WidgetLayout = () => {
                                 ))}
                             </ResponsiveGridLayout>
                         ) : (
-                            <p className="text-center mt-8 text-muted-foreground">You don't have any widgets
-                                selected
-                                yet.
-                                You can add them by clicking on the plus sign at the
-                                top
-                                right.</p>
+                            <p className="text-center mt-8 text-muted-foreground">{page.props.notWidgets}</p>
                         )}
                     </div>
                 </>

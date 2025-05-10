@@ -7,8 +7,6 @@ import {Flash} from "../lib/inertia/flash";
 import { UserAP } from "models/UserAP";
 import { GroupAP } from "models/GroupAP";
 
-
-
 declare global {
 	/** @deprecated use import from TS model decalration */
 	type ModelsAP = {
