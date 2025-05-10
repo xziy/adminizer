@@ -217,14 +217,7 @@ const WidgetLayout = () => {
                                 className="overflow-hidden"
                             >
                                 {layout.map((widget) => (
-                                    <div key={widget.i}
-                                         data-grid={{
-                                             x: widget.x,
-                                             y: widget.y,
-                                             w: widget.w,
-                                             h: widget.h,
-                                             id: widget.id
-                                         }}>
+                                    <div key={widget.i}>
                                         <WidgetItem draggable={isDraggable} widgets={widgets} ID={widget.id}/>
                                     </div>
                                 ))}
