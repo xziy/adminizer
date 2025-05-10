@@ -1,18 +1,41 @@
-import BaseWidget from "./abstractWidgetBase";
+import {MaterialIcon} from "material-icons";
 
-export default abstract class CustomBase extends BaseWidget {
+export default abstract class CustomBase {
+    /** Widget unique id */
+    public abstract readonly id: string;
+
+    /** Widget Name */
+    public abstract readonly name: string;
+
+    /** JS module file path */
+    public abstract readonly jsPath: {
+        dev: string
+        production: string
+    }
+
+    /** For group access rights by department */
+    public abstract readonly department: string;
+
     /** Widget background css color */
-  public abstract readonly backgroundCSS: string | null;
+    public readonly backgroundCSS: string;
 
-  /** Fullpath script for loading in dashboard in browser */
-  public abstract readonly scriptUrl: string;
+    /** Widget size */
+    public abstract readonly size: {
+        h: number
+        w: number
+    } | null;
 
-  /** How widgets processor can call constructor of this widget */
-  public abstract readonly constructorName: string;
+    /** Widget description */
+    public abstract readonly description: string;
 
-  /** Options to constuctor */
-  public abstract readonly constructorOption: any;
+    /** Widget icon */
+    public abstract readonly icon?: MaterialIcon | string;
 
-  /** Hide title, icon, description */
-  public abstract readonly hideAdminPanelUI: boolean;
+    public readonly widgetType: 'custom' = 'custom'
+
+    public routePrefix: string;
+
+    protected constructor(routePrefix: string) {
+        this.routePrefix = routePrefix
+    }
 }

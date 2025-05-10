@@ -28,7 +28,7 @@ import { seedDatabase } from "./helpers/seedDatabase";
 import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
 import {SiteLinks} from "./test-widgets/Links";
 import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
-import {CustomOne, CustomTwo} from "./test-widgets/Custom";
+import {CustomOne} from "./test-widgets/Custom";
 import {ActionOne, ActionTwo} from "./test-widgets/Actions";
 
 
@@ -187,10 +187,11 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.widgetHandler.add(new InfoTwo());
         adminizer.widgetHandler.add(new Info3());
         adminizer.widgetHandler.add(new Info4());
-        adminizer.widgetHandler.add(new CustomOne());
-        adminizer.widgetHandler.add(new CustomTwo());
         adminizer.widgetHandler.add(new ActionOne());
         adminizer.widgetHandler.add(new ActionTwo());
+
+        /** Custom widget */
+        adminizer.widgetHandler.add(new CustomOne(adminizer.config.routePrefix));
 
     } catch (e) {
         console.log(e)

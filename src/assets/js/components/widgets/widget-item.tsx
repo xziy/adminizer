@@ -4,8 +4,10 @@ import {getDefaultColorByID} from "./colorPallete.ts";
 import {Widget as WidgetData} from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";
 import {router} from "@inertiajs/react";
+import {ComponentType} from "@/pages/module.tsx";
+import {LoaderCircle} from "lucide-react";
 
-type WidgetType = 'info' | 'switcher' | 'action' | 'link' | 'custom';
+type WidgetType = 'info' | 'switcher' | 'action' | 'link' | 'custom' | undefined;
 
 interface WidgetProps {
     widgets: WidgetData[];
@@ -13,29 +15,29 @@ interface WidgetProps {
     ID: string;
 }
 
+interface WidgetState {
+    name: string | null;
+    info: string | null;
+    description: string | null;
+    icon: string;
+    backgroundColor: string;
+    state: boolean | null;
+    scriptUrl: string
+}
 
 const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
-    const [widgetState, setWidgetState] = useState<{
-        name: string | null;
-        info: string | null;
-        description: string | null;
-        icon: string;
-        backgroundColor: string;
-        type: WidgetType | null;
-        state: boolean | null;
-        constructorOption: any;
-        constructorName: string | undefined;
-    }>({
+    const [widgetType, setWidgetType] = useState<WidgetType>(undefined);
+    const [widgetState, setWidgetState] = useState<WidgetState>({
         name: null,
         info: null,
         description: null,
         icon: 'box',
         backgroundColor: '',
-        type: null,
         state: null,
-        constructorOption: null,
-        constructorName: undefined,
+        scriptUrl: '',
     });
+
+    const [Component, setComponent] = useState<React.ReactElement | null>(null);
 
     const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -43,41 +45,41 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
         const currentWidget = widgets.find((e) => e.id === ID);
         if (!currentWidget) return;
 
+        const newType = currentWidget.type;
+        setWidgetType(newType);
         setWidgetState((prev) => ({
             ...prev,
             name: currentWidget.name,
             description: currentWidget.description,
             icon: currentWidget.icon || 'widgets',
             backgroundColor: currentWidget.backgroundCSS || getDefaultColorByID(ID),
-            type: currentWidget.type,
-            constructorOption: currentWidget.constructorOption,
-            constructorName: currentWidget.constructorName,
+            scriptUrl: currentWidget.scriptUrl || '',
         }));
 
-        if (currentWidget.type === 'info' && currentWidget.api) {
-            getInfo(currentWidget.api);
-        } else if (currentWidget.type === 'switcher' && currentWidget.api) {
-            getState(currentWidget.api);
-        } else if (currentWidget.type === 'custom') {
-            // if (currentWidget.scriptUrl && currentWidget.constructorName) {
-            //     runScript(currentWidget, currentWidget.constructorOption);
-            // }
-            if (currentWidget.hideAdminPanelUI) {
-                setWidgetState((prev) => ({
-                    ...prev,
-                    icon: '',
-                    name: '',
-                    description: '',
-                }));
-            }
+        switch (newType) {
+            case 'info':
+                if (currentWidget.api) getInfo(currentWidget.api);
+                break;
+            case 'switcher':
+                if (currentWidget.api) getState(currentWidget.api);
+                break;
+            case 'custom':
+                const initModule = async () => {
+                    const Module = await import(/* @vite-ignore */ currentWidget.scriptUrl as string);
+                    const Component = Module.default as ComponentType['default'];
+                    setComponent(<Component />);
+                }
+                initModule();
+                break;
+            default:
+                break;
         }
     }, [widgets, ID]);
 
     const getInfo = async (api: string) => {
         try {
             const response = await axios.get(api);
-            const info = response.data;
-            setWidgetState((prev) => ({...prev, info}));
+            setWidgetState((prev) => ({...prev, info: response.data}));
         } catch (error) {
             console.error('Error fetching widget info:', error);
         }
@@ -86,116 +88,116 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     const getState = async (api: string) => {
         try {
             const response = await axios.get(api);
-            const {state} = response.data;
-            setWidgetState((prev) => ({...prev, state}));
+            setWidgetState((prev) => ({...prev, state: response.data.state}));
         } catch (error) {
             console.error('Error fetching widget state:', error);
         }
     };
 
-    const widgetAction = async () => {
-        if (!widgetState.type || widgetState.type === 'info' || draggable) return;
+    const handleLinkWidget = () => {
+        const widget = widgets.find((e) => e.id === ID);
+        if (!widget?.link) return;
 
-        if (widgetState.type === 'link') {
-            const widget = widgets.find((e) => e.id === ID);
-            if (widget?.link) {
-                if (widget?.linkType === 'self') {
-                    router.visit(widget.link);
-                } else {
-                    window.open(widget.link, '_blank', 'noopener,noreferrer');
-                }
-            }
-            return;
+        if (widget?.linkType === 'self') {
+            router.visit(widget.link);
+        } else {
+            window.open(widget.link, '_blank', 'noopener,noreferrer');
         }
+    };
+
+    const handleSwitcherWidget = async (api: string) => {
+        try {
+            const response = await axios.post(api);
+            setWidgetState((prev) => ({...prev, state: response.data.state}));
+        } catch (error) {
+            console.error('Error switching widget state:', error);
+        }
+    };
+
+    const handleActionWidget = async (api: string) => {
+        try {
+            const res = await axios.post(api);
+            console.log(res.data)
+        } catch (error) {
+            console.error('Error performing widget action:', error);
+        }
+    };
+
+    const widgetAction = async () => {
+        if (!widgetType || widgetType === 'info' || draggable) return;
 
         const widgetElement = widgetRef.current;
         if (!widgetElement) return;
 
         widgetElement.classList.add('widget--switching');
 
-        const api = widgets.find((e) => e.id === ID)?.api;
-        if (!api) return;
-
         try {
-            switch (widgetState.type) {
+            const api = widgets.find((e) => e.id === ID)?.api;
+
+            switch (widgetType) {
+                case 'link':
+                    handleLinkWidget();
+                    break;
                 case 'switcher':
-                    const switcherResponse = await axios.post(api);
-                    const {state} = switcherResponse.data;
-                    setWidgetState((prev) => ({...prev, state}));
+                    if (api) await handleSwitcherWidget(api);
                     break;
                 case 'action':
-                case 'custom':
-                    const actionResponse = await axios.post(api);
-                    const result = actionResponse.data;
-                    console.log(result);
+                    if (api) await handleActionWidget(api);
                     break;
                 default:
                     break;
             }
-        } catch (error) {
-            console.error('Error performing widget action:', error);
         } finally {
             widgetElement.classList.remove('widget--switching');
         }
     };
 
-    // const runScript = (currentWidget: WidgetData, constructorOption: any) => {
-    //     if (!currentWidget.scriptUrl || !currentWidget.constructorName) return;
-    //
-    //     const api = currentWidget.scriptUrl;
-    //
-    //     // Remove existing script if it exists
-    //     const existingScript = document.querySelector(`script[src="${api}"]`);
-    //     if (existingScript) {
-    //         existingScript.parentNode?.removeChild(existingScript);
-    //     }
-    //
-    //     const script = document.createElement('script');
-    //     script.src = api;
-    //     script.onload = () => {
-    //         const containerElement = document.getElementById(ID);
-    //         if (containerElement && currentWidget.constructorName && window[currentWidget.constructorName]) {
-    //             new (window as any)[currentWidget.constructorName](containerElement, constructorOption);
-    //         } else {
-    //             console.error(
-    //                 `Widget with ID:${ID} has no constructorName from ${api}:${currentWidget.constructorName}`
-    //             );
-    //         }
-    //     };
-    //     document.body.appendChild(script);
-    // };
+    const getWidgetClass = (): string => {
+        if (draggable) return 'widget-flexible--flex';
+        return widgetType === 'info' ? '' : 'cursor-pointer hover:brightness-110';
+    };
 
-    const getClass = (): string =>
-        !draggable && widgetState.type === 'info'
-            ? ''
-            : 'cursor-pointer hover:brightness-110';
+    const renderWidgetContent = () => {
+        switch (widgetType) {
+            case 'info':
+                return <div>{widgetState.info}</div>;
+            case 'switcher':
+                return <span className="text-lg font-bold">{widgetState.state ? 'ON' : 'OFF'}</span>;
+            default:
+                return null;
+        }
+    };
 
     return (
-        <div
-            id={ID}
-            className={`transition rounded-md w-full h-full ${getClass()} ${draggable ? 'widget-flexible--flex' : ''}`}
-            style={{backgroundColor: widgetState.backgroundColor}}
-            onClick={widgetAction}
-            ref={widgetRef}
-        >
-            <div className="text-amber-50 flex flex-col justify-between gap-2.5 p-3 w-full h-full">
-                <div>
-                    <span className="font-bold">{widgetState.name}</span>
-                    <p className="text-sm">{widgetState.description}</p>
+        <>
+            {widgetType === 'custom' ? (
+                <div className="flex justify-center items-center w-full h-full rounded-md border" style={{backgroundColor: widgetState.backgroundColor}}>
+                    {Component ||
+                        <LoaderCircle className="size-10 animate-spin text-neutral-500"/>}
                 </div>
-                <div className="flex items-end justify-between gap-5">
-                    {widgetState.type === 'info' && <div>{widgetState.info}</div>}
-                    {widgetState.type === 'switcher' && (
-                        <span className="text-lg font-bold">
-              {widgetState.state ? 'ON' : 'OFF'}
-            </span>
-                    )}
-                    <span className="admin-widgets__icon">
+            ) : (
+                <div
+                    id={ID}
+                    className={`transition rounded-md birder w-full h-full ${getWidgetClass()}`}
+                    style={{backgroundColor: widgetState.backgroundColor}}
+                    onClick={widgetAction}
+                    ref={widgetRef}
+                >
+                    <div className="text-amber-50 flex flex-col justify-between gap-2.5 p-3 w-full h-full">
+                        <div>
+                            <span className="font-bold">{widgetState.name}</span>
+                            <p className="text-sm">{widgetState.description}</p>
+                        </div>
+                        <div className="flex items-end justify-between gap-5">
+                            {renderWidgetContent()}
+                            <span className="admin-widgets__icon">
                         <MaterialIcon name={widgetState.icon}/>
-          </span>
+                    </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            )}
+        </>
     );
 };
 

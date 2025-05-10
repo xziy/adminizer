@@ -6,6 +6,7 @@ import CustomBase from "./abstractCustom";
 import {AdminpanelIcon} from "../../interfaces/adminpanelConfig";
 import {Adminizer} from "../Adminizer";
 import {UserAP} from "models/UserAP";
+import * as process from "node:process";
 
 export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
 
@@ -143,10 +144,7 @@ export class WidgetHandler {
                             name: widget.name,
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null,
-                            scriptUrl: widget.scriptUrl,
-                            constructorName: widget.constructorName,
-                            constructorOption: widget.constructorOption,
-                            hideAdminPanelUI: widget.hideAdminPanelUI
+                            scriptUrl: process.env.VITE_ENV === 'dev' ? widget.jsPath.dev : widget.jsPath.production,
                         })
                     }
                 } else {

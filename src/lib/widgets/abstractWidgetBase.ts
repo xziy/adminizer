@@ -31,8 +31,5 @@ export default abstract class BaseWidget {
 		/** Run task */
 		"action" |
 		/** Change location, or open in new tab */
-		"link" |
-
-		"custom"
-	;
+		"link";
 }
