@@ -31,6 +31,7 @@ interface WidgetLayoutProps extends SharedData {
     searchPlaceholder: string
 }
 
+
 const WidgetLayout = () => {
     const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), []);
     const [layout, setLayout] = useState<WidgetLayoutItem[]>([]);
@@ -42,12 +43,49 @@ const WidgetLayout = () => {
 
     const page = usePage<WidgetLayoutProps>()
 
+    // Сохраняем layout и widgets в LocalStorage
+    const saveToLocalStorage = useCallback((layout: WidgetLayoutItem[], widgets: Widget[]) => {
+        try {
+            const data = {
+                layout,
+                widgets: widgets.filter(w => w.added)
+            };
+            localStorage.setItem('widgets_layout', JSON.stringify(data));
+        } catch (error) {
+            console.error('Failed to save to localStorage:', error);
+        }
+    }, []);
+
+    // Получаем данные из LocalStorage
+    const getFromLocalStorage = useCallback(() => {
+        try {
+            const data = localStorage.getItem('widgets_layout');
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to get from localStorage:', error);
+            return null;
+        }
+    }, []);
+
     useEffect(() => {
         async function loadWidgets() {
             try {
                 const {layout: widgetsLayout, widgets: widgetsData} = await initializeWidgets();
-                setWidgets(widgetsData)
-                setLayout(widgetsLayout)
+
+                // Проверяем LocalStorage
+                const localData = getFromLocalStorage();
+                if (localData) {
+                    setWidgets(widgetsData.map(widget => {
+                        const localWidget = localData.widgets.find((w: Widget) => w.id === widget.id);
+                        return localWidget ? {...widget, added: true} : widget;
+                    }));
+                    setLayout(localData.layout);
+                } else {
+                    setWidgets(widgetsData);
+                    setLayout(widgetsLayout);
+                    // Сохраняем начальные данные в LocalStorage
+                    saveToLocalStorage(widgetsLayout, widgetsData);
+                }
             } catch (error) {
                 console.error('Failed to load widgets:', error);
             } finally {
@@ -62,24 +100,21 @@ const WidgetLayout = () => {
         setIsDraggable(value)
         if (!value) {
             addWidgetsDB(widgets, layout).then(() => {
+                // Сохраняем в LocalStorage после сохранения в БД
+                saveToLocalStorage(layout, widgets);
                 setTimeout(() => {
                     setPopUpDisabled(false);
                 }, 300)
             })
         }
-    }, [layout, isDraggable])
+    }, [layout, widgets])
 
     const handleLayoutChange = (currentLayout: WidgetLayoutItem[]) => {
-
         const mergeCoordinates = (layout: WidgetLayoutItem[], currentLayout: WidgetLayoutItem[]) => {
-            // Создаем копию первого массива, чтобы не изменять оригинал
             const result = JSON.parse(JSON.stringify(layout));
-
-            // Создаем карту для быстрого поиска элементов по полю 'i'
             const secondMap = new Map();
             currentLayout.forEach(item => secondMap.set(item.i, item));
 
-            // Обновляем координаты в первом массиве
             result.forEach((item: WidgetLayoutItem) => {
                 const secondItem = secondMap.get(item.i);
                 if (secondItem) {
@@ -90,7 +125,10 @@ const WidgetLayout = () => {
 
             return result;
         }
-        setLayout(mergeCoordinates(layout, currentLayout))
+        const newLayout = mergeCoordinates(layout, currentLayout);
+        setLayout(newLayout);
+        // Сохраняем в LocalStorage при изменении layout
+        saveToLocalStorage(newLayout, widgets);
     };
 
     const addWidgets = useCallback((id: string) => {
@@ -138,11 +176,12 @@ const WidgetLayout = () => {
         setKeyRender(prev => prev + 1);
 
         addWidgetsDB(updatedWidgets, newLayout).then(() => {
+            // Сохраняем в LocalStorage после сохранения в БД
+            saveToLocalStorage(newLayout, updatedWidgets);
             setTimeout(() => {
                 setPopUpDisabled(false);
             }, 300)
         })
-
     }, [layout, widgets]);
 
     const addWidgetsDB = useCallback(async (updatedWidgets: Widget[], newLayout: WidgetLayoutItem[]) => {
@@ -155,9 +194,9 @@ const WidgetLayout = () => {
             console.log(e);
         }
     }, [widgets])
+
     return (
-        <div
-            className={`flex h-full flex-1 flex-col gap-4 rounded-xl p-4 `}>
+        <div className={`flex h-full flex-1 flex-col gap-4 rounded-xl p-4 `}>
             {loading ? (
                 <div>
                     <Skeleton className="h-8 w-full rounded-md"/>
@@ -201,7 +240,7 @@ const WidgetLayout = () => {
                                     <DialogStackContent>
                                         <div className="h-full">
                                             <DialogStackTitle
-                                                className="font-bold leading-none tracking-tight py-4 mr-8 sticky border-b text-xl">
+                                                className="font-bold leading-none tracking-tight py-4 mr-2 md:mr-8 sticky border-b text-xl">
                                                 {page.props.title}
                                             </DialogStackTitle>
                                             <div className="overflow-auto h-[calc(100%-64px)] pr-4 pt-4">
@@ -239,7 +278,6 @@ const WidgetLayout = () => {
                     </div>
                 </>
             )}
-
         </div>
     )
 }

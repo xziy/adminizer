@@ -127,7 +127,7 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled, searchPlaceholder, act
     return (
         <div className={disabled ? 'opacity-50 pointer-events-none' : ''}>
             <div className="flex flex-col gap-4 pl-1">
-                <div className="flex gap-7 flex-wrap font-medium text-lg">
+                <div className="flex gap-x-7 gap-y-2 flex-wrap font-medium text-base md:text-lg">
                     <div
                         className={`cursor-pointer hover:text-primary hover:underline transition-all ${!filter ? 'text-primary underline' : ''}`}
                         onClick={() => setFilter('')}>
@@ -145,13 +145,13 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled, searchPlaceholder, act
             <div className="mt-6 flex flex-col gap-6">
                 {Object.entries(filteredWidgets()).map(([key, widget]) => (
                     <div key={key}>
-                        <h2 className="text-xl font-medium mb-4">{widget.title}</h2>
+                        <h2 className="text-lg lg:text-xl font-medium mb-4">{widget.title}</h2>
                         {widget.items.length > 0 ? (
-                            <div className="mt-2 grid grid-cols-4 gap-2">
+                            <div className="mt-2 flex flex-wrap gap-2 justify-center md:justify-start">
                                 {widget.items.map(item => (
-                                    <Card key={item.id} className="min-h-[225px] justify-between">
+                                    <Card key={item.id} className="min-h-[225px] min-w-[200px] justify-between">
                                         <CardHeader>
-                                            <CardTitle className="flex justify-between items-center">
+                                            <CardTitle className="flex justify-between items-center gap-2 flex-wrap">
                                                 {item.name}
                                                 {item.icon && <MaterialIcon name={item.icon} className="text-primary"/>}
                                             </CardTitle>
