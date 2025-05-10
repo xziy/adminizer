@@ -43,6 +43,7 @@ export async function initializeWidgets(): Promise<{
                 });
             });
         }
+
         return {
             layout: newLayout,
             widgets: initWidgets

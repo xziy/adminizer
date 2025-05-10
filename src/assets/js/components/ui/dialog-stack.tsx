@@ -235,7 +235,7 @@ export const DialogStackBody = ({
             <Portal.Root>
                 <div
                     className={cn(
-                        'pointer-events-none fixed z-50 w-full max-w-[67%] right-0 top-[1vh]',
+                        'pointer-events-none fixed z-50 w-full max-w-full md:max-w-[67%] right-0 top-0 md:top-[1vh]',
                         className
                     )}
                     {...props}
@@ -304,7 +304,7 @@ export const DialogStackContent = ({
         <div
             onClick={handleClick}
             className={cn(
-                'h-[98vh] w-full rounded-l-md border bg-background p-6 shadow-lg transition-all duration-200',
+                'h-[100vh] md:h-[98vh] w-full md:rounded-l-md border bg-background p-6 shadow-lg md:transition-all duration-200',
                 showAnimation && 'animate-in slide-in-from-right-1/2',
                 distanceFromActive < 0 && 'brightness-75 blur-[2px]',
                 className
@@ -312,7 +312,7 @@ export const DialogStackContent = ({
             style={{
                 top: 0,
                 marginLeft: `${translateX}`,
-                marginTop: `${Math.abs(distanceFromActive) * 10}px`,
+                marginTop: `${window.innerWidth > 768 ? Math.abs(distanceFromActive) * 10 : 0}px`,
                 width: `calc(100% + ${Math.abs(distanceFromActive) * offset}px)`,
                 zIndex: 50 - Math.abs(context.activeIndex - (index ?? 0)),
                 position: distanceFromActive ? 'absolute' : 'relative',
