@@ -1,7 +1,5 @@
-import { WidgetConfig } from "lib/widgets/widgetHandler";
+import {WidgetConfig, WidgetsLayouts} from "lib/widgets/widgetHandler";
 import { GroupAP } from "./GroupAP";
-import {WidgetLayoutItem} from "../assets/js/types";
-
 export default {
   id: {
     type: "number",
@@ -72,7 +70,7 @@ export interface UserAP {
   groups?: GroupAP[];
   widgets?: {
       widgets: WidgetConfig[],
-      layout: WidgetLayoutItem[]
+      layout: WidgetsLayouts
   };
   isConfirmed?: boolean;
 }
