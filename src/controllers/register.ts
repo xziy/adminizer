@@ -56,7 +56,7 @@ export default async function register(req: ReqType, res: ResType) {
                 });
                 // TODO refactor CRUD functions for DataAccessor usage
                 let defaultUserGroup: ModelsAP["GroupAP"] = await req.adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: req.adminizer.config.registration.defaultUserGroup});
-                console.log(userap)
+                // console.log(userap)
                 // TODO refactor CRUD functions for DataAccessor usage
                 await req.adminizer.modelHandler.model.get("UserAP")["_updateOne"]({id: userap.id}, {
                     groups: [defaultUserGroup.id]
