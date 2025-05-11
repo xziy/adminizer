@@ -1,55 +1,73 @@
-import {Widget, WidgetLayoutItem} from "@/types";
+import { Widget, WidgetLayoutItem } from "@/types";
 import axios from "axios";
+
+// Ключ для хранения данных в localStorage
 
 export async function initializeWidgets(): Promise<{
     layout: WidgetLayoutItem[];
     widgets: Widget[];
 }> {
     try {
-        const widgetsDBResponse = await axios.get(`${window.routePrefix}/widgets-get-all-db`)
-        let widgetsDB = widgetsDBResponse.data?.widgetsDB.widgets ?? [];
-        let layoutDB = widgetsDBResponse.data?.widgetsDB.layout ?? [];
+        // 1. Пытаемся получить данные из localStorage
+        const storedData = localStorage.getItem('widgetsData');
+        let storedWidgets: Widget[] = [];
+        let storedLayout: WidgetLayoutItem[] = [];
+
+        if (storedData) {
+            try {
+                const parsedData = JSON.parse(storedData);
+                storedWidgets = parsedData.widgets || [];
+                storedLayout = parsedData.layout || [];
+            } catch (e) {
+                console.error('Ошибка при разборе данных из localStorage', e);
+            }
+        }
+
+        // 2. Получаем данные с сервера
+        const widgetsDBResponse = await axios.get(`${window.routePrefix}/widgets-get-all-db`);
+        let widgetsDB = widgetsDBResponse.data?.widgetsDB?.widgets as Widget[] ?? [];
+        let layoutDB = widgetsDBResponse.data?.widgetsDB?.layout ?? [];
+
         const widgetsResponse = await axios.get(`${window.routePrefix}/widgets-get-all`);
         const allWidgets = widgetsResponse.data.widgets as Widget[];
 
-        const initWidgets = allWidgets.map(widget => {
-            const findItem = widgetsDB.find((e: any) => e.id === widget.id);
-            return findItem && findItem.added ? {...widget, added: true} : widget;
-        });
+        // 3. Сравниваем виджеты из БД и localStorage
+        const dbWidgetIds = widgetsDB.map(w => w.id).sort();
+        const storedWidgetIds = storedWidgets.map(w => w.id).sort();
 
-        const filtered = initWidgets.filter(e => e.added);
-        let newLayout: WidgetLayoutItem[] = layoutDB;
-        if (newLayout.length === 0) {
-            filtered.forEach((widget, index) => {
-                const w = widget.size?.w || 1;
-                const h = widget.size?.h || 1;
+        // Проверяем, совпадают ли массивы ID
+        const idsMatch =
+            dbWidgetIds.length === storedWidgetIds.length &&
+            dbWidgetIds.every((id, index) => id === storedWidgetIds[index]);
 
-                let x = 0;
-                if (index > 0) {
-                    const prevItem = newLayout[index - 1];
-                    if (prevItem) {
-                        const potentialX = prevItem.x + prevItem.w;
-                        x = (potentialX > 8 || (potentialX + w) > 8) ? 0 : potentialX;
-                    }
-                }
+        let finalWidgetsDB = widgetsDB;
+        let finalLayoutDB = layoutDB;
 
-                newLayout.push({
-                    x,
-                    y: 0,
-                    w,
-                    h,
-                    i: index.toString(),
-                    id: widget.id
-                });
-            });
+        if (idsMatch && storedWidgets.length > 0) {
+            // Если ID совпадают - используем данные из localStorage
+            finalWidgetsDB = storedWidgets;
+            finalLayoutDB = storedLayout;
+        } else {
+            // Если данные изменились - сохраняем в localStorage
+            const dataToStore = {
+                widgets: widgetsDB,
+                layout: layoutDB
+            };
+            localStorage.setItem('widgetsData', JSON.stringify(dataToStore));
         }
 
+        // 4. Инициализируем виджеты, отмечая добавленные
+        const initWidgets = allWidgets.map(widget => {
+            const findItem = finalWidgetsDB.find((e: any) => e.id === widget.id);
+            return findItem && findItem.added ? { ...widget, added: true } : widget;
+        });
+
         return {
-            layout: newLayout,
+            layout: finalLayoutDB,
             widgets: initWidgets
         };
     } catch (error) {
-        console.error('Error initializing widgets:', error);
+        console.error('Ошибка при инициализации виджетов:', error);
         throw error;
     }
 }
