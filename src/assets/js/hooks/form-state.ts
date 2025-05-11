@@ -22,7 +22,7 @@ const formStateProxy = new Proxy(formState, {
                 // Update specific errors
                 target.errors = { ...target.errors, ...value };
             }
-            // console.log('Form errors updated:', target.errors);
+            // console.debug('Form errors updated:', target.errors);
             // window.dispatchEvent(new CustomEvent('formStateChanged'));
         }
         return true;

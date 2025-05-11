@@ -173,7 +173,6 @@ export class MediaManagerAdapter {
           origFileName,
           group
         );
-        console.log(item)
 
         if (item) {
           return res.send({
@@ -201,7 +200,7 @@ export class MediaManagerAdapter {
       res.send({massage: 'ok'});
       return
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   }
 }

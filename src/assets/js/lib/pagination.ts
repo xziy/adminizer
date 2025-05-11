@@ -17,7 +17,6 @@ export interface PaginationResult {
 }
 
 
-// Базовая функция (можно использовать вне React)
 export function generatePagination(
     recordsTotal: number,
     count: number,

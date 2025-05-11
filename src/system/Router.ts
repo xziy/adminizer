@@ -1,5 +1,5 @@
-import _processInstallStep from "../controllers/processInstallStep";
-import _processInstallFinalize from "../controllers/processInstallFinalize";
+// import _processInstallStep from "../controllers/processInstallStep";
+// import _processInstallFinalize from "../controllers/processInstallFinalize";
 import _dashboard from "../controllers/dashboard";
 import _welcome from "../controllers/welcome";
 import _list from "../controllers/list";
@@ -45,40 +45,40 @@ export default class Router {
 		/**
 		 * Widgets All
 		 */
-		adminizer.app.all(`/widgets-get-all`, adminizer.policyManager.bindPolicies(policies, _getAllWidgets));
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-get-all`, adminizer.policyManager.bindPolicies(policies, _getAllWidgets));
 
 		/**
 		 * Widgets All from DB
 		 */
-		adminizer.app.all(`/widgets-get-all-db`, adminizer.policyManager.bindPolicies(policies, _widgetsDB));
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-get-all-db`, adminizer.policyManager.bindPolicies(policies, _widgetsDB));
 
 
 		/**
 		 * Widgets Switch
 		 */
-		adminizer.app.all(`/widgets-switch/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetSwitchController));
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-switch/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetSwitchController));
 
 		/**
 		 * Widgets Info
 		 */
-		adminizer.app.all(`/widgets-info/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetInfoController))
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-info/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetInfoController))
 
 		/**
 		 * Widgets Action
 		 */
-		adminizer.app.all(`/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetActionController));
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetActionController));
 
 		/**
 		 * Widgets Custom
 		 */
-		adminizer.app.all(`/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetCustomController));
+		adminizer.app.all(`${adminizer.config.routePrefix}/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetCustomController));
 
-		/**
-		 * Module Install Stepper
-         * @deprecated
-		 * */
-		adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
-		adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
+		// /**
+		//  * Module Install Stepper
+        //  * @deprecated
+		//  * */
+		// adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
+		// adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
 
 		/**
 		 * Edit form

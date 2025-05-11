@@ -1,3 +1,7 @@
+import { WidgetConfig } from "lib/widgets/widgetHandler";
+import { GroupAP } from "./GroupAP";
+import {WidgetLayoutItem} from "../assets/js/types";
+
 export default {
   id: {
     type: "number",
@@ -16,10 +20,10 @@ export default {
   email: {
     type: "string"
   },
-  passwordHashed: {
+  avatar: {
     type: "string"
   },
-  password: {
+  passwordHashed: {
     type: "string"
   },
   timezone: {
@@ -50,4 +54,25 @@ export default {
   isConfirmed: {
     type: "boolean"
   }
+}
+
+export interface UserAP {
+  id: number;
+  login: string;
+  fullName?: string;
+  email?: string;
+  avatar?: string;
+  passwordHashed?: string;
+  timezone?: string;
+  expires?: string;
+  locale?: string;
+  isDeleted?: boolean;
+  isActive?: boolean;
+  isAdministrator?: boolean;
+  groups?: GroupAP[];
+  widgets?: {
+      widgets: WidgetConfig[],
+      layout: WidgetLayoutItem[]
+  };
+  isConfirmed?: boolean;
 }

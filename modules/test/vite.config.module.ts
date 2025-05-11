@@ -12,6 +12,7 @@ export default defineConfig({
         viteExternalsPlugin({
             react: 'React',
             'react-dom': 'ReactDOM',
+            //'@/components/ui/button.tsx': 'UIComponents' // Test Btn for module.
         }),
     ],
     build: {
@@ -19,11 +20,17 @@ export default defineConfig({
         // outDir: path.resolve(import.meta.dirname, 'dist/assets'),
         emptyOutDir: false,
         lib: {
-            // Точка входа для библиотеки
+            // Library entrance point
             entry: path.resolve(import.meta.dirname, 'ComponentB.tsx'),
             name: 'ComponentB',
             formats: ['es'],
             fileName: (format) => `ComponentB.${format}.js`,
+        },
+        rollupOptions: {
+            external: [
+                'tailwindcss',
+                //'@/components/ui/button.tsx' //Test Btn for module.
+            ],
         },
     },
     resolve: {

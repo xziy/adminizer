@@ -1,3 +1,5 @@
+import { UserAP } from "./UserAP";
+
 export default {
   id: {
     type: "number",
@@ -19,4 +21,12 @@ export default {
     collection: "UserAP",
     via: "groups"
   }
+}
+
+export interface GroupAP {
+  id: number;
+  name: string;
+  description?: string;
+  tokens?: string[];
+  users?: UserAP[];
 }

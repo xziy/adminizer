@@ -13,7 +13,6 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import {FormEventHandler, useEffect, useState} from "react";
-import ky from 'ky';
 import {Checkbox} from "@/components/ui/checkbox"
 import {
     Tooltip,
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/tooltip"
 import InputError from "@/components/input-error.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
+import axios from "axios";
 
 type value = string | boolean | Date | Record<string, string>[]
 
@@ -77,10 +77,8 @@ export default function AddUserForm() {
 
     useEffect(() => {
         const getTimezones = async () => {
-            const data = await ky.get(`${window.routePrefix}/get-timezones`).json() as {
-                timezones: Record<string, string>[]
-            }
-            setTimezones(data.timezones)
+            const data = await axios.get(`${window.routePrefix}/get-timezones`)
+            setTimezones(data.data.timezones)
         }
         getTimezones()
     }, [])

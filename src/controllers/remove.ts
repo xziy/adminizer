@@ -23,9 +23,9 @@ export default async function remove(req: ReqType, res: ResType) {
     }
 
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }

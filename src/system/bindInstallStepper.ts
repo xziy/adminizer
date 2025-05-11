@@ -4,7 +4,7 @@ let installStepper = InstallStepper.getInstance();
 
 export default function bindInstallStepper(adminizer: Adminizer) {
   let installStepperPolicy = function (req: ReqType, res: ResType, proceed: () => void) {
-    if (!req.session.UserAP) {
+    if (!req.user) {
       return proceed();
     }
 
