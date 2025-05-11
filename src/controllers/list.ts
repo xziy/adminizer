@@ -132,7 +132,9 @@ function setColumns(
             direction: String(i) === orderColumn ? direction : undefined,
             searchColumnValue: searchValue || undefined, // undefined, если поиска нет
         };
-
+        
+        console.log(">>>", String(i))
+        
         nodeTreeColumns.push({
             data: String(i),
             searchable: 'true',

@@ -25,28 +25,6 @@ export async function seedDatabase(
     throw new Error('Models should support the ORM interface (Sequelize or Waterline)');
   }
 
-  // ------------------ Example Records ------------------ //
-  const exampleCount = isSequelize
-    ? await exampleModel.count()
-    : await exampleModel.count({});
-
-  if (exampleCount === 0) {
-    const fakeExamples = Array.from({ length: count }, () => ({
-      title:       faker.lorem.word(),
-      description: faker.lorem.paragraph(),
-      sort:        faker.datatype.boolean(),
-      time:        getRandomTime(),
-      number:      faker.number.int(300),
-      editor:      faker.lorem.text(),
-    }));
-
-    if (isSequelize) {
-      await exampleModel.bulkCreate(fakeExamples);
-    } else {
-      await exampleModel.createEach(fakeExamples).fetch();
-    }
-  }
- 
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators' },
@@ -113,6 +91,42 @@ export async function seedDatabase(
     }
   }
 
+
+  // ------------------ Example Records ------------------ //
+  const exampleCount = isSequelize
+    ? await exampleModel.count()
+    : await exampleModel.count({});
+
+  const allUsers: UserAP[] = isSequelize
+    ? await userModel.findAll()
+    : await userModel.find();
+    
+    if (exampleCount === 0) {
+      const fakeExamples = Array.from({ length: count }, () => {
+        const randomUser = faker.helpers.arrayElement(allUsers);
+        if(isSequelize) {
+          return {}
+        } else {
+          return {
+            title:       faker.lorem.word(),
+            description: faker.lorem.paragraph(),
+            sort:        faker.datatype.boolean(),
+            time:        getRandomTime(),
+            owner:       randomUser.id,
+            number:      faker.number.int(300),
+            editor:      faker.lorem.text(),
+          }
+        }
+      }
+  );
+
+    if (isSequelize) {
+      await exampleModel.bulkCreate(fakeExamples);
+    } else {
+      await exampleModel.createEach(fakeExamples).fetch();
+    }
+  }
+ 
     // ------------------ Tests ------------------ //
     const testCount = isSequelize
     ? await testModel.count()
