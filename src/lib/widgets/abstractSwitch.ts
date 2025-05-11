@@ -5,7 +5,7 @@ export default abstract class SwitchBase extends BaseWidget {
   public readonly widgetType = "switcher"
 
 
-  /** Widget background css (color, Image) */
+    /** Widget background css color */
   public abstract readonly backgroundCSS: string | null;
 
 

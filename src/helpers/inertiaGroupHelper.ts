@@ -1,3 +1,5 @@
+import { GroupAP } from "models/GroupAP";
+import { UserAP } from "models/UserAP";
 import {AccessRightsToken, Entity, PropsField} from "../interfaces/types";
 
 
@@ -26,11 +28,11 @@ interface listProps extends Record<string | number | symbol, unknown>{
 }
 
 export function inertiaGroupHelper(
-    entity: Entity, req: ReqType, users: ModelsAP["UserAP"][],
+    entity: Entity, req: ReqType, users: UserAP[],
     groupedTokens: {
         [key: string]: AccessRightsToken[]
     },
-    group?: ModelsAP["GroupAP"], view: boolean = false) {
+    group?: GroupAP, view: boolean = false) {
     let props: listProps = {
         edit: !!group,
         view: view,
@@ -87,7 +89,7 @@ export function inertiaGroupHelper(
                     label: token.name,
                     tooltip: token.description,
                     name: `token-checkbox-${token.id}`,
-                    value: group ? (group.tokens && group.tokens.includes(token.id)) : false,
+                    value: group ? (group.tokens && group.tokens?.includes(token.id)) : false,
                     type: 'checkbox'
                 })
             }

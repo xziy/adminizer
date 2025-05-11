@@ -1,9 +1,9 @@
 import BaseWidget from "./abstractWidgetBase";
 export default abstract class InfoBase extends BaseWidget {
-	
+
 	public readonly widgetType = "info"
-	
-	/** Widget background css (color, Image) */
+
+    /** Widget background css color */
 	public readonly backgroundCSS: string;
 
 	/** Widget size */

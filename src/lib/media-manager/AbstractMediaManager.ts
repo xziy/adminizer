@@ -177,10 +177,10 @@ export abstract class AbstractMediaManager {
   public uloadAllowedTypes: string[];
   public dir: string
   /**
-   * Разрешает или нет поиск по названию
+   
    */
   public allowSearch: boolean;
-  /**  ⚠️ ВЫШЕ НАСТРОЙКИ КОТОРЫЕ НАДО РЕАЛИЗОВАТЬ */
+  /**⚠️ above the settings that need to be implemented*/
   ///
 
   /**

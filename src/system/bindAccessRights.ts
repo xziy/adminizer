@@ -1,3 +1,4 @@
+import { GroupAP } from "models/GroupAP";
 import {Adminizer} from "../lib/Adminizer";
 
 export default async function bindAccessRights(adminizer: Adminizer) {
@@ -81,7 +82,7 @@ export default async function bindAccessRights(adminizer: Adminizer) {
     // Default user group
     if (adminizer.config.registration && adminizer.config.registration.enable) {
         // TODO refactor CRUD functions for DataAccessor usage
-        let defaultUserGroupRecord: ModelsAP["GroupAP"] = await adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: adminizer.config.registration.defaultUserGroup});
+        let defaultUserGroupRecord: GroupAP = await adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: adminizer.config.registration.defaultUserGroup});
         if (!defaultUserGroupRecord) {
             // TODO refactor CRUD functions for DataAccessor usage
             await adminizer.modelHandler.model.get("GroupAP")?.["_create"]({

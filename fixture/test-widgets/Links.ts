@@ -10,27 +10,30 @@ export class SiteLinks extends LinkBase {
 	readonly widgetType = "link"
 
 	readonly links: Links[] = [
-		{
-			name: 'Navigation',
-			description: 'Navigation',
-			link: '/admin/model/navigation',
-			icon: 'hexagon',
-			backgroundCSS: '#368869'
-		},
-		{
-			name: 'example.com',
-			description: 'link to example.com',
-			link: 'https://www.example.com',
-			icon: null,
-			backgroundCSS: null
-		},
-		{
-			name: 'Global Settings',
-			description: 'Global Settings',
-			link: '/admin/form/global',
-			icon: 'polyline',
-			backgroundCSS: null
-		}
+        {
+            name: 'Test',
+            description: 'Add Test Model',
+            link: '/adminizer/model/test/add',
+            icon: 'hexagon',
+            backgroundCSS: '#368869',
+            linkType: "self"
+        },
+        {
+            name: 'example.com',
+            description: 'link to example.com',
+            link: 'https://www.example.com',
+            icon: null,
+            backgroundCSS: null,
+            linkType: "blank"
+        },
+        {
+            name: 'Global Settings',
+            description: 'Global Settings',
+            link: '/adminizer/form/global',
+            icon: 'polyline',
+            backgroundCSS: null,
+            linkType: "self"
+        }
 	];
 
 	getLinks(): Promise<Links[]> {
