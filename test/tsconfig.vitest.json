@@ -6,6 +6,10 @@
         "adminizer": ["./src"],
         "adminizer/*": ["./src/*"]
       }
-    }
+    },
+    "types": ["vitest"]
   }
+  
+
+
   

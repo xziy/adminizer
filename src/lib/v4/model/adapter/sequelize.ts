@@ -22,7 +22,7 @@ function resolveType(type: any): Attribute["type"] {
 export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string, Attribute> {
   const result: Record<string, Attribute> = {};
 
-  
+  console.log(model, "<M<<<<<<<<<<<<<<<,,")
   const rawAttrs = model.getAttributes();
   for (const name in rawAttrs) {
     const meta = rawAttrs[name];
@@ -551,7 +551,16 @@ export class SequelizeAdapter extends AbstractAdapter {
   /**Registration of system models*/
   static async registerSystemModels(sequelize: Sequelize): Promise<void> {
     const modelsDir = path.resolve(import.meta.dirname, "../../../../models");
-    const files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
+    let files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
+    
+    // Try with ts files
+    if(!files.length) {
+      files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".ts"));
+    }
+
+    if(!files.length) {
+      throw `Model files not found in dir ${modelsDir}`
+    }
 
     for (const file of files) {
       const modelName = path.basename(file, path.extname(file));

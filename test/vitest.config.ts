@@ -12,5 +12,11 @@ export default defineConfig({
     alias: {
       adminizer: '/src',
     }
+  },
+  esbuild: {
+    target: 'es2022',
+    supported: {
+      decorators: true,
+    }
   }
 });

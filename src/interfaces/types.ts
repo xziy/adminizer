@@ -8,6 +8,7 @@ import {I18n} from "../lib/v4/I18n";
 
 export type EntityType = "form" | "model" | "wizard";
 export interface Entity {
+    entity: any;
     name: string
     config?: ModelConfig
     model?: AbstractModel<any>
