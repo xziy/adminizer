@@ -65,14 +65,14 @@ export abstract class AbstractModel<T> {
   public async findOne(criteria: Partial<T>, dataAccessor: DataAccessor): Promise<Partial<T> | null> {
     criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
     let record = await this._findOne(criteria);
-    console.log(record, "record")
+    // console.log(record, "record")
     return record ? dataAccessor.process(record) : null;
   }
 
   public async find(criteria: Partial<T>, dataAccessor: DataAccessor): Promise<Partial<T>[]> {
     criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
     let records = await this._find(criteria);
-    console.log(records, "records")
+    // console.log(records, "records")
 
     return records.map(record => dataAccessor.process(record));
   }

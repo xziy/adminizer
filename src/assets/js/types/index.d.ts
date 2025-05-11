@@ -46,6 +46,7 @@ export interface User {
     login: string;
     email: string;
     avatar?: string;
+    isAdministrator: boolean;
     [key: string]: unknown;
 }
 

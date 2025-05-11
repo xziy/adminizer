@@ -193,7 +193,7 @@ export class NodeTable {
             const totalRecords = await this.model.count({});
             const filteredRecords = await this.model.count(queryOptions.where);
             const data = await this.model.find(queryOptions, dataAccessor);
-            console.log(data, "data")
+            // console.log(data, "data")
             const output = {
                 draw: this.request.draw !== "" ? this.request.draw : 0,
                 recordsTotal: totalRecords,
@@ -254,7 +254,7 @@ export class NodeTable {
             });
             out.push(row);
         });
-        console.log(out)
+        // console.log(out)
         return out;
     }
 }
