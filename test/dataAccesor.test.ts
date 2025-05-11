@@ -24,7 +24,7 @@ describe('DataAccessor test', () => {
 
   beforeAll(async () => {
     sequelize = new Sequelize('sqlite::memory:');
-    await sequelize.authenticate();s
+    await sequelize.authenticate()
     await sequelize.sync({ force: true });
     await SequelizeAdapter.registerSystemModels(sequelize);
     const sequelizeAdapter = new SequelizeAdapter(sequelize);
