@@ -1,41 +1,62 @@
-import { Widget, WidgetLayoutItem } from "@/types";
+import {Widget, WidgetLayoutItem} from "@/types";
 import axios from "axios";
 
-// Ключ для хранения данных в localStorage
+export interface WidgetsLayouts {
+    lg: WidgetLayoutItem[],
+    md: WidgetLayoutItem[],
+    sm: WidgetLayoutItem[],
+    xs: WidgetLayoutItem[],
+    xxs: WidgetLayoutItem[]
+}
 
 export async function initializeWidgets(): Promise<{
-    layout: WidgetLayoutItem[];
+    layout: WidgetsLayouts;
     widgets: Widget[];
 }> {
     try {
-        // 1. Пытаемся получить данные из localStorage
         const storedData = localStorage.getItem('widgetsData');
         let storedWidgets: Widget[] = [];
-        let storedLayout: WidgetLayoutItem[] = [];
+        let storedLayout: WidgetsLayouts = {
+            lg: [],
+            md: [],
+            sm: [],
+            xs: [],
+            xxs: []
+        };
 
         if (storedData) {
             try {
                 const parsedData = JSON.parse(storedData);
                 storedWidgets = parsedData.widgets || [];
-                storedLayout = parsedData.layout || [];
+                storedLayout = parsedData.layout || {
+                    lg: [],
+                    md: [],
+                    sm: [],
+                    xs: [],
+                    xxs: []
+                };
             } catch (e) {
-                console.error('Ошибка при разборе данных из localStorage', e);
+                console.error('Error parsing data from localStorage', e);
             }
         }
 
-        // 2. Получаем данные с сервера
         const widgetsDBResponse = await axios.get(`${window.routePrefix}/widgets-get-all-db`);
         let widgetsDB = widgetsDBResponse.data?.widgetsDB?.widgets as Widget[] ?? [];
-        let layoutDB = widgetsDBResponse.data?.widgetsDB?.layout ?? [];
+        let layoutDB = widgetsDBResponse.data?.widgetsDB?.layout ?? {
+            lg: [],
+            md: [],
+            sm: [],
+            xs: [],
+            xxs: []
+        };
 
         const widgetsResponse = await axios.get(`${window.routePrefix}/widgets-get-all`);
         const allWidgets = widgetsResponse.data.widgets as Widget[];
 
-        // 3. Сравниваем виджеты из БД и localStorage
         const dbWidgetIds = widgetsDB.map(w => w.id).sort();
         const storedWidgetIds = storedWidgets.map(w => w.id).sort();
 
-        // Проверяем, совпадают ли массивы ID
+        // Check if the widget IDs in the database and localStorage match
         const idsMatch =
             dbWidgetIds.length === storedWidgetIds.length &&
             dbWidgetIds.every((id, index) => id === storedWidgetIds[index]);
@@ -44,11 +65,9 @@ export async function initializeWidgets(): Promise<{
         let finalLayoutDB = layoutDB;
 
         if (idsMatch && storedWidgets.length > 0) {
-            // Если ID совпадают - используем данные из localStorage
             finalWidgetsDB = storedWidgets;
             finalLayoutDB = storedLayout;
         } else {
-            // Если данные изменились - сохраняем в localStorage
             const dataToStore = {
                 widgets: widgetsDB,
                 layout: layoutDB
@@ -56,10 +75,9 @@ export async function initializeWidgets(): Promise<{
             localStorage.setItem('widgetsData', JSON.stringify(dataToStore));
         }
 
-        // 4. Инициализируем виджеты, отмечая добавленные
         const initWidgets = allWidgets.map(widget => {
             const findItem = finalWidgetsDB.find((e: any) => e.id === widget.id);
-            return findItem && findItem.added ? { ...widget, added: true } : widget;
+            return findItem && findItem.added ? {...widget, added: true} : widget;
         });
 
         return {
@@ -67,7 +85,7 @@ export async function initializeWidgets(): Promise<{
             widgets: initWidgets
         };
     } catch (error) {
-        console.error('Ошибка при инициализации виджетов:', error);
+        console.error('Error initializing widgets:', error);
         throw error;
     }
 }
