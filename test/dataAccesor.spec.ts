@@ -4,9 +4,16 @@ import entityMock from './datamocks/entityExample';
 import { UserAP } from '../src/models/UserAP';
 import { DataAccessor } from '../src/lib/v4/DataAccessor';
 
-import { Sequelize } from 'sequelize';
-import { Adminizer, SequelizeAdapter } from '../src';
+import { Config } from "waterline";
+
+// @ts-ignore
+import sailsDisk from "sails-disk";
+import { Adminizer, WaterlineAdapter } from '../src';
 import { Entity } from '../src/interfaces/types';
+import * as config from "./datamocks/adminizerConfig"
+import Test  from './datamocks/Test';
+import Waterline from 'waterline';
+import Example from './datamocks/Example';
 
 describe('DataAccessor test', () => {
   let adminUser: UserAP;
@@ -15,21 +22,54 @@ describe('DataAccessor test', () => {
   let defaultUser: UserAP;
   let entity: Entity;
   let instance: DataAccessor;
-  let adminizer: Adminizer;
-  let sequelize: Sequelize;
+  let adminizer!: Adminizer;
+  let orm: Waterline.Waterline;
 
   function makeReq(user: UserAP): ReqType {
     return { adminizer, user } as ReqType;
   }
 
   beforeAll(async () => {
-    sequelize = new Sequelize('sqlite::memory:');
-    await sequelize.authenticate()
-    await sequelize.sync({ force: true });
-    await SequelizeAdapter.registerSystemModels(sequelize);
-    const sequelizeAdapter = new SequelizeAdapter(sequelize);
-    adminizer = new Adminizer([sequelizeAdapter]);
+    orm = new Waterline(); 
+    
+    // @ts-ignore
+    await WaterlineAdapter.registerSystemModels(orm);
+    await sleep(1000);
+    orm.registerModel(Test);
+    orm.registerModel(Example);
+    await sleep(1000);
+  
+    const waterlineConfig: Config = {
+      adapters: {
+        disk: sailsDisk,
+      },
+      datastores: {
+        default: {
+          adapter: "disk",
+        }
+      }
+    };
+  
+    const ontology = await new Promise<WaterlineOntology>((resolve, reject) => {
+      orm.initialize(waterlineConfig, (err, ontology) => {
+        if (err) return reject(err);
+        resolve(ontology);
+      });
+    });
+  
+    console.log("Waterline ORM initialized!");
+  
+    const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
+    adminizer = new Adminizer([waterlineAdapter]);
+  
+    try {
+      // @ts-ignore
+      await adminizer.init(config);
+    } catch (error) {
+      console.error("adminizer init error:", error);
+    }
   });
+  
 
   beforeEach(() => {
     adminUser = {
@@ -193,3 +233,8 @@ describe('DataAccessor test', () => {
     );
   });
 });
+
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

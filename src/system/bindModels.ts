@@ -48,6 +48,9 @@ export default async function bindModels(adminizer: Adminizer) {
 
       // Create model adapter instance and add it to model handler
       const registeredModel = ormAdapter.getModel(modelName);
+      if(!registeredModel) {
+        throw `Model not found: ${modelName}`
+      }
       const model = new ormAdapter.Model(modelName, registeredModel);
       adminizer.modelHandler.add(modelName, model);
     }

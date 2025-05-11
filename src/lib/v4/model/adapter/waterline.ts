@@ -115,11 +115,14 @@ export class WaterlineAdapter extends AbstractAdapter {
   /** Method that processes custom waterline model creation. Is used for system models. Replaces beforeCreate method in waterline */
   static async registerSystemModels(waterlineORM: Waterline.Waterline): Promise<void> {
     const systemModelsDir = path.resolve(import.meta.dirname, "../../../../models");
-    const systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file => file.endsWith(".js"));
+    let systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file => file.endsWith(".js"));
 
+    if(!systemModelsFiles.length) {
+       systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file => file.endsWith(".ts"));
+    }
     // Register adminizer system models
     await Promise.all(systemModelsFiles.map(async (file) => {
-      const modelName = path.basename(file, ".js");
+      const modelName = path.basename(file).replace(/\.(ts|js)$/, "");
       const systemModelPath = path.resolve(systemModelsDir, file);
       const adminizerModel = (await import(pathToFileURL(systemModelPath).href)).default;
       const waterlineLikeModel = generateWaterlineModel(modelName, adminizerModel);
