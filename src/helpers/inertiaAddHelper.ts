@@ -57,6 +57,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
         let fieldConfig = field.config as BaseFieldConfig
+        if (!!fieldConfig.visible === false) continue
+
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
 
         //@ts-ignore TODO: fix model validations

@@ -117,14 +117,14 @@ export class InstallStepper {
 
     // set locale
     if (typeof req.adminizer.config.translation !== "boolean") {
-      if (!req.session.UserAP.locale || !req.adminizer.config.translation.locales.includes(req.session.UserAP.locale)) {
-        req.session.UserAP.locale = req.adminizer.config.translation.defaultLocale || "en";
+      if (!req.user.locale || !req.adminizer.config.translation.locales.includes(req.user.locale)) {
+        req.user.locale = req.adminizer.config.translation.defaultLocale || "en";
       }
     } else {
-      req.session.UserAP.locale = "en";
+      req.user.locale = "en";
     }
 
-    this.context.locale = req.session.UserAP.locale;
+    this.context.locale = req.user.locale;
 
     // translate step
     stepToRender = TranslationHelper.translateProperties(req.i18n, stepToRender, ["title", "description", "name"]);
@@ -133,7 +133,7 @@ export class InstallStepper {
       totalStepCount: this.steps.length,
       leftStepsCount: leftSteps.length,
       currentStep: stepToRender,
-      locale: req.session.UserAP.locale
+      locale: req.user.locale
     };
   }
 

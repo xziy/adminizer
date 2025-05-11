@@ -304,7 +304,7 @@ const ListTable = () => {
                 <div className="flex gap-2 sticky top-0 z-10 bg-background py-3">
                     {page.props.header.crudActions?.createTitle && (
                         <Button asChild>
-                            <Link href={`${page.props.header.entity.uri}/add`} prefetch>
+                            <Link href={`${page.props.header.entity.uri}/add`}>
                                 <Icon iconNode={SquarePlus}/>
                                 {page.props.header.crudActions.createTitle}
                             </Link>
@@ -320,44 +320,50 @@ const ListTable = () => {
                         <Icon iconNode={showSearch ? RefreshCcw : Search}/>
                         {showSearch ? page.props.header.resetBtn : page.props.header.searchBtn}
                     </Button>
-                    <div className="gap-2 ml-6 hidden lg:flex">
-                        {page.props.header.actions.map((action) => (
-                            <Button asChild variant="outline" key={action.id}>
-                                {action.type === 'blank' ? (
-                                    <a href={action.link} target='_blank'>
-                                        {action.icon && <MaterialIcon name={action.icon} className="!text-[18px]"/>}
-                                        {action.title}
-                                    </a>
-                                ) : (
-                                    <Link href={action.link} prefetch>
-                                        {action.icon && <MaterialIcon name={action.icon} className="!text-[18px]"/>}
-                                        {action.title}
-                                    </Link>
-                                )}
-                            </Button>
-                        )) || null}
-                    </div>
-                    <div className="block lg:hidden ml-6">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="cursor-pointer">
-                                    <BetweenHorizontalStart/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-fit" side="right" align="start">
-                                <DropdownMenuGroup className="grid gap-2">
-                                    {page.props.header.actions.map((action) => (
-                                        <Button asChild variant="outline" key={action.id}>
+                    {page.props.header.actions.length > 0 && (
+                        <>
+                            <div className="gap-2 ml-6 hidden lg:flex">
+                                {page.props.header.actions.map((action) => (
+                                    <Button asChild variant="outline" key={action.id}>
+                                        {action.type === 'blank' ? (
                                             <a href={action.link} target='_blank'>
-                                                <MaterialIcon name={action.icon} className="!text-[18px]"/>
+                                                {action.icon &&
+                                                    <MaterialIcon name={action.icon} className="!text-[18px]"/>}
                                                 {action.title}
                                             </a>
+                                        ) : (
+                                            <Link href={action.link}>
+                                                {action.icon &&
+                                                    <MaterialIcon name={action.icon} className="!text-[18px]"/>}
+                                                {action.title}
+                                            </Link>
+                                        )}
+                                    </Button>
+                                )) || null}
+                            </div>
+                            <div className="block lg:hidden ml-6">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="cursor-pointer">
+                                            <BetweenHorizontalStart/>
                                         </Button>
-                                    )) || null}
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-fit" side="right" align="start">
+                                        <DropdownMenuGroup className="grid gap-2">
+                                            {page.props.header.actions.map((action) => (
+                                                <Button asChild variant="outline" key={action.id}>
+                                                    <a href={action.link} target='_blank'>
+                                                        <MaterialIcon name={action.icon} className="!text-[18px]"/>
+                                                        {action.title}
+                                                    </a>
+                                                </Button>
+                                            )) || null}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <DataTable
                     columns={columns}
@@ -391,7 +397,7 @@ const ListTable = () => {
                     </div>
                     <div>
                         {data.data.length > 0 && <PaginationRender pagination={pagination} pageChange={handlePageChange}
-                                          currentPage={currentPage}/> }
+                                                                   currentPage={currentPage}/>}
                     </div>
                 </div>
             </div>

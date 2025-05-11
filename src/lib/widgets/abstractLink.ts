@@ -6,6 +6,7 @@ export interface Links {
 	description: string
 	icon?: MaterialIcon
 	link: string
+    linkType: 'self' | 'blank'
 	backgroundCSS: string | null
 }
 

@@ -2,15 +2,17 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 export default async function editGroup(req: ReqType, res: ResType) {
 
     let entity = ControllerHelper.findEntityObject(req);
 
     if (req.adminizer.config.auth.enable) {
-        if (!req.session.UserAP) {
+        if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.session.UserAP)) {
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.user)) {
             return res.sendStatus(403);
         }
     }
@@ -20,7 +22,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
         return res.status(404).send({error: 'Not Found'});
     }
 
-    let users: ModelsAP["UserAP"][]
+    let users: UserAP[]
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         users = await req.adminizer.modelHandler.model.get("UserAP")["_find"](({isAdministrator: false}));
@@ -28,7 +30,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
         Adminizer.log.error(e)
     }
 
-    let group: ModelsAP["GroupAP"]
+    let group: GroupAP
     try {
         // TODO refactor CRUD functions for DataAccessor usage
         group = await req.adminizer.modelHandler.model.get("GroupAP")["_findOne"]({id: req.params.id});
@@ -49,8 +51,6 @@ export default async function editGroup(req: ReqType, res: ResType) {
 
     let reloadNeeded = false;
     if (req.method.toUpperCase() === 'POST') {
-        // console.log(req.body);
-
         let allTokens = req.adminizer.accessRightsHelper.getTokens();
 
         let usersInThisGroup = [];
@@ -73,7 +73,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
             }
         }
 
-        let updatedGroup: ModelsAP["GroupAP"]
+        let updatedGroup: GroupAP
         try {
             // TODO refactor CRUD functions for DataAccessor usage
             updatedGroup = await req.adminizer.modelHandler.model.get("GroupAP")["_updateOne"]({id: group.id}, {
@@ -111,7 +111,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
         }
     }
 
-    // console.log("GROUP", group)
+    
 
     const props = inertiaGroupHelper(entity, req, users, groupedTokens, group)
     return req.Inertia.render({

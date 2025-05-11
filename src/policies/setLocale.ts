@@ -7,8 +7,8 @@ export default async function setLocale(req: ReqType, res: ResType, proceed: ()=
     return proceed();
   }
 
-  if (req.session.UserAP && req.session.UserAP.locale) {
-    req.i18n.setLocale(req.session.UserAP.locale);
+  if (req.user && req.user.locale) {
+    req.i18n.setLocale(req.user.locale);
   } else {
     req.i18n.setLocale(req.adminizer.config.translation.defaultLocale);
   }

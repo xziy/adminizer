@@ -1,4 +1,5 @@
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
+import Example from "./models/Example";
 
 const routePrefix = "/adminizer";
 
@@ -6,6 +7,7 @@ const models: AdminpanelConfig["models"] = {
     test: {
         title: 'Test model',
         model: 'test',
+        // userAccessRelation: 'owner',
         fields: {
             createdAt: false,
             updatedAt: false,
@@ -13,12 +15,24 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Title',
                 type: 'string',
                 required: true
-            },
-            owner: false
+            }
         },
         list: {
             fields: {
-                owner: false
+                owner: false,
+                example: {
+                    // displayModifier(d) {
+                    //     console.log("________________________________")
+                    //     console.dir(d)
+                    //     return d
+                    // }
+                }
+            }
+        },
+        add: {
+            fields: {
+                ownerId: false,
+                exampleId: false
             }
         },
         icon: 'receipt'
@@ -362,17 +376,19 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    // auth: true,
-    // registration: {
-    //     enable: true,
-    //     defaultUserGroup: "test",
-    //     confirmationRequired: false
+    // auth: {
+    //     enable: true
     // },
-    auth: {
+    registration: {
         enable: true,
-        description: "Login `demo`, password `demo`"
+        defaultUserGroup: "guest",
+        confirmationRequired: false
     },
-    dashboard: false,
+    // auth: {
+    //     enable: true,
+    //     description: "Login `demo`, password `demo`"
+    // },
+    dashboard: true,
     forms: {
         data: {
             global: {
@@ -502,7 +518,7 @@ const config: AdminpanelConfig = {
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
         path: 'config/locales', // relative path to translations directory
-        defaultLocale: 'en'
+        defaultLocale: 'ru'
     },
     models: models,
     //@ts-ignore

@@ -1,5 +1,7 @@
+import { UserAP } from "models/UserAP";
 import { AccessRightsToken } from "../interfaces/types";
 import { Adminizer } from "../lib/Adminizer";
+import { GroupAP } from "models/GroupAP";
 
 export class AccessRightsHelper {
 
@@ -43,7 +45,7 @@ export class AccessRightsHelper {
 			.filter((item, pos, self) => self.indexOf(item) === pos);
 	}
 
-	public enoughPermissions(tokens: string[], user: ModelsAP["UserAP"]): boolean {
+	public enoughPermissions(tokens: string[], user: UserAP): boolean {
 		if (user.isAdministrator) {
 			return true;
 		}
@@ -55,7 +57,7 @@ export class AccessRightsHelper {
 		return tokens.some((token) => this.hasPermission(token, user));
 	}
 
-	public hasPermission(tokenId: string, user: ModelsAP["UserAP"]): boolean {
+	public hasPermission(tokenId: string, user: UserAP): boolean {
 		if (!this.adminizer.config.auth.enable) {
 			return true;
 		}
@@ -71,6 +73,6 @@ export class AccessRightsHelper {
 			return false;
 		}
 
-		return user.groups.some((group: ModelsAP["GroupAP"]) => group.tokens.includes(tokenId));
+		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
 	}
 }

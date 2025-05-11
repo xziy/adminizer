@@ -1,5 +1,7 @@
 import {generate} from "password-hash";
 import{ inertiaRegisterHelper} from "../helpers/inertiaAutHelper";
+import { UserAP } from "models/UserAP";
+import { GroupAP } from "models/GroupAP";
 
 export default async function register(req: ReqType, res: ResType) {
     if (!req.adminizer.config.auth.enable || req.adminizer.config.registration?.enable !== true) {
@@ -7,7 +9,7 @@ export default async function register(req: ReqType, res: ResType) {
     }
 
     if (req.method.toUpperCase() === "POST") {
-        // console.log("req.body", req.body);
+        
 
         for (const key of ["login", "fullName", "password"]) {
             if (!req.body[key]) {
@@ -23,7 +25,7 @@ export default async function register(req: ReqType, res: ResType) {
             }
         }
 
-        let user: ModelsAP["UserAP"];
+        let user: UserAP;
         try {
             // TODO refactor CRUD functions for DataAccessor usage
             user = await req.adminizer.modelHandler.model.get("UserAP")["_findOne"]({login: req.body.login});
@@ -43,20 +45,19 @@ export default async function register(req: ReqType, res: ResType) {
             })
         } else {
             try {
-                let passwordHashed = generate(req.body.login + req.body.password);
+                let passwordHashed = generate(req.body.login + req.body.password + process.env.AP_PASSWORD_SALT);
                 let password = 'masked';
                 // TODO refactor CRUD functions for DataAccessor usage
-                let userap: ModelsAP["UserAP"] = await req.adminizer.modelHandler.model.get("UserAP")["_create"]({
+                let userap: UserAP = await req.adminizer.modelHandler.model.get("UserAP")["_create"]({
                     login: req.body.login,
-                    password: password,
                     passwordHashed: passwordHashed,
                     fullName: req.body.fullName,
                     email: req.body.email,
                     locale: req.body.locale
                 });
                 // TODO refactor CRUD functions for DataAccessor usage
-                let defaultUserGroup: ModelsAP["GroupAP"] = await req.adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: req.adminizer.config.registration.defaultUserGroup});
-                // console.log(userap)
+                let defaultUserGroup: GroupAP = await req.adminizer.modelHandler.model.get("GroupAP")["_findOne"]({name: req.adminizer.config.registration.defaultUserGroup});
+                
                 // TODO refactor CRUD functions for DataAccessor usage
                 await req.adminizer.modelHandler.model.get("UserAP")["_updateOne"]({id: userap.id}, {
                     groups: [defaultUserGroup.id]

@@ -1,6 +1,8 @@
 import {Adminizer} from "../lib/Adminizer";
 import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
+import { parse } from "cookie";
+import { verifyUser } from "../lib/v4/helper/jwt";
 
 export default function bindReqFunctions(adminizer: Adminizer) {
 
@@ -38,7 +40,22 @@ export default function bindReqFunctions(adminizer: Adminizer) {
             req.i18n.registerMethods(res.locals, req)
         }
 
-
+        // TODO: I made it quickly, you need to spread for architecture to different files, or re -ize this file to a girlfriend
+        // NOTE: This is here because inertia should receive data to routes
+        // JWT token
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.adminizer_jwt;
+      
+        if (token) {
+          const user = verifyUser(token, req.adminizer.jwtSecret);
+          if (user) {
+            req.user = user;
+          }
+        }
+        
+        if(req.session.userPretended) {
+            req.user = req.session.userPretended;
+        }
 
         next();
     };
