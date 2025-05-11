@@ -7,7 +7,7 @@ const models: AdminpanelConfig["models"] = {
     test: {
         title: 'Test model',
         model: 'test',
-        // userAccessRelation: 'owner',
+        userAccessRelation: 'owner',
         fields: {
             createdAt: false,
             updatedAt: false,
@@ -18,22 +18,15 @@ const models: AdminpanelConfig["models"] = {
             }
         },
         list: {
-            fields: {
-                owner: false,
-                example: {
-                    // displayModifier(d) {
-                    //     console.log("________________________________")
-                    //     console.dir(d)
-                    //     return d
-                    // }
-                } 
-            }
+            // fields: {
+            //     owner: false,
+            // }
         },
         add: {
-            fields: {
-                ownerId: false,
-                exampleId: false
-            }
+            // fields: {
+            //     ownerId: false,
+            //     exampleId: false
+            // }
         },
         icon: 'receipt'
     },

@@ -89,7 +89,7 @@ declare global {
     }
     type FlashMessages = 'info' | 'error' | 'success' | string;
 
-	type ReqType = Request & {
+ 	type ReqType = Request & {
 		user: UserAP;
         Inertia: Inertia;
         flash: Flash<FlashMessages>;
@@ -107,6 +107,9 @@ declare global {
 	}
 
 	type ResType = Response & {
+		/**
+		 * @deprecated // TODO delete after finish catalog
+		 */
 		viewAdmin(specifiedPath: string, locals?: any, cb_view?: Function): void
 	}
 

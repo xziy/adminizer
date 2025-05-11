@@ -4,7 +4,7 @@
 	"version": "4.1.0",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "vitest --reporter verbose",
 		"start": "tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev": "cross-env VITE_ENV=dev tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
@@ -123,6 +123,7 @@
 		"vanilla-jsoneditor": "^3.1.1",
 		"vite": "^6.1.0",
 		"vite-plugin-externals": "^0.6.2",
-		"vite-plugin-full-reload": "^1.2.0"
+		"vite-plugin-full-reload": "^1.2.0",
+        "vitest": "^3.0.7"
 	}
 }

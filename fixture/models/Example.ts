@@ -29,6 +29,12 @@ const Example = Waterline.Collection.extend({
         tests: { collection: "test", via: "example" },
         datetime: { type: "string" },
         geojson: { type: "json" },
+        
+        // Many-to-many relation with UserAP
+		// @ts-ignore
+        owner: { 
+			model: 'userap'
+		},
     }
 });
 
