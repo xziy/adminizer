@@ -376,9 +376,9 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    // auth: {
-    //     enable: true
-    // },
+    auth: {
+        enable: true
+    },
     registration: {
         enable: true,
         defaultUserGroup: "guest",
