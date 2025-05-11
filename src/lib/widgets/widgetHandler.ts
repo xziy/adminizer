@@ -38,6 +38,14 @@ export interface WidgetLayoutItem {
     id: string;
 }
 
+export interface WidgetsLayouts {
+    lg: WidgetLayoutItem[],
+    md: WidgetLayoutItem[],
+    sm: WidgetLayoutItem[],
+    xs: WidgetLayoutItem[],
+    xxs: WidgetLayoutItem[]
+}
+
 export class WidgetHandler {
     private widgets: WidgetType[] = [];
     public adminizer: Adminizer;
@@ -158,10 +166,10 @@ export class WidgetHandler {
 
     public async getWidgetsDB(id: number, auth: boolean, i18n: I18n): Promise<{
         widgets: WidgetConfig[],
-        layout: WidgetLayoutItem[]
+        layout: WidgetsLayouts
     }> {
         let user: UserAP;
-        let result: { widgets: WidgetConfig[], layout: WidgetLayoutItem[] } = {widgets: [], layout: []};
+        let result: { widgets: WidgetConfig[], layout: WidgetsLayouts } = {widgets: [], layout: {lg: [], md: [], sm: [], xs: [], xxs: []}};
 
         if (!auth) {
             // TODO refactor CRUD functions for DataAccessor usage

@@ -21,6 +21,8 @@ import WidgetItem from "@/components/widgets/widget-item.tsx";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import {usePage} from "@inertiajs/react";
+import {WidgetsLayouts} from "@/lib/widgets-service.ts";
+
 
 interface WidgetLayoutProps extends SharedData {
     title: string
@@ -33,14 +35,34 @@ interface WidgetLayoutProps extends SharedData {
 
 const WidgetLayout = () => {
     const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), []);
-    const [layout, setLayout] = useState<WidgetLayoutItem[]>([]);
+    const [layout, setLayout] = useState<WidgetsLayouts>({
+        lg: [],
+        md: [],
+        sm: [],
+        xs: [],
+        xxs: [],
+    });
     const [widgets, setWidgets] = useState<Widget[]>([])
     const [popUpDisabled, setPopUpDisabled] = useState(false)
     const [keyRender, setKeyRender] = useState(0);
     const [loading, setIsLoading] = useState(true)
     const [isDraggable, setIsDraggable] = useState(false)
+    const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
 
     const page = usePage<WidgetLayoutProps>()
+
+    // Get the current breakpoint
+    const getCurrentBreakpoint = useCallback(() => {
+        if (!gridRef) return 'lg'; // fallback
+
+        const width = gridRef.clientWidth;
+
+        if (width >= 1200) return 'lg';
+        if (width >= 996) return 'md';
+        if (width >= 768) return 'sm';
+        if (width >= 480) return 'xs';
+        return 'xxs';
+    }, [gridRef]);
 
     useEffect(() => {
         async function loadWidgets() {
@@ -70,67 +92,69 @@ const WidgetLayout = () => {
     }, [layout, isDraggable])
 
     const handleLayoutChange = (currentLayout: WidgetLayoutItem[]) => {
+        const currentBreakpoint = getCurrentBreakpoint();
 
-        const mergeCoordinates = (layout: WidgetLayoutItem[], currentLayout: WidgetLayoutItem[]) => {
-            // Создаем копию первого массива, чтобы не изменять оригинал
-            const result = JSON.parse(JSON.stringify(layout));
+        setLayout(prev => {
+            const updatedLayout = {...prev};
+            const currentLayoutMap = new Map(currentLayout.map(item => [item.i, item]));
 
-            // Создаем карту для быстрого поиска элементов по полю 'i'
-            const secondMap = new Map();
-            currentLayout.forEach(item => secondMap.set(item.i, item));
+            updatedLayout[currentBreakpoint as keyof WidgetsLayouts] =
+                updatedLayout[currentBreakpoint as keyof WidgetsLayouts].map(item => {
+                    const currentItem = currentLayoutMap.get(item.i);
+                    return currentItem ? {...item, x: currentItem.x, y: currentItem.y, w: currentItem.w, h: currentItem.h} : item;
+                });
 
-            // Обновляем координаты в первом массиве
-            result.forEach((item: WidgetLayoutItem) => {
-                const secondItem = secondMap.get(item.i);
-                if (secondItem) {
-                    item.x = secondItem.x;
-                    item.y = secondItem.y;
-                }
-            });
-
-            return result;
-        }
-        setLayout(mergeCoordinates(layout, currentLayout))
+            return updatedLayout;
+        });
     };
 
     const addWidgets = useCallback((id: string) => {
         setPopUpDisabled(true);
         const updatedWidgets = widgets.map(widget =>
-            widget.id === id
-                ? {...widget, added: !widget.added}
-                : widget
+            widget.id === id ? {...widget, added: !widget.added} : widget
         );
 
-        const layoutItem = layout.find(e => e.id === id);
-        let newLayout: WidgetLayoutItem[];
+        const currentLayout = layout.lg;
+        const layoutItem = currentLayout.find(e => e.i === id);
+        let newLayout: WidgetsLayouts = {...layout};
 
         if (layoutItem) {
-            newLayout = layout.filter(e => e.id !== id);
+            // Delete the layoutItem from all breakpoints
+            for (const breakpoint in newLayout) {
+                newLayout[breakpoint as keyof WidgetsLayouts] =
+                    newLayout[breakpoint as keyof WidgetsLayouts].filter(e => e.i !== id);
+            }
         } else {
             const widget = widgets.find(e => e.id === id);
             const w = widget?.size ? widget.size.w : 1;
             const h = widget?.size ? widget.size.h : 1;
 
-            let x = layout.length === 0
-                ? 0
-                : ((layout[layout.length - 1].x + layout[layout.length - 1].w) > 8 ||
-                (layout[layout.length - 1].x + layout[layout.length - 1].w + w) > 8
+            let x = currentLayout.length === 0 ? 0 :
+                ((currentLayout[currentLayout.length - 1].x + currentLayout[currentLayout.length - 1].w) > 8 ||
+                (currentLayout[currentLayout.length - 1].x + currentLayout[currentLayout.length - 1].w + w) > 8
                     ? 0
-                    : (layout[layout.length - 1].x + layout[layout.length - 1].w));
+                    : (currentLayout[currentLayout.length - 1].x + currentLayout[currentLayout.length - 1].w));
 
             const y = 0;
 
-            newLayout = [
-                ...layout,
-                {
-                    x: x,
-                    y: y,
-                    w: w,
-                    h: h,
-                    i: String(layout.length + 1),
-                    id: widget?.id as string,
+            const newItem = {
+                x,
+                y,
+                w,
+                h,
+                i: id,
+                id: widget?.id as string,
+            };
+
+            // Add the newItem to all breakpoints
+            for (const breakpoint in newLayout) {
+                if (!newLayout[breakpoint as keyof WidgetsLayouts].some(item => item.i === id)) {
+                    newLayout[breakpoint as keyof WidgetsLayouts] = [
+                        ...newLayout[breakpoint as keyof WidgetsLayouts],
+                        {...newItem}
+                    ];
                 }
-            ];
+            }
         }
 
         setWidgets(updatedWidgets);
@@ -140,12 +164,11 @@ const WidgetLayout = () => {
         addWidgetsDB(updatedWidgets, newLayout).then(() => {
             setTimeout(() => {
                 setPopUpDisabled(false);
-            }, 300)
-        })
-
+            }, 300);
+        });
     }, [layout, widgets]);
 
-    const addWidgetsDB = useCallback(async (updatedWidgets: Widget[], newLayout: WidgetLayoutItem[]) => {
+    const addWidgetsDB = useCallback(async (updatedWidgets: Widget[], newLayout: WidgetsLayouts) => {
         try {
             const storeWidgets = updatedWidgets.filter(widget => widget.added === true)
             await axios.post(`${window.routePrefix}/widgets-get-all-db`, {
@@ -161,6 +184,7 @@ const WidgetLayout = () => {
             console.log(e);
         }
     }, [widgets])
+
     return (
         <div
             className={`flex h-full flex-1 flex-col gap-4 rounded-xl p-4 `}>
@@ -212,7 +236,9 @@ const WidgetLayout = () => {
                                             </DialogStackTitle>
                                             <div className="overflow-auto h-[calc(100%-64px)] pr-4 pt-4">
                                                 <AddWidgets initWidgets={widgets} onAddWidgets={addWidgets}
-                                                            disabled={popUpDisabled} searchPlaceholder={page.props.searchPlaceholder} actionsTitles={page.props.actionsTitles}/>
+                                                            disabled={popUpDisabled}
+                                                            searchPlaceholder={page.props.searchPlaceholder}
+                                                            actionsTitles={page.props.actionsTitles}/>
                                             </div>
                                         </div>
                                     </DialogStackContent>
@@ -220,20 +246,22 @@ const WidgetLayout = () => {
                             </DialogStack>
                         </div>
                     </div>
-                    <div>
-                        {layout.length > 0 ? (
+                    <div ref={setGridRef}>
+                        {layout.lg.length > 0 ? (
                             <ResponsiveGridLayout
-                                layouts={{lg: layout}}
-                                breakpoints={{lg: 1024, md: 768, sm: 475, xs: 320, xxs: 0}}
-                                cols={{lg: 8, md: 6, sm: 4, xs: 2, xxs: 2}}
+                                //@ts-ignore
+                                layouts={layout}
+                                breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
+                                cols={{lg: 8, md: 6, sm: 4, xs: 2, xxs: 1}}
                                 rowHeight={131}
-                                onLayoutChange={handleLayoutChange}
+                                //@ts-ignore
+                                onDragStop={handleLayoutChange}
                                 isResizable={false}
                                 isDraggable={isDraggable}
                                 key={keyRender}
-                                className="overflow-hidden"
+                                className="overflow-hidden max-w-[1440px]"
                             >
-                                {layout.map((widget) => (
+                                {layout.lg.map((widget) => (
                                     <div key={widget.i}>
                                         <WidgetItem draggable={isDraggable} widgets={widgets} ID={widget.id}/>
                                     </div>
