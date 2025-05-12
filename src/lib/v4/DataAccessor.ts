@@ -94,11 +94,11 @@ export class DataAccessor {
             let populatedModelFieldsConfig = {};
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
+                console.log(modelField)
                 if (modelName) {
-                    const Model = this.adminizer.modelHandler.model.get(modelName);
-                    if (Model) {
+                    const model = this.adminizer.modelHandler.model.get(modelName);
+                    if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-                        
                     } else {
                         Adminizer.log.error(`Model not found: ${modelName}`);
                     }

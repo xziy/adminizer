@@ -164,6 +164,7 @@ export class Adminizer {
 
         this.accessRightsHelper = new AccessRightsHelper(this);
 
+        // Helpers go to construtor
         this.configHelper = new ConfigHelper(this);
 
         this.menuHelper = new MenuHelper(this.config)
@@ -178,9 +179,11 @@ export class Adminizer {
 
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
-
-        if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
-            bindDev(this)
+        
+        if(!process.env.VITEST) {
+            if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
+                bindDev(this)
+            }
         }
 
         await bindDashboardWidgets(this);

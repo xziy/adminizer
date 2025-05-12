@@ -19,7 +19,7 @@ export class AccessRightsHelper {
 
 		for (let token of this._tokens) {
 			if (token.id === accessRightsToken.id) {
-				throw new Error("Adminpanel > Can not register token: Token with this id already registered");
+				throw new Error(`Adminpanel > Can not register token: Token with this id ["${token.id}"] already registered`);
 			}
 		}
 		this._tokens.push(accessRightsToken);
