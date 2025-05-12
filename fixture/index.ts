@@ -20,16 +20,18 @@ import path from 'path';
 import { Example as ExampleSequelize } from "./models/sequelize/Example";
 import { JsonSchema as JsonSchemaSequelize  } from "./models/sequelize/JsonSchema";
 import { Test as TestSequelize } from "./models/sequelize/Test";
+import {Page as PageSequelize} from "./models/sequelize/Page";
+import {Category as CategorySequelize} from "./models/sequelize/Category";
 import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
 import { seedDatabase } from "./helpers/seedDatabase";
 
 
 //Widgets imports
-import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
-import {SiteLinks} from "./test-widgets/Links";
-import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
-import {CustomOne} from "./test-widgets/Custom";
-import {ActionOne, ActionTwo} from "./test-widgets/Actions";
+import {SwitcherOne, SwitcherTwo} from "./widgets/Switchers";
+import {SiteLinks} from "./widgets/Links";
+import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
+import {CustomOne} from "./widgets/Custom";
+import {ActionOne, ActionTwo} from "./widgets/Actions";
 
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
@@ -51,7 +53,7 @@ if(process.env.ORM === 'sequelize'
     });
     await orm.authenticate();
     await SequelizeAdapter.registerSystemModels(orm)
-    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize])
+    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, PageSequelize, CategorySequelize])
     TestSequelize.associate(orm)
     console.log('Test associations:', Object.keys(TestSequelize.associations));
 

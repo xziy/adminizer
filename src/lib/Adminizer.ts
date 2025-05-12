@@ -11,7 +11,7 @@ import Router from "./../system/Router";
 import bindAssets from "../system/bindAssets";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
-// import bindNavigation from "../system/bindNavigation";
+import bindNavigation from "../system/bindNavigation";
 // import bindMediaManager from "../system/bindMediaManager";
 import bindAccessRights from "../system/bindAccessRights";
 import bindAuthorization from "../system/bindAuthorization";
@@ -47,7 +47,7 @@ export class Adminizer {
     widgetHandler: WidgetHandler
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
-    
+
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
     static logger = winston.createLogger({
@@ -150,7 +150,7 @@ export class Adminizer {
             }
         };
 
-        
+
 
         this.modelHandler = new ModelHandler();
 
@@ -185,7 +185,7 @@ export class Adminizer {
 
         await bindDashboardWidgets(this);
 
-        // bindNavigation(this);
+        bindNavigation(this);
 
         // bindMediaManager(this);
 

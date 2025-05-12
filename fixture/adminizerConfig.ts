@@ -389,6 +389,36 @@ const config: AdminpanelConfig = {
     //     description: "Login `demo`, password `demo`"
     // },
     dashboard: true,
+    navigation: {
+        // model: "Navigation",
+        items: [
+            {
+                title: 'Page',
+                model: "page",
+                urlPath: '/page/${data.record.slug}'
+            },
+            {
+                title: 'Category',
+                model: "category",
+                urlPath: '/longlinkkkkk/category/${data.record.slug}'
+            }
+        ],
+        // Links in the admin panel leading to different navigation data (for example: header, footer) should end the same way as you specify in the array
+        // /admin/catalog/navigation/footer
+        // /admin/catalog/navigation/header
+        sections: ['header', 'footer'],
+        groupField: [
+            {
+                name: 'link',
+                required: false
+            },
+            {
+                name: "Test Field",
+                required: false
+            }
+        ],
+        movingGroupsRootOnly: true
+    },
     forms: {
         data: {
             global: {
@@ -429,6 +459,20 @@ const config: AdminpanelConfig = {
                 title: 'Test Module',
                 icon: '360',
                 accessRightsToken: 'read-global-form'
+            },
+            {
+                id: '3',
+                type: "self",
+                link: `${routePrefix}/catalog/navigation/header`,
+                title: 'Nav Header',
+                icon: 'menu'
+            },
+            {
+                id: '4',
+                type: "self",
+                link: `${routePrefix}/catalog/navigation/footer`,
+                title: 'Nav Footer',
+                icon: 'menu'
             }
         ]
     },

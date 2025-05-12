@@ -92,18 +92,18 @@ export abstract class BaseItem<T extends Item> {
 	public abstract update(itemId: string | number, data: T, catalogId: string): Promise<T>;
 
 	/**
-	 *
-	 * @param itemId
-	 * @param data
-	 * @param catalogId
-	 */
+     *
+     * @param modelId
+     * @param data
+     * @param catalogId
+     */
 	public abstract updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<T>;
 
 	/**
-	 * For custom HTML
-	 * @param itemId
-	 * @param data
-	 */
+     * For custom HTML
+     * @param data
+     * @param catalogId
+     */
 	public abstract create(data: T, catalogId: string): Promise<T>;
 
 	/**
@@ -400,7 +400,7 @@ export abstract class AbstractCatalog {
 		} else {
 			action = this.actionHandlers.find((it) => it.id === actionId);
 		}
-		
+
 		if (!action) throw `Action with id \`${actionId}\` not found`
 		return await action.handler(items, config);
 	}
