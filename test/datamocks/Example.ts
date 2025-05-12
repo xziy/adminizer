@@ -8,6 +8,7 @@ const Example = Waterline.Collection.extend({
   attributes: {
     id: {
       type: "number",
+      //@ts-ignore
       autoMigrations: { autoIncrement: true }
     },
 
@@ -22,7 +23,7 @@ const Example = Waterline.Collection.extend({
 
     // Обратная связь (1:* с Test)
     tests: {
-      collection: "test",
+      collection: "Test",
       via: "example"
     }
   }

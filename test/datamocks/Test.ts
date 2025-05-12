@@ -1,7 +1,7 @@
 import Waterline from "waterline";
 
 const Test = Waterline.Collection.extend({
-  identity: "test",
+  identity: "Test",
   datastore: "default",
   primaryKey: "id",
 
@@ -36,7 +36,7 @@ const Test = Waterline.Collection.extend({
 
     // Самореференсная ассоциация
     selfAssociation: {
-      model: "test",
+      model: "Test",
     },
 
     // Односторонняя связь на Example

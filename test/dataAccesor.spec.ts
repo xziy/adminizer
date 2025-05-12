@@ -34,11 +34,10 @@ describe('DataAccessor test', () => {
     
     // @ts-ignore
     await WaterlineAdapter.registerSystemModels(orm);
-    await sleep(1000);
+    await sleep(1000)
     orm.registerModel(Test);
     orm.registerModel(Example);
-    await sleep(1000);
-  
+    console.log(">>>>>>>>>>>>>>>>>.")
     const waterlineConfig: Config = {
       adapters: {
         disk: sailsDisk,
@@ -46,11 +45,13 @@ describe('DataAccessor test', () => {
       datastores: {
         default: {
           adapter: "disk",
+          // @ts-ignore
+          inMemoryOnly: true,
         }
       }
     };
   
-    const ontology = await new Promise<WaterlineOntology>((resolve, reject) => {
+    const ontology = await new Promise<any>((resolve, reject) => {
       orm.initialize(waterlineConfig, (err, ontology) => {
         if (err) return reject(err);
         resolve(ontology);
@@ -58,7 +59,7 @@ describe('DataAccessor test', () => {
     });
   
     console.log("Waterline ORM initialized!");
-  
+
     const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
     adminizer = new Adminizer([waterlineAdapter]);
   

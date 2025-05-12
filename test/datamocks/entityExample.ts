@@ -1,8 +1,8 @@
 import { Entity } from "../../src/interfaces/types";
 
 export default {
-  "name": "test",
-  "uri": "/admin/model/test",
+  "name": "Test",
+  "uri": "/admin/model/Test",
   "type": "model",
   "config": {
     "list": {
@@ -60,10 +60,10 @@ export default {
       "number": { "type": "number" },
       "color": {"type": "string"},
       "guardedField": { "type": "string" },
-      "selfAssociation": { "model": "test" },
+      "selfAssociation": { "model": "Test" },
       "userField": { "model": "UserAP" }
     },
     "primaryKey": "id",
-    "identity": "test"
+    "identity": "Test"
   }
 } as unknown as Entity
