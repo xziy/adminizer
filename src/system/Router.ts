@@ -91,8 +91,8 @@ export default class Router {
 		/**
 		 * Catalog
 		 */
-		adminizer.app.all(`/catalog/:slug/:id`, adminizer.policyManager.bindPolicies(policies, catalogController));
-		adminizer.app.all(`/catalog/:slug`, adminizer.policyManager.bindPolicies(policies, catalogController));
+		adminizer.app.all(`${adminizer.config.routePrefix}/catalog/:slug/:id`, adminizer.policyManager.bindPolicies(policies, catalogController));
+		adminizer.app.all(`${adminizer.config.routePrefix}/catalog/:slug`, adminizer.policyManager.bindPolicies(policies, catalogController));
 
 		/**
 		 * Media Manager

@@ -20,7 +20,6 @@ export async function catalogController(req: ReqType, res: ResType) {
 	}
 
 	const _catalog = CatalogHandler.getCatalog(slug)
-
 	if (_catalog === undefined) return res.sendStatus(404);
 
 	const idList = await _catalog.getIdList();
@@ -34,7 +33,10 @@ export async function catalogController(req: ReqType, res: ResType) {
 
 	const method = req.method.toUpperCase();
 	if (method === 'GET') {
-		return res.viewAdmin('catalog', {entity: "entity", slug: slug, id: id});
+        return  req.Inertia.render({
+            component: 'catalog',
+            props: null
+        })
 	}
 
 	if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
