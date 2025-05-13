@@ -2,6 +2,5 @@ dist/*
 node_modules
 .idea
 TODO.md
-examples
 .tmp
 logs

@@ -371,7 +371,25 @@ const models: AdminpanelConfig["models"] = {
         },
         icon: 'pets'
     },
-};
+    category: {
+        title: 'Category',
+        model: 'category',
+        icon: 'category',
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+        }
+    },
+    page: {
+        title: 'Page',
+        model: 'page',
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+        },
+        icon: 'article'
+    }
+}
 
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
@@ -562,7 +580,7 @@ const config: AdminpanelConfig = {
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
         path: 'config/locales', // relative path to translations directory
-        defaultLocale: 'ru'
+        defaultLocale: 'en'
     },
     models: models,
     //@ts-ignore

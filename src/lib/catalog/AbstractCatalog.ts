@@ -41,6 +41,8 @@ export abstract class BaseItem<T extends Item> {
 	 * */
 	// public readonly dataType: T
 
+    public abstract adminizer: Adminizer
+
 	/**
 	 * Catalog name
 	 */
@@ -148,65 +150,65 @@ export abstract class AbstractItem<T extends Item> extends BaseItem<T> {
 
 /// ContextHandler
 export abstract class ActionHandler {
-	/**
-	 * Three actions are possible, without configuration, configuration via pop-up, and just external action
-	 * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
-	 * */
-	public abstract readonly type: "basic" |
-		"json-forms" |
-		"external" |
-		"link" |
-		"partial"
+    /**
+     * Three actions are possible, without configuration, configuration via pop-up, and just external action
+     * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
+     * */
+    public abstract readonly type: "basic" |
+        "json-forms" |
+        "external" |
+        "link" |
+        "partial"
 
-	/**
-	 * Will be shown in the context menu section
-	 */
-	public abstract readonly displayContext: boolean
-	/**
-	 * Will be shown in the toolbox section
-	 */
-	public abstract readonly displayTool: boolean
+    /**
+     * Will be shown in the context menu section
+     */
+    public abstract readonly displayContext: boolean
+    /**
+     * Will be shown in the toolbox section
+     */
+    public abstract readonly displayTool: boolean
 
-	/** (!*1)
-	 * Only for json-forms
-	 * ref: https://jsonforms.io/docs
-	 */
-	public abstract readonly uiSchema: any
-	public abstract readonly jsonSchema: JSONSchema4
+    /** (!*1)
+     * Only for json-forms
+     * ref: https://jsonforms.io/docs
+     */
+    public abstract readonly uiSchema: any
+    public abstract readonly jsonSchema: JSONSchema4
 
-	/**
-	 * For "json-forms" | "external"
-	 */
-	public abstract getPopUpHTML(data?: any): Promise<string>
-
-
-	/**
-	 * Only for link type
-	 */
-	public abstract getLink(data?: any): Promise<string>
+    /**
+     * For "json-forms" | "external"
+     */
+    public abstract getPopUpHTML(data?: any): Promise<string>
 
 
-	/**
-	 * For which elements the action can be used
-	 */
-	public readonly selectedItemTypes: string[]
+    /**
+     * Only for link type
+     */
+    public abstract getLink(data?: any): Promise<string>
 
-	/**
-	 * icon (url or id)
-	 */
-	public abstract readonly id: string;
 
-	public abstract readonly icon: string;
+    /**
+     * For which elements the action can be used
+     */
+    public readonly selectedItemTypes: string[]
 
-	public abstract readonly name: string
+    /**
+     * icon (url or id)
+     */
+    public abstract readonly id: string;
 
-	/**
-	 * Implementation of a method that will do something with elements.
-	 * there's really not much you can do with the context menu
-	 * @param items
-	 * @param config
-	 */
-	public abstract handler(items: Item[], data?: any): Promise<void>;
+    public abstract readonly icon: string;
+
+    public abstract readonly name: string
+
+    /**
+     * Implementation of a method that will do something with elements.
+     * there's really not much you can do with the context menu
+     * @param items
+     * @param config
+     */
+    public abstract handler(items: Item[], data?: any): Promise<void>;
 
 }
 
@@ -448,7 +450,7 @@ export abstract class AbstractCatalog {
 	 * Method for getting group elements
 	 */
 	public getitemTypes() {
-		return this.itemTypes
+        return this.itemTypes.map(({adminizer, ...rest}) => rest);
 	};
 
 

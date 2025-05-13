@@ -24,8 +24,8 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
 
     for (const key of Object.keys(formData)) {
         let field = formData[key];
-        
-        if (field.visible === false) continue
+
+        if (!!field.visible === false) continue
 
         const type = (field.type || field.type).toLowerCase()
         const isIn = field.isIn as string[] ?? []

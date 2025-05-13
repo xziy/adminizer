@@ -81,7 +81,7 @@ export class VueCatalog {
 		}
 
 		let messages = obj
-		req.i18n.setLocale(req.user.locale);
+
 		let outMessages:obj = {}
 		for (const mess of Object.keys(messages)) {
 			outMessages[mess] = req.i18n.__(mess)
@@ -170,7 +170,7 @@ export class VueCatalog {
 
 		// It’s unclear why he’s coming reqNodes
 		for (const reqNode of reqNodes) {
-			
+
 			const item = await this.catalog.find(reqNode.data);
 			if (!item) {
 				throw `reqNode Item not found`
