@@ -36,6 +36,21 @@ type DialogStackContextType = {
     closeDialog: (index: number) => void; // Новая функция
 };
 
+interface DialogStackProps extends HTMLAttributes<HTMLDivElement> {
+    open?: boolean;
+    clickable?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    children: ReactNode;
+}
+
+export type DialogStackHandle = {
+    open: () => void;
+    close: () => void;
+    next: () => void;
+    prev: () => void;
+    closeCurrent: () => void;
+};
+
 const DialogStackContext = createContext<DialogStackContextType>({
     activeIndex: 0,
     setActiveIndex: () => {
@@ -58,72 +73,99 @@ type DialogStackChildProps = {
     index?: number;
 };
 
-export const DialogStack = ({
-                                children,
-                                className,
-                                open = false,
-                                onOpenChange,
-                                clickable = false,
-                                ...props
-                            }: HTMLAttributes<HTMLDivElement> & {
-    open?: boolean;
-    clickable?: boolean;
-    onOpenChange?: (open: boolean) => void;
-}) => {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [isOpen, setIsOpen] = useState(open);
-    const [shouldAnimate, setShouldAnimate] = useState(false);
-    const [totalDialogs, setTotalDialogs] = useState(0);
+export const DialogStack = React.forwardRef<DialogStackHandle, DialogStackProps>(
+    ({
+         children,
+         className,
+         open = false,
+         onOpenChange,
+         clickable = false,
+         ...props
+     }, ref) => {
+        const [activeIndex, setActiveIndex] = useState(0);
+        const [isOpen, setIsOpen] = useState(open);
+        const [shouldAnimate, setShouldAnimate] = useState(false);
+        const [totalDialogs, setTotalDialogs] = useState(0);
 
-    const closeDialog = (index: number) => {
-        if (index === activeIndex) {
-            if (activeIndex > 0) {
-                // Если это не первый диалог - переходим к предыдущему
-                setActiveIndex(prev => prev - 1);
-            } else {
-                // Если это последний диалог - закрываем весь стек
-                setIsOpen(false);
+        const closeDialog = (index: number) => {
+            if (index === activeIndex) {
+                if (activeIndex > 0) {
+                    setActiveIndex(prev => prev - 1);
+                } else {
+                    setIsOpen(false);
+                }
             }
-        }
-    };
-
-    useEffect(() => {
-        const htmlElement = document.documentElement;
-        if (isOpen) {
-            htmlElement.style.overflow = 'hidden';
-            setShouldAnimate(true);
-        } else {
-            htmlElement.style.overflow = '';
-        }
-
-        onOpenChange?.(isOpen);
-
-        return () => {
-            htmlElement.style.overflow = '';
         };
-    }, [isOpen, onOpenChange]);
 
-    return (
-        <DialogStackContext.Provider
-            value={{
-                activeIndex,
-                setActiveIndex,
-                totalDialogs,
-                setTotalDialogs,
-                isOpen,
-                setIsOpen,
-                clickable,
-                shouldAnimate,
-                setShouldAnimate,
-                closeDialog, // Добавляем функцию в контекст
-            }}
-        >
-            <div className={className} {...props}>
-                {children}
-            </div>
-        </DialogStackContext.Provider>
-    );
-};
+        // Императивные методы
+        React.useImperativeHandle(ref, () => ({
+            open: () => {
+                setIsOpen(true);
+                // setActiveIndex(0);
+                // setShouldAnimate(true);
+            },
+            close: () => {
+                setIsOpen(false);
+            },
+            next: () => {
+                setActiveIndex(activeIndex + 1);
+            },
+            prev: () => {
+                if (activeIndex > 0) {
+                    setActiveIndex(activeIndex - 1);
+                }
+            },
+            goTo: (index: number) => {
+                if (index >= 0 && index < totalDialogs) {
+                    setActiveIndex(index);
+                }
+            },
+            closeCurrent: () => closeDialog(activeIndex),
+            isOpen,
+            activeIndex,
+            totalDialogs
+        }), [activeIndex, totalDialogs, isOpen]);
+
+        useEffect(() => {
+            const htmlElement = document.documentElement;
+            if (isOpen) {
+                htmlElement.style.overflow = 'hidden';
+                setShouldAnimate(true);
+            } else {
+                htmlElement.style.overflow = '';
+            }
+
+            onOpenChange?.(isOpen);
+
+            return () => {
+                htmlElement.style.overflow = '';
+            };
+        }, [isOpen, onOpenChange]);
+
+        return (
+            <DialogStackContext.Provider
+                value={{
+                    activeIndex,
+                    setActiveIndex,
+                    totalDialogs,
+                    setTotalDialogs,
+                    isOpen,
+                    setIsOpen,
+                    clickable,
+                    shouldAnimate,
+                    setShouldAnimate,
+                    closeDialog,
+                }}
+            >
+                <div className={className} {...props}>
+                    {children}
+                </div>
+            </DialogStackContext.Provider>
+        );
+    }
+);
+
+DialogStack.displayName = 'DialogStack';
 
 export const DialogStackTrigger = ({
                                        children,

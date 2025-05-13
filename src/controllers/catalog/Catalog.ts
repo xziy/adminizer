@@ -41,24 +41,24 @@ export async function catalogController(req: ReqType, res: ResType) {
 
 	if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
 		const data = req.body
-		const vueCatalog = new VueCatalog(_catalog);
+		const frontendCatalog = new VueCatalog(_catalog);
 
-		if (!vueCatalog) return res.status(404);
+		if (!frontendCatalog) return res.status(404);
 
-		vueCatalog.setId(id)
-		const item = vueCatalog.getItemType(data.type)
+		frontendCatalog.setId(id)
+		const item = frontendCatalog.getItemType(data.type)
 		switch (method) {
 			case 'POST':
 				switch (data._method) {
 					case 'getAddHTML':
-						return res.json(await vueCatalog.getAddHTML(item, req))
+						return res.json(await frontendCatalog.getAddHTML(item, req))
 					case 'getEditHTML':
-						return res.json(await vueCatalog.getEditHTML(item, data.id, req, data.modelId))
+						return res.json(await frontendCatalog.getEditHTML(item, data.id, req, data.modelId))
 					case 'getCatalog':
-						const __catalog = await vueCatalog.getCatalog();
+						const __catalog = await frontendCatalog.getCatalog();
 						return res.json({
-							'items': vueCatalog.getitemTypes(),
-							'catalog': {
+							items: frontendCatalog.getitemTypes(),
+							catalog: {
 								nodes: __catalog,
 								movingGroupsRootOnly: _catalog.movingGroupsRootOnly ?? false,
 								catalogName: _catalog.name,
@@ -66,36 +66,36 @@ export async function catalogController(req: ReqType, res: ResType) {
 								catalogSlug: _catalog.slug,
 								idList: idList
 							},
-							'toolsActions': await vueCatalog.getActions([], 'tools')
+							toolsActions: await frontendCatalog.getActions([], 'tools')
 						})
 					case 'createItem':
-						return res.json({'data': await vueCatalog.createItem(data.data)})
+						return res.json({'data': await frontendCatalog.createItem(data.data)})
 					case 'getChilds':
-						return res.json({data: await vueCatalog.getChilds(data.data)})
+						return res.json({data: await frontendCatalog.getChilds(data.data)})
 					case 'getActions':
-						return res.json({data: await vueCatalog.getActions(data.items, data.type)})
+						return res.json({data: await frontendCatalog.getActions(data.items, data.type)})
 					case 'search':
-						return res.json({data: await vueCatalog.search(data.s)})
+						return res.json({data: await frontendCatalog.search(data.s)})
 					case "getLocales":
-						return res.json({data: vueCatalog.getLocales(req)})
+						return res.json({data: frontendCatalog.getLocales(req)})
 				}
 				break;
 			case 'PUT':
 				switch (data._method) {
 					case 'updateTree':
-						return res.json({data: await vueCatalog.updateTree(data.data)})
+						return res.json({data: await frontendCatalog.updateTree(data.data)})
 					case 'getLink':
-						return res.json({data: await vueCatalog.getLink(data.actionId)})
+						return res.json({data: await frontendCatalog.getLink(data.actionId)})
 					case 'handleAction':
-						return res.json({data: await vueCatalog.handleAction(data.data.actionID, data.data.items, data.data.config)})
+						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config)})
 					case 'getPopUpHTML':
-						return res.json({data: await vueCatalog.getPopUpHTML(data.actionId)})
+						return res.json({data: await frontendCatalog.getPopUpHTML(data.actionId)})
 					case 'updateItem':
-						return res.json({data: await vueCatalog.updateItem(item, data.modelId, data.data)})
+						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data)})
 				}
 				break
 			case 'DELETE':
-				return res.json({data: await vueCatalog.deleteItem(data.data)})
+				return res.json({data: await frontendCatalog.deleteItem(data.data)})
 		}
 	}
 }

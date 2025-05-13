@@ -37,6 +37,7 @@ export interface SharedData {
     logoutBtn: string
     flash: Record<FlashMessages, string>;
     auth: Auth;
+
     [key: string]: unknown;
 }
 
@@ -46,6 +47,7 @@ export interface User {
     email: string;
     avatar?: string;
     isAdministrator: boolean;
+
     [key: string]: unknown;
 }
 
@@ -69,6 +71,7 @@ export interface Widget {
         h: number
     }
     added?: boolean
+
     [key: string]: any;
 }
 
@@ -97,4 +100,33 @@ export interface Field {
     required?: boolean;
     isIn?: string[];
     options?: any;
+}
+
+export interface Catalog {
+    catalogName: string,
+    catalogId: string,
+    catalogSlug: string,
+    movingGroupsRootOnly: boolean,
+    idList: string[]
+}
+
+export interface CatalogItem {
+    actionHandlers: []
+    allowedRoot: boolean
+    urlPath: string
+    type: string
+    navigationModel: string
+    name: string
+    model: string
+    isGroup: boolean
+    icon: string
+}
+
+export interface ItemAddProps {
+    selectTitle: string,
+    createTitle: string,
+    items: {
+        id: number,
+        name: string
+    }[]
 }

@@ -1,9 +1,10 @@
 import {AbstractCatalog, AbstractGroup, AbstractItem, ActionHandler, Item} from "./AbstractCatalog";
-import {ModelConfig, NavigationConfig} from "../../interfaces/adminpanelConfig";
+import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../interfaces/adminpanelConfig";
 import * as fs from "node:fs";
 
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../Adminizer";
+import inertiaAddHelper from "../../helpers/inertiaAddHelper";
 
 export interface NavItem extends Item {
 	urlPath?: any;
@@ -239,7 +240,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	protected navigationModel: string;
 	public readonly actionHandlers: ActionHandler[] = []
 	public readonly urlPath: any;
-	protected readonly adminizer: Adminizer
+	public readonly adminizer: Adminizer
 
 	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: any) {
 		super();
@@ -317,20 +318,24 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementById(itemId);
 	}
 
-	async getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
+	async getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: Record<string, any> }> {
 		let type: 'html' = 'html'
 		// TODO refactor CRUD functions for DataAccessor usage
-		let items = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
-
-		// This dirty hack is here because the field of view is disappearing
-		// req.i18n.setLocale(req.user.locale);
-		// const __ = (s: string) => {
-		// 	return req.i18n.__(s)
-		// }
-
+		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
+        let items = itemsDB.map((item: any) => {
+            return{
+                id: item.id,
+                name: item.name ?? item.title ?? item.id
+            }
+        })
 		return {
 			type: type,
-            data: ''
+            data: {
+                items: items,
+                model: this.model,
+                selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
+                createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`
+            }
 			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/itemHTMLAdd.ejs'), 'utf8'), {
 			// 	items: items,
 			// 	item: {name: this.name, type: this.type, model: this.model},
@@ -375,7 +380,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	readonly allowedRoot: boolean = true;
 	readonly name: string = "Group";
 	readonly groupField: object[]
-	protected readonly adminizer: Adminizer
+	public readonly adminizer: Adminizer
 
 	constructor(adminizer: Adminizer, groupField: object[]) {
 		super();
