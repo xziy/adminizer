@@ -178,23 +178,7 @@ export interface AdminpanelConfig {
          * */
         set?: SetFunction
     }
-    /**
-     * Wizards
-     * */
-    installStepper?: {
-        path: string
-        data: {
-            [key: string]: FieldsModels
-        }
-        /**
-         * Custom getter
-         * */
-        get?: GetFunction
-        /**
-         * Custom setter
-         * */
-        set?: SetFunction
-    }
+    
     /**
      * Prime administrator login credentials
      * */

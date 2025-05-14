@@ -21,6 +21,8 @@ export class DataAccessor {
     action: ActionType
     private fields: Fields = null;
 
+
+    // TODO: change req to adminizr + user
     constructor(req: ReqType, entity: Entity, action: ActionType) {
         this.adminizer = req.adminizer;
         this.user = req.user;

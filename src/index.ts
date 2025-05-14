@@ -1,6 +1,5 @@
 export * from "./helpers/configHelper";
 export * from "./helpers/accessRightsHelper";
-export * from "./lib/installStepper/installStepper";
 export * from "./lib/widgets/widgetHandler";
 export * from "./lib/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";

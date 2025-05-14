@@ -1,5 +1,3 @@
-// import _processInstallStep from "../controllers/processInstallStep";
-// import _processInstallFinalize from "../controllers/processInstallFinalize";
 import _dashboard from "../controllers/dashboard";
 import _welcome from "../controllers/welcome";
 import _list from "../controllers/list";
@@ -72,13 +70,6 @@ export default class Router {
 		 * Widgets Custom
 		 */
 		adminizer.app.all(`/widgets-action/:widgetId`, adminizer.policyManager.bindPolicies(policies, widgetCustomController));
-
-		// /**
-		//  * Module Install Stepper
-        //  * @deprecated
-		//  * */
-		// adminizer.app.all(`/install/:id`, adminizer.policyManager.bindPolicies(policies, _processInstallStep));
-		// adminizer.app.all(`/install/:id/finalize`, adminizer.policyManager.bindPolicies(policies, _processInstallFinalize));
 
 		/**
 		 * Edit form
