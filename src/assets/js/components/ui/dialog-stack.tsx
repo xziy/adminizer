@@ -106,6 +106,7 @@ export const DialogStack = React.forwardRef<DialogStackHandle, DialogStackProps>
             },
             close: () => {
                 setIsOpen(false);
+                setActiveIndex(0);
             },
             next: () => {
                 setActiveIndex(activeIndex + 1);
@@ -368,7 +369,7 @@ export const DialogStackContent = ({
             {...props}
         >
             {context.activeIndex === index && (
-                <Button asChild variant="ghost" className="absolute top-4 right-4 p-1 size-8 cursor-pointer"
+                <Button asChild variant="ghost" className="absolute z-[1005] top-4 right-4 p-1 size-8 cursor-pointer"
                         onClick={handleClose} aria-label="Close">
                     <XIcon/>
                 </Button>

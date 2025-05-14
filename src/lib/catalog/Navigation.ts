@@ -318,8 +318,8 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementById(itemId);
 	}
 
-	async getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: Record<string, any> }> {
-		let type: 'html' = 'html'
+	async getAddHTML(req: ReqType): Promise<{ type: 'component' | 'navigation' | 'model', data: Record<string, any> }> {
+		let type: 'navigation' = 'navigation'
 		// TODO refactor CRUD functions for DataAccessor usage
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -334,7 +334,8 @@ class NavigationItem extends AbstractItem<NavItem> {
                 items: items,
                 model: this.model,
                 selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
-                createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`
+                createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
+                OR: req.i18n.__('OR')
             }
 			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/itemHTMLAdd.ejs'), 'utf8'), {
 			// 	items: items,

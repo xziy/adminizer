@@ -110,6 +110,7 @@ export default async function add(req: ReqType, res: ResType) {
 
             Adminizer.log.debug(`A new record was created: `, record);
             if (req.body.jsonPopupCatalog) {
+                // await new Promise(resolve => setTimeout(resolve, 2000));
                 return res.json({record: record})
             } else {
                 req.flash.setFlashMessage('success', req.i18n.__('New record was created'));
@@ -121,15 +122,13 @@ export default async function add(req: ReqType, res: ResType) {
             data = reqData;
         }
     }
+    const props = inertiaAddHelper(req, entity, fields)
+
     if (req.query?.without_layout) {
-        // return res.viewAdmin("./../ejs/partials/content/addPopup.ejs", {
-        //     entity: entity,
-        //     fields: fields,
-        //     data: data
-        // });
-        return null
+        return res.json({
+            props: props
+        })
     } else {
-        const props = inertiaAddHelper(req, entity, fields)
 
         return req.Inertia.render({
             component: 'add',

@@ -419,6 +419,11 @@ const config: AdminpanelConfig = {
                 title: 'Category',
                 model: "category",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'
+            },
+            {
+                title: 'All controls',
+                model: "example",
+                urlPath: '/longlinkkkkk/category/${data.record.slug}'
             }
         ],
         // Links in the admin panel leading to different navigation data (for example: header, footer) should end the same way as you specify in the array
