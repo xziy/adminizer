@@ -217,7 +217,8 @@ export class ControllerHelper {
             name: entityName,
             uri: entityUri,
             type: entityType,
-            model: null
+            model: null,
+            entity: undefined
         };
         // If the entity type is "model", add additional properties
         if (entityType === "model") {
