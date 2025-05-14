@@ -39,7 +39,7 @@ export default async function edit(req: ReqType, res: ResType) {
     let dataAccessor;
     try {
         const id = req.params.id as string;
-        dataAccessor = new DataAccessor(req, entity, "edit");
+        dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
         if (!record) return res.status(404).send("Adminpanel > Record not found");;
     } catch (e) {

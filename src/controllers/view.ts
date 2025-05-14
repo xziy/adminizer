@@ -32,7 +32,7 @@ export default async function view(req: ReqType, res: ResType) {
         }
     }
 
-    let dataAccessor = new DataAccessor(req, entity, "view");
+    let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "view");
     let fields = dataAccessor.getFieldsConfig();
 
     let record;

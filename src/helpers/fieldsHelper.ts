@@ -71,7 +71,7 @@ export class FieldsHelper {
           name: modelName, config: req.adminizer.config.models[modelName] as ModelConfig,
           model: Model, uri: `${req.adminizer.config.routePrefix}/model/${modelName}`, type: "model"
         };
-        let dataAccessor = new DataAccessor(req, entity, action);
+        let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, action);
         list = await Model.find({}, dataAccessor);
       } catch (e) {
         Adminizer.log.error(e)
