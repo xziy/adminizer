@@ -34,7 +34,7 @@
 // 					view: false
 // 				}
 // 			} catch (e) {
-// 				console.log('bindNavigation Error: ', e)
+
 // 			}
 // 		}
 // 	})

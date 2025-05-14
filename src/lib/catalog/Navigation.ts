@@ -139,7 +139,7 @@
 // 				{tree: tree}
 // 			)
 // 		} catch (e) {
-// 			console.log(e)
+
 // 			throw 'navigation model update error'
 // 		}
 // 	}
