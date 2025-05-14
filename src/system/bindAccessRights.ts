@@ -8,7 +8,6 @@ export default async function bindAccessRights(adminizer: Adminizer) {
             
             const model = models[key];
             if (typeof model !== "boolean") {
-                console.log(model.title, "model")
                 let modelName = model.model;
                 let department = `Model ${key}`;
 

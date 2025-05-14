@@ -10,7 +10,7 @@ import { Config } from "waterline";
 import sailsDisk from "sails-disk";
 import { Adminizer, WaterlineAdapter } from '../src';
 import { Entity } from '../src/interfaces/types';
-import * as config from "./datamocks/adminizerConfig"
+import { config } from "./datamocks/adminizerConfig"
 import Test  from './datamocks/Test';
 import Waterline from 'waterline';
 import Example from './datamocks/Example';
@@ -37,7 +37,6 @@ describe('DataAccessor test', () => {
     await sleep(1000)
     orm.registerModel(Test);
     orm.registerModel(Example);
-    console.log(">>>>>>>>>>>>>>>>>.")
     const waterlineConfig: Config = {
       adapters: {
         disk: sailsDisk,

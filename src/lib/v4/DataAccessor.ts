@@ -100,7 +100,7 @@ export class DataAccessor {
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
                     } else {
-                        Adminizer.log.error(`Model not found: ${modelName}`);
+                        Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
                 }
             }
