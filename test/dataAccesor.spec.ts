@@ -14,7 +14,7 @@ import Test  from './datamocks/Test';
 import Waterline from 'waterline';
 import Example from './datamocks/Example';
 import { ControllerHelper } from 'src/helpers/controllerHelper';
-import { buildMockReq } from './datamocks/req';
+import { buildMockReq } from './datamocks/buildMockReq';
 
 describe('DataAccessor test', () => {
   let adminUser: UserAP;
@@ -25,10 +25,6 @@ describe('DataAccessor test', () => {
   let instance: DataAccessor;
   let adminizer!: Adminizer;
   let orm: Waterline.Waterline;
-  
-  function makeReq(user: UserAP): ReqType {
-    return { adminizer, user } as ReqType;
-  }
 
   beforeAll(async () => {
     orm = new Waterline(); 
@@ -98,7 +94,7 @@ describe('DataAccessor test', () => {
       groups: [{ name: 'default user group', id: 3 }]
     };
 
-    entity = ControllerHelper.findEntityObject(buildMockReq(adminizer));
+    entity = ControllerHelper.findEntityObject(buildMockReq(adminizer, "/admin/model/example"));
   });
 
   it('`guardedField` should only be accessible for admin and editor in `add`', () => {
@@ -111,7 +107,7 @@ describe('DataAccessor test', () => {
     instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(defaultUser), entity, 'add');
+    instance = new DataAccessor(adminizer, defaultUser, entity, 'add');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
   });
 
@@ -125,7 +121,7 @@ describe('DataAccessor test', () => {
     instance = new DataAccessor(adminizer, editorUser, entity, 'edit');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(defaultUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, defaultUser, entity, 'edit');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
   });
 
