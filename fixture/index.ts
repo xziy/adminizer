@@ -15,9 +15,6 @@ import JsonSchema from "./models/JsonSchema";
 import { Sequelize } from "sequelize-typescript";
 
 // Sequelize imports
-
-
-import { faker } from '@faker-js/faker';
 import fs from 'fs/promises';
 import path from 'path';
 import { Example as ExampleSequelize } from "./models/sequelize/Example";
@@ -25,6 +22,15 @@ import { JsonSchema as JsonSchemaSequelize  } from "./models/sequelize/JsonSchem
 import { Test as TestSequelize } from "./models/sequelize/Test";
 import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
 import { seedDatabase } from "./helpers/seedDatabase";
+
+
+//Widgets imports
+import {SwitcherOne, SwitcherTwo} from "./test-widgets/Switchers";
+import {SiteLinks} from "./test-widgets/Links";
+import {InfoOne, Info4, Info3, InfoTwo} from "./test-widgets/Info";
+import {CustomOne} from "./test-widgets/Custom";
+import {ActionOne, ActionTwo} from "./test-widgets/Actions";
+
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -53,7 +59,16 @@ if(process.env.ORM === 'sequelize'
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
     await ormSharedFixtureLift(adminizer);
-    await seedDatabase(orm.models, 77);
+
+
+    if (!process.env.NO_SEED_DATA) {
+        try {
+            await seedDatabase(orm.models, 77);
+            console.log("Database seeded with random data!");
+        } catch (seedErr) {
+            console.error("Error during database seeding:", seedErr);
+        }
+    }
 
     // Finish
 } else {
@@ -80,7 +95,7 @@ if(process.env.ORM === 'sequelize'
             } catch (seedErr) {
                 console.error("Error during database seeding:", seedErr);
             }
-        } 
+        }
 
         /**
          * In case you want to use adminizer built-in adapter, but if not, create your own adapter that extends AbstractAdapter
@@ -95,7 +110,7 @@ if(process.env.ORM === 'sequelize'
 
 //Todo you need to register the system models in Defaultadapter or somehow specify in Bindmodels which adapter to use,
 //Because bindmodels should know from which adapter to get them (in ordinary models this can be set with a config) (preferably in Default)
-// 
+//
 /** Don't forget to register adminizer system models before initialize */
 
 
@@ -161,9 +176,22 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
     try {
         // adminpanelConfig.auth.enable = !!process.env.NO_SEED_DATA
-        adminpanelConfig.auth.enable = true
+        // adminpanelConfig.auth.enable = true
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        adminizer.widgetHandler.add(new SwitcherOne());
+        adminizer.widgetHandler.add(new SwitcherTwo());
+        adminizer.widgetHandler.add(new SiteLinks());
+        adminizer.widgetHandler.add(new InfoOne());
+        adminizer.widgetHandler.add(new InfoTwo());
+        adminizer.widgetHandler.add(new Info3());
+        adminizer.widgetHandler.add(new Info4());
+        adminizer.widgetHandler.add(new ActionOne());
+        adminizer.widgetHandler.add(new ActionTwo());
+
+        /** Custom widget */
+        adminizer.widgetHandler.add(new CustomOne(adminizer.config.routePrefix));
 
     } catch (e) {
         console.log(e)

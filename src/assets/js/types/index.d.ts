@@ -2,7 +2,6 @@ import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
 
 
-
 export interface Auth {
     user: User;
 }
@@ -48,6 +47,38 @@ export interface User {
     avatar?: string;
     isAdministrator: boolean;
     [key: string]: unknown;
+}
+
+export interface Widget {
+    id: string;
+    name: string;
+    description: string;
+    icon?: string;
+    backgroundCSS?: string;
+    type: WidgetType;
+    api?: string;
+    link?: string;
+    linkType?: 'self' | 'blank'
+    state?: boolean;
+    scriptUrl?: string;
+    constructorOption?: any;
+    constructorName?: string;
+    hideAdminPanelUI?: boolean;
+    size?: {
+        w: number
+        h: number
+    }
+    added?: boolean
+    [key: string]: any;
+}
+
+export interface WidgetLayoutItem {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    i: string;
+    id: string;
 }
 
 declare global {

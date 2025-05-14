@@ -238,39 +238,39 @@ const models: AdminpanelConfig["models"] = {
                 datatable: false
             },
             actions: {
-                // global: [
-                //     {
-                //         id: "1",
-                //         link: 'https://google.com',
-                //         type: 'blank',
-                //         title: 'Google',
-                //         icon: 'insert_link'
-                //     }, {
-                //         id: "2",
-                //         link: 'https://google.com',
-                //         type: 'blank',
-                //         title: 'Google',
-                //         icon: 'insert_link'
-                //     }, {
-                //         id: "3",
-                //         link: 'https://google.com',
-                //         type: 'blank',
-                //         title: 'Google',
-                //         icon: 'insert_link'
-                //     }, {
-                //         id: "4",
-                //         link: 'https://google.com',
-                //         type: 'blank',
-                //         title: 'Google',
-                //         icon: 'insert_link'
-                //     }, {
-                //         id: "5",
-                //         link: `${routePrefix}/form/global`,
-                //         type: 'self',
-                //         title: 'Form',
-                //         icon: 'insert_link'
-                //     },
-                // ],
+                global: [
+                    {
+                        id: "1",
+                        link: 'https://google.com',
+                        type: 'blank',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "2",
+                        link: 'https://google.com',
+                        type: 'blank',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "3",
+                        link: 'https://google.com',
+                        type: 'blank',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "4",
+                        link: 'https://google.com',
+                        type: 'blank',
+                        title: 'Google',
+                        icon: 'insert_link'
+                    }, {
+                        id: "5",
+                        link: `${routePrefix}/form/global`,
+                        type: 'self',
+                        title: 'Form',
+                        icon: 'insert_link'
+                    },
+                ],
                 inline: [
                     {
                         id: "1",
@@ -370,7 +370,7 @@ const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     auth: {
-        enable: false
+        enable: true
     },
     registration: {
         enable: true,
@@ -381,7 +381,7 @@ const config: AdminpanelConfig = {
     //     enable: true,
     //     description: "Login `demo`, password `demo`"
     // },
-    dashboard: false,
+    dashboard: true,
     forms: {
         data: {
             global: {

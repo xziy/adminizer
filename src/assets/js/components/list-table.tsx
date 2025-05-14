@@ -304,7 +304,7 @@ const ListTable = () => {
                 <div className="flex gap-2 sticky top-0 z-10 bg-background py-3">
                     {page.props.header.crudActions?.createTitle && (
                         <Button asChild>
-                            <Link href={`${page.props.header.entity.uri}/add`} prefetch>
+                            <Link href={`${page.props.header.entity.uri}/add`}>
                                 <Icon iconNode={SquarePlus}/>
                                 {page.props.header.crudActions.createTitle}
                             </Link>
@@ -332,7 +332,7 @@ const ListTable = () => {
                                                 {action.title}
                                             </a>
                                         ) : (
-                                            <Link href={action.link} prefetch>
+                                            <Link href={action.link}>
                                                 {action.icon &&
                                                     <MaterialIcon name={action.icon} className="!text-[18px]"/>}
                                                 {action.title}

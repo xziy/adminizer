@@ -12,6 +12,7 @@ export default defineConfig({
         viteExternalsPlugin({
             react: 'React',
             'react-dom': 'ReactDOM',
+            //'@/components/ui/button.tsx': 'UIComponents' // Test Btn for module.
         }),
     ],
     build: {
@@ -24,6 +25,12 @@ export default defineConfig({
             name: 'ComponentB',
             formats: ['es'],
             fileName: (format) => `ComponentB.${format}.js`,
+        },
+        rollupOptions: {
+            external: [
+                'tailwindcss',
+                //'@/components/ui/button.tsx' //Test Btn for module.
+            ],
         },
     },
     resolve: {
