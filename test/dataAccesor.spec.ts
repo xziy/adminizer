@@ -1,6 +1,5 @@
 
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import entityMock from './datamocks/entityExample';
 import { UserAP } from '../src/models/UserAP';
 import { DataAccessor } from '../src/lib/v4/DataAccessor';
 
@@ -14,6 +13,8 @@ import { config } from "./datamocks/adminizerConfig"
 import Test  from './datamocks/Test';
 import Waterline from 'waterline';
 import Example from './datamocks/Example';
+import { ControllerHelper } from 'src/helpers/controllerHelper';
+import { buildMockReq } from './datamocks/req';
 
 describe('DataAccessor test', () => {
   let adminUser: UserAP;
@@ -24,7 +25,7 @@ describe('DataAccessor test', () => {
   let instance: DataAccessor;
   let adminizer!: Adminizer;
   let orm: Waterline.Waterline;
-
+  
   function makeReq(user: UserAP): ReqType {
     return { adminizer, user } as ReqType;
   }
@@ -97,7 +98,7 @@ describe('DataAccessor test', () => {
       groups: [{ name: 'default user group', id: 3 }]
     };
 
-    entity = structuredClone(entityMock);
+    entity = ControllerHelper.findEntityObject(buildMockReq(adminizer));
   });
 
   it('`guardedField` should only be accessible for admin and editor in `add`', () => {
