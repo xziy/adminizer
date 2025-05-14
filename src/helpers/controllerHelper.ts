@@ -99,7 +99,7 @@ export class ControllerHelper {
         if (!entityType) {
             const extractedEntityType = req.originalUrl.split('/')[2] as EntityType | undefined;
 
-            if (["form", "model", "wizard"].includes(extractedEntityType)) {
+            if (["form", "model"].includes(extractedEntityType)) {
                 return extractedEntityType;
             } else {
                 return null;
@@ -217,8 +217,7 @@ export class ControllerHelper {
             name: entityName,
             uri: entityUri,
             type: entityType,
-            model: null,
-            entity: undefined
+            model: null
         };
         // If the entity type is "model", add additional properties
         if (entityType === "model") {

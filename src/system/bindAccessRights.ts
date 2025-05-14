@@ -69,11 +69,6 @@ export default async function bindAccessRights(adminizer: Adminizer) {
         }
     }
 
-    adminizer.accessRightsHelper.registerToken({
-        id: `process-install-step`, name: "Process install step",
-        description: "Access to '/processInstallStep' route", department: "Routes"
-    });
-
     // Widgets
     adminizer.accessRightsHelper.registerToken({
         id: `widgets`, name: "Widgets",

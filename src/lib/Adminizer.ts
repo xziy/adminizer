@@ -178,9 +178,6 @@ export class Adminizer {
         bindExpressUtils(this.app);
         bindReqFunctions(this);
 
-        // add install stepper policy to check unfilled settings
-        // bindInstallStepper(this); // TODO It is necessary to provide an opportunity to be inserted by an intermediary after authorization, but before the admin panel, in order to block the user from managing the Installstepper's admin panel.
-
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
         
