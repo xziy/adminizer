@@ -552,12 +552,13 @@ export class SequelizeAdapter extends AbstractAdapter {
   static async registerSystemModels(sequelize: Sequelize): Promise<void> {
     const modelsDir = path.resolve(import.meta.dirname, "../../../../models");
     let files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
-    
-    // Try with ts files
-    if(!files.length) {
-      files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".ts"));
-    }
 
+    // Try with ts files (exclude .d.ts)
+    if (!files.length) {
+      files = fs.readdirSync(modelsDir).filter(f =>
+        f.endsWith(".ts") && !f.endsWith(".d.ts")
+      );
+    }
     if(!files.length) {
       throw `Model files not found in dir ${modelsDir}`
     }
