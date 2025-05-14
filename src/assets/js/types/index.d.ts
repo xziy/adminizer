@@ -125,8 +125,11 @@ export interface CatalogItem {
 export interface ItemAddProps {
     selectTitle: string,
     createTitle: string,
+    model: string,
+    OR: string,
     items: {
         id: number,
         name: string
     }[]
+    add: (model:string) => void
 }

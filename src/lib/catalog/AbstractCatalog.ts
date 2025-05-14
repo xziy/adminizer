@@ -114,7 +114,7 @@ export abstract class BaseItem<T extends Item> {
 	public abstract deleteItem(itemId: string | number, catalogId: string): Promise<void>;
 
 
-	public abstract getAddHTML(req: ReqType): Promise<{ type: 'link' | 'html' | 'jsonForm', data: string }>
+	public abstract getAddHTML(req: ReqType): Promise<{ type: 'component' | 'navigation' | 'model', data: string }>
 
 	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
 		type: 'link' | 'html' | 'jsonForm',

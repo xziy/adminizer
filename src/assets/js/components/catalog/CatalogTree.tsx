@@ -1,4 +1,4 @@
-import {createContext, type Dispatch, SetStateAction, useCallback, useEffect, useRef, useState} from "react";
+import {createContext, type Dispatch, lazy, SetStateAction, useCallback, useEffect, useRef, useState} from "react";
 import {
     Tree,
     getBackendOptions,
@@ -9,22 +9,48 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Pencil, Plus, Trash2} from "lucide-react";
+import {LoaderCircle, Pencil, Plus, Trash2} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
 import {
     DialogStack,
     DialogStackBody,
-    DialogStackContent, DialogStackDescription, DialogStackHandle,
-    DialogStackOverlay, DialogStackPrevious, DialogStackTitle
+    DialogStackContent, DialogStackHandle,
+    DialogStackOverlay
 } from "@/components/ui/dialog-stack.tsx";
-import {Catalog, CatalogItem, ItemAddProps} from "@/types";
+import {Catalog, CatalogItem, Field} from "@/types";
 import SelectCatalogItem from "@/components/catalog/select-catalog-item.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import ItemAdd from "@/components/catalog/item-add.tsx";
+import AddForm from "@/components/add-form.tsx";
+
+const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 
 interface CatalogContextProps {
     messages: Record<string, string>
     setMessages: Dispatch<SetStateAction<Record<string, string>>>
+}
+
+interface AddCatalogProps {
+    props: {
+        actions: {
+            link: string;
+            id: string;
+            title: string;
+            icon: string;
+        }[];
+        notFound?: string
+        search?: string,
+        btnBack: {
+            title: string;
+            link: string;
+        };
+        fields: Field[];
+        edit: boolean;
+        view: boolean;
+        btnSave: {
+            title: string;
+        },
+        postLink: string,
+    }
 }
 
 export const CatalogContext = createContext<CatalogContextProps>({
@@ -49,8 +75,24 @@ const CatalogTree = () => {
     const [messages, setMessages] = useState<Record<string, string>>({})
     const [isLoading, setIsLoading] = useState(false)
     const dialogRef = useRef<DialogStackHandle>(null);
-    const [addItemProps, setAddItemProps] = useState<ItemAddProps>({createTitle: "", items: [], selectTitle: ""})
+    const [addItemProps, setAddItemProps] = useState({createTitle: "", items: [], selectTitle: "", OR: "", model: ""})
+    const [popupType, setPopupType] = useState<string>('')
+    const [addProps, setAddProps] = useState<AddCatalogProps>({
+        props: {
+            actions: [],
+            btnBack: {link: "", title: ""},
+            btnSave: {title: ""},
+            edit: false,
+            fields: [],
+            notFound: "",
+            postLink: "",
+            search: "",
+            view: false,
+        }
+    })
 
+    const [firstRender, setFirstRender] = useState(false)
+    const [secondRender, setSecondRender] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -85,14 +127,17 @@ const CatalogTree = () => {
     }, []);
 
     const selectCatalogItem = useCallback(async (type: string) => {
+        setFirstRender(true)
         const res = await axios.post('', {type: type, _method: 'getAddHTML'})
         await getHTML(res.data)
         dialogRef.current?.next()
+        setFirstRender(false)
     }, [items])
 
-    const getHTML = useCallback(async (data: {type: string, data: any}) => {
+    const getHTML = useCallback(async (data: { type: string, data: any }) => {
         switch (data.type) {
-            case 'html':
+            case 'navigation':
+                setPopupType('navigation')
                 setAddItemProps(data.data)
                 break
             // case 'link':
@@ -107,7 +152,13 @@ const CatalogTree = () => {
                 break
         }
     }, [items])
-
+    const addModel = useCallback(async (model: string) => {
+        setSecondRender(true)
+        const res = await axios.get(`${window.routePrefix}/model/${model}/add?without_layout=true'`)
+        setAddProps(res.data)
+        dialogRef.current?.next()
+        setSecondRender(false)
+    }, [items])
     return (
         <>
             {isLoading ? (
@@ -192,26 +243,24 @@ const CatalogTree = () => {
                         <DialogStackOverlay/>
                         <DialogStackBody>
                             <DialogStackContent>
-                                <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <ItemAdd {...addItemProps} />
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-                                    <DialogStackTitle className="font-semibold text-lg leading-none tracking-tight">
-                                        I'm the final dialog
-                                    </DialogStackTitle>
-                                    <DialogStackDescription className="text-muted-foreground text-sm">
-                                        With a fancy description
-                                    </DialogStackDescription>
+                                <div className="relative h-full">
+                                    {firstRender && <LoaderCircle
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
+                                    <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
                                 </div>
-                                <div className="flex items-center space-x-2 pt-4 justify-start">
-                                    <DialogStackPrevious asChild>
-                                        <Button variant="outline">Previous</Button>
-                                    </DialogStackPrevious>
+                            </DialogStackContent>
+
+                            <DialogStackContent>
+                                <div className="relative h-full">
+                                    {secondRender && <LoaderCircle
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
+                                    {popupType === 'navigation' && <NavItemAdd add={addModel} {...addItemProps} />}
+                                </div>
+                            </DialogStackContent>
+
+                            <DialogStackContent>
+                                <div className="h-full overflow-y-auto mt-5">
+                                    <AddForm page={addProps} catalog={true} callback={dialogRef.current?.close}/>
                                 </div>
                             </DialogStackContent>
                         </DialogStackBody>
