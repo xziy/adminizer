@@ -21,7 +21,7 @@ export default async function list(req: ReqType, res: ResType) {
         }
     }
 
-    let dataAccessor = new DataAccessor(req, entity, "list");
+    let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "list");
     let fields = dataAccessor.getFieldsConfig();
 
     const header = inertiaListHelper(entity, req, fields)

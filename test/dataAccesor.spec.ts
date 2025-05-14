@@ -102,13 +102,13 @@ describe('DataAccessor test', () => {
   });
 
   it('`guardedField` should only be accessible for admin and editor in `add`', () => {
-    instance = new DataAccessor(makeReq(adminUser), entity, 'add');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'add');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(editorUser), entity, 'add');
+    instance = new DataAccessor(adminizer, editorUser, entity, 'add');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(managerUser), entity, 'add');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
     instance = new DataAccessor(makeReq(defaultUser), entity, 'add');
@@ -116,13 +116,13 @@ describe('DataAccessor test', () => {
   });
 
   it('`guardedField` should only be accessible for admin and manager in `edit`', () => {
-    instance = new DataAccessor(makeReq(adminUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(managerUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'edit');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
-    instance = new DataAccessor(makeReq(editorUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, editorUser, entity, 'edit');
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
     instance = new DataAccessor(makeReq(defaultUser), entity, 'edit');
@@ -130,26 +130,26 @@ describe('DataAccessor test', () => {
   });
 
   it('`color` field should have type `color` in `edit` config', () => {
-    instance = new DataAccessor(makeReq(adminUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     const result = instance.getFieldsConfig();
     expect(result.color.config.type).toBe('color');
   });
 
   it('`title` is present in `edit`, but ignored in `add`', () => {
-    instance = new DataAccessor(makeReq(adminUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     expect(instance.getFieldsConfig()).toHaveProperty('title');
 
-    instance = new DataAccessor(makeReq(adminUser), entity, 'add');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'add');
     expect(instance.getFieldsConfig()).not.toHaveProperty('title');
   });
 
   it('Populated selfAssociation has guardedField for admin', () => {
-    instance = new DataAccessor(makeReq(adminUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     expect(instance.getFieldsConfig().selfAssociation.populated).toHaveProperty('guardedField');
   });
 
   it('Populated selfAssociation does not expose guardedField to manager (if not allowed)', () => {
-    instance = new DataAccessor(makeReq(managerUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'edit');
     const populated = instance.getFieldsConfig().selfAssociation.populated;
     expect(populated).not.toHaveProperty('guardedField');
   });
@@ -162,7 +162,7 @@ describe('DataAccessor test', () => {
       color: '#000'
     };
 
-    instance = new DataAccessor(makeReq(managerUser), entity, 'edit');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'edit');
     const result = instance.process(record);
     expect(result).not.toHaveProperty('guardedField');
     expect(result).toHaveProperty('title');
@@ -175,7 +175,7 @@ describe('DataAccessor test', () => {
       { id: 2, title: 'Two', guardedField: 'Y' }
     ];
 
-    instance = new DataAccessor(makeReq(editorUser), entity, 'add');
+    instance = new DataAccessor(adminizer, editorUser, entity, 'add');
     const result = instance.processMany(records);
     expect(result).toHaveLength(2);
     expect(result[0]).toHaveProperty('guardedField');
@@ -187,14 +187,14 @@ describe('DataAccessor test', () => {
         field: 'userField'
       };
     }
-    instance = new DataAccessor(makeReq(managerUser), entity, 'add');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     const result = await instance.sanitizeUserRelationAccess({});
     expect(result).toEqual({ userField: 2 });
   });
 
   it('`sanitizeUserRelationAccess()` throws error on invalid config', async () => {
     entity.config.userAccessRelation = 'invalidField';
-    instance = new DataAccessor(makeReq(managerUser), entity, 'add');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     await expect(instance.sanitizeUserRelationAccess({})).rejects.toThrow(
       /Invalid userAccessRelation configuration/
     );
@@ -205,7 +205,7 @@ describe('DataAccessor test', () => {
     entity.model.attributes.userField = { model: 'UserAP' };
 
     const record = { title: 'Sample' };
-    instance = new DataAccessor(makeReq(editorUser), entity, 'add');
+    instance = new DataAccessor(adminizer, editorUser, entity, 'add');
     const result = await instance.setUserRelationAccess(record);
     expect(result).toHaveProperty('userField', 1);
   });
@@ -215,7 +215,7 @@ describe('DataAccessor test', () => {
     entity.model.attributes.groupField = { model: 'GroupAP' };
 
     const record = { title: 'With group' };
-    instance = new DataAccessor(makeReq(managerUser), entity, 'add');
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     const result = await instance.setUserRelationAccess(record);
     expect(result).toHaveProperty('groupField', 2);
   });
@@ -228,7 +228,7 @@ describe('DataAccessor test', () => {
     entity.config.userAccessRelation = 'groupField';
     entity.model.attributes.groupField = { model: 'GroupAP' };
 
-    instance = new DataAccessor(makeReq(multiGroupUser), entity, 'add');
+    instance = new DataAccessor(adminizer, multiGroupUser, entity, 'add');
     await expect(instance.setUserRelationAccess({})).rejects.toThrow(
       /associated with none or multiple groups/
     );
