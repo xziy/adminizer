@@ -130,6 +130,7 @@ export default async function add(req: ReqType, res: ResType) {
         return null
     } else {
         const props = inertiaAddHelper(req, entity, fields)
+
         return req.Inertia.render({
             component: 'add',
             props: props

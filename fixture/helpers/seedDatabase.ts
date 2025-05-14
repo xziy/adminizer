@@ -76,6 +76,7 @@ export async function seedDatabase(
         : await userModel.create(userData).fetch();
 
 
+      console.log('userInstance: ', userInstance)
       // Привязка к группам (упрощённая логика)
       const groupName = u.isAdministrator ? 'Admins' : 'Users';
 

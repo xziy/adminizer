@@ -12,7 +12,7 @@ export default async function widgetsDB(req: ReqType, res: ResType) {
 
     if (req.method.toUpperCase() === 'GET') {
         try {
-            let widgets = await req.adminizer.widgetHandler.getWidgetsDB(id, auth);
+            let widgets = await req.adminizer.widgetHandler.getWidgetsDB(id, auth, req.i18n);
             return res.json({widgetsDB: widgets})
         } catch (e) {
             return res.status(500).send({error: e.message || 'Internal Server Error'});
@@ -25,7 +25,7 @@ export default async function widgetsDB(req: ReqType, res: ResType) {
         }
         try {
             return res.json({
-                userID: await req.adminizer.widgetHandler.setWidgetsDB(id, req.body.widgets, auth),
+                userID: await req.adminizer.widgetHandler.setWidgetsDB(id, req.body, auth),
                 status: 'ok'
             })
         } catch (e) {
