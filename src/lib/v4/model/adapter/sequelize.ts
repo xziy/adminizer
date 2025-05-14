@@ -22,7 +22,7 @@ function resolveType(type: any): Attribute["type"] {
 export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string, Attribute> {
   const result: Record<string, Attribute> = {};
 
-  console.log(model, "<M<<<<<<<<<<<<<<<,,")
+  
   const rawAttrs = model.getAttributes();
   for (const name in rawAttrs) {
     const meta = rawAttrs[name];

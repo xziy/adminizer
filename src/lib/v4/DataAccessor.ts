@@ -94,7 +94,7 @@ export class DataAccessor {
             let populatedModelFieldsConfig = {};
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
-                console.log(modelField)
+                
                 if (modelName) {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {

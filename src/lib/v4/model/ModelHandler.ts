@@ -5,7 +5,7 @@ export class ModelHandler {
   private models: Map<string, AbstractModel<any>> = new Map();
 
   add<T>(modelName: string, modelInstance: AbstractModel<T>): void {
-    console.log(modelName)
+    
 
     const modelname = modelName.toLowerCase()
     if (this.models.has(modelname)) {
@@ -17,7 +17,7 @@ export class ModelHandler {
 
   /** Improved model getter, so you can write both model.get("UserAP") and model.get("userap") */
   get model() {
-    // console.log(this.models)
+    
     return {
       get: (modelName: string) => this.models.get(modelName.toLowerCase()),
       has: (modelName: string) => this.models.has(modelName.toLowerCase()),

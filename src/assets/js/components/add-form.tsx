@@ -118,7 +118,7 @@ const AddForm: FC = () => {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        // console.log(data)
+        
         post(page.props.postLink);
     };
 

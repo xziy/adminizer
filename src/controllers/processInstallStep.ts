@@ -28,7 +28,7 @@
 // 			try {
 // 				await renderData.currentStep.onInit();
 // 			} catch (e) {
-// 				console.log("ERROR IN PROCESS INSTALL STEP", e)
+
 // 				res.viewAdmin(`installer/error`, {error: e, stepperId: installStepper.id});
 // 				return
 // 			}
