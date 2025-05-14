@@ -1,4 +1,4 @@
-import { AdminizerConfig } from "../../src";
+import { AdminizerConfig, AdminpanelConfig } from "../../src";
 
 const routePrefix = "/adminizer";
 
@@ -306,7 +306,7 @@ const models: AdminizerConfig["models"] = {
     }
 };
 
-const config: AdminpanelConfig = {
+export const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     auth: {
@@ -466,4 +466,3 @@ const config: AdminpanelConfig = {
     showVersion: true,
 };
 
-export default config

@@ -32,6 +32,8 @@ export default async function bindModels(adminizer: Adminizer) {
     .filter((item): item is ModelConfig => typeof item !== "boolean" && item?.model !== undefined)
     .map(item => item.model.toLowerCase());
 
+  console.log("111 ", adminizer.config.models)
+  Adminizer.log.debug(`Bind models > Models from config: ${modelsFromConfig}`)
   // Bind project models using config
   modelsFromConfig.forEach((modelName) => {
     const modelConfig = Object.entries(adminizer.config.models)
@@ -49,7 +51,7 @@ export default async function bindModels(adminizer: Adminizer) {
       // Create model adapter instance and add it to model handler
       const registeredModel = ormAdapter.getModel(modelName);
       if(!registeredModel) {
-        throw `Model not found: ${modelName}`
+        throw `Bind models > Model not found: ${modelName}`
       }
       const model = new ormAdapter.Model(modelName, registeredModel);
       adminizer.modelHandler.add(modelName, model);

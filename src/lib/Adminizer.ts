@@ -51,7 +51,7 @@ export class Adminizer {
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
     static logger = winston.createLogger({
-        level: "info",
+        level: process.env.LOG_LEVEL ?? "debug",
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf(({timestamp, level, message, ...meta}) => {
