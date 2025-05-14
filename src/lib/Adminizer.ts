@@ -109,6 +109,10 @@ export class Adminizer {
     public async init(config: AdminpanelConfig) {
         // set cookie parser
         this.app.use(cookieParser());
+        
+        if(!config || Object.keys(config).length === 0) {
+            Adminizer.log.warn(`Adminizer init > Adminizer config is emtpy`)
+        }
 
         // Set vite middleware
         const isViteDev = process.env.VITE_ENV === "dev";
