@@ -59,7 +59,6 @@ export function DataTable<TData, TValue>(
                     <Input
                         type="text"
                         defaultValue={searchValue}
-                        autoFocus
                         placeholder={searchTxt}
                         className="w-full max-w-[200px] p-2 border rounded"
                         onChange={(e) => {onGlobalSearch(e.target.value)}}
@@ -75,7 +74,7 @@ export function DataTable<TData, TValue>(
                 </div>
             )}
             <Table>
-                <TableHeader className="sticky top-0 bg-background shadow">
+                <TableHeader className="sticky top-0 z-10 bg-background shadow">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
@@ -101,7 +100,7 @@ export function DataTable<TData, TValue>(
                                 data-state={row.getIsSelected() && "selected"}
                             >
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
+                                    <TableCell key={cell.id} className={cell.column.getIndex() === 0 ? "sticky left-0 bg-background" : ""}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </TableCell>
                                 ))}
