@@ -474,7 +474,7 @@ export interface HrefConfig {
     /**
      * Only for view, controller still uses his own access rights token
      * */
-    accessRightsToken?: string,
+    accessRightsToken?: string | undefined,
     /**
      * For menu items only
      * */
