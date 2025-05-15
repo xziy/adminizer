@@ -284,6 +284,7 @@ const ListTable = () => {
 
         router.visit(`${page.props.header.entity.uri}?count=${count}&page=1`, {
             preserveState: true,
+            preserveScroll: true,
             only: ['data', 'columns', 'header'],
             onSuccess: () => setLoading(false)
         })
