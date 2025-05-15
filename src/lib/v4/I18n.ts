@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { vsprintf } from "sprintf-js";
-import {Adminizer} from "../Adminizer";
+import { Adminizer } from "../Adminizer";
 
 type LocaleData = { [key: string]: any };
 
@@ -105,10 +105,10 @@ export class I18n {
     }
     const translation = I18n.locales[locale][singular];
     if (!translation && this.devMode) {
-      I18n.locales[locale][singular] = plural ? {one: singular, other: plural} : singular;
+      I18n.locales[locale][singular] = plural ? { one: singular, other: plural } : singular;
       this.writeFile(locale);
     }
-    return translation || (plural ? {one: singular, other: plural} : singular);
+    return translation || (plural ? { one: singular, other: plural } : singular);
   }
 
   private readFile(locale: string): void {
@@ -138,21 +138,22 @@ export class I18n {
 
     const file = this.locateFile(locale);
     const tmpFile = `${file}.tmp`;
+    const dir = path.dirname(file);
 
     try {
+      fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(tmpFile, JSON.stringify(I18n.locales[locale], null, this.indent), "utf8");
       fs.renameSync(tmpFile, file);
     } catch (error) {
       Adminizer.log.error(`Failed to write locale file ${file}:`, error);
     }
   }
-
   private locateFile(locale: string): string {
     return path.normalize(`${this.directory}/${locale}${this.extension}`);
   }
 
   public static appendLocale(locale: string, data: any) {
-    I18n.locales[locale] = {...I18n.locales[locale], ...data};
+    I18n.locales[locale] = { ...I18n.locales[locale], ...data };
   }
 
   public static getLocales() {

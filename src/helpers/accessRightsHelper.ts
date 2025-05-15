@@ -59,6 +59,12 @@ export class AccessRightsHelper {
 	}
 
 	public hasPermission(tokenId: string, user: UserAP): boolean {
+		if(!tokenId) {
+			Adminizer.log.error(
+				`AccessRightsHelper > hasPermission no tokenId: ${tokenId}`
+			)
+			return false
+		} 
 		tokenId = tokenId.toLowerCase()
 		if (!this.adminizer.config.auth.enable) {
 			return true;

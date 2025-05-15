@@ -33,6 +33,7 @@ const models: AdminpanelConfig["models"] = {
     example: {
         title: 'All controls',
         model: 'example',
+        userAccessRelation: 'owner',
         tools: [
             {
                 id: '1',
@@ -362,6 +363,7 @@ const models: AdminpanelConfig["models"] = {
                 type: 'json',
             }
         },
+        
         icon: 'pets'
     },
 };

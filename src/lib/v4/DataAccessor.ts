@@ -105,6 +105,13 @@ export class DataAccessor {
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
                 
+                // Todo: test > hide relation without model token
+                const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
+                if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
+                    Adminizer.log.silly(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
+                    return undefined;
+                }
+
                 if (modelName) {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
@@ -128,6 +135,7 @@ export class DataAccessor {
         });
 
         this.fields = result;
+        console.log(result)
         return result;
     }
 
