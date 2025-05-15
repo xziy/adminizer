@@ -13,6 +13,7 @@ export class AccessRightsHelper {
 	}
 
 	public registerToken(accessRightsToken: AccessRightsToken): void {
+		accessRightsToken.id = accessRightsToken.id.toLowerCase()
 		if (!accessRightsToken.id || !accessRightsToken.name || !accessRightsToken.description || !accessRightsToken.department) {
 			throw new Error("Adminpanel > Can not register token: Missed one or more required parameters");
 		}
@@ -58,6 +59,7 @@ export class AccessRightsHelper {
 	}
 
 	public hasPermission(tokenId: string, user: UserAP): boolean {
+		tokenId = tokenId.toLowerCase()
 		if (!this.adminizer.config.auth.enable) {
 			return true;
 		}
