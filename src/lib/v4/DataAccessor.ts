@@ -20,7 +20,7 @@ export class DataAccessor {
     entity: Entity;
     action: ActionType
     private fields: Fields = null;
-
+    private actionVerb: string
 
     // TODO: change req to adminizr + user
     constructor(adminizer: Adminizer, user: UserAP, entity: Entity, action: ActionType) {
@@ -28,6 +28,8 @@ export class DataAccessor {
         this.user = user;
         this.entity = entity;
         this.action = action
+        this.actionVerb = getTokenAction(this.action);
+
     }
 
     /**
@@ -48,6 +50,12 @@ export class DataAccessor {
         const actionConfig = ControllerHelper.findActionConfig(this.entity, this.action);
         const fieldsConfig = this.entity.config?.fields || {};
         const modelAttributes = this.entity.model.attributes;
+
+        const tokenId = `${this.actionVerb}-${this.entity.model.modelname}-${this.entity.type}`;
+        if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
+            Adminizer.log.debug(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
+            return undefined;
+        }
 
         const result: Fields = {};
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
@@ -117,8 +125,6 @@ export class DataAccessor {
 
             // Add new field to result set
             result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig};
-            
-
         });
 
         this.fields = result;
@@ -134,10 +140,9 @@ export class DataAccessor {
         }
 
         // Check if user has access to the associated model
-        const actionVerb = getTokenAction(this.action);
-        const tokenId = `${actionVerb}-${modelName}-${this.entity.type}`;
+        const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
-            Adminizer.log.warn(`No access rights to ${this.entity.type}: ${modelName}`);
+            Adminizer.log.debug(`No access rights to ${this.entity.type}: ${modelName}`);
             return undefined;
         }
 

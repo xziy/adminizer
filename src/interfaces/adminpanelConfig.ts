@@ -315,7 +315,7 @@ export interface ModelConfig {
      *  May be association or association-many to UserAP or GroupAP */
     userAccessRelation?: {
         field: string // field that associates to the intermediate model
-        via: string // field in intermediate model that associates with userap/groupap
+        via?: string // field in intermediate model that associates with userap/groupap
     } | string
     userAccessRelationCallback?: (userWithGroups: UserWithGroups, record: any) => boolean
 }

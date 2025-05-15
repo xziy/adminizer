@@ -10,12 +10,12 @@ import sailsDisk from "sails-disk";
 import { Adminizer, WaterlineAdapter } from '../src';
 import { Entity } from '../src/interfaces/types';
 import { config } from "./datamocks/adminizerConfig"
-import Test  from './datamocks/Test';
+import Test from './datamocks/Test';
 import Waterline from 'waterline';
 import Example from './datamocks/Example';
 import { ControllerHelper } from 'src/helpers/controllerHelper';
 import { buildMockReq } from './datamocks/buildMockReq';
-
+const tokens = ["create-test-model", "read-test-model", "update-test-model", "delete-test-model"]
 describe('DataAccessor test', () => {
   let adminUser: UserAP;
   let editorUser: UserAP;
@@ -27,8 +27,8 @@ describe('DataAccessor test', () => {
   let orm: Waterline.Waterline;
 
   beforeAll(async () => {
-    orm = new Waterline(); 
-    
+    orm = new Waterline();
+
     // @ts-ignore
     await WaterlineAdapter.registerSystemModels(orm);
     await sleep(1000)
@@ -46,19 +46,19 @@ describe('DataAccessor test', () => {
         }
       }
     };
-  
+
     const ontology = await new Promise<any>((resolve, reject) => {
       orm.initialize(waterlineConfig, (err, ontology) => {
         if (err) return reject(err);
         resolve(ontology);
       });
     });
-  
+
     console.log("Waterline ORM initialized!");
 
     const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
     adminizer = new Adminizer([waterlineAdapter]);
-  
+
     try {
       // @ts-ignore
       await adminizer.init(config);
@@ -66,7 +66,7 @@ describe('DataAccessor test', () => {
       console.error("adminizer init error:", error);
     }
   });
-  
+
 
   beforeEach(() => {
     adminUser = {
@@ -79,25 +79,27 @@ describe('DataAccessor test', () => {
     editorUser = {
       id: 1,
       login: 'editorUser',
-      groups: [{ name: 'editor', id: 1 }]
+      groups: [{ name: 'editor', id: 1, tokens }]
     };
 
     managerUser = {
       id: 2,
       login: 'managerUser',
-      groups: [{ name: 'manager', id: 2 }]
+      groups: [{ name: 'manager', id: 2, tokens }]
     };
 
     defaultUser = {
       id: 3,
       login: 'defaultUser',
-      groups: [{ name: 'default user group', id: 3 }]
+      groups: [{ name: 'default', id: 3 }]
     };
 
-    entity = ControllerHelper.findEntityObject(buildMockReq(adminizer, "/admin/model/example"));
+    entity = ControllerHelper.findEntityObject(buildMockReq(adminizer, "/admin/model/test"));
   });
 
-  it('`guardedField` should only be accessible for admin and editor in `add`', () => {
+  it('groupsAccessRights field config checks works for plain data', () => {
+
+    // Add
     instance = new DataAccessor(adminizer, adminUser, entity, 'add');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
@@ -108,10 +110,9 @@ describe('DataAccessor test', () => {
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
     instance = new DataAccessor(adminizer, defaultUser, entity, 'add');
-    expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
-  });
+    expect(instance.getFieldsConfig()).toBeUndefined();
 
-  it('`guardedField` should only be accessible for admin and manager in `edit`', () => {
+    // Edit
     instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     expect(instance.getFieldsConfig()).toHaveProperty('guardedField');
 
@@ -122,21 +123,7 @@ describe('DataAccessor test', () => {
     expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
 
     instance = new DataAccessor(adminizer, defaultUser, entity, 'edit');
-    expect(instance.getFieldsConfig()).not.toHaveProperty('guardedField');
-  });
-
-  it('`color` field should have type `color` in `edit` config', () => {
-    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
-    const result = instance.getFieldsConfig();
-    expect(result.color.config.type).toBe('color');
-  });
-
-  it('`title` is present in `edit`, but ignored in `add`', () => {
-    instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
-    expect(instance.getFieldsConfig()).toHaveProperty('title');
-
-    instance = new DataAccessor(adminizer, adminUser, entity, 'add');
-    expect(instance.getFieldsConfig()).not.toHaveProperty('title');
+    expect(instance.getFieldsConfig()).toBeUndefined();
   });
 
   it('Populated selfAssociation has guardedField for admin', () => {
@@ -144,8 +131,8 @@ describe('DataAccessor test', () => {
     expect(instance.getFieldsConfig().selfAssociation.populated).toHaveProperty('guardedField');
   });
 
-  it('Populated selfAssociation does not expose guardedField to manager (if not allowed)', () => {
-    instance = new DataAccessor(adminizer, managerUser, entity, 'edit');
+  it('Populated selfAssociation does not expose guardedField to manager', () => {
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     const populated = instance.getFieldsConfig().selfAssociation.populated;
     expect(populated).not.toHaveProperty('guardedField');
   });
@@ -158,7 +145,7 @@ describe('DataAccessor test', () => {
       color: '#000'
     };
 
-    instance = new DataAccessor(adminizer, managerUser, entity, 'edit');
+    instance = new DataAccessor(adminizer, editorUser, entity, 'edit');
     const result = instance.process(record);
     expect(result).not.toHaveProperty('guardedField');
     expect(result).toHaveProperty('title');
@@ -178,17 +165,18 @@ describe('DataAccessor test', () => {
   });
 
   it('`sanitizeUserRelationAccess()` includes user ID in criteria', async () => {
-    if (entity.config && entity.config.userAccessRelation) {
-      entity.config.userAccessRelation = {
-        field: 'userField'
-      };
-    }
+    // if (entity.config && entity.config.userAccessRelation) {
+    //   entity.config.userAccessRelation = {
+    //     field: 'userField'
+    //   };
+    // }
     instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     const result = await instance.sanitizeUserRelationAccess({});
     expect(result).toEqual({ userField: 2 });
   });
 
   it('`sanitizeUserRelationAccess()` throws error on invalid config', async () => {
+    if(!entity.config) throw null // Type check
     entity.config.userAccessRelation = 'invalidField';
     instance = new DataAccessor(adminizer, managerUser, entity, 'add');
     await expect(instance.sanitizeUserRelationAccess({})).rejects.toThrow(

@@ -45,7 +45,7 @@ const Test = Waterline.Collection.extend({
     },
 
     // Ассоциация к UserAP (владелец)
-    owner: {
+    userField: {
       model: "userap",
     },
 

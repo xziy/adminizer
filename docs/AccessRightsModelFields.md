@@ -1,5 +1,8 @@
 ### `DataAccessor` — Data Layer Mediator with Access Control
 
+
+> Everything that is not prohibited is allowed
+
 The `DataAccessor` class is a central utility for handling the interaction between users and the system's data models, while enforcing access control and configuration constraints.
 
 ---
