@@ -135,7 +135,6 @@ export class DataAccessor {
         });
 
         this.fields = result;
-        console.log(result)
         return result;
     }
 
