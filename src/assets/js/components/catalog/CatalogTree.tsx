@@ -23,6 +23,7 @@ import {Skeleton} from "@/components/ui/skeleton.tsx";
 import AddForm from "@/components/add-form.tsx";
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
+const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
 
 interface CatalogContextProps {
     messages: Record<string, string>
@@ -69,13 +70,15 @@ const CatalogTree = () => {
         catalogName: "",
         catalogSlug: "",
         idList: [],
+        nodes: [],
         movingGroupsRootOnly: false
     })
     const [items, setItems] = useState<CatalogItem[]>([])
     const [messages, setMessages] = useState<Record<string, string>>({})
     const [isLoading, setIsLoading] = useState(false)
     const dialogRef = useRef<DialogStackHandle>(null);
-    const [addItemProps, setAddItemProps] = useState({createTitle: "", items: [], selectTitle: "", OR: "", model: ""})
+    const [addItemProps, setAddItemProps] = useState({items: [], model: "", labels: {}})
+    const [addGropuProps, setAddGroupProps] = useState({items: [], labels: {}})
     const [popupType, setPopupType] = useState<string>('')
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
@@ -99,9 +102,10 @@ const CatalogTree = () => {
             const res = await axios.post('', {
                 _method: 'getCatalog'
             });
-            const {catalog, items, toolsActions} = res.data;
-            setCatalog(catalog);
+            const {catalog: resCatalog, items, toolsActions} = res.data;
+            setCatalog(resCatalog);
             setItems(items);
+            setTreeData(resCatalog.nodes)
         };
 
         const initLocales = async () => {
@@ -126,6 +130,14 @@ const CatalogTree = () => {
         initCatalog();
     }, []);
 
+    const reloadCatalog = useCallback(async () => {
+        const res = await axios.post('', {
+            _method: 'getCatalog'
+        });
+        const {catalog: resCatalog} = res.data;
+        setTreeData(resCatalog.nodes)
+    }, [])
+
     const selectCatalogItem = useCallback(async (type: string) => {
         setFirstRender(true)
         const res = await axios.post('', {type: type, _method: 'getAddHTML'})
@@ -135,21 +147,20 @@ const CatalogTree = () => {
     }, [items])
 
     const getHTML = useCallback(async (data: { type: string, data: any }) => {
-        switch (data.type) {
-            case 'navigation':
-                setPopupType('navigation')
-                setAddItemProps(data.data)
-                break
-            // case 'link':
-            //     let resPost = await ky.get(data.data).text()
-            //     HTML.value = resPost
-            //     break
-            // case 'jsonForm':
-            //     JSONFormSchema.value = JSON.parse(data.data)
-            //     isJsonForm.value = true
-            //     break
-            default:
-                break
+        console.log(data)
+        if (data.type.includes('navigation')) {
+            switch (data.type) {
+                case 'navigation.item':
+                    setPopupType('navigation.item')
+                    setAddItemProps(data.data)
+                    break
+                case 'navigation.group':
+                    setPopupType('navigation.group')
+                    setAddGroupProps(data.data)
+                    break
+                default:
+                    break
+            }
         }
     }, [items])
     const addModel = useCallback(async (model: string) => {
@@ -254,13 +265,21 @@ const CatalogTree = () => {
                                 <div className="relative h-full">
                                     {secondRender && <LoaderCircle
                                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                    {popupType === 'navigation' && <NavItemAdd add={addModel} {...addItemProps} />}
+                                    {popupType === 'navigation.item' && <NavItemAdd add={addModel} {...addItemProps} />}
+                                    {popupType === 'navigation.group' &&
+                                        <NavGropuAdd callback={() => {
+                                            dialogRef.current?.close()
+                                            reloadCatalog()
+                                        }} {...addGropuProps}/>}
                                 </div>
                             </DialogStackContent>
 
                             <DialogStackContent>
                                 <div className="h-full overflow-y-auto mt-5">
-                                    <AddForm page={addProps} catalog={true} callback={dialogRef.current?.close}/>
+                                    <AddForm page={addProps} catalog={true} callback={() => {
+                                        dialogRef.current?.close()
+                                        reloadCatalog()
+                                    }}/>
                                 </div>
                             </DialogStackContent>
                         </DialogStackBody>

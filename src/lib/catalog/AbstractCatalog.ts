@@ -113,8 +113,10 @@ export abstract class BaseItem<T extends Item> {
 	 */
 	public abstract deleteItem(itemId: string | number, catalogId: string): Promise<void>;
 
-
-	public abstract getAddHTML(req: ReqType): Promise<{ type: 'component' | 'navigation' | 'model', data: string }>
+    public abstract getAddHTML(req: ReqType): Promise<{
+        type: 'component' | 'model' | string,
+        data: any
+    }>
 
 	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
 		type: 'link' | 'html' | 'jsonForm',
@@ -142,10 +144,28 @@ export abstract class AbstractGroup<T extends Item> extends BaseItem<T> {
 	public readonly type: string = "group";
 	public readonly isGroup: boolean = true;
 	public icon: string = "folder";
+
+    public abstract getAddHTML(req: ReqType): Promise<{
+        type: 'component' | 'model' | string,
+        data: {
+            items?: { name: string, required: boolean }[] | Record<string, any>[],
+            model?: string,
+            labels?: Record<string, string>,
+        }
+    }>
 }
 
 export abstract class AbstractItem<T extends Item> extends BaseItem<T> {
 	public readonly isGroup: boolean = false;
+
+    public abstract getAddHTML(req: ReqType): Promise<{
+        type: 'component' | 'model' | string,
+        data: {
+            items?: Record<string, any>[],
+            model?: string,
+            labels?: Record<string, string>,
+        }
+    }>
 }
 
 /// ContextHandler
