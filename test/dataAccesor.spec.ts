@@ -46,16 +46,13 @@ describe('DataAccessor test', () => {
         }
       }
     };
-
+    console.log(">>>>")
     const ontology = await new Promise<any>((resolve, reject) => {
       orm.initialize(waterlineConfig, (err, ontology) => {
         if (err) return reject(err);
         resolve(ontology);
       });
     });
-
-    console.log("Waterline ORM initialized!");
-
     const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
     adminizer = new Adminizer([waterlineAdapter]);
 
@@ -218,7 +215,26 @@ describe('DataAccessor test', () => {
     );
   });
 
-  // Todo: by default hide model instances to other, with one relation to userAP
+  it('sanitizes access to only own records (userAccessRelation)', async () => {
+    instance = new DataAccessor(adminizer, editorUser, entity, "list");
+
+    const criteria = await instance.sanitizeUserRelationAccess({});
+    // Ожидаем, что критерии фильтруются по user.id
+    expect(criteria).toHaveProperty("userField");
+    expect(criteria["userField"]).toBe(editorUser.id);
+  });
+
+  it('sets userAccessRelation automatically when creating record', async () => {
+    instance = new DataAccessor(adminizer, editorUser, entity, "add");
+
+    const record = await instance.setUserRelationAccess({
+      title: "Test Title",
+      userField: 999
+    });
+
+    expect(record).toHaveProperty("userField");
+    expect(record.userField).toBe(editorUser.id);
+  });
 });
 
 
