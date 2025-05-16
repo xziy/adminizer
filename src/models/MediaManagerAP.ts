@@ -9,7 +9,8 @@ export default {
     primaryKey: true,
     required: true
   },
-  parent: {
+  // WARN!!!  renamed from parent is confict
+  parentMedia: {
     model: "MediaManagerAP"
   },
   variants: {

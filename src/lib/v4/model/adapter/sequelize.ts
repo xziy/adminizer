@@ -5,7 +5,71 @@ import fs from "fs";
 import { pathToFileURL } from "url";
 import { v4 as uuid } from "uuid";
 
+function generateAssociationsFromSchema(
+  models: Record<string, any>,
+  schemas: Record<string, any>
+) {
+  for (const modelName in schemas) {
+    const schema = schemas[modelName];
+    const model = models[modelName];
+    if (!model) continue;
 
+    for (const fieldName in schema) {
+      const field = schema[fieldName];
+
+      if (field.collection && field.via) {
+        const targetModel = models[field.collection];
+        const targetSchema = schemas[field.collection];
+        const inverseField = targetSchema?.[field.via];
+
+        const throughTableName = [modelName, field.collection].sort().join("");
+
+        // 💡 M:N связь
+        if (inverseField && inverseField.collection === modelName) {
+          model.belongsToMany(targetModel, {
+            through: throughTableName,
+            as: fieldName,
+            foreignKey: `${modelName}Id`,
+            otherKey: `${field.collection}Id`
+          });
+        }
+        // 💡 O:M связь (один ко многим)
+        else {
+          model.hasMany(targetModel, {
+            as: fieldName,
+            foreignKey: `${modelName}Id`,
+          });
+          targetModel.belongsTo(model, {
+            as: field.via,
+            foreignKey: `${modelName}Id`,
+          });
+        }
+      }
+
+      // 💡 O:1 или 1:1 (belongsTo)
+      if (field.model) {
+        const targetModel = models[field.model];
+        if (!targetModel) continue;
+
+        // Avoid naming collision by making FK explicit: `${fieldName}Id`
+        const foreignKey = `${fieldName}Id`;
+        const alias = fieldName;
+
+        // Если поле уже существует — избегаем конфликта
+        if (model.rawAttributes[alias]) {
+          model.belongsTo(targetModel, {
+            as: alias,
+            foreignKey,
+          });
+        } else {
+          model.belongsTo(targetModel, {
+            foreignKey: alias, // если нет конфликта, можно использовать alias как FK
+          });
+        }
+      }
+    }
+  }
+}
 
 function resolveType(type: any): Attribute["type"] {
   const sqlType = typeof type.toString === "function"
@@ -553,23 +617,29 @@ export class SequelizeAdapter extends AbstractAdapter {
     const modelsDir = path.resolve(import.meta.dirname, "../../../../models");
     let files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
 
-    // Try with ts files (exclude .d.ts)
     if (!files.length) {
       files = fs.readdirSync(modelsDir).filter(f =>
         f.endsWith(".ts") && !f.endsWith(".d.ts")
       );
     }
-    if(!files.length) {
-      throw `Model files not found in dir ${modelsDir}`
+
+    if (!files.length) {
+      throw `Model files not found in dir ${modelsDir}`;
     }
+
+    const schemas: Record<string, any> = {};
 
     for (const file of files) {
       const modelName = path.basename(file, path.extname(file));
       const filePath = path.resolve(modelsDir, file);
-      const definition = (await import(pathToFileURL(filePath).href)).default;
+      const mod = await import(pathToFileURL(filePath).href);
+      const definition = mod.default;
 
+      schemas[modelName] = definition;
       generateSequelizeModel(sequelize, modelName, definition);
     }
+
+    generateAssociationsFromSchema(sequelize.models, schemas);
 
     await sequelize.sync();
   }
