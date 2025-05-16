@@ -451,7 +451,6 @@ export class DataAccessor {
             const userAccessRelation = this.entity.config.userAccessRelation;
             if (typeof userAccessRelation === 'string') {
                 let accessField = userAccessRelation;
-
                 // only admin can set user access relation manually
                 if (updatedRecord[accessField as keyof T] && !this.user.isAdministrator) {
                     delete updatedRecord[accessField as keyof T];
@@ -460,13 +459,12 @@ export class DataAccessor {
                 // Check if the relation points to `UserAP` or `GroupAP` in the model's attributes
                 const modelAttributes = this.entity.model.attributes;
                 const relation = modelAttributes[accessField];
-
                 if (relation && ['userap', 'groupap'].includes(relation.model.toLowerCase())) {
                     if (relation.model.toLowerCase() === 'userap') {
-                        updatedRecord[accessField as keyof T] = this.user.id as T[keyof T];
-
+                        if (!this.user.isAdministrator) {
+                            updatedRecord[accessField as keyof T] = this.user.id as T[keyof T];
+                        }
                     } else if (relation.model.toLowerCase() === 'groupap') {
-                        // Works only for users with only one group, later it can be resolved with group weight
                         const userGroups = this.user.groups as GroupAP[] || [];
                         if (userGroups.length === 1) {
                             updatedRecord[accessField as keyof T] = userGroups[0].id as T[keyof T];
@@ -529,7 +527,7 @@ export class DataAccessor {
                 updatedRecord[field as keyof T] = intermediateRecord.id as T[keyof T];
             }
         }
-
+        console.log(updatedRecord, "<<<<<<<<<<<<<<<<<<<,")
         return updatedRecord;
     }
 }
