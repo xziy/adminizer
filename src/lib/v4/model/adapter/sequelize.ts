@@ -50,7 +50,7 @@ function generateAssociationsFromSchema(
       if (field.model) {
         const targetModel = models[field.model];
         if (!targetModel) continue;
-
+        
         // Avoid naming collision by making FK explicit: `${fieldName}Id`
         const foreignKey = `${fieldName}Id`;
         const alias = fieldName;
