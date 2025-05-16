@@ -318,8 +318,15 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementById(itemId);
 	}
 
-	async getAddHTML(req: ReqType): Promise<{ type: 'component' | 'navigation' | 'model', data: Record<string, any> }> {
-		let type: 'navigation' = 'navigation'
+	async getAddHTML(req: ReqType): Promise<{
+        type: 'component' | 'navigation.item' | 'navigation.group' | 'model',
+        data: {
+            items: { id: string; name: string}[],
+            model: string,
+            labels?: Record<string, string>,
+        }
+    }> {
+		let type: 'navigation.item' = 'navigation.item'
 		// TODO refactor CRUD functions for DataAccessor usage
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -333,15 +340,12 @@ class NavigationItem extends AbstractItem<NavItem> {
             data: {
                 items: items,
                 model: this.model,
-                selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
-                createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
-                OR: req.i18n.__('OR')
+                labels: {
+                    selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
+                    createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
+                    OR: req.i18n.__('OR')
+                }
             }
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/itemHTMLAdd.ejs'), 'utf8'), {
-			// 	items: items,
-			// 	item: {name: this.name, type: this.type, model: this.model},
-			// 	__: __
-			// }),
 		}
 	}
 
@@ -434,22 +438,34 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		return await storage.setElement(modelId, data);
 	}
 
-	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
-		let type: 'html' = 'html'
-
-		// This dirty hack is here because the field of view is disappearing
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
-		}
-
+	getAddHTML(req: ReqType):Promise<{
+        type: 'component' | 'model' | string,
+        data: {
+            items?: { name: string, required: boolean }[] | Record<string, any>[],
+            model?: string,
+            labels?: Record<string, string>,
+        }
+    }>  {
+		let type: 'navigation.group' = 'navigation.group'
+        let resItems: { name: string; required: boolean; }[] = []
+        if (this.groupField.length) {
+            resItems = this.groupField.map((field: any) => {
+                return {
+                    name: field.name,
+                    required: field.required
+                }
+            })
+        }
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/GroupHTMLAdd.ejs'), 'utf8'), {
-			// 	fields: this.groupField,
-			// 	__: __
-			// }),
-            data: ''
+            data: {
+                items: resItems,
+                labels: {
+                    openInNewWindow: req.i18n.__('Open in a new window'),
+                    title: req.i18n.__('Title'),
+                    save: req.i18n.__('Save')
+                }
+            }
 		})
 	}
 

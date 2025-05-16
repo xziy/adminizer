@@ -2,10 +2,11 @@ import {AbstractCatalog, Item} from "../../lib/catalog/AbstractCatalog";
 
 
 interface NodeModel<TDataType> {
-	title: string;
-	isLeaf: boolean;
-	isExpanded: boolean;
-	ind: number;
+	text: string;
+    droppable: boolean;
+	// isExpanded: boolean;
+	id: number;
+    parent: number;
 	data?: TDataType;
 	children?: NodeModel<TDataType>[];
 
@@ -73,7 +74,8 @@ export class VueCatalog {
 			"No, cancel": "",
 			"Are you sure?": "",
 			"Yes, I'm sure": "",
-			"Select Ids": ""
+			"Select Ids": "",
+            "OR": "",
 		}
 		obj[this.catalog.name] = ""
 		for (const actionHandler of this.catalog.actionHandlers) {
@@ -86,7 +88,9 @@ export class VueCatalog {
 		for (const mess of Object.keys(messages)) {
 			outMessages[mess] = req.i18n.__(mess)
 		}
-		return outMessages
+		return {
+            ...outMessages,
+        }
 	}
 
 	async getActions(items: NodeModel<any>[], type: string) {
@@ -223,19 +227,22 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
+        console.log(data.type, groupTypeName)
 		return {
 			data: data,
-			isLeaf: data.type !== groupTypeName,
-			isExpanded: false,
-			ind: data.sortOrder,
-			title: data.name
+			// droppable: data.type !== groupTypeName,
+			droppable: true,
+			// isExpanded: false,
+			id: data.sortOrder,
+			text: data.name,
+            parent: 0
 		};
 	}
 
 	public static expandTo<T extends NodeData>(vueCatalogData: NodeModel<T>, theseItemIdsNeedToBeOpened: (string | number)[]): NodeModel<T> {
 		function expand(node: NodeModel<T>): void {
 			if (theseItemIdsNeedToBeOpened.includes(node.data.id)) {
-				node.isExpanded = true;
+				// node.isExpanded = true;
 			}
 
 			if (node.children) {
@@ -260,7 +267,7 @@ export class VueCatalogUtils {
 					// Sort the children before building their nodes
 					item.childs.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 					node.children = buildNodes(item.childs);
-					node.isExpanded = !node.isLeaf;
+					// node.isExpanded = !node.droppable;
 				}
 				return node;
 			});

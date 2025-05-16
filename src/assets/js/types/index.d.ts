@@ -1,6 +1,6 @@
 import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
-
+import {NodeModel} from "@minoru/react-dnd-treeview";
 
 export interface Auth {
     user: User;
@@ -107,7 +107,8 @@ export interface Catalog {
     catalogId: string,
     catalogSlug: string,
     movingGroupsRootOnly: boolean,
-    idList: string[]
+    idList: string[],
+    nodes: ModeModel[]
 }
 
 export interface CatalogItem {
@@ -122,14 +123,21 @@ export interface CatalogItem {
     icon: string
 }
 
-export interface ItemAddProps {
-    selectTitle: string,
-    createTitle: string,
+export interface NavItemAddProps {
+    labels: Record<string, string>,
     model: string,
-    OR: string,
     items: {
         id: number,
         name: string
     }[]
     add: (model:string) => void
+}
+
+export interface NavGroupAddProps{
+    labels: Record<string, string>
+    items: {
+        name: string,
+        required: boolean
+    }[],
+    callback: () => void
 }

@@ -1,17 +1,17 @@
 import {Label} from "@/components/ui/label.tsx";
-import {ItemAddProps} from "@/types";
+import {NavItemAddProps} from "@/types";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Plus} from "lucide-react";
 
-const ItemAdd = ({...data}: ItemAddProps) => {
+const ItemAdd = ({...data}: NavItemAddProps) => {
     return (
         <div className="p-8">
             <div className="grid gap-4">
-                <Label>{data.selectTitle}</Label>
+                <Label>{data.labels.selectTitle}</Label>
                 <Select>
                     <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
-                        <SelectValue placeholder={data.selectTitle}/>
+                        <SelectValue placeholder={data.labels.selectTitle}/>
                     </SelectTrigger>
                     <SelectContent>
                         {data.items.map((item) => (
@@ -22,11 +22,11 @@ const ItemAdd = ({...data}: ItemAddProps) => {
                 </Select>
             </div>
             <div className="mt-8">
-                <span><b>{data.OR}</b></span>
+                <span><b>{data.labels.OR}</b></span>
             </div>
             <Button className="mt-8 cursor-pointer" onClick={() => data.add(data.model)}>
                 <Plus />
-                {data.createTitle}
+                {data.labels.createTitle}
             </Button>
         </div>
     )
