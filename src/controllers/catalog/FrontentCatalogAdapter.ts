@@ -124,7 +124,8 @@ export class VueCatalog {
 	//Below are the methods that require action
 
 	async getCatalog() {
-		let rootItems = await this.catalog.getChilds(null);
+		let rootItems = await this.catalog.getChilds(0);
+        console.log(rootItems)
 		return VueCatalogUtils.arrayToNode(rootItems, this.catalog.getGroupType().type);
 	}
 
@@ -227,13 +228,12 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
-        console.log(data.type, groupTypeName)
 		return {
 			data: data,
 			// droppable: data.type !== groupTypeName,
 			droppable: true,
 			// isExpanded: false,
-			id: data.sortOrder,
+			id: data.sortOrder + 1,
 			text: data.name,
             parent: 0
 		};

@@ -20,7 +20,7 @@ const GroupAdd = ({...data}: NavGroupAddProps) => {
         e.preventDefault();
         setIsLoading(true)
         try {
-            const response = await axios.post('', {
+            const res = await axios.post('', {
                 data: {
                     ...formData,
                     targetBlank,
@@ -29,6 +29,7 @@ const GroupAdd = ({...data}: NavGroupAddProps) => {
                 },
                 _method: 'createItem'
             });
+            console.log(res.data)
             setIsLoading(false)
             data.callback()
         } catch (e) {
