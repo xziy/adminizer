@@ -141,3 +141,13 @@ export interface NavGroupAddProps{
     }[],
     callback: () => void
 }
+
+export interface CustomCatalogData {
+    id: string | number;
+    name: string;
+    parentId: string | number | null;
+    sortOrder: number
+    icon: string
+    type: string;
+    marked?: boolean
+}

@@ -3,7 +3,8 @@ import {
     Tree,
     getBackendOptions,
     MultiBackend,
-    NodeModel
+    NodeModel,
+    DragLayerMonitorProps
 } from "@minoru/react-dnd-treeview";
 import {DndProvider} from "react-dnd";
 import axios from "axios";
@@ -17,10 +18,15 @@ import {
     DialogStackContent, DialogStackHandle,
     DialogStackOverlay
 } from "@/components/ui/dialog-stack.tsx";
-import {Catalog, CatalogItem, Field} from "@/types";
+import {Catalog, CatalogItem, CustomCatalogData, Field} from "@/types";
 import SelectCatalogItem from "@/components/catalog/select-catalog-item.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import AddForm from "@/components/add-form.tsx";
+import CatalogNode from "@/components/catalog/CatalogNode.tsx";
+import CatalogDragPreview from "@/components/catalog/CatalogDragPreview.tsx";
+import styles from "@/components/catalog/Catalog.module.css";
+import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
+
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
@@ -62,8 +68,12 @@ export const CatalogContext = createContext<CatalogContextProps>({
 
 
 const CatalogTree = () => {
-    const [treeData, setTreeData] = useState<NodeModel[]>([]);
-    const handleDrop = (newTree: NodeModel[]) => setTreeData(newTree);
+    const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
+    const handleDrop = (newTree: NodeModel<CustomCatalogData>[]) => setTreeData(newTree);
+    const [selectedNode, setSelectedNode] = useState<NodeModel | null>(null);
+    const handleSelect = (node: NodeModel) => {
+        selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
+    }
 
     const [catalog, setCatalog] = useState<Catalog>({
         catalogId: "",
@@ -235,21 +245,47 @@ const CatalogTree = () => {
                             />
                         </div>
                     </div>
-                    <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-                        <Tree
-                            tree={treeData}
-                            rootId={0}
-                            onDrop={handleDrop}
-                            render={(node, {depth, isOpen, onToggle}) => (
-                                <div style={{marginLeft: depth * 10}}>
-                                    {node.droppable && (
-                                        <span onClick={onToggle}>{isOpen ? "[-]" : "[+]"}</span>
+                    <div className="h-full">
+                        <DndProvider backend={MultiBackend} options={getBackendOptions()}>
+                            <div className={styles.app}>
+                                <Tree
+                                    tree={treeData}
+                                    rootId={0}
+                                    render={(node, {depth, isOpen, onToggle}) => (
+                                        <CatalogNode
+                                            node={node}
+                                            depth={depth}
+                                            isOpen={isOpen}
+                                            isSelected={node.id === selectedNode?.id}
+                                            onToggle={onToggle}
+                                            onSelect={handleSelect}
+                                        />
                                     )}
-                                    {node.text}
-                                </div>
-                            )}
-                        />
-                    </DndProvider>
+                                    dropTargetOffset={5}
+                                    insertDroppableFirst={false}
+                                    classes={{
+                                        draggingSource: styles.draggingSource,
+                                        dropTarget: styles.dropTarget,
+                                        placeholder: styles.placeholderContainer,
+                                        root: 'py-2'
+                                    }}
+                                    canDrop={(_tree, {dragSource, dropTargetId}) => {
+                                        if (dragSource?.parent === dropTargetId) {
+                                            return true;
+                                        }
+                                    }}
+                                    sort={false}
+                                    dragPreviewRender={(
+                                        monitorProps: DragLayerMonitorProps<CustomCatalogData>
+                                    ) => <CatalogDragPreview monitorProps={monitorProps}/>}
+                                    onDrop={handleDrop}
+                                    placeholderRender={(node, {depth}) => (
+                                        <Placeholder node={node} depth={depth}/>
+                                    )}
+                                />
+                            </div>
+                        </DndProvider>
+                    </div>
                     <DialogStack ref={dialogRef}>
                         <DialogStackOverlay/>
                         <DialogStackBody>

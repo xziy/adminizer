@@ -9,7 +9,7 @@ import {Adminizer} from "../Adminizer";
 export interface Item {
 	id: string | number;
 	name: string;
-	parentId: string | number | null;
+	parentId: string | number;
 	childs?: Item[];
 	sortOrder: number
 
@@ -123,15 +123,15 @@ export abstract class BaseItem<T extends Item> {
 		data: string
 	}>;
 
-	public async _getChilds(parentId: string | number | null, catalogId: string): Promise<Item[]> {
-		let items = await this.getChilds(parentId, catalogId)
-		items.forEach((item) => {
-			this._enrich(item as T)
-		})
-		return items;
-	}
+    public async _getChilds(parentId: string | number, catalogId: string): Promise<Item[]> {
+        let items = await this.getChilds(parentId, catalogId);
+        items.forEach((item) => {
+            this._enrich(item as T);
+        });
+        return items;
+    }
 
-	public abstract getChilds(parentId: string | number | null, catalogId: string): Promise<Item[]>
+    public abstract getChilds(parentId: string | number, catalogId: string): Promise<Item[]>;
 
 	public abstract search(s: string, catalogId: string): Promise<T[]>
 }
@@ -284,21 +284,21 @@ export abstract class AbstractCatalog {
 	 * Method for getting childs elements
 	 * if pass null as parentId this root
 	 */
-	public async getChilds(parentId: string | number | null, byItemType?: string): Promise<Item[]> {
-		if (byItemType) {
-			const items = await this.getItemType(byItemType)?._getChilds(parentId, this.id);
-			return items ? items.sort((a, b) => a.sortOrder - b.sortOrder) : [];
-		} else {
-			let result: Item[] = [];
-			for (const itemType of this.itemTypes) {
-				const items = await itemType?._getChilds(parentId, this.id);
-				if (items) {
-					result = result.concat(items);
-				}
-			}
-			return result.sort((a, b) => a.sortOrder - b.sortOrder);
-		}
-	}
+    public async getChilds(parentId: string | number, byItemType?: string): Promise<Item[]> {
+        if (byItemType) {
+            const items = await this.getItemType(byItemType)?._getChilds(parentId, this.id);
+            return items ? items.sort((a, b) => a.sortOrder - b.sortOrder) : [];
+        } else {
+            let result: Item[] = [];
+            for (const itemType of this.itemTypes) {
+                const items = await itemType?._getChilds(parentId, this.id);
+                if (items) {
+                    result = result.concat(items);
+                }
+            }
+            return result.sort((a, b) => a.sortOrder - b.sortOrder);
+        }
+    }
 
 	private _bindAccessRight(adminizer: Adminizer) {
 		setTimeout(() => {
@@ -507,11 +507,11 @@ export abstract class AbstractCatalog {
 		}
 
 
-		for (const item of foundItems) {
-			if (item.parentId !== null) {
-				await buildTreeUpwards(item, hasExtras);
-			}
-		}
+        for (const item of foundItems) {
+            if (item.parentId !== 0) { // changed from null to 0
+                await buildTreeUpwards(item, hasExtras);
+            }
+        }
 
 		// finalize
 		const itemsMap = new Map<string | number, Item>();
@@ -531,26 +531,26 @@ export abstract class AbstractCatalog {
 	}
 
 
-	public static buildTree(items: Item[]): Item[] {
-		const tree: Item[] = [];
-		const itemMap: { [key: string]: Item } = {};
+    public static buildTree(items: Item[]): Item[] {
+        const tree: Item[] = [];
+        const itemMap: { [key: string]: Item } = {};
 
-		items.forEach(item => {
-			item.childs = [];
-			itemMap[item.id] = item;
-		});
+        items.forEach(item => {
+            item.childs = [];
+            itemMap[item.id] = item;
+        });
 
-		items.forEach(item => {
-			if (item.parentId === null) {
-				tree.push(item);
-			} else {
-				const parent = itemMap[item.parentId];
-				if (parent) {
-					parent.childs.push(item);
-				}
-			}
-		});
+        items.forEach(item => {
+            if (item.parentId === 0) { // changed from null to 0
+                tree.push(item);
+            } else {
+                const parent = itemMap[item.parentId];
+                if (parent) {
+                    parent.childs.push(item);
+                }
+            }
+        });
 
-		return tree;
-	}
+        return tree;
+    }
 }

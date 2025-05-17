@@ -133,31 +133,29 @@ class StorageService {
 		let tree = await this.buildTree()
 		try {
 			// TODO refactor CRUD functions for DataAccessor usage
-			await this.adminizer.modelHandler.model.get(this.model)["_update"](
+            console.log(await this.adminizer.modelHandler.model.get(this.model)["_update"](
 				{label: this.id},
 				{tree: tree}
-			)
+			))
 		} catch (e) {
 			console.log(e)
 			throw 'navigation model update error'
 		}
 	}
 
-	public async findElementsByParentId(parentId: string | number, type: string | null): Promise<NavItem[]> {
-		const elements: NavItem[] = [];
-		for (const item of this.storageMap.values()) {
-			// Assuming each item has a parentId property
-			if (type === null && item.parentId === parentId) {
-				elements.push(item)
-				continue
-			}
-			if (item.parentId === parentId && item.type === type) {
-				elements.push(item);
-			}
-		}
-
-		return elements;
-	}
+    public async findElementsByParentId(parentId: string | number, type: string | null): Promise<NavItem[]> {
+        const elements: NavItem[] = [];
+        for (const item of this.storageMap.values()) {
+            if (type === null && item.parentId === parentId) {
+                elements.push(item);
+                continue;
+            }
+            if (item.parentId === parentId && item.type === type) {
+                elements.push(item);
+            }
+        }
+        return elements;
+    }
 
 	public async getAllElements(): Promise<NavItem[]> {
 		return Array.from(this.storageMap.values());
@@ -271,22 +269,22 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.setElement(data.id, storageData) as NavItem;
 	}
 
-	protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-		let storage = StorageServices.get(catalogId)
-		let urlPath = eval('`' + this.urlPath + '`')
-		let parentId = data.parentId ? data.parentId : null
-		return {
-			id: uuid(),
-			modelId: data.record.id,
-			targetBlank: data.targetBlank ?? data.record.targetBlank,
-			name: data.record.name ?? data.record.title ?? data.record.id,
-			parentId: parentId,
-			sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
-			icon: this.icon,
-			type: this.type,
-			urlPath: urlPath
-		}
-	}
+    protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
+        let storage = StorageServices.get(catalogId);
+        let urlPath = eval('`' + this.urlPath + '`');
+        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        return {
+            id: uuid(),
+            modelId: data.record.id,
+            targetBlank: data.targetBlank ?? data.record.targetBlank,
+            name: data.record.name ?? data.record.title ?? data.record.id,
+            parentId: parentId,
+            sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
+            icon: this.icon,
+            type: this.type,
+            urlPath: urlPath
+        };
+    }
 
 	async updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<NavItem> {
 		let storage = StorageServices.get(catalogId)
@@ -404,19 +402,19 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		return await storage.setElement(storageData.id, storageData) as NavItem;
 	}
 
-	protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-		let storage = StorageServices.get(catalogId)
-		let parentId = data.parentId ? data.parentId : null
-		return {
-			id: uuid(),
-			name: data.name,
-			targetBlank: data.targetBlank,
-			parentId: parentId,
-			sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
-			icon: this.icon,
-			type: this.type
-		}
-	}
+    protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
+        let storage = StorageServices.get(catalogId);
+        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        return {
+            id: uuid(),
+            name: data.name,
+            targetBlank: data.targetBlank,
+            parentId: parentId,
+            sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
+            icon: this.icon,
+            type: this.type
+        };
+    }
 
 	async deleteItem(itemId: string | number, catalogId: string): Promise<void> {
 		let storage = StorageServices.get(catalogId)
