@@ -5,6 +5,7 @@ import fs from "fs";
 import { pathToFileURL } from "url";
 import { v4 as uuid } from "uuid";
 
+
 function generateAssociationsFromSchema(
   models: Record<string, any>,
   schemas: Record<string, any>
@@ -183,27 +184,6 @@ type AbstractAttribute = {
   unique?: boolean;
 };
 
-// function resolveType(type: any): AbstractFieldType {
-//   try {
-//     const sqlType = typeof type.toString === "function"
-//       ? type.toString().toLowerCase()
-//       : "";
-
-//     if (sqlType.includes("string")) return "string";
-//     if (sqlType.includes("uuid")) return "string";
-//     if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
-//     if (sqlType.includes("bool")) return "boolean";
-//     if (sqlType.includes("json")) return "json";
-//     if (sqlType.includes("date")) return "string"; 
-
-//     return "ref";
-//   } catch {
-//     return "ref";
-//   }
-// }
-/** SequelizeModel — реализация модели, совместимая с AbstractModel */
-
-
 function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -336,6 +316,35 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     );
     this.model = model;
   }
+
+  async _assignAssociations(instance: any, assocData: Record<string, any>) {
+    for (const [alias, ids] of Object.entries(assocData)) {
+      const assoc = this.model.associations[alias];
+      if (!assoc) continue;
+
+      const { set: setAccessor, add: addAccessor } = assoc.accessors;
+
+      if (Array.isArray(ids)) {
+        if (typeof instance[setAccessor] === 'function') {
+          await instance[setAccessor](ids);
+          continue;
+        }
+        if (typeof instance[addAccessor] === 'function') {
+          for (const id of ids) {
+            await instance[addAccessor](id);
+          }
+          continue;
+        }
+      }
+
+      if (typeof instance[setAccessor] === 'function') {
+        await instance[setAccessor](ids);
+      } else if (typeof instance[addAccessor] === 'function') {
+        await instance[addAccessor](ids);
+      }
+    }
+  }
+
 
   // --- CREATE ---
   
@@ -518,51 +527,144 @@ protected async _find(
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const record = await this.model.findOne({ where });
-    if (!record) {
+    if (!record) return null;
 
-      return null;
+    const assocNames = Object.keys(this.model.associations);
+    const plainData: Record<string, any> = {};
+    const assocData: Record<string, any> = {};
+
+    for (const [key, val] of Object.entries(data)) {
+      if (assocNames.includes(key)) {
+        assocData[key] = val;
+      } else {
+        plainData[key] = val;
+      }
     }
-    await record.update(data);
-    const result = await this.model.findByPk(record.get(this.primaryKey), { raw: true });
 
-    return result;
+    await record.update(plainData);
+    await this._assignAssociations(record, assocData);
+    await record.reload({ include: Object.values(this.model.associations) });
+
+    return record.get({ plain: true }) as T;
   }
 
   // --- UPDATE MANY ---
   protected async _update(criteria: Partial<T>, data: Partial<T>): Promise<T[]> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
 
-    await this.model.update(data, { where });
-    const result = await this.model.findAll({ where, raw: true });
+    const assocNames = Object.keys(this.model.associations);
+    const plainData: Record<string, any> = {};
+    const assocData: Record<string, any> = {};
 
-    return result;
+    for (const [key, val] of Object.entries(data)) {
+      if (assocNames.includes(key)) {
+        assocData[key] = val;
+      } else {
+        plainData[key] = val;
+      }
+    }
+
+    const records = await this.model.findAll({ where });
+
+    for (const record of records) {
+      await record.update(plainData);
+      await this._assignAssociations(record, assocData);
+    }
+
+    const reloaded = await this.model.findAll({
+      where,
+      include: Object.values(this.model.associations)
+    });
+
+    return reloaded.map(r => r.get({ plain: true }) as T);
   }
+
 
   // --- DESTROY ONE ---
   protected async _destroyOne(criteria: Partial<T>): Promise<T | null> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
-
     const record = await this.model.findOne({ where });
-    if (!record) {
 
-      return null;
+    if (!record) return null;
+
+    const assocNames = Object.keys(this.model.associations);
+
+    for (const alias of assocNames) {
+      const assoc = this.model.associations[alias];
+      // @ts-ignore: accessors should exist
+      const getAccessor = assoc.accessors?.get;
+      
+      if (typeof record[getAccessor] === "function") {
+        try {
+          const related = await record[getAccessor]();
+
+          // 🧹 Удаляем связанные записи
+          if (Array.isArray(related)) {
+            for (const r of related) {
+              if (typeof r.destroy === "function") {
+                await r.destroy();
+              }
+            }
+          } else if (related && typeof related.destroy === "function") {
+            await related.destroy();
+          }
+
+        } catch (e) {
+          // console.warn(`Failed to fetch/delete relation "${alias}":`, e);
+        }
+      }
     }
+
     const raw = record.get({ plain: true });
     await record.destroy();
 
     return raw;
   }
 
+
   // --- DESTROY MANY ---
   protected async _destroy(criteria: Partial<T>): Promise<T[]> {
     const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const records = await this.model.findAll({ where });
+    const assocNames = Object.keys(this.model.associations);
+
+    for (const record of records) {
+      for (const alias of assocNames) {
+        const assoc = this.model.associations[alias];
+
+        // 🛑 Не трогаем родительские связи
+        if (assoc.associationType === "BelongsTo") continue;
+
+        // @ts-ignore accessor exists
+        const getAccessor = assoc.accessors?.get;
+
+        if (typeof record[getAccessor] === "function") {
+          try {
+            const related = await record[getAccessor]();
+
+            if (Array.isArray(related)) {
+              for (const rel of related) {
+                if (typeof rel.destroy === "function") {
+                  await rel.destroy();
+                }
+              }
+            } else if (related && typeof related.destroy === "function") {
+              await related.destroy();
+            }
+          } catch (e) {
+            // console.warn(`Failed to delete relation ${alias}:`, e);
+          }
+        }
+      }
+    }
+
     const raw = records.map(r => r.get({ plain: true }));
     await this.model.destroy({ where });
 
     return raw;
   }
+
 
   // --- COUNT ---
   protected async _count(criteria: Partial<T> = {}): Promise<number> {
