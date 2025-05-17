@@ -322,6 +322,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
       const assoc = this.model.associations[alias];
       if (!assoc) continue;
 
+      //@ts-ignore
       const { set: setAccessor, add: addAccessor } = assoc.accessors;
 
       if (Array.isArray(ids)) {
