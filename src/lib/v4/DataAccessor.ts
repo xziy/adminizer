@@ -420,7 +420,7 @@ export class DataAccessor {
                 }
 
                 // Ensure there is only one associated intermediate record
-                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id});
+                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id}, this);
                 if (intermediateRecordCount > 1) {
                     throw new Error(
                         `Multiple intermediate records found in model "${intermediateRelation.model}" associated with user ID "${this.user.id}". ` +
@@ -517,7 +517,7 @@ export class DataAccessor {
                 }
 
                 // Ensure there is only one associated intermediate record
-                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id});
+                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id}, this);
                 if (intermediateRecordCount > 1) {
                     throw new Error(
                         `Multiple intermediate records found in model "${intermediateRelation.model}" associated with user ID "${this.user.id}". ` +
