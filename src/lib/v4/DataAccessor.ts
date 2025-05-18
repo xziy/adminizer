@@ -22,7 +22,6 @@ export class DataAccessor {
     private fields: Fields = null;
     private actionVerb: string
 
-    // TODO: change req to adminizr + user
     constructor(adminizer: Adminizer, user: UserAP, entity: Entity, action: ActionType) {
         this.adminizer = adminizer;
         this.user = user;
@@ -60,7 +59,11 @@ export class DataAccessor {
         const result: Fields = {};
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
             
-
+            // The fields that are recorded separately from the connection in some ORMs, because they are processed at the level above them.
+            if(modelAttributes[key].primaryKeyForAssociation === true) {
+                return undefined
+            }
+            
             // Checks for short type in Waterline: fieldName: 'string'
             if (typeof modelField === "string") {
                 modelField = {type: modelField};
@@ -105,7 +108,6 @@ export class DataAccessor {
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
                 
-                // Todo: test > hide relation without model token
                 const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
                 if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
                     Adminizer.log.silly(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
@@ -527,7 +529,6 @@ export class DataAccessor {
                 updatedRecord[field as keyof T] = intermediateRecord.id as T[keyof T];
             }
         }
-        console.log(updatedRecord, "<<<<<<<<<<<<<<<<<<<,")
         return updatedRecord;
     }
 }

@@ -28,7 +28,16 @@ export async function seedDatabase(
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators' },
-    { name: 'Users', description: 'Registered users', tokens: ["read-test-model","update-test-model","delete-test-model", "create-example-model","read-example-model","update-example-model"] },
+    { name: 'Users', description: 'Registered users', tokens: 
+      [
+        "create-test-model",
+        "read-test-model",
+        "update-test-model",
+        "delete-test-model",
+
+         "create-example-model",
+         "read-example-model",
+         "update-example-model"] },
     { name: 'Guests', description: 'Guest access' },
   ];
 
@@ -105,7 +114,15 @@ export async function seedDatabase(
       const fakeExamples = Array.from({ length: count }, () => {
         const randomUser = faker.helpers.arrayElement(allUsers);
         if(isSequelize) {
-          return {}
+          return {
+            title:       faker.lorem.word(),
+            description: faker.lorem.paragraph(),
+            sort:        faker.datatype.boolean(),
+            time:        getRandomTime(),
+            ownerId:       randomUser.id,
+            number:      faker.number.int(300),
+            editor:      faker.lorem.text(),
+          }
         } else {
           return {
             title:       faker.lorem.word(),
@@ -113,6 +130,7 @@ export async function seedDatabase(
             sort:        faker.datatype.boolean(),
             time:        getRandomTime(),
             owner:       randomUser.id,
+            ownerId:       randomUser.id,
             number:      faker.number.int(300),
             editor:      faker.lorem.text(),
           }
