@@ -188,9 +188,23 @@ function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function convertCriteriaToSequelize(criteria: any): any {
-  // console.debug("waterline criteria", criteria)
-  const result: any = {};
+
+export class SequelizeModel<T> extends AbstractModel<T> {
+  private model: ModelStatic<any>;
+
+  constructor(modelName: string, model: ModelStatic<any>) {
+    super(
+      modelName,
+      mapSequelizeToWaterline(model),
+      model.primaryKeyAttribute,
+      model.name
+    );
+    this.model = model;
+  }
+
+
+_convertCriteriaToSequelize(criteria: any): any {
+  const result: Record<string, any> = {};
 
   for (const key in criteria) {
     const value = criteria[key];
@@ -200,7 +214,14 @@ function convertCriteriaToSequelize(criteria: any): any {
       value === null ||
       (typeof value === "object" && Object.keys(value).length === 0)
     ) {
-      continue; 
+      continue;
+    }
+
+    // 🧠 Заменяем ключ на `via`, если это ассоциация
+    const attr = this.attributes?.[key];
+    let targetKey = key;
+    if (attr?.type === "association" && attr.via) {
+      targetKey = attr.via;
     }
 
     if (typeof value === "object" && !Array.isArray(value)) {
@@ -223,17 +244,18 @@ function convertCriteriaToSequelize(criteria: any): any {
         });
 
       if (operatorEntries.length > 0) {
-        result[key] = Object.fromEntries(operatorEntries);
+        result[targetKey] = Object.fromEntries(operatorEntries);
       }
     } else {
-      result[key] = value;
+      result[targetKey] = value;
     }
   }
 
-  return result;
+  return result; 
 }
 
-function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
+
+ _convertWaterlineCriteriaToSequelizeOptions (criteria: any): {
   where?: any;
   limit?: number;
   offset?: number;
@@ -252,9 +274,7 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
   // console.debug("WATERLINE CRITERIA: using rawWhere =", rawWhere);
 
   
-  const where = convertCriteriaToSequelize(rawWhere);
-  // console.debug("convertCriteriaToSequelize →", where);
-
+  const where = this._convertCriteriaToSequelize(rawWhere);
   
   const result: any = { where };
 
@@ -274,48 +294,6 @@ function convertWaterlineCriteriaToSequelizeOptions(criteria: any): {
 
   return result;
 }
-
-function convertWaterlineCriteriaToSequelizeOptions____OLD(criteria: any): {
-  where?: any;
-  limit?: number;
-  offset?: number;
-  order?: any[];
-} {
-  // console.debug("WATERLINE CRITERIA", criteria)
-  const { where = {}, skip, limit, sort } = criteria;
-  const result: any = {
-    where: convertCriteriaToSequelize(where),
-  };
-
-  if (typeof skip === "number") {
-    result.offset = skip;
-  }
-
-  if (typeof limit === "number") {
-    result.limit = limit;
-  }
-
-  if (typeof sort === "string") {
-    const [field, direction] = sort.trim().split(/\s+/);
-    result.order = [[field, direction?.toUpperCase() === "DESC" ? "DESC" : "ASC"]];
-  }
-
-  return result;
-}
-
-
-export class SequelizeModel<T> extends AbstractModel<T> {
-  private model: ModelStatic<any>;
-
-  constructor(modelName: string, model: ModelStatic<any>) {
-    super(
-      modelName,
-      mapSequelizeToWaterline(model),
-      model.primaryKeyAttribute,
-      model.name
-    );
-    this.model = model;
-  }
 
   async _assignAssociations(instance: any, assocData: Record<string, any>) {
     for (const [alias, ids] of Object.entries(assocData)) {
@@ -432,7 +410,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
 protected async _findOne(criteria: Partial<T>): Promise<T | null> {
   // console.debug(">> _findOne: входные критерии:", criteria);
 
-  const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+  const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
   const includes = this._buildIncludes();
   // console.debug(">> _findOne: преобразованные where:", where);
   // console.debug(">> _findOne: includes:", includes);
@@ -464,9 +442,7 @@ protected async _find(
   const assocNames = Object.keys(this.model.associations);
   // console.debug(">> _find: входные criteria:", criteria, "options:", options);
 
-  
-  const { where, limit, offset, order } =
-    convertWaterlineCriteriaToSequelizeOptions(criteria);
+  const { where, limit, offset, order } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
   const includes = options.populate
     ? options.populate.map(([field, opts]) => ({ association: field, ...opts }))
     : assocNames.map(a => ({ association: a }));
@@ -525,7 +501,7 @@ protected async _find(
 
   // --- UPDATE ONE ---
   protected async _updateOne(criteria: Partial<T>, data: Partial<T>): Promise<T | null> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const record = await this.model.findOne({ where });
     if (!record) return null;
@@ -551,7 +527,7 @@ protected async _find(
 
   // --- UPDATE MANY ---
   protected async _update(criteria: Partial<T>, data: Partial<T>): Promise<T[]> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const assocNames = Object.keys(this.model.associations);
     const plainData: Record<string, any> = {};
@@ -583,7 +559,7 @@ protected async _find(
 
   // --- DESTROY ONE ---
   protected async _destroyOne(criteria: Partial<T>): Promise<T | null> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
     const record = await this.model.findOne({ where });
 
     if (!record) return null;
@@ -625,7 +601,7 @@ protected async _find(
 
   // --- DESTROY MANY ---
   protected async _destroy(criteria: Partial<T>): Promise<T[]> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const records = await this.model.findAll({ where });
     const assocNames = Object.keys(this.model.associations);
@@ -669,7 +645,7 @@ protected async _find(
 
   // --- COUNT ---
   protected async _count(criteria: Partial<T> = {}): Promise<number> {
-    const { where } = convertWaterlineCriteriaToSequelizeOptions(criteria);
+    const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
     const result = await this.model.count({ where });
 

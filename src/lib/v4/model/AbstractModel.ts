@@ -101,7 +101,8 @@ export abstract class AbstractModel<T> {
     return records.map(record => dataAccessor.process(record));
   }
 
-  public async count(criteria: Partial<T> | undefined): Promise<number> {
+  public async count(criteria: Partial<T> | undefined, dataAccessor: DataAccessor): Promise<number> {
+    criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
     return this._count(criteria);
   }
 
