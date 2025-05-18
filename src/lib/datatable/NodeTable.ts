@@ -190,8 +190,8 @@ export class NodeTable {
     async output(callback: (err: Error, output: NodeOutput) => void, dataAccessor: DataAccessor): Promise<void> {
         try {
             const queryOptions = await this.buildQuery();
-            const totalRecords = await this.model.count({});
-            const filteredRecords = await this.model.count(queryOptions.where);
+            const totalRecords = await this.model.count({}, dataAccessor);
+            const filteredRecords = await this.model.count(queryOptions.where, dataAccessor);
             const data = await this.model.find(queryOptions, dataAccessor);
             
             const output = {
