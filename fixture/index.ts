@@ -53,7 +53,7 @@ if(process.env.ORM === 'sequelize'
     await SequelizeAdapter.registerSystemModels(orm)
     orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize])
     TestSequelize.associate(orm)
-    console.log('Test associations:', Object.keys(TestSequelize.associations));
+    ExampleSequelize.associate(orm)
 
     await orm.sync({ });
     const sequelizeAdapter = new SequelizeAdapter(orm);
