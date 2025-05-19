@@ -1,6 +1,6 @@
 import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
-import {Fields, Field, RuntimeField} from "./fieldsHelper";
+import {Fields, Field} from "./fieldsHelper";
 import {
     BaseFieldConfig,
     HandsontableOptions,
@@ -10,6 +10,7 @@ import {
 import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
+import { isObject } from "lodash-es";
 
 export type PropsFieldType =
    'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
@@ -56,7 +57,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     for (const key of Object.keys(fields)) {
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
-        let fieldConfig = field.config as RuntimeField
+        let fieldConfig = field.config
+        if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
         if (!!fieldConfig.visible === false) continue
 
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
@@ -164,7 +166,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     return props
 }
 
-export function getControlsOptions(fieldConfig: RuntimeField, req: ReqType, type: ControlType, defaultControlName: string) {
+export function getControlsOptions(fieldConfig: Field["config"], req: ReqType, type: ControlType, defaultControlName: string) {
+    if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
     const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
 
     let control = getControl(req, type, fieldOptions?.name, defaultControlName);
@@ -249,8 +252,9 @@ export function getControl(req: ReqType, type: ControlType, name: string | undef
 function setAssociationValues(field: Field, value: string[]) {
     let options = []
     let initValue: string[] = []
-    const config = field.config as RuntimeField
-
+    const config = field.config 
+    if(!isObject(config)) throw `Type error: config is object`
+        
     const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
         if (Array.isArray(value)) {
             return value.includes(option);
@@ -296,7 +300,8 @@ function setAssociationValues(field: Field, value: string[]) {
             value: optAny[config.identifierField],
         });
 
-        if (isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
+        if(!isObject(config)) throw `Type error: config is object`
+        if (config.identifierField && isOptionSelected(opt[config.identifierField], getAssociationValue(value, field))) {
             initValue.push(opt[config.identifierField])
         }
     }

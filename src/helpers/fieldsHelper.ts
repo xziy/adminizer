@@ -3,11 +3,11 @@ import {Entity} from "../interfaces/types";
 import {Attribute, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
-export type RuntimeField = BaseFieldConfig & { records?: object[] }
+import { isObject } from "lodash-es";
 export type Field = {
   config: BaseFieldConfig & {
     /** @deprecated record should not be in config anymore */
-    records?: object[]
+    records?: Record<string, any>[]
     file?: string
     key?: string
     required?: boolean
@@ -45,7 +45,10 @@ export class FieldsHelper {
      * @param action
      */
     let loadAssoc = async function (key: string, action?: ActionType) {
-      let fieldConfigConfig = fields[key].config as RuntimeField;
+      let fieldConfigConfig = fields[key].config as Field["config"];
+      if(!isObject(fieldConfigConfig)){
+        throw 'type error: fieldConfigConfig should be normalized'
+      }
       if (fieldConfigConfig.type !== 'association' && fieldConfigConfig.type !== 'association-many') {
         return;
       }

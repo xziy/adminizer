@@ -14,6 +14,7 @@ import {ControllerHelper} from "../../helpers/controllerHelper";
 import {Adminizer} from "../Adminizer";
 import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
+import { isObject } from "lodash-es";
 
 export class DataAccessor {
     private readonly adminizer: Adminizer;
@@ -119,6 +120,7 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
+                        if(!isObject(this.adminizer.config.models[modelName])) throw `type error: model config  of ${modelName} is ${typeof(this.adminizer.config.models[modelName])} expected object`
                         associatedModelConfig = this.adminizer.config.models[modelName];
 
                     } else {
@@ -210,6 +212,7 @@ export class DataAccessor {
                 config: fldConfig,
                 model: modelField,
                 populated: undefined, // set undefined for already populated fields
+                modelConfig: undefined
             };
         });
 
