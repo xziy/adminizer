@@ -189,4 +189,35 @@ export async function seedDatabase(
       await testModel.createEach(fakeTests).fetch();
     }
   }
+
+
+    // ------------------ JsonSchemas ------------------ //
+  const jsonSchemaModel = collections.jsonschema ?? collections.JsonSchema;
+
+  const schemaCount = isSequelize
+    ? await jsonSchemaModel.count()
+    : await jsonSchemaModel.count({});
+
+  if (schemaCount === 0) {
+    const fakeSchemas = Array.from({ length: 3 }, () => {
+      const schemaData = {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            age: { type: "number" }
+          },
+          required: ["name"]
+        },
+        name: faker.internet.userName()
+      };
+      return schemaData;
+    });
+
+    if (isSequelize) {
+      await jsonSchemaModel.bulkCreate(fakeSchemas);
+    } else {
+      await jsonSchemaModel.createEach(fakeSchemas).fetch();
+    }
+  }
 }

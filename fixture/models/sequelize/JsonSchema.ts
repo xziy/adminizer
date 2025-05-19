@@ -6,7 +6,7 @@ import {
 	AutoIncrement,
 	DataType,
   } from 'sequelize-typescript';
-  import { InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
+  import { CreationOptional, InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
   
   
   @Table({ tableName: 'jsonschema', timestamps: true })
@@ -16,14 +16,16 @@ import {
   > {
   
 	@PrimaryKey
-	@AutoIncrement
-	@Column(DataType.INTEGER)
-	declare id: number;
+	@Column({
+		type: DataType.UUID,
+		defaultValue: DataType.UUIDV4,
+	})
+	declare id: CreationOptional<string>;
+  
+	@Column({ type: DataType.STRING, allowNull: false })
+	declare name: string;
   
 	@Column(DataType.JSON)
 	declare data: object;
-  
-	@Column(DataType.JSON)
-	declare data2: object;
   }
   

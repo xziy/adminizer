@@ -15,6 +15,9 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Title',
                 type: 'string',
                 required: true
+            },
+            schema: {
+                displayField: "title"
             }
         },
         list: {
@@ -310,7 +313,7 @@ const models: AdminpanelConfig["models"] = {
         title: 'Json schema',
         model: 'jsonschema',
         navbar: {
-            groupsAccessRights: ["admin"]
+            groupsAccessRights: ["admins"]
         },
         fields: {
             data: {
@@ -361,9 +364,6 @@ const models: AdminpanelConfig["models"] = {
                         // ]
                     }
                 },
-            },
-            data2: {
-                type: 'json',
             }
         },
         

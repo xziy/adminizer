@@ -46,7 +46,6 @@ describe('DataAccessor test', () => {
         }
       }
     };
-    console.log(">>>>")
     const ontology = await new Promise<any>((resolve, reject) => {
       orm.initialize(waterlineConfig, (err, ontology) => {
         if (err) return reject(err);
