@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { faker, tr } from '@faker-js/faker';
 import { generate } from 'password-hash';
 import { UserAP } from '../../src';
 import { Example } from '../models/sequelize/Example';
@@ -37,7 +37,11 @@ export async function seedDatabase(
 
          "create-example-model",
          "read-example-model",
-         "update-example-model"] },
+         "update-example-model",
+        
+         "read-jsonschema-model",
+        ] 
+      },
     { name: 'Guests', description: 'Guest access' },
   ];
 
@@ -62,7 +66,7 @@ export async function seedDatabase(
     { login: 'user1', password: 'user1', fullName: 'User One' },
     { login: 'admin', password: 'admin', fullName: 'Admin User', isAdministrator: true },
     { login: 'user2', password: 'user2', fullName: 'User Two' },
-    { login: 'user3', password: 'user3', fullName: 'User Three' },
+    { login: 'user3', password: 'user3', fullName: 'User Three', isConfirmed: true },
   ];
 
   for (const u of users) {
@@ -78,6 +82,7 @@ export async function seedDatabase(
         fullName: u.fullName,
         isActive: true,
         isAdministrator: u.isAdministrator || false,
+        isConfirmed: u.isConfirmed
       };
 
       const userInstance = isSequelize

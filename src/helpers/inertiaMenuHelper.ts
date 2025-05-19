@@ -10,7 +10,7 @@ export class InertiaMenuHelper {
     public getMenuItems(req: ReqType) {
 
         let menu = []
-        for (const menuItem of this.adminizer.menuHelper.getMenuItems()) {
+        for (const menuItem of this.adminizer.menuHelper.getMenuItems(req.user)) {
             const menuItemTokens = menuItem.actions ? menuItem.actions.map(item => {
                 return item.accessRightsToken
             }).filter(item => {

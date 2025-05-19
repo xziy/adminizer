@@ -309,6 +309,9 @@ const models: AdminpanelConfig["models"] = {
     jsonschema: {
         title: 'Json schema',
         model: 'jsonschema',
+        navbar: {
+            groupsAccessRights: ["admin"]
+        },
         fields: {
             data: {
                 type: 'json',
