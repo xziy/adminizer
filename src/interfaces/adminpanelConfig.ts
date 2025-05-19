@@ -60,7 +60,7 @@ export type FieldsTypes =
 type SetFunction = (slug: string, key: string, data: any) => Promise<void>;
 type GetFunction = (slug: string, key: string) => Promise<any>;
 
-export type ActionType = "list" | "edit" | "add" | "remove" | "view"
+export type ActionType =  "list" | "edit" | "add" | "remove" | "view"
 
 interface DashboardConfig {
     autoloadWidgetsPath: string
@@ -256,6 +256,7 @@ export interface ModelConfig {
          */
         visible?: boolean
         /**
+         * User groups who will see the menu item
          * For which it will be shown if not established will be shown to all groups who have the rights to read
          */
         groupsAccessRights?: string[]
@@ -288,8 +289,7 @@ export interface ModelConfig {
         filter?: {
             [key: string]: {
                 name: string
-                //TODO: use criteria types like generic T
-                criteria: any
+                criteria: Record<string, any>
             }
         }
     } | boolean
@@ -317,6 +317,12 @@ export interface ModelConfig {
      * Entity icon
      * */
     icon?: MaterialIcon
+
+    /**
+     * The field that will be shown for communication
+     * @default `title` or `name`
+     */
+    titleField?: string
     /**
      * Force set primary key
      * */
@@ -372,6 +378,7 @@ export interface BaseFieldConfig {
     identifierField?: string
     /**
      * Label for associations
+     * @deprecated use model labelField prop
      * */
     displayField?: string
     /**

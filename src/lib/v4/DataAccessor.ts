@@ -52,14 +52,12 @@ export class DataAccessor {
 
         const tokenId = `${this.actionVerb}-${this.entity.model.modelname}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
-            Adminizer.log.debug(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
+            Adminizer.log.debug(`getFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${this.entity.model.modelname}`);
             return undefined;
         }
 
         const result: Fields = {};
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
-                    console.log(key)
-
             // The fields that are recorded separately from the connection in some ORMs, because they are processed at the level above them.
             if(modelAttributes[key].primaryKeyForAssociation === true) {
                 return undefined
@@ -152,7 +150,7 @@ export class DataAccessor {
         // Check if user has access to the associated model
         const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
-            Adminizer.log.debug(`No access rights to ${this.entity.type}: ${modelName}`);
+            Adminizer.log.debug(`getAssociatedFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${modelName}`);
             return undefined;
         }
 
