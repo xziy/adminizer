@@ -246,10 +246,20 @@ export interface ModelConfig {
      * Model name
      * */
     model: string
+    
     /**
-     * Hide entity in left navbar
+     * If the field is not definitely, then it will appear in Navbar
      * */
-    hide?: boolean
+    navbar?: {
+        /**
+         * @default true
+         */
+        visible?: boolean
+        /**
+         * For which it will be shown if not established will be shown to all groups who have the rights to read
+         */
+        groupsAccessRights?: string[]
+    }
     /**
      * Entity fields configuration
      * */

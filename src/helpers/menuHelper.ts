@@ -3,7 +3,9 @@
  *
  * @constructor
  */
-import {ActionType, AdminpanelConfig, HrefConfig, ModelConfig} from "../interfaces/adminpanelConfig";
+import { UserAP } from "models/UserAP";
+import { ActionType, AdminpanelConfig, HrefConfig, ModelConfig } from "../interfaces/adminpanelConfig";
+import { GroupsAccessRightsHelper } from "./accessRightsHelper";
 
 export type MenuItem = {
     link: string;
@@ -136,7 +138,7 @@ export class MenuHelper {
      *
      * @returns {Array}
      */
-    public getMenuItems(): MenuItem[] {
+    public getMenuItems(user: UserAP): MenuItem[] {
         let menus: MenuItem[] = [];
         if (MenuHelper.config.navbar.additionalLinks && MenuHelper.config.navbar.additionalLinks.length > 0) {
             MenuHelper.config.navbar.additionalLinks.forEach(function (additionalLink: {
@@ -165,7 +167,15 @@ export class MenuHelper {
         }
         if (MenuHelper.config.models) {
             Object.entries<ModelConfig>(MenuHelper.config.models).forEach(function ([key, val]) {
-                if (!val.hide) {
+
+                const hide =
+                typeof val.navbar?.visible === 'boolean'
+                    ? !val.navbar.visible
+                    : val.navbar?.groupsAccessRights
+                    ? !GroupsAccessRightsHelper.hasAccess(user, val.navbar.groupsAccessRights)
+                    : false;
+
+                if (!hide) {
                     if (val.tools && val.tools.length > 0 && val.tools[0].id !== "overview") {
                         val.tools.unshift({
                             id: "overview",

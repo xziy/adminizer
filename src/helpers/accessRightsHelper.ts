@@ -84,3 +84,21 @@ export class AccessRightsHelper {
 		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
 	}
 }
+
+
+
+export class GroupsAccessRightsHelper {
+  static hasAccess(
+    user: UserAP,
+    groupsAccessRights?: string[]
+  ): boolean {
+    const userGroups = user.groups?.map(group => group.name.toLowerCase());
+
+    if (groupsAccessRights) {
+      const allowedGroups = groupsAccessRights.map(item => item.toLowerCase());
+      return userGroups?.some(group => allowedGroups.includes(group)) ?? false;
+    } else {
+      return true
+    }
+  }
+}

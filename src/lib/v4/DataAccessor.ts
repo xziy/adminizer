@@ -58,7 +58,8 @@ export class DataAccessor {
 
         const result: Fields = {};
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
-            
+                    console.log(key)
+
             // The fields that are recorded separately from the connection in some ORMs, because they are processed at the level above them.
             if(modelAttributes[key].primaryKeyForAssociation === true) {
                 return undefined
@@ -108,7 +109,7 @@ export class DataAccessor {
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
                 
-                const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
+                const tokenId = `read-${modelName}-${this.entity.type}`;
                 if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
                     Adminizer.log.silly(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
                     return undefined;
