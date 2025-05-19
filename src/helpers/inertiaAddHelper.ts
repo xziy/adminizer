@@ -1,6 +1,6 @@
 import {Entity, PropsField} from "../interfaces/types";
 import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
-import {Fields, Field} from "./fieldsHelper";
+import {Fields, Field, RuntimeField} from "./fieldsHelper";
 import {
     BaseFieldConfig,
     HandsontableOptions,
@@ -56,7 +56,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     for (const key of Object.keys(fields)) {
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
-        let fieldConfig = field.config as BaseFieldConfig
+        let fieldConfig = field.config as RuntimeField
         if (!!fieldConfig.visible === false) continue
 
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
@@ -164,7 +164,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     return props
 }
 
-export function getControlsOptions(fieldConfig: BaseFieldConfig, req: ReqType, type: ControlType, defaultControlName: string) {
+export function getControlsOptions(fieldConfig: RuntimeField, req: ReqType, type: ControlType, defaultControlName: string) {
     const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
 
     let control = getControl(req, type, fieldOptions?.name, defaultControlName);
@@ -249,7 +249,7 @@ export function getControl(req: ReqType, type: ControlType, name: string | undef
 function setAssociationValues(field: Field, value: string[]) {
     let options = []
     let initValue: string[] = []
-    const config = field.config as Record<string, any>
+    const config = field.config as RuntimeField
 
     const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
         if (Array.isArray(value)) {
@@ -259,8 +259,8 @@ function setAssociationValues(field: Field, value: string[]) {
         }
     }
 
-    const getAssociationValue = (value: ModelAnyField, config: Record<string, string>): string | string[] => {
-        const displayField = config.displayField || 'id';
+    const getAssociationValue = (value: ModelAnyField, field: Field): string | string[] => {
+        const displayField = field.modelConfig?.titleField || 'id';
         if (value === null) return []
 
         if (Array.isArray(value)) {
@@ -277,12 +277,25 @@ function setAssociationValues(field: Field, value: string[]) {
 
 
     for (let opt of config.records) {
+        const optAny = opt as Record<string, any>;
+
+        const displayField = typeof field.modelConfig.titleField !== 'undefined'
+            ? field.modelConfig.titleField
+            : typeof optAny.title !== 'undefined'
+                ? 'title'
+                : typeof optAny.name !== 'undefined'
+                    ? 'name'
+                    : config.identifierField;
+
+        const label = typeof config.displayModifier === 'function'
+            ? config.displayModifier(opt)
+            : optAny[displayField];
+
         options.push({
-            label: config.displayModifier && typeof config.displayModifier === 'function'
-                ? config.displayModifier(opt)
-                : (config.displayField ? opt[config.displayField] : opt[config.identifierField]),
-            value: opt[config.identifierField],
-        })
+            label,
+            value: optAny[config.identifierField],
+        });
+
         if (isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
             initValue.push(opt[config.identifierField])
         }
