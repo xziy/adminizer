@@ -221,7 +221,9 @@ export class NodeTable {
                 let fieldConfigConfig = this.fields[key].config as BaseFieldConfig;
 
                 let fieldName = key;
-
+                let displayField = this.fields[key].modelConfig?.titleField ?? typeof row["title"] !== "undefined" ? 'title' 
+                                                                                    :  typeof row["name"] !== "undefined" ? 'name' 
+                                                                                       : typeof row[this.fields[key].modelConfig?.identifierField] !== "undefined" ? this.fields[key].modelConfig?.identifierField : this.fields[key].modelConfig?.identifierField
                 if (fieldConfigConfig.displayModifier) {
                     row[fieldName] = fieldConfigConfig.displayModifier(elem[key]);
                 } else if (this.fields[key].model && this.fields[key].model.model) {
@@ -229,7 +231,7 @@ export class NodeTable {
                     if (!elem[key]) {
                         row[fieldName] = null;
                     } else {
-                        row[fieldName] = elem[key][fieldConfigConfig.displayField];
+                        row[fieldName] = elem[key][displayField];
                     }
                 } else if (this.fields[key].model.type === "association-many" || this.fields[key].model.type === "association") {
                     if (!elem[key] || elem[key].length === 0) {
@@ -237,8 +239,8 @@ export class NodeTable {
                     } else {
                         let displayValues: string[] = [];
                         elem[key].forEach((item: any) => {
-                            if (item[fieldConfigConfig.displayField]) {
-                                displayValues.push(item[fieldConfigConfig.displayField]);
+                            if (item[displayField]) {
+                                displayValues.push(item[displayField]);
                             } else {
                                 displayValues.push(item[fieldConfigConfig.identifierField]);
                             }

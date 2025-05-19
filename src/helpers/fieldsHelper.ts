@@ -3,7 +3,7 @@ import {Entity} from "../interfaces/types";
 import {Attribute, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
-
+export type RuntimeField = BaseFieldConfig & { records?: object[] }
 export type Field = {
   config: BaseFieldConfig & {
     /** @deprecated record should not be in config anymore */
@@ -19,6 +19,7 @@ export type Field = {
     [key: string]: Field
   } | undefined
   model: Attribute
+  modelConfig: ModelConfig
 }
 
 export type Fields = {
@@ -44,7 +45,7 @@ export class FieldsHelper {
      * @param action
      */
     let loadAssoc = async function (key: string, action?: ActionType) {
-      let fieldConfigConfig = fields[key].config as BaseFieldConfig & { records?: object[] };
+      let fieldConfigConfig = fields[key].config as RuntimeField;
       if (fieldConfigConfig.type !== 'association' && fieldConfigConfig.type !== 'association-many') {
         return;
       }

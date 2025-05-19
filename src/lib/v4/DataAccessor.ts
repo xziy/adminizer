@@ -7,6 +7,7 @@ import {
     BaseFieldConfig,
     FieldsModels,
     FieldsTypes,
+    ModelConfig,
 } from "../../interfaces/adminpanelConfig";
 import {Field, Fields} from "../../helpers/fieldsHelper";
 import {ControllerHelper} from "../../helpers/controllerHelper";
@@ -80,6 +81,7 @@ export class DataAccessor {
 
             // Getting base field config
             let fldConfig: Field["config"] = {key: key, title: key};
+            let associatedModelConfig: ModelConfig = undefined;
 
             /** Combine the field configuration from global and action-specific configs
              *  (now combine it before check, earlier was opposite).
@@ -117,6 +119,8 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
+                        associatedModelConfig = this.adminizer.config.models[modelName];
+
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
@@ -132,7 +136,7 @@ export class DataAccessor {
             fldConfig = this.adminizer.configHelper.normalizeFieldConfig(this.adminizer, fldConfig, key, modelField);
 
             // Add new field to result set
-            result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig};
+            result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig, modelConfig: associatedModelConfig };
         });
 
         this.fields = result;
@@ -148,7 +152,7 @@ export class DataAccessor {
         }
 
         // Check if user has access to the associated model
-        const tokenId = `${this.actionVerb}-${modelName}-${this.entity.type}`;
+        const tokenId = `read-${modelName}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
             Adminizer.log.debug(`getAssociatedFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${modelName}`);
             return undefined;

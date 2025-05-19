@@ -17,7 +17,6 @@ const models: AdminpanelConfig["models"] = {
                 required: true
             },
             schema: {
-                displayField: "title"
             }
         },
         list: {
