@@ -15,6 +15,8 @@ export class ModelHandler {
     Adminizer.log.debug(`Model with name [${modelname}] was registered`)
   }
 
+  // TODO: 'hot reload' need add method for delete model
+
   /** Improved model getter, so you can write both model.get("UserAP") and model.get("userap") */
   get model() {
     

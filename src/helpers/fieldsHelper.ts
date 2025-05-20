@@ -3,7 +3,7 @@ import {Entity} from "../interfaces/types";
 import {Attribute, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
-import { isObject } from "lodash-es";
+import { isObject } from "./JsUtils";
 export type Field = {
   config: BaseFieldConfig & {
     /** @deprecated record should not be in config anymore */

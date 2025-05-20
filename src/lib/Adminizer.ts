@@ -158,6 +158,7 @@ export class Adminizer {
 
         this.modelHandler = new ModelHandler();
 
+        // TODO: 'hot reload' unbind models & unbind forms
         await bindModels(this);
         await bindForms(this);
 
@@ -166,6 +167,7 @@ export class Adminizer {
         this.policyManager = new PolicyManager(this);
         await this.policyManager.loadPolicies();
 
+        // TODO: 'hot reload' problem with deleting access right tokens
         this.accessRightsHelper = new AccessRightsHelper(this);
 
         // Helpers go to construtor
