@@ -10,7 +10,7 @@ import {
 import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
-import { isObject } from "lodash-es";
+import { isObject } from "./JsUtils";
 
 export type PropsFieldType =
    'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
