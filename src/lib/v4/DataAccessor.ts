@@ -120,9 +120,9 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-                        if(!isObject(this.adminizer.config.models[model.identity])) throw `type error: model config  of ${model.identity} is ${typeof(this.adminizer.config.models[model.identity])} expected object`
-                        associatedModelConfig = this.adminizer.config.models[model.identity];
-
+                        let _modelConfig = this.adminizer.config.models[model.identity];
+                        if(!isObject(_modelConfig)) throw `type error: model config  of ${model.identity} is ${typeof(this.adminizer.config.models[model.identity])} expected object`
+                        associatedModelConfig = _modelConfig
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
