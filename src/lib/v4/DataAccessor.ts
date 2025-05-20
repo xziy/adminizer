@@ -14,7 +14,7 @@ import {ControllerHelper} from "../../helpers/controllerHelper";
 import {Adminizer} from "../Adminizer";
 import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
-import { isObject } from "helpers/JsUtils";
+import { isObject } from "../../helpers/JsUtils";
 
 export class DataAccessor {
     private readonly adminizer: Adminizer;
@@ -120,8 +120,8 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-                        if(!isObject(this.adminizer.config.models[modelName])) throw `type error: model config  of ${modelName} is ${typeof(this.adminizer.config.models[modelName])} expected object`
-                        associatedModelConfig = this.adminizer.config.models[modelName];
+                        if(!isObject(this.adminizer.config.models[model.identity])) throw `type error: model config  of ${model.identity} is ${typeof(this.adminizer.config.models[model.identity])} expected object`
+                        associatedModelConfig = this.adminizer.config.models[model.identity];
 
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
@@ -147,9 +147,8 @@ export class DataAccessor {
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
         
-        const Model = this.adminizer.modelHandler.model.get(modelName);
-        if (!Model || !this.adminizer.config.models[modelName] || typeof this.adminizer.config.models[modelName] === "boolean") {
-            
+        const model = this.adminizer.modelHandler.model.get(modelName);
+        if (!model || !this.adminizer.config.models[model.identity] || typeof this.adminizer.config.models[model.identity] === "boolean") {
             return undefined;
         }
 
@@ -161,8 +160,9 @@ export class DataAccessor {
         }
 
         const associatedFields: { [fieldName: string]: Field } = {};
-        const modelConfig = this.adminizer.config.models[modelName];
+        const modelConfig = this.adminizer.config.models[model.identity];
 
+        if(!isObject(modelConfig)) throw `Type error ModelConfig should is object`
         // Get the main fields configuration
         const fieldsConfig = modelConfig.fields || {};
 
@@ -192,7 +192,7 @@ export class DataAccessor {
         const mergedFieldsConfig = {...fieldsConfig, ...actionSpecificConfig};
 
         // Loop through model attributes and apply access checks
-        Object.entries(Model.attributes).forEach(([key, modelField]) => {
+        Object.entries(model.attributes).forEach(([key, modelField]) => {
             const fieldConfig = mergedFieldsConfig[key];
 
             // Creating a basic config
