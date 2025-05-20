@@ -20,9 +20,11 @@ const models: AdminpanelConfig["models"] = {
             }
         },
         list: {
-            // fields: {
-            //     owner: false,
-            // }
+            fields: {
+                id: {
+                    visible: false
+                },
+            }
         },
         add: {
             // fields: {
