@@ -14,7 +14,7 @@ import {ControllerHelper} from "../../helpers/controllerHelper";
 import {Adminizer} from "../Adminizer";
 import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
-import { isObject } from "lodash-es";
+import { isObject } from "helpers/JsUtils";
 
 export class DataAccessor {
     private readonly adminizer: Adminizer;
