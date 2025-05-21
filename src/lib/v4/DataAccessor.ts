@@ -59,9 +59,7 @@ export class DataAccessor {
         }
 
         const result: Fields = {};
-
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
-            
             // The fields that are recorded separately from the connection in some ORMs, because they are processed at the level above them.
             if(modelAttributes[key].primaryKeyForAssociation === true) {
                 return undefined
@@ -96,12 +94,11 @@ export class DataAccessor {
                         : actionConfig.fields[key] !== undefined
                             ? actionConfig.fields[key]
                             : fieldsConfig[key];
-            console.log(">>>", combinedFieldConfig, fldConfig)
+
             if (combinedFieldConfig !== undefined) {
                 /** Access rights check (check groupsAccessRights field if exists, if not - allow to all except default user group) */
-                if (!this.checkFieldAccess(key, combinedFieldConfig)) {
-                    console.log(">>>111", combinedFieldConfig, fldConfig)
-
+                let hasAccess = this.checkFieldAccess(key, combinedFieldConfig);
+                if (!hasAccess) {
                     return;
                 }
 
@@ -111,23 +108,23 @@ export class DataAccessor {
             // Populate associated fields configuration if field is an association
             let populatedModelFieldsConfig = {};
             if (modelField.type === "association" || modelField.type === "association-many") {
-                const associatedModelName = modelField.model || modelField.collection;
+                const modelName = modelField.model || modelField.collection;
                 
-                const tokenId = `read-${associatedModelName}-${this.entity.type}`;
+                const tokenId = `read-${modelName}-${this.entity.type}`;
                 if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
                     Adminizer.log.silly(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
                     return undefined;
                 }
 
-                if (associatedModelName) {
-                    const model = this.adminizer.modelHandler.model.get(associatedModelName);
+                if (modelName) {
+                    const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
-                        populatedModelFieldsConfig = this.getAssociatedFieldsConfig(this.entity.name);
-                        let _modelConfig = this.adminizer.config.models[this.entity.name];
-                        if(!isObject(_modelConfig)) throw `type error: model config  of ${associatedModelName} is ${typeof(this.adminizer.config.models[this])} expected object`
+                        populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
+                        let _modelConfig = this.adminizer.config.models[model.identity];
+                        if(!isObject(_modelConfig)) throw `type error: model config  of ${model.identity} is ${typeof(this.adminizer.config.models[model.identity])} expected object`
                         associatedModelConfig = _modelConfig
                     } else {
-                        Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelEntityName} when ${key}`);
+                        Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
                 }
             }
@@ -148,22 +145,22 @@ export class DataAccessor {
         return result;
     }
 
-    private getAssociatedFieldsConfig(modelEntityName: string): { [fieldName: string]: Field } | undefined {
-        let modelConfig = this.adminizer.config.models[modelEntityName]
-        if(!isObject(modelConfig)) throw `Type error: expected normolized config model`
-        const model = this.adminizer.modelHandler.model.get(modelConfig.model);
-        if (!model || !this.adminizer.config.models[modelEntityName] || typeof this.adminizer.config.models[modelEntityName] === "boolean") {
+    private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
+        
+        const model = this.adminizer.modelHandler.model.get(modelName);
+        if (!model || !this.adminizer.config.models[model.identity] || typeof this.adminizer.config.models[model.identity] === "boolean") {
             return undefined;
         }
 
         // Check if user has access to the associated model
-        const tokenId = `read-${modelEntityName}-${this.entity.type}`;
+        const tokenId = `read-${modelName}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
-            Adminizer.log.debug(`getAssociatedFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${modelEntityName}`);
+            Adminizer.log.debug(`getAssociatedFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${modelName}`);
             return undefined;
         }
 
         const associatedFields: { [fieldName: string]: Field } = {};
+        const modelConfig = this.adminizer.config.models[model.identity];
 
         if(!isObject(modelConfig)) throw `Type error ModelConfig should is object`
         // Get the main fields configuration
@@ -202,7 +199,7 @@ export class DataAccessor {
             let fldConfig: Field["config"] = {key: key, title: key};
 
             // If fieldConfig exists, normalize it and merge with the basic config
-            if (fieldConfig && isObject(fieldConfig)) {
+            if (fieldConfig) {
                 const hasAccess = this.checkFieldAccess(key, fieldConfig);
 
                 // Skip the field if access is denied
@@ -227,7 +224,11 @@ export class DataAccessor {
         if (fieldConfig === false) {
             return false;
         }
-        
+
+        if (this.entity.model.primaryKey === key) {
+            return true;
+        }
+
         if (this.user.isAdministrator) {
             return true;
         }
@@ -235,10 +236,6 @@ export class DataAccessor {
         if (typeof fieldConfig !== "object") {
             return true;
         }
-
-        if(fieldConfig.visible === false) {
-            return false
-        } 
 
         const userGroups = this.user.groups?.map((group: GroupAP) => group.name.toLowerCase());
         // Check if `groupsAccessRights` is set in the fieldConfig

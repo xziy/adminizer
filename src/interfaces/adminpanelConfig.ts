@@ -94,7 +94,7 @@ export interface AdminpanelConfig {
      * reference upload contoroller ~50 line
      * */
     models: {
-        [key: string]: ModelConfig | boolean
+        [key: string]: ModelConfig
     }
     /**
      * For custom adminpanel sections, displays inside header
