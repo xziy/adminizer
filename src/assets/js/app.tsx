@@ -23,7 +23,6 @@ window.ReactDOM = ReactDOM;
 // @ts-ignore
 // window.UIComponents.Button = Button;
 
-const appName = 'Adminizer';
 
 export async function resolvePageComponent<T>(path: string | string[], pages: Record<string, Promise<T> | (() => Promise<T>)>): Promise<T>{
     for (const p of (Array.isArray(path) ? path : [path])) {
@@ -37,7 +36,7 @@ export async function resolvePageComponent<T>(path: string | string[], pages: Re
 }
 
 createInertiaApp({
-    title: (title) => `${title}${appName}`,
+    title: (title) => `${title}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({el, App, props}) {
         const root = createRoot(el);

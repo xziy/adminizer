@@ -1,4 +1,4 @@
-import { MediaManagerAP } from "./MediaManagerAP";
+import { MediaManagerAP } from "./MediaManagerAP_ts";
 
 export default {
   id: {

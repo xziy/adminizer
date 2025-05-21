@@ -131,6 +131,7 @@ export function bindInertia(adminizer: Adminizer) {
             },
             menu: req.user ? menuHelper.getMenuItems(req) : null,
             brand: menuHelper.getBrandTitle(),
+            title: menuHelper.getBrandTitle(),
             logout: menuHelper.getLogoutUrl(),
             logoutBtn: req.user?.locale == 'ru' ? 'Выход' : "Log out",
             section: req.user ? [

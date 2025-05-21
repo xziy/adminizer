@@ -11,6 +11,7 @@ export interface ComponentType {
 const breadcrumbs: BreadcrumbItem[] = [];
 export default function Module() {
     const page = usePage<SharedData>()
+    console.log(page)
     const [Component, setComponent] = useState<React.ReactElement | null>(null);
 
     useEffect(() => {
