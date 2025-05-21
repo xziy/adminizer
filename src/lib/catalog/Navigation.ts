@@ -131,12 +131,14 @@ class StorageService {
 
 	public async saveToDB() {
 		let tree = await this.buildTree()
+        console.log({label: this.id},
+            {tree: tree})
 		try {
 			// TODO refactor CRUD functions for DataAccessor usage
-            console.log(await this.adminizer.modelHandler.model.get(this.model)["_update"](
+           await this.adminizer.modelHandler.model.get(this.model)["_update"](
 				{label: this.id},
 				{tree: tree}
-			))
+			)
 		} catch (e) {
 			console.log(e)
 			throw 'navigation model update error'

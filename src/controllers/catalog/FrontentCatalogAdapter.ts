@@ -125,7 +125,6 @@ export class VueCatalog {
 
 	async getCatalog() {
 		let rootItems = await this.catalog.getChilds(0);
-        console.log(rootItems)
 		return VueCatalogUtils.arrayToNode(rootItems, this.catalog.getGroupType().type);
 	}
 

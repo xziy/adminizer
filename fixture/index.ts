@@ -158,7 +158,6 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
             return req.Inertia.render({
                 component: 'module', // required
                 props: {
-                    title: 'Module Test',
                     moduleComponent: moduleComponent, // required
                     message: 'Hello from Adminizer',
                     // ...{menu: {test: '12'}}

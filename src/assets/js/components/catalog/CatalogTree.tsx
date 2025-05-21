@@ -116,6 +116,7 @@ const CatalogTree = () => {
             setCatalog(resCatalog);
             setItems(items);
             setTreeData(resCatalog.nodes)
+            console.log(resCatalog)
         };
 
         const initLocales = async () => {
