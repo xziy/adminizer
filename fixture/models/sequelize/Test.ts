@@ -53,7 +53,7 @@ import { JsonSchema } from './JsonSchema';
 	// ——————————————————————————————————————————————
 	// Owner (1-to-1 with UserAP at runtime)
 	// ——————————————————————————————————————————————
-	@Column({ type: DataType.INTEGER, allowNull: false })
+	@Column({ type: DataType.INTEGER, allowNull: true })
 	declare ownerId: number;
 	declare owner?: UserAP;
   
