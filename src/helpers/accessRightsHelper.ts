@@ -13,13 +13,14 @@ export class AccessRightsHelper {
 	}
 
 	public registerToken(accessRightsToken: AccessRightsToken): void {
+		accessRightsToken.id = accessRightsToken.id.toLowerCase()
 		if (!accessRightsToken.id || !accessRightsToken.name || !accessRightsToken.description || !accessRightsToken.department) {
 			throw new Error("Adminpanel > Can not register token: Missed one or more required parameters");
 		}
 
 		for (let token of this._tokens) {
 			if (token.id === accessRightsToken.id) {
-				throw new Error("Adminpanel > Can not register token: Token with this id already registered");
+				throw new Error(`Adminpanel > Can not register token: Token with this id ["${token.id}"] already registered`);
 			}
 		}
 		this._tokens.push(accessRightsToken);
@@ -58,6 +59,13 @@ export class AccessRightsHelper {
 	}
 
 	public hasPermission(tokenId: string, user: UserAP): boolean {
+		if(!tokenId) {
+			Adminizer.log.error(
+				`AccessRightsHelper > hasPermission no tokenId: ${tokenId}`
+			)
+			return false
+		} 
+		tokenId = tokenId.toLowerCase()
 		if (!this.adminizer.config.auth.enable) {
 			return true;
 		}
@@ -69,10 +77,28 @@ export class AccessRightsHelper {
 		const tokenIsValid = this._tokens.some((token) => token.id === tokenId);
 
 		if (!tokenIsValid) {
-			Adminizer.log.error("Adminpanel > Token is not valid");
+			Adminizer.log.error("Adminpanel > Token is not valid", tokenId, user.login);
 			return false;
 		}
 
 		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
 	}
+}
+
+
+
+export class GroupsAccessRightsHelper {
+  static hasAccess(
+    user: UserAP,
+    groupsAccessRights?: string[]
+  ): boolean {
+    const userGroups = user.groups?.map(group => group.name.toLowerCase());
+
+    if (groupsAccessRights) {
+      const allowedGroups = groupsAccessRights.map(item => item.toLowerCase());
+      return userGroups?.some(group => allowedGroups.includes(group)) ?? false;
+    } else {
+      return true
+    }
+  }
 }

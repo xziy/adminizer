@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "adminizer": ["./src"],
+        "adminizer/*": ["./src/*"]
+      }
+    },
+    "types": ["vitest"]
+  }
+  
+
+
+  

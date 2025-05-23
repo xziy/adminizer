@@ -11,6 +11,10 @@ export interface Attribute {
   collection?: string;
   via?: string;
   allowNull?: boolean;
+  /**
+   * This is a field that indicates that it refers to keep the bond key 1: 1
+   */
+  primaryKeyForAssociation?: boolean;
 }
 
 export interface ModelAttributes {
@@ -101,14 +105,12 @@ export abstract class AbstractModel<T> {
     return records.map(record => dataAccessor.process(record));
   }
 
-  public async count(criteria: Partial<T> | undefined): Promise<number> {
+  public async count(criteria: Partial<T> | undefined, dataAccessor: DataAccessor): Promise<number> {
+    criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
     return this._count(criteria);
   }
 
 }
-
-
-
 
 export abstract class AbstractAdapter {
   public abstract Model: any;

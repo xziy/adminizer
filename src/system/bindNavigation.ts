@@ -18,7 +18,9 @@ export default function bindNavigation(adminizer: Adminizer) {
 						createdAt: false,
 						updatedAt: false
 					},
-					hide: false,
+					navbar: {
+						visible: true
+					},
 					icon: 'storage',
 					identifierField: "",
 					list: {

@@ -1,6 +1,6 @@
-import { faker } from '@faker-js/faker';
+import { faker, tr } from '@faker-js/faker';
 import { generate } from 'password-hash';
-import { UserAP } from '../../dist';
+import { UserAP } from '../../src';
 import { Example } from '../models/sequelize/Example';
 export async function seedDatabase(
   collections: Record<string, any>,
@@ -25,32 +25,23 @@ export async function seedDatabase(
     throw new Error('Models should support the ORM interface (Sequelize or Waterline)');
   }
 
-  // ------------------ Example Records ------------------ //
-  const exampleCount = isSequelize
-    ? await exampleModel.count()
-    : await exampleModel.count({});
-
-  if (exampleCount === 0) {
-    const fakeExamples = Array.from({ length: count }, () => ({
-      title:       faker.lorem.word(),
-      description: faker.lorem.paragraph(),
-      sort:        faker.datatype.boolean(),
-      time:        getRandomTime(),
-      number:      faker.number.int(300),
-      editor:      faker.lorem.text(),
-    }));
-
-    if (isSequelize) {
-      await exampleModel.bulkCreate(fakeExamples);
-    } else {
-      await exampleModel.createEach(fakeExamples).fetch();
-    }
-  }
-
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators' },
-    { name: 'Users', description: 'Registered users', tokens: ["create-test-model","read-test-model","update-test-model","delete-test-model"] },
+    { name: 'Users', description: 'Registered users', tokens: 
+      [
+        "create-test-model",
+        "read-test-model",
+        "update-test-model",
+        "delete-test-model",
+
+         "create-example-model",
+         "read-example-model",
+         "update-example-model",
+        
+         "read-jsonschema-model",
+        ] 
+      },
     { name: 'Guests', description: 'Guest access' },
   ];
 
@@ -75,7 +66,7 @@ export async function seedDatabase(
     { login: 'user1', password: 'user1', fullName: 'User One' },
     { login: 'admin', password: 'admin', fullName: 'Admin User', isAdministrator: true },
     { login: 'user2', password: 'user2', fullName: 'User Two' },
-    { login: 'user3', password: 'user3', fullName: 'User Three' },
+    { login: 'user3', password: 'user3', fullName: 'User Three', isConfirmed: true },
   ];
 
   for (const u of users) {
@@ -91,6 +82,7 @@ export async function seedDatabase(
         fullName: u.fullName,
         isActive: true,
         isAdministrator: u.isAdministrator || false,
+        isConfirmed: u.isConfirmed
       };
 
       const userInstance = isSequelize
@@ -98,7 +90,6 @@ export async function seedDatabase(
         : await userModel.create(userData).fetch();
 
 
-      console.log('userInstance: ', userInstance)
       // Привязка к группам (упрощённая логика)
       const groupName = u.isAdministrator ? 'Admins' : 'Users';
 
@@ -114,6 +105,51 @@ export async function seedDatabase(
     }
   }
 
+
+  // ------------------ Example Records ------------------ //
+  const exampleCount = isSequelize
+    ? await exampleModel.count()
+    : await exampleModel.count({});
+
+  const allUsers: UserAP[] = isSequelize
+    ? await userModel.findAll()
+    : await userModel.find();
+    
+    if (exampleCount === 0) {
+      const fakeExamples = Array.from({ length: count }, () => {
+        const randomUser = faker.helpers.arrayElement(allUsers);
+        if(isSequelize) {
+          return {
+            title:       faker.lorem.word(),
+            description: faker.lorem.paragraph(),
+            sort:        faker.datatype.boolean(),
+            time:        getRandomTime(),
+            ownerId:       randomUser.id,
+            number:      faker.number.int(300),
+            editor:      faker.lorem.text(),
+          }
+        } else {
+          return {
+            title:       faker.lorem.word(),
+            description: faker.lorem.paragraph(),
+            sort:        faker.datatype.boolean(),
+            time:        getRandomTime(),
+            owner:       randomUser.id,
+            ownerId:       randomUser.id,
+            number:      faker.number.int(300),
+            editor:      faker.lorem.text(),
+          }
+        }
+      }
+  );
+
+    if (isSequelize) {
+      await exampleModel.bulkCreate(fakeExamples);
+    } else {
+      await exampleModel.createEach(fakeExamples).fetch();
+    }
+  }
+ 
     // ------------------ Tests ------------------ //
     const testCount = isSequelize
     ? await testModel.count()
@@ -132,17 +168,56 @@ export async function seedDatabase(
       const randomUser = faker.helpers.arrayElement(allUsers);
       const randomExample = faker.helpers.arrayElement(allExamples);
 
-      return {
-        title: faker.lorem.words(3),
-        ownerId: randomUser.id,
-        exampleId: randomExample?.id ?? null,
-      };
+      if(isSequelize) {
+        return {
+          title: faker.lorem.words(3),
+          ownerId: randomUser.id,
+          exampleId: randomExample?.id ?? null,
+        };
+      } else {
+        return {
+          title: faker.lorem.words(3),
+          owner: randomUser.id,
+          example: randomExample?.id ?? null,
+        }
+      }
     });
 
     if (isSequelize) {
       await testModel.bulkCreate(fakeTests);
     } else {
       await testModel.createEach(fakeTests).fetch();
+    }
+  }
+
+
+    // ------------------ JsonSchemas ------------------ //
+  const jsonSchemaModel = collections.jsonschema ?? collections.JsonSchema;
+
+  const schemaCount = isSequelize
+    ? await jsonSchemaModel.count()
+    : await jsonSchemaModel.count({});
+
+  if (schemaCount === 0) {
+    const fakeSchemas = Array.from({ length: 3 }, () => {
+      const schemaData = {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            age: { type: "number" }
+          },
+          required: ["name"]
+        },
+        name: faker.internet.userName()
+      };
+      return schemaData;
+    });
+
+    if (isSequelize) {
+      await jsonSchemaModel.bulkCreate(fakeSchemas);
+    } else {
+      await jsonSchemaModel.createEach(fakeSchemas).fetch();
     }
   }
 }

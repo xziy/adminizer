@@ -21,9 +21,8 @@ export default async function list(req: ReqType, res: ResType) {
         }
     }
 
-    let dataAccessor = new DataAccessor(req, entity, "list");
+    let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "list");
     let fields = dataAccessor.getFieldsConfig();
-
     const header = inertiaListHelper(entity, req, fields)
     let start = "0";
     if (req.query.page) {
@@ -132,7 +131,9 @@ function setColumns(
             direction: String(i) === orderColumn ? direction : undefined,
             searchColumnValue: searchValue || undefined, // undefined, если поиска нет
         };
-
+        
+        
+        
         nodeTreeColumns.push({
             data: String(i),
             searchable: 'true',

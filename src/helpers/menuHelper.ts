@@ -3,7 +3,9 @@
  *
  * @constructor
  */
-import {ActionType, AdminpanelConfig, HrefConfig, ModelConfig} from "../interfaces/adminpanelConfig";
+import { UserAP } from "models/UserAP";
+import { ActionType, AdminpanelConfig, HrefConfig, ModelConfig } from "../interfaces/adminpanelConfig";
+import { GroupsAccessRightsHelper } from "./accessRightsHelper";
 
 export type MenuItem = {
     link: string;
@@ -18,10 +20,10 @@ export type MenuItem = {
 
 export class MenuHelper {
 
-    private static config: any;
+    private config: AdminpanelConfig;
 
     constructor(config: AdminpanelConfig) {
-        MenuHelper.config = config
+        this.config = config
     }
 
     /**
@@ -30,14 +32,14 @@ export class MenuHelper {
      * @returns {string}
      */
     public getBrandTitle() {
-        if (!MenuHelper.config.brand || !MenuHelper.config.brand.link) {
+        if (!this.config.brand || !this.config.brand.link) {
             return 'Adminizer';
         }
-        if (typeof MenuHelper.config.brand.link === "string") {
-            return MenuHelper.config.brand.link;
+        if (typeof this.config.brand.link === "string") {
+            return this.config.brand.link;
         }
-        if (typeof MenuHelper.config.brand.link === "object" && typeof MenuHelper.config.brand.link.title === "string") {
-            return MenuHelper.config.brand.link.title;
+        if (typeof this.config.brand.link === "object" && typeof this.config.brand.link.title === "string") {
+            return this.config.brand.link.title;
         }
         return 'Adminizer';
     }
@@ -136,10 +138,10 @@ export class MenuHelper {
      *
      * @returns {Array}
      */
-    public getMenuItems(): MenuItem[] {
+    public getMenuItems(user: UserAP): MenuItem[] {
         let menus: MenuItem[] = [];
-        if (MenuHelper.config.navbar.additionalLinks && MenuHelper.config.navbar.additionalLinks.length > 0) {
-            MenuHelper.config.navbar.additionalLinks.forEach(function (additionalLink: {
+        if (this.config.navbar.additionalLinks && this.config.navbar.additionalLinks.length > 0) {
+            this.config.navbar.additionalLinks.forEach(function (additionalLink: {
                 link: any;
                 title: string;
                 disabled: any;
@@ -163,13 +165,21 @@ export class MenuHelper {
                 });
             });
         }
-        if (MenuHelper.config.models) {
-            Object.entries<ModelConfig>(MenuHelper.config.models).forEach(function ([key, val]) {
-                if (!val.hide) {
+        if (this.config.models) {
+            Object.entries<ModelConfig>(this.config.models).forEach(function ([key, val]) {
+
+                const hide =
+                typeof val.navbar?.visible === 'boolean'
+                    ? !val.navbar.visible
+                    : val.navbar?.groupsAccessRights
+                    ? !GroupsAccessRightsHelper.hasAccess(user, val.navbar.groupsAccessRights)
+                    : false;
+
+                if (!hide) {
                     if (val.tools && val.tools.length > 0 && val.tools[0].id !== "overview") {
                         val.tools.unshift({
                             id: "overview",
-                            link: MenuHelper.config.routePrefix + '/model/' + key,
+                            link: this.config.routePrefix + '/model/' + key,
                             title: 'Overview',
                             type: 'self',
                             icon: "list",
@@ -177,7 +187,7 @@ export class MenuHelper {
                         })
                     }
                     menus.push({
-                        link: MenuHelper.config.routePrefix + '/model/' + key,
+                        link: this.config.routePrefix + '/model/' + key,
                         title: val.title || key,
                         icon: val.icon || null,
                         actions: val.tools || null,

@@ -42,7 +42,7 @@ process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize'
-    // || true
+    || true
 ) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
@@ -55,7 +55,7 @@ if(process.env.ORM === 'sequelize'
     await SequelizeAdapter.registerSystemModels(orm)
     orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, PageSequelize, CategorySequelize])
     TestSequelize.associate(orm)
-    console.log('Test associations:', Object.keys(TestSequelize.associations));
+    ExampleSequelize.associate(orm)
 
     await orm.sync({ });
     const sequelizeAdapter = new SequelizeAdapter(orm);

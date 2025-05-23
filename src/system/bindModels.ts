@@ -1,5 +1,5 @@
-import {ModelConfig} from "../interfaces/adminpanelConfig";
-import {Adminizer} from "../lib/Adminizer";
+import { ModelConfig } from "../interfaces/adminpanelConfig";
+import { Adminizer } from "../lib/Adminizer";
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -13,11 +13,15 @@ export default async function bindModels(adminizer: Adminizer) {
   }
 
   const systemModelsDir = path.resolve(import.meta.dirname, "../models");
-  const systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file => file.endsWith(".js"));
+
+  // Фильтруем только .js и .ts файлы, исключая .d.ts
+  const systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file =>
+    (file.endsWith(".js") || (file.endsWith(".ts") && !file.endsWith(".d.ts")))
+  );
 
   // Bind system models reading them from ../models and get the whole list of them for further checks
   const systemModels = systemModelsFiles.map((file) => {
-    const modelName = path.basename(file, ".js");
+    const modelName = path.basename(file, path.extname(file)); // убираем .js/.ts
     const ormAdapter = adminizer.getOrmAdapter(defaultOrmAdapter);
 
     // Create model adapter instance and add it to model handler
@@ -26,12 +30,13 @@ export default async function bindModels(adminizer: Adminizer) {
     adminizer.modelHandler.add(modelName, model);
 
     return modelName.toLowerCase();
-  })
-
+  });
+  
   const modelsFromConfig = Object.values(adminizer.config.models)
     .filter((item): item is ModelConfig => typeof item !== "boolean" && item?.model !== undefined)
     .map(item => item.model.toLowerCase());
 
+  Adminizer.log.debug(`Bind models > Models from config: ${modelsFromConfig}`)
   // Bind project models using config
   modelsFromConfig.forEach((modelName) => {
     const modelConfig = Object.entries(adminizer.config.models)
@@ -48,6 +53,9 @@ export default async function bindModels(adminizer: Adminizer) {
 
       // Create model adapter instance and add it to model handler
       const registeredModel = ormAdapter.getModel(modelName);
+      if (!registeredModel) {
+        throw `Bind models > Model not found: ${modelName}`
+      }
       const model = new ormAdapter.Model(modelName, registeredModel);
       adminizer.modelHandler.add(modelName, model);
     }

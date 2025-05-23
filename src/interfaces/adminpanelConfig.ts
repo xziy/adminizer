@@ -60,7 +60,7 @@ export type FieldsTypes =
 type SetFunction = (slug: string, key: string, data: any) => Promise<void>;
 type GetFunction = (slug: string, key: string) => Promise<any>;
 
-export type ActionType = "list" | "edit" | "add" | "remove" | "view"
+export type ActionType =  "list" | "edit" | "add" | "remove" | "view"
 
 interface DashboardConfig {
     autoloadWidgetsPath: string
@@ -94,7 +94,7 @@ export interface AdminpanelConfig {
      * reference upload contoroller ~50 line
      * */
     models: {
-        [key: string]: ModelConfig | boolean
+        [key: string]: ModelConfig
     }
     /**
      * For custom adminpanel sections, displays inside header
@@ -178,23 +178,7 @@ export interface AdminpanelConfig {
          * */
         set?: SetFunction
     }
-    /**
-     * Wizards
-     * */
-    installStepper?: {
-        path: string
-        data: {
-            [key: string]: FieldsModels
-        }
-        /**
-         * Custom getter
-         * */
-        get?: GetFunction
-        /**
-         * Custom setter
-         * */
-        set?: SetFunction
-    }
+    
     /**
      * Prime administrator login credentials
      * */
@@ -262,10 +246,21 @@ export interface ModelConfig {
      * Model name
      * */
     model: string
+    
     /**
-     * Hide entity in left navbar
+     * If the field is not definitely, then it will appear in Navbar
      * */
-    hide?: boolean
+    navbar?: {
+        /**
+         * @default true
+         */
+        visible?: boolean
+        /**
+         * User groups who will see the menu item
+         * For which it will be shown if not established will be shown to all groups who have the rights to read
+         */
+        groupsAccessRights?: string[]
+    }
     /**
      * Entity fields configuration
      * */
@@ -294,8 +289,7 @@ export interface ModelConfig {
         filter?: {
             [key: string]: {
                 name: string
-                //TODO: use criteria types like generic T
-                criteria: any
+                criteria: Record<string, any>
             }
         }
     } | boolean
@@ -323,6 +317,12 @@ export interface ModelConfig {
      * Entity icon
      * */
     icon?: MaterialIcon
+
+    /**
+     * The field that will be shown for communication
+     * @default `title` or `name`
+     */
+    titleField?: string
     /**
      * Force set primary key
      * */
@@ -331,7 +331,7 @@ export interface ModelConfig {
      *  May be association or association-many to UserAP or GroupAP */
     userAccessRelation?: {
         field: string // field that associates to the intermediate model
-        via: string // field in intermediate model that associates with userap/groupap
+        via?: string // field in intermediate model that associates with userap/groupap
     } | string
     userAccessRelationCallback?: (userWithGroups: UserWithGroups, record: any) => boolean
 }
@@ -378,6 +378,7 @@ export interface BaseFieldConfig {
     identifierField?: string
     /**
      * Label for associations
+     * @deprecated use model labelField prop
      * */
     displayField?: string
     /**
@@ -490,7 +491,7 @@ export interface HrefConfig {
     /**
      * Only for view, controller still uses his own access rights token
      * */
-    accessRightsToken?: string,
+    accessRightsToken?: string | undefined,
     /**
      * For menu items only
      * */

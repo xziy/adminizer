@@ -7,6 +7,8 @@ When sails-adminpanel starts, for every Model it creates 4 access rights tokens:
 
 You can also create custom access rights tokens using function `registerToken` of `AccessRightsHelper`.
 
+> Everything that is unresolved is prohibited
+
 These tokens can be used to give users rights to see information of specific Model, to create new models or edit it.
 Also, you can use tokens to create access rights to global and inline actions, or to Model tools.
 In controllers you should check access rights through `havePermission` method.

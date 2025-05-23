@@ -370,15 +370,13 @@ Admin panel will create select list for `add/edit` actions and will populate rec
 
 Available configuration options:
 + `title` - Default title option
-+ `identifierField` - **Optional** Identifyer field name that will be stored into field. Default: `id`
-+ `displayField` - **Optional** Field name that will be used to show record name. *Will be displayed into select list*. Default: `id`
+
+Deprecated options: `identifierField`, `displayField` was mowed in model config
 
 Example:
 ```javascript
 owner: {
-    title: 'Owner',
-    identifierField: 'id',
-    displayField: 'email' // Owner emails will be displayed into list and view/list screen
+    title: 'Owner'
 }
 ```
 
@@ -561,6 +559,7 @@ module.exports = config;
             }[]
             icon: string // Model icon
             identifierField: string // Force set primary key
+            titleField: string // Title field to replace ID in relation and display in list
         }[]
     }
     sections: { // For custom adminpanel sections, displays inside header

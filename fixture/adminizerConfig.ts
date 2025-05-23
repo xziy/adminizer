@@ -7,7 +7,7 @@ const models: AdminpanelConfig["models"] = {
     test: {
         title: 'Test model',
         model: 'test',
-        // userAccessRelation: 'owner',
+        userAccessRelation: 'owner',
         fields: {
             createdAt: false,
             updatedAt: false,
@@ -15,31 +15,29 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Title',
                 type: 'string',
                 required: true
+            },
+            schema: {
             }
         },
         list: {
             fields: {
-                owner: false,
-                example: {
-                    // displayModifier(d) {
-                    //     console.log("________________________________")
-                    //     console.dir(d)
-                    //     return d
-                    // }
-                }
+                id: {
+                    visible: false
+                },
             }
         },
         add: {
-            fields: {
-                ownerId: false,
-                exampleId: false
-            }
+            // fields: {
+            //     ownerId: false,
+            //     exampleId: false
+            // }
         },
         icon: 'receipt'
     },
     example: {
         title: 'All controls',
         model: 'example',
+        userAccessRelation: 'owner',
         tools: [
             {
                 id: '1',
@@ -315,6 +313,9 @@ const models: AdminpanelConfig["models"] = {
     jsonschema: {
         title: 'Json schema',
         model: 'jsonschema',
+        navbar: {
+            groupsAccessRights: ["admins"]
+        },
         fields: {
             data: {
                 type: 'json',
@@ -364,11 +365,9 @@ const models: AdminpanelConfig["models"] = {
                         // ]
                     }
                 },
-            },
-            data2: {
-                type: 'json',
             }
         },
+        
         icon: 'pets'
     },
     category: {
@@ -394,9 +393,9 @@ const models: AdminpanelConfig["models"] = {
 const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
-    // auth: {
-    //     enable: true
-    // },
+    auth: {
+        enable: true
+    },
     registration: {
         enable: true,
         defaultUserGroup: "guest",

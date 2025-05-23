@@ -5,6 +5,7 @@ export default async function bindAccessRights(adminizer: Adminizer) {
     if (adminizer.config.models) {
         let models = adminizer.config.models;
         for (let key of Object.keys(models)) {
+            
             const model = models[key];
             if (typeof model !== "boolean") {
                 let modelName = model.model;
@@ -67,11 +68,6 @@ export default async function bindAccessRights(adminizer: Adminizer) {
             });
         }
     }
-
-    adminizer.accessRightsHelper.registerToken({
-        id: `process-install-step`, name: "Process install step",
-        description: "Access to '/processInstallStep' route", department: "Routes"
-    });
 
     // Widgets
     adminizer.accessRightsHelper.registerToken({

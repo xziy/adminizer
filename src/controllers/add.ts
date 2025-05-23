@@ -26,7 +26,7 @@ export default async function add(req: ReqType, res: ResType) {
         }
     }
 
-    let dataAccessor = new DataAccessor(req, entity, "add");
+    let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "add");
     let fields = dataAccessor.getFieldsConfig();
 
     // add deprecated 'records' to config

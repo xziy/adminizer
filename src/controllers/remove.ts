@@ -36,7 +36,7 @@ export default async function remove(req: ReqType, res: ResType) {
     let record: ModelAnyInstance;
     let dataAccessor;
     try {
-        dataAccessor = new DataAccessor(req, entity, "remove");
+        dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "remove");
         record = await entity.model.findOne({id: req.params.id}, dataAccessor) as ModelAnyInstance;
     } catch (e) {
         if (req.accepts('json')) {
