@@ -11,6 +11,8 @@ const config: Config = {
   datastores: {
     default: {
       adapter: "disk",
+      // @ts-ignore
+      inMemoryOnly: true,
       // adapter: "postgres",
       // // @ts-ignore
       // url: "postgresql://user:password@localhost:5432/mydatabase",

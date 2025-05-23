@@ -18,6 +18,7 @@ import {
   import { Example } from './Example';
 import { UserAP } from '../../../dist';
 import { tr } from '@faker-js/faker/.';
+import { JsonSchema } from './JsonSchema';
   
   @Table({ tableName: 'test', timestamps: true })
   export class Test extends Model<
@@ -41,13 +42,19 @@ import { tr } from '@faker-js/faker/.';
   
 	@BelongsTo(() => Example, { foreignKey: 'exampleId', as: 'example' })
 	declare example: Example;
+
+	@ForeignKey(() => JsonSchema)
+	@Column({ type: DataType.INTEGER, allowNull: true })
+	declare schemaId: number;
+
+	@BelongsTo(() => JsonSchema, { foreignKey: 'schemaId', as: 'schema' })
+	declare schema: JsonSchema;
   
 	// ——————————————————————————————————————————————
 	// Owner (1-to-1 with UserAP at runtime)
 	// ——————————————————————————————————————————————
 	@Column({ type: DataType.INTEGER, allowNull: true })
 	declare ownerId: number;
-  
 	declare owner?: UserAP;
   
 	// ——————————————————————————————————————————————
@@ -57,8 +64,7 @@ import { tr } from '@faker-js/faker/.';
   
 	static associate(sequelize: Sequelize) {
 	  const UserAPModel = sequelize.model('UserAP') as ModelStatic<Model<UserAP>>;
-  
-	  // 1-to-1: ownerId → один UserAP
+  	  // 1-to-1: ownerId → один UserAP
 	  this.belongsTo(UserAPModel, {
 		foreignKey: 'ownerId',
 		as: 'owner',

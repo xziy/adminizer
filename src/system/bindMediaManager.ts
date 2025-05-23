@@ -14,7 +14,7 @@
 //
 // 			MediaManagerHandler.add(mediaManager)
 // 		} catch (e) {
-// 			console.log('bindMediaManager Error: ', e)
+
 // 		}
 // 	})
 // }

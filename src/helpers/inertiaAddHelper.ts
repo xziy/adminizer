@@ -10,6 +10,7 @@ import {
 import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
+import { isObject } from "./JsUtils";
 
 export type PropsFieldType =
    'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
@@ -56,7 +57,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     for (const key of Object.keys(fields)) {
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
-        let fieldConfig = field.config as BaseFieldConfig
+        let fieldConfig = field.config
+        if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
         if (!!fieldConfig.visible === false) continue
 
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
@@ -164,7 +166,8 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     return props
 }
 
-export function getControlsOptions(fieldConfig: BaseFieldConfig, req: ReqType, type: ControlType, defaultControlName: string) {
+export function getControlsOptions(fieldConfig: Field["config"], req: ReqType, type: ControlType, defaultControlName: string) {
+    if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
     const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
 
     let control = getControl(req, type, fieldOptions?.name, defaultControlName);
@@ -249,8 +252,9 @@ export function getControl(req: ReqType, type: ControlType, name: string | undef
 function setAssociationValues(field: Field, value: string[]) {
     let options = []
     let initValue: string[] = []
-    const config = field.config as Record<string, any>
-
+    const config = field.config 
+    if(!isObject(config)) throw `Type error: config is object`
+        
     const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
         if (Array.isArray(value)) {
             return value.includes(option);
@@ -259,8 +263,8 @@ function setAssociationValues(field: Field, value: string[]) {
         }
     }
 
-    const getAssociationValue = (value: ModelAnyField, config: Record<string, string>): string | string[] => {
-        const displayField = config.displayField || 'id';
+    const getAssociationValue = (value: ModelAnyField, field: Field): string | string[] => {
+        const displayField = field.modelConfig?.titleField || 'id';
         if (value === null) return []
 
         if (Array.isArray(value)) {
@@ -277,13 +281,27 @@ function setAssociationValues(field: Field, value: string[]) {
 
 
     for (let opt of config.records) {
+        const optAny = opt as Record<string, any>;
+
+        const displayField = typeof field.modelConfig.titleField !== 'undefined'
+            ? field.modelConfig.titleField
+            : typeof optAny.title !== 'undefined'
+                ? 'title'
+                : typeof optAny.name !== 'undefined'
+                    ? 'name'
+                    : config.identifierField;
+
+        const label = typeof config.displayModifier === 'function'
+            ? config.displayModifier(opt)
+            : optAny[displayField];
+
         options.push({
-            label: config.displayModifier && typeof config.displayModifier === 'function'
-                ? config.displayModifier(opt)
-                : (config.displayField ? opt[config.displayField] : opt[config.identifierField]),
-            value: opt[config.identifierField],
-        })
-        if (isOptionSelected(opt[config.identifierField], getAssociationValue(value, config))) {
+            label,
+            value: optAny[config.identifierField],
+        });
+
+        if(!isObject(config)) throw `Type error: config is object`
+        if (config.identifierField && isOptionSelected(opt[config.identifierField], getAssociationValue(value, field))) {
             initValue.push(opt[config.identifierField])
         }
     }

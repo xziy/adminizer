@@ -7,12 +7,14 @@ import {
     BaseFieldConfig,
     FieldsModels,
     FieldsTypes,
+    ModelConfig,
 } from "../../interfaces/adminpanelConfig";
 import {Field, Fields} from "../../helpers/fieldsHelper";
 import {ControllerHelper} from "../../helpers/controllerHelper";
 import {Adminizer} from "../Adminizer";
 import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
+import { isObject } from "../../helpers/JsUtils";
 
 export class DataAccessor {
     private readonly adminizer: Adminizer;
@@ -20,12 +22,15 @@ export class DataAccessor {
     entity: Entity;
     action: ActionType
     private fields: Fields = null;
+    private actionVerb: string
 
-    constructor(req: ReqType, entity: Entity, action: ActionType) {
-        this.adminizer = req.adminizer;
-        this.user = req.user;
+    constructor(adminizer: Adminizer, user: UserAP, entity: Entity, action: ActionType) {
+        this.adminizer = adminizer;
+        this.user = user;
         this.entity = entity;
         this.action = action
+        this.actionVerb = getTokenAction(this.action);
+
     }
 
     /**
@@ -47,10 +52,19 @@ export class DataAccessor {
         const fieldsConfig = this.entity.config?.fields || {};
         const modelAttributes = this.entity.model.attributes;
 
+        const tokenId = `${this.actionVerb}-${this.entity.model.modelname}-${this.entity.type}`;
+        if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
+            Adminizer.log.debug(`getFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${this.entity.model.modelname}`);
+            return undefined;
+        }
+
         const result: Fields = {};
         Object.entries(modelAttributes).forEach(([key, modelField]) => {
+            // The fields that are recorded separately from the connection in some ORMs, because they are processed at the level above them.
+            if(modelAttributes[key].primaryKeyForAssociation === true) {
+                return undefined
+            }
             
-
             // Checks for short type in Waterline: fieldName: 'string'
             if (typeof modelField === "string") {
                 modelField = {type: modelField};
@@ -68,6 +82,7 @@ export class DataAccessor {
 
             // Getting base field config
             let fldConfig: Field["config"] = {key: key, title: key};
+            let associatedModelConfig: ModelConfig = undefined;
 
             /** Combine the field configuration from global and action-specific configs
              *  (now combine it before check, earlier was opposite).
@@ -94,13 +109,22 @@ export class DataAccessor {
             let populatedModelFieldsConfig = {};
             if (modelField.type === "association" || modelField.type === "association-many") {
                 const modelName = modelField.model || modelField.collection;
+                
+                const tokenId = `read-${modelName}-${this.entity.type}`;
+                if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
+                    Adminizer.log.silly(`No access rights to ${this.entity.type}: ${this.entity.model.modelname}`);
+                    return undefined;
+                }
+
                 if (modelName) {
-                    const Model = this.adminizer.modelHandler.model.get(modelName);
-                    if (Model) {
+                    const model = this.adminizer.modelHandler.model.get(modelName);
+                    if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-                        
+                        let _modelConfig = this.adminizer.config.models[model.identity];
+                        if(!isObject(_modelConfig)) throw `type error: model config  of ${model.identity} is ${typeof(this.adminizer.config.models[model.identity])} expected object`
+                        associatedModelConfig = _modelConfig
                     } else {
-                        Adminizer.log.error(`Model not found: ${modelName}`);
+                        Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
                 }
             }
@@ -114,9 +138,7 @@ export class DataAccessor {
             fldConfig = this.adminizer.configHelper.normalizeFieldConfig(this.adminizer, fldConfig, key, modelField);
 
             // Add new field to result set
-            result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig};
-            
-
+            result[key] = {config: fldConfig, model: modelField, populated: populatedModelFieldsConfig, modelConfig: associatedModelConfig };
         });
 
         this.fields = result;
@@ -125,23 +147,22 @@ export class DataAccessor {
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
         
-        const Model = this.adminizer.modelHandler.model.get(modelName);
-        if (!Model || !this.adminizer.config.models[modelName] || typeof this.adminizer.config.models[modelName] === "boolean") {
-            
+        const model = this.adminizer.modelHandler.model.get(modelName);
+        if (!model || !this.adminizer.config.models[model.identity] || typeof this.adminizer.config.models[model.identity] === "boolean") {
             return undefined;
         }
 
         // Check if user has access to the associated model
-        const actionVerb = getTokenAction(this.action);
-        const tokenId = `${actionVerb}-${modelName}-${this.entity.type}`;
+        const tokenId = `read-${modelName}-${this.entity.type}`;
         if (!this.adminizer.accessRightsHelper.hasPermission(tokenId, this.user)) {
-            Adminizer.log.warn(`No access rights to ${this.entity.type}: ${modelName}`);
+            Adminizer.log.debug(`getAssociatedFieldsConfig > No access rights to ${this.actionVerb} ${this.entity.type}: ${modelName}`);
             return undefined;
         }
 
         const associatedFields: { [fieldName: string]: Field } = {};
-        const modelConfig = this.adminizer.config.models[modelName];
+        const modelConfig = this.adminizer.config.models[model.identity];
 
+        if(!isObject(modelConfig)) throw `Type error ModelConfig should is object`
         // Get the main fields configuration
         const fieldsConfig = modelConfig.fields || {};
 
@@ -171,7 +192,7 @@ export class DataAccessor {
         const mergedFieldsConfig = {...fieldsConfig, ...actionSpecificConfig};
 
         // Loop through model attributes and apply access checks
-        Object.entries(Model.attributes).forEach(([key, modelField]) => {
+        Object.entries(model.attributes).forEach(([key, modelField]) => {
             const fieldConfig = mergedFieldsConfig[key];
 
             // Creating a basic config
@@ -191,6 +212,7 @@ export class DataAccessor {
                 config: fldConfig,
                 model: modelField,
                 populated: undefined, // set undefined for already populated fields
+                modelConfig: undefined
             };
         });
 
@@ -404,7 +426,7 @@ export class DataAccessor {
                 }
 
                 // Ensure there is only one associated intermediate record
-                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id});
+                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id}, this);
                 if (intermediateRecordCount > 1) {
                     throw new Error(
                         `Multiple intermediate records found in model "${intermediateRelation.model}" associated with user ID "${this.user.id}". ` +
@@ -437,7 +459,6 @@ export class DataAccessor {
             const userAccessRelation = this.entity.config.userAccessRelation;
             if (typeof userAccessRelation === 'string') {
                 let accessField = userAccessRelation;
-
                 // only admin can set user access relation manually
                 if (updatedRecord[accessField as keyof T] && !this.user.isAdministrator) {
                     delete updatedRecord[accessField as keyof T];
@@ -446,13 +467,12 @@ export class DataAccessor {
                 // Check if the relation points to `UserAP` or `GroupAP` in the model's attributes
                 const modelAttributes = this.entity.model.attributes;
                 const relation = modelAttributes[accessField];
-
                 if (relation && ['userap', 'groupap'].includes(relation.model.toLowerCase())) {
                     if (relation.model.toLowerCase() === 'userap') {
-                        updatedRecord[accessField as keyof T] = this.user.id as T[keyof T];
-
+                        if (!this.user.isAdministrator) {
+                            updatedRecord[accessField as keyof T] = this.user.id as T[keyof T];
+                        }
                     } else if (relation.model.toLowerCase() === 'groupap') {
-                        // Works only for users with only one group, later it can be resolved with group weight
                         const userGroups = this.user.groups as GroupAP[] || [];
                         if (userGroups.length === 1) {
                             updatedRecord[accessField as keyof T] = userGroups[0].id as T[keyof T];
@@ -503,7 +523,7 @@ export class DataAccessor {
                 }
 
                 // Ensure there is only one associated intermediate record
-                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id});
+                const intermediateRecordCount = await intermediateModel.count({[via]: this.user.id}, this);
                 if (intermediateRecordCount > 1) {
                     throw new Error(
                         `Multiple intermediate records found in model "${intermediateRelation.model}" associated with user ID "${this.user.id}". ` +
@@ -515,7 +535,6 @@ export class DataAccessor {
                 updatedRecord[field as keyof T] = intermediateRecord.id as T[keyof T];
             }
         }
-
         return updatedRecord;
     }
 }

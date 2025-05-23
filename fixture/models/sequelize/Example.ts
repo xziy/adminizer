@@ -94,5 +94,22 @@ import {
   
     @Column(DataType.JSON)
     declare geojson: object;
+
+    // ——————————————————————————————————————————————
+    // Owner (1-to-1 with UserAP at runtime)
+    // ——————————————————————————————————————————————
+    @Column({ type: DataType.INTEGER, allowNull: true })
+    declare ownerId: number;
+
+    declare owner?: UserAP;
+    static associate(sequelize: Sequelize) {
+      const UserAPModel = sequelize.model('UserAP') as ModelStatic<Model<UserAP>>;
+      
+      // 1-to-1: ownerId → один UserAP
+      this.belongsTo(UserAPModel, {
+        foreignKey: 'ownerId',
+        as: 'owner',
+      });
+    }
   }
   

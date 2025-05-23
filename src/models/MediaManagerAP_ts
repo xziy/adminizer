@@ -9,14 +9,15 @@ export default {
     primaryKey: true,
     required: true
   },
-  parent: {
+  // WARN!!!  renamed from parent is confict, PARENT is reserved word in sequlize
+  parentMedia: {
     model: "MediaManagerAP"
   },
   variants: {
     collection: "MediaManagerAP",
     via: "parent"
   },
-  mimeType: {
+  mimeType: { 
     type: "string"
   },
   path: {
@@ -39,7 +40,7 @@ export default {
   },
   meta: {
     collection: "MediaManagerMetaAP",
-    via: "parent"
+    via: "parentMedia"
   },
   modelAssociation: {
     collection: "MediaManagerAssociationsAP",

@@ -1,6 +1,5 @@
 export * from "./helpers/configHelper";
 export * from "./helpers/accessRightsHelper";
-export * from "./lib/installStepper/installStepper";
 export * from "./lib/widgets/widgetHandler";
 export * from "./lib/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
@@ -12,7 +11,7 @@ export * from "./lib/v4/model/adapter/sequelize"
 export * from "./lib/Adminizer";
 export * from "./models/GroupAP"
 export * from "./models/UserAP"
-export * from "./models/MediaManagerAP_ts"
-export * from "./models/MediaManagerAssociationsAP_ts"
-export * from "./models/MediaManagerMetaAP_ts"
+// export * from "./models/MediaManagerAP"
+// export * from "./models/MediaManagerAssociationsAP"
+// export * from "./models/MediaManagerMetaAP"
 export * from "./models/NavigationAP"

@@ -40,7 +40,6 @@ export default function bindReqFunctions(adminizer: Adminizer) {
             req.i18n.registerMethods(res.locals, req)
         }
 
-        // TODO: I made it quickly, you need to spread for architecture to different files, or re -ize this file to a girlfriend
         // NOTE: This is here because inertia should receive data to routes
         // JWT token
         const cookies = parse(req.headers.cookie || '');

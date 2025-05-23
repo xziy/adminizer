@@ -99,7 +99,7 @@ export class ControllerHelper {
         if (!entityType) {
             const extractedEntityType = req.originalUrl.split('/')[2] as EntityType | undefined;
 
-            if (["form", "model", "wizard"].includes(extractedEntityType)) {
+            if (["form", "model"].includes(extractedEntityType)) {
                 return extractedEntityType;
             } else {
                 return null;

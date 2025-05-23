@@ -323,12 +323,12 @@
 //   try {
 //     await fs.promises.access(file);
 //     await fs.promises.unlink(file);
-//     console.log('The file was successfully deleted');
+
 //   } catch (err) {
 //     if (err.code === 'ENOENT') {
-//       console.log('The file does not exist');
+
 //     } else if (err.code === 'EPERM') {
-//       console.log('You do not have permission to delete this file');
+
 //     } else {
 //       console.error(`An error occurred: ${err}`);
 //     }

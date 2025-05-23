@@ -1,3 +1,13 @@
 {
-    "commentTranslate.source": "Google"
+    "commentTranslate.source": "Google",
+    "eslint.enable": true,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    }
 }

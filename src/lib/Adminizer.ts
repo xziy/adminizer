@@ -51,7 +51,7 @@ export class Adminizer {
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
     static logger = winston.createLogger({
-        level: "info",
+        level: process.env.LOG_LEVEL ?? "debug",
         format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf(({timestamp, level, message, ...meta}) => {
@@ -109,6 +109,10 @@ export class Adminizer {
     public async init(config: AdminpanelConfig) {
         // set cookie parser
         this.app.use(cookieParser());
+        
+        if(!config || Object.keys(config).length === 0) {
+            Adminizer.log.warn(`Adminizer init > Adminizer config is emtpy`)
+        }
 
         // Set vite middleware
         const isViteDev = process.env.VITE_ENV === "dev";
@@ -154,6 +158,7 @@ export class Adminizer {
 
         this.modelHandler = new ModelHandler();
 
+        // TODO: 'hot reload' unbind models & unbind forms
         await bindModels(this);
         await bindForms(this);
 
@@ -162,8 +167,10 @@ export class Adminizer {
         this.policyManager = new PolicyManager(this);
         await this.policyManager.loadPolicies();
 
+        // TODO: 'hot reload' problem with deleting access right tokens
         this.accessRightsHelper = new AccessRightsHelper(this);
 
+        // Helpers go to construtor
         this.configHelper = new ConfigHelper(this);
 
         this.menuHelper = new MenuHelper(this.config)
@@ -173,14 +180,13 @@ export class Adminizer {
         bindExpressUtils(this.app);
         bindReqFunctions(this);
 
-        // add install stepper policy to check unfilled settings
-        // bindInstallStepper(this); // TODO It is necessary to provide an opportunity to be inserted by an intermediary after authorization, but before the admin panel, in order to block the user from managing the Installstepper's admin panel.
-
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
-
-        if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
-            bindDev(this)
+        
+        if(!process.env.VITEST) {
+            if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
+                bindDev(this)
+            }
         }
 
         await bindDashboardWidgets(this);

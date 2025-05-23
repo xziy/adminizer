@@ -32,9 +32,11 @@ export default [
         },
 
         rules: {
+            "no-console": "warn",
             // Отключаем все правила, кроме @typescript-eslint/no-explicit-any
             "no-unused-vars": "off",
             "no-undef": "off",
+            "no-warning-comments": "error",
             "@typescript-eslint/explicit-module-boundary-types": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-unused-vars": "off",

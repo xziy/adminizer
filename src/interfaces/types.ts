@@ -6,7 +6,7 @@ import {Adminizer} from "../lib/Adminizer";
 import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
 
-export type EntityType = "form" | "model" | "wizard";
+export type EntityType = "form" | "model";
 export interface Entity {
     name: string
     config?: ModelConfig
