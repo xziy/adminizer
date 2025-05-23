@@ -1,10 +1,10 @@
 import {AbstractCatalog, AbstractGroup, AbstractItem, ActionHandler, Item} from "./AbstractCatalog";
-import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../interfaces/adminpanelConfig";
+import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../../interfaces/adminpanelConfig";
 import * as fs from "node:fs";
 
 import {v4 as uuid} from "uuid";
-import {Adminizer} from "../Adminizer";
-import inertiaAddHelper from "../../helpers/inertiaAddHelper";
+import {Adminizer} from "../../Adminizer";
+import inertiaAddHelper from "../../../helpers/inertiaAddHelper";
 
 export interface NavItem extends Item {
 	urlPath?: string;

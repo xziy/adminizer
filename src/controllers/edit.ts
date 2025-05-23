@@ -2,7 +2,7 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
-import {CatalogHandler} from "../lib/catalog/CatalogHandler";
+import {CatalogHandler} from "../lib/v4/catalog/CatalogHandler";
 import {
     getRelationsMediaManager,
     saveRelationsMediaManager

@@ -1,5 +1,5 @@
 import { JSONSchema4 } from "json-schema";
-import { Adminizer } from "../Adminizer";
+import { Adminizer } from "../../Adminizer";
 
 /**
  * Interface `Item` describes the data that the UI will operate on
