@@ -225,7 +225,7 @@ export class VueCatalog {
 			if (item1.children?.length) {
 				await this.deleteItem(item1.children)
 			}
-			this.catalog.deleteItem(item1.data.type, item1.data.id)
+			await this.catalog.deleteItem(item1.data.type, item1.data.id)
 		}
 		return { ok: true }
 	}
