@@ -50,24 +50,28 @@ export async function catalogController(req: ReqType, res: ResType) {
 		switch (method) {
 			case 'POST':
 				switch (data._method) {
+					// TODO: deprecated, passing react module instead html
 					case 'getAddHTML':
 						return res.json(await frontendCatalog.getAddHTML(item, req))
+					// TODO: deprecated, passing react module instead html
 					case 'getEditHTML':
 						return res.json(await frontendCatalog.getEditHTML(item, data.id, req, data.modelId))
 					case 'getCatalog':
-						const __catalog = await frontendCatalog.getCatalog();
-						return res.json({
-							items: frontendCatalog.getitemTypes(),
-							catalog: {
-								nodes: __catalog,
-								movingGroupsRootOnly: _catalog.movingGroupsRootOnly ?? false,
-								catalogName: _catalog.name,
-								catalogId: _catalog.id,
-								catalogSlug: _catalog.slug,
-								idList: idList
-							},
-							toolsActions: await frontendCatalog.getActions([], 'tools')
-						})
+						{ 
+							const __catalog = await frontendCatalog.getCatalog();
+							return res.json({
+								items: frontendCatalog.getitemTypes(),
+								catalog: {
+									nodes: __catalog,
+									movingGroupsRootOnly: _catalog.movingGroupsRootOnly ?? false,
+									catalogName: _catalog.name,
+									catalogId: _catalog.id,
+									catalogSlug: _catalog.slug,
+									idList: idList
+								},
+								toolsActions: await frontendCatalog.getActions([], 'tools')
+							}) 
+						}
 					case 'createItem':
 						return res.json({'data': await frontendCatalog.createItem(data.data)})
 					case 'getChilds':
@@ -89,6 +93,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 					case 'handleAction':
 						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config)})
 					case 'getPopUpHTML':
+						// TODO: deprecated, passing react module instead html
 						return res.json({data: await frontendCatalog.getPopUpHTML(data.actionId)})
 					case 'updateItem':
 						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data)})

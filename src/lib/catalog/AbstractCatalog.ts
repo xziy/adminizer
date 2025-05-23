@@ -342,7 +342,7 @@ export abstract class AbstractCatalog {
 
 	/**
 	 * Gettind id list method
-	 * @deprecated this just returns empty array, is not work???
+	 * @info This is a dummy method, please make realization in sub class
 	 */
 	public async getIdList(): Promise<string[]> {
 		return []
