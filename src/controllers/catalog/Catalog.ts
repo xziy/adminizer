@@ -73,13 +73,13 @@ export async function catalogController(req: ReqType, res: ResType) {
 							}) 
 						}
 					case 'createItem':
-						return res.json({'data': await frontendCatalog.createItem(data.data)})
+						return res.json({'data': await frontendCatalog.createItem(data.data, req)})
 					case 'getChilds':
-						return res.json({data: await frontendCatalog.getChilds(data.data)})
+						return res.json({data: await frontendCatalog.getChilds(data.data, req)})
 					case 'getActions':
 						return res.json({data: await frontendCatalog.getActions(data.items, data.type)})
 					case 'search':
-						return res.json({data: await frontendCatalog.search(data.s)})
+						return res.json({data: await frontendCatalog.search(data.s, req)})
 					case "getLocales":
 						return res.json({data: frontendCatalog.getLocales(req)})
 				}
@@ -87,20 +87,20 @@ export async function catalogController(req: ReqType, res: ResType) {
 			case 'PUT':
 				switch (data._method) {
 					case 'updateTree':
-						return res.json({data: await frontendCatalog.updateTree(data.data)})
+						return res.json({data: await frontendCatalog.updateTree(data.data, req)})
 					case 'getLink':
 						return res.json({data: await frontendCatalog.getLink(data.actionId)})
 					case 'handleAction':
-						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config)})
+						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config, req)})
 					case 'getPopUpHTML':
 						// TODO: deprecated, passing react module instead html
 						return res.json({data: await frontendCatalog.getPopUpHTML(data.actionId)})
 					case 'updateItem':
-						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data)})
+						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data, req)})
 				}
 				break
 			case 'DELETE':
-				return res.json({data: await frontendCatalog.deleteItem(data.data)})
+				return res.json({data: await frontendCatalog.deleteItem(data.data, req)})
 		}
 	}
 }
