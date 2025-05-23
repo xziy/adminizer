@@ -1,12 +1,12 @@
-import {AbstractCatalog, Item} from "../../lib/catalog/AbstractCatalog";
+import { AbstractCatalog, Item } from "../../lib/catalog/AbstractCatalog";
 
 
 interface NodeModel<TDataType> {
 	text: string;
-    droppable: boolean;
+	droppable: boolean;
 	// isExpanded: boolean;
 	id: number;
-    parent: number;
+	parent: number;
 	data?: TDataType;
 	children?: NodeModel<TDataType>[];
 
@@ -34,6 +34,10 @@ interface RequestData {
 	_method: string;
 }
 
+/**
+ * @deprecated Now is React
+ * // TODO: refactor for react name
+ */
 export class VueCatalog {
 	catalog: AbstractCatalog;
 
@@ -49,10 +53,19 @@ export class VueCatalog {
 		return this.catalog.getItemType(type);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
+	 */
+	
 	getAddHTML(item: any, req: ReqType) {
 		return this.catalog.getAddHTML(item, req);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	 * TODO need passing custom React module 
+	 */
 	getEditHTML(item: any, id: string | number, req: ReqType, modelId: string | number) {
 		return this.catalog.getEditHTML(item, id, req, modelId)
 	}
@@ -75,7 +88,7 @@ export class VueCatalog {
 			"Are you sure?": "",
 			"Yes, I'm sure": "",
 			"Select Ids": "",
-            "OR": "",
+			"OR": "",
 		}
 		obj[this.catalog.name] = ""
 		for (const actionHandler of this.catalog.actionHandlers) {
@@ -84,13 +97,13 @@ export class VueCatalog {
 
 		let messages = obj
 
-		let outMessages:obj = {}
+		let outMessages: obj = {}
 		for (const mess of Object.keys(messages)) {
 			outMessages[mess] = req.i18n.__(mess)
 		}
 		return {
-            ...outMessages,
-        }
+			...outMessages,
+		}
 	}
 
 	async getActions(items: NodeModel<any>[], type: string) {
@@ -113,6 +126,10 @@ export class VueCatalog {
 		return this.catalog.handleAction(actionId, arrItems, config);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
+	 */
 	async getPopUpHTML(actionId: string) {
 		return this.catalog.getPopUpHTML(actionId);
 	}
@@ -128,14 +145,14 @@ export class VueCatalog {
 		return VueCatalogUtils.arrayToNode(rootItems, this.catalog.getGroupType().type);
 	}
 
-	createItem(data: any) {
+	async createItem(data: any) {
 		//data = VueCatalogUtils.refinement(data);
-		if(this.catalog.slug !== "navigation"){
+		if (this.catalog.slug !== "navigation") {
 			let item = data.record;
 			item.parenId = data.parenId;
-			return this.catalog.createItem(item);
+			return await this.catalog.createItem(item);
 		} else {
-			return this.catalog.createItem(data);
+			return await this.catalog.createItem(data);
 		}
 	}
 
@@ -196,7 +213,7 @@ export class VueCatalog {
 	async updateItem(item: any, modelId: string, data: any) {
 
 		//data = VueCatalogUtils.refinement(data);
-		if(this.catalog.slug !== "navigation"){
+		if (this.catalog.slug !== "navigation") {
 			return await this.catalog.updateModelItems(data.modelId, data.type, data.record);
 		} else {
 			return await this.catalog.updateModelItems(modelId, item.type, data);
@@ -210,7 +227,7 @@ export class VueCatalog {
 			}
 			this.catalog.deleteItem(item1.data.type, item1.data.id)
 		}
-		return {ok: true}
+		return { ok: true }
 	}
 }
 
@@ -234,7 +251,7 @@ export class VueCatalogUtils {
 			// isExpanded: false,
 			id: data.sortOrder + 1,
 			text: data.name,
-            parent: 0
+			parent: 0
 		};
 	}
 
