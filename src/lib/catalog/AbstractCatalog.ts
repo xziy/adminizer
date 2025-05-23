@@ -1,5 +1,5 @@
-import {JSONSchema4} from "json-schema";
-import {Adminizer} from "../Adminizer";
+import { JSONSchema4 } from "json-schema";
+import { Adminizer } from "../Adminizer";
 
 /**
  * Interface `Item` describes the data that the UI will operate on
@@ -10,7 +10,12 @@ export interface Item {
 	id: string | number;
 	name: string;
 	parentId: string | number;
+
+	/**
+	 * 
+	 */
 	childs?: Item[];
+
 	sortOrder: number
 
 	// below: AbstractGroup layer - It means data to be mapped from itemType class
@@ -27,8 +32,6 @@ export type _Item_ = {
 
 /**
  * General Item structure that will be available for all elements, including groups
- *
- *
  */
 export abstract class BaseItem<T extends Item> {
 	// public abstract readonly id: string;
@@ -41,7 +44,7 @@ export abstract class BaseItem<T extends Item> {
 	 * */
 	// public readonly dataType: T
 
-    public abstract adminizer: Adminizer
+	public abstract adminizer: Adminizer
 
 	/**
 	 * Catalog name
@@ -67,6 +70,9 @@ export abstract class BaseItem<T extends Item> {
 	 */
 	public readonly actionHandlers: ActionHandler[]
 
+	/**
+	 * Adds the context menu processor
+	 */
 	public addActionHandler(contextHandler: ActionHandler) {
 		this.actionHandlers.push(contextHandler);
 	}
@@ -94,18 +100,18 @@ export abstract class BaseItem<T extends Item> {
 	public abstract update(itemId: string | number, data: T, catalogId: string): Promise<T>;
 
 	/**
-     *
-     * @param modelId
-     * @param data
-     * @param catalogId
-     */
+	 *
+	 * @param modelId
+	 * @param data
+	 * @param catalogId
+	 */
 	public abstract updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<T>;
 
 	/**
-     * For custom HTML
-     * @param data
-     * @param catalogId
-     */
+	 * For custom HTML
+	 * @param data
+	 * @param catalogId
+	 */
 	public abstract create(data: T, catalogId: string): Promise<T>;
 
 	/**
@@ -113,25 +119,25 @@ export abstract class BaseItem<T extends Item> {
 	 */
 	public abstract deleteItem(itemId: string | number, catalogId: string): Promise<void>;
 
-    public abstract getAddHTML(req: ReqType): Promise<{
-        type: 'component' | 'model' | string,
-        data: any
-    }>
+	public abstract getAddHTML(req: ReqType): Promise<{
+		type: 'component' | 'model' | string,
+		data: any
+	}>
 
 	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
 		type: 'link' | 'html' | 'jsonForm',
 		data: string
 	}>;
 
-    public async _getChilds(parentId: string | number, catalogId: string): Promise<Item[]> {
-        let items = await this.getChilds(parentId, catalogId);
-        items.forEach((item) => {
-            this._enrich(item as T);
-        });
-        return items;
-    }
+	public async _getChilds(parentId: string | number, catalogId: string): Promise<Item[]> {
+		let items = await this.getChilds(parentId, catalogId);
+		items.forEach((item) => {
+			this._enrich(item as T);
+		});
+		return items;
+	}
 
-    public abstract getChilds(parentId: string | number, catalogId: string): Promise<Item[]>;
+	public abstract getChilds(parentId: string | number, catalogId: string): Promise<Item[]>;
 
 	public abstract search(s: string, catalogId: string): Promise<T[]>
 }
@@ -145,90 +151,101 @@ export abstract class AbstractGroup<T extends Item> extends BaseItem<T> {
 	public readonly isGroup: boolean = true;
 	public icon: string = "folder";
 
-    public abstract getAddHTML(req: ReqType): Promise<{
-        type: 'component' | 'model' | string,
-        data: {
-            items?: { name: string, required: boolean }[] | Record<string, any>[],
-            model?: string,
-            labels?: Record<string, string>,
-        }
-    }>
+	/**
+	 * @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
+	 */
+	public abstract getAddHTML(req: ReqType): Promise<{
+		type: 'component' | 'model' | string,
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			labels?: Record<string, string>,
+		}
+	}>
 }
 
 export abstract class AbstractItem<T extends Item> extends BaseItem<T> {
 	public readonly isGroup: boolean = false;
 
-    public abstract getAddHTML(req: ReqType): Promise<{
-        type: 'component' | 'model' | string,
-        data: {
-            items?: Record<string, any>[],
-            model?: string,
-            labels?: Record<string, string>,
-        }
-    }>
+
+	/**
+	 * @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
+	 */
+	public abstract getAddHTML(req: ReqType): Promise<{
+		type: 'component' | 'model' | string,
+		data: {
+			items?: Record<string, any>[],
+			model?: string,
+			labels?: Record<string, string>,
+		}
+	}>
 }
 
 /// ContextHandler
 export abstract class ActionHandler {
-    /**
-     * Three actions are possible, without configuration, configuration via pop-up, and just external action
-     * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
-     * */
-    public abstract readonly type: "basic" |
-        "json-forms" |
-        "external" |
-        "link" |
-        "partial"
+	/**
+	 * Three actions are possible, without configuration, configuration via pop-up, and just external action
+	 * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
+	 * */
+	public abstract readonly type: "basic" |
+		"json-forms" |
+		"external" |
+		"link" |
+		"partial"
 
-    /**
-     * Will be shown in the context menu section
-     */
-    public abstract readonly displayContext: boolean
-    /**
-     * Will be shown in the toolbox section
-     */
-    public abstract readonly displayTool: boolean
+	/**
+	 * Will be shown in the context menu section
+	 */
+	public abstract readonly displayContext: boolean
+	/**
+	 * Will be shown in the toolbox section
+	 */
+	public abstract readonly displayTool: boolean
 
-    /** (!*1)
-     * Only for json-forms
-     * ref: https://jsonforms.io/docs
-     */
-    public abstract readonly uiSchema: any
-    public abstract readonly jsonSchema: JSONSchema4
+	/** (!*1)
+	 * Only for json-forms
+	 * ref: https://jsonforms.io/docs
+	 */
+	public abstract readonly uiSchema: any
+	public abstract readonly jsonSchema: JSONSchema4
 
-    /**
-     * For "json-forms" | "external"
-     */
-    public abstract getPopUpHTML(data?: any): Promise<string>
-
-
-    /**
-     * Only for link type
-     */
-    public abstract getLink(data?: any): Promise<string>
+	/**
+	 * For "json-forms" | "external"
+	 * @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
+	 */
+	public abstract getPopUpHTML(data?: any): Promise<string>
 
 
-    /**
-     * For which elements the action can be used
-     */
-    public readonly selectedItemTypes: string[]
+	/**
+	 * Only for link type
+	 */
+	public abstract getLink(data?: any): Promise<string>
 
-    /**
-     * icon (url or id)
-     */
-    public abstract readonly id: string;
 
-    public abstract readonly icon: string;
+	/**
+	 * For which elements the action can be used
+	 */
+	public readonly selectedItemTypes: string[]
 
-    public abstract readonly name: string
+	/**
+	 * icon (url or id)
+	 */
+	public abstract readonly id: string;
 
-    /**
-     * Implementation of a method that will do something with elements.
-     * there's really not much you can do with the context menu
-     * @param items
-     * @param config
-     */
-    public abstract handler(items: Item[], data?: any): Promise<void>;
+	public abstract readonly icon: string;
+
+	public abstract readonly name: string
+
+	/**
+	 * Implementation of a method that will do something with elements.
+	 * there's really not much you can do with the context menu
+	 * @param items
+	 * @param config
+	 */
+	public abstract handler(items: Item[], data?: any): Promise<void>;
 
 }
 
@@ -284,21 +301,21 @@ export abstract class AbstractCatalog {
 	 * Method for getting childs elements
 	 * if pass null as parentId this root
 	 */
-    public async getChilds(parentId: string | number, byItemType?: string): Promise<Item[]> {
-        if (byItemType) {
-            const items = await this.getItemType(byItemType)?._getChilds(parentId, this.id);
-            return items ? items.sort((a, b) => a.sortOrder - b.sortOrder) : [];
-        } else {
-            let result: Item[] = [];
-            for (const itemType of this.itemTypes) {
-                const items = await itemType?._getChilds(parentId, this.id);
-                if (items) {
-                    result = result.concat(items);
-                }
-            }
-            return result.sort((a, b) => a.sortOrder - b.sortOrder);
-        }
-    }
+	public async getChilds(parentId: string | number, byItemType?: string): Promise<Item[]> {
+		if (byItemType) {
+			const items = await this.getItemType(byItemType)?._getChilds(parentId, this.id);
+			return items ? items.sort((a, b) => a.sortOrder - b.sortOrder) : [];
+		} else {
+			let result: Item[] = [];
+			for (const itemType of this.itemTypes) {
+				const items = await itemType?._getChilds(parentId, this.id);
+				if (items) {
+					result = result.concat(items);
+				}
+			}
+			return result.sort((a, b) => a.sortOrder - b.sortOrder);
+		}
+	}
 
 	private _bindAccessRight(adminizer: Adminizer) {
 		setTimeout(() => {
@@ -325,8 +342,9 @@ export abstract class AbstractCatalog {
 
 	/**
 	 * Gettind id list method
+	 * @deprecated this just returns empty array, is not work???
 	 */
-	public async getIdList(): Promise<string []> {
+	public async getIdList(): Promise<string[]> {
 		return []
 	}
 
@@ -351,23 +369,21 @@ export abstract class AbstractCatalog {
 	/**
 	 *  Get an element
 	 */
-	public find(item: Item) {
-		return this.getItemType(item.type)?._find(item.id, this.id);
+	public async find(item: Item) {
+		return await this.getItemType(item.type)?._find(item.id, this.id);
 	}
 
 	/**
 	 *  Removing an element
 	 */
-	public deleteItem(type: string, id: string | number) {
-		try {
-			this.getItemType(type)?.deleteItem(id, this.id);
-		} catch (e) {
-			throw e
-		}
+	public async deleteItem(type: string, id: string | number) {
+		await this.getItemType(type)?.deleteItem(id, this.id);
 	}
 
 	/**
 	 * Receives HTML to update an element for projection into a popup
+	* @deprecated reason: migration for intertia
+	 * todo need passing custom React module
 	 */
 	public getEditHTML(item: Item, id: string | number, req: ReqType, modelId?: string | number) {
 		return this.getItemType(item.type)?.getEditHTML(id, this.id, req, modelId);
@@ -375,7 +391,9 @@ export abstract class AbstractCatalog {
 
 	/**
 	 * Receives HTML to create an element for projection into a popup
-	 */
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	public getAddHTML(item: Item, req: ReqType) {
 		return this.getItemType(item.type)?.getAddHTML(req);
 	}
@@ -438,6 +456,8 @@ export abstract class AbstractCatalog {
 	/**
 	 * For Extermal and JsonForms actions
 	 * @param actionId
+	* @deprecated reason: migration for intertia
+	 * // TODO: need passing custom React module
 	 */
 	public async getPopUpHTML(actionId: string) {
 		return this.actionHandlers.find((it) => it.id === actionId)?.getPopUpHTML();
@@ -447,13 +467,15 @@ export abstract class AbstractCatalog {
 	 *
 	 * @param data
 	 */
-	public createItem<T extends Item>(data: T): Promise<T> {
-		return this.getItemType(data.type)?.create(data, this.id) as Promise<T>;
+	public async createItem<T extends Item>(data: T): Promise<T> {
+		const promise = this.getItemType(data.type)?.create(data, this.id) as Promise<T>;
+		return await promise
 	}
 
 
-	public updateItem<T extends Item>(id: string | number, type: string, data: T): Promise<T> {
-		return this.getItemType(type)?.update(id, data, this.id) as Promise<T>;
+	public async updateItem<T extends Item>(id: string | number, type: string, data: T): Promise<T> {
+		const promise =  this.getItemType(type)?.update(id, data, this.id) as Promise<T>;
+		return await promise
 	}
 
 	/**
@@ -462,15 +484,16 @@ export abstract class AbstractCatalog {
 	 * @param type
 	 * @param data
 	 */
-	public updateModelItems<T extends Item>(modelId: string | number, type: string, data: T): Promise<T> {
-		return this.getItemType(type)?.updateModelItems(modelId, data, this.id) as Promise<T>;
+	public async updateModelItems<T extends Item>(modelId: string | number, type: string, data: T): Promise<T> {
+		const promise = this.getItemType(type)?.updateModelItems(modelId, data, this.id) as Promise<T>;
+		return await promise
 	}
 
 	/**
 	 * Method for getting group elements
 	 */
 	public getitemTypes() {
-        return this.itemTypes.map(({adminizer, ...rest}) => rest);
+		return this.itemTypes.map(({ adminizer, ...rest }) => rest);
 	};
 
 
@@ -502,16 +525,16 @@ export abstract class AbstractCatalog {
 
 		// Handle all search
 		for (const itemType of this.itemTypes) {
-			const items = (await itemType.search(s, this.id)).map(a => ({...a, marked: true}));
+			const items = (await itemType.search(s, this.id)).map(a => ({ ...a, marked: true }));
 			foundItems = foundItems.concat(items);
 		}
 
 
-        for (const item of foundItems) {
-            if (item.parentId !== 0) { // changed from null to 0
-                await buildTreeUpwards(item, hasExtras);
-            }
-        }
+		for (const item of foundItems) {
+			if (item.parentId !== 0) { // changed from null to 0
+				await buildTreeUpwards(item, hasExtras);
+			}
+		}
 
 		// finalize
 		const itemsMap = new Map<string | number, Item>();
@@ -531,26 +554,26 @@ export abstract class AbstractCatalog {
 	}
 
 
-    public static buildTree(items: Item[]): Item[] {
-        const tree: Item[] = [];
-        const itemMap: { [key: string]: Item } = {};
+	public static buildTree(items: Item[]): Item[] {
+		const tree: Item[] = [];
+		const itemMap: { [key: string]: Item } = {};
 
-        items.forEach(item => {
-            item.childs = [];
-            itemMap[item.id] = item;
-        });
+		items.forEach(item => {
+			item.childs = [];
+			itemMap[item.id] = item;
+		});
 
-        items.forEach(item => {
-            if (item.parentId === 0) { // changed from null to 0
-                tree.push(item);
-            } else {
-                const parent = itemMap[item.parentId];
-                if (parent) {
-                    parent.childs.push(item);
-                }
-            }
-        });
+		items.forEach(item => {
+			if (item.parentId === 0) { // changed from null to 0
+				tree.push(item);
+			} else {
+				const parent = itemMap[item.parentId];
+				if (parent) {
+					parent.childs.push(item);
+				}
+			}
+		});
 
-        return tree;
-    }
+		return tree;
+	}
 }

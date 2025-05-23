@@ -7,7 +7,7 @@ import {Adminizer} from "../Adminizer";
 import inertiaAddHelper from "../../helpers/inertiaAddHelper";
 
 export interface NavItem extends Item {
-	urlPath?: any;
+	urlPath?: string;
 	modelId?: string | number;
 	targetBlank?: boolean
 }

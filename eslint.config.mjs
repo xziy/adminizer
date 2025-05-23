@@ -36,7 +36,10 @@ export default [
             // Отключаем все правила, кроме @typescript-eslint/no-explicit-any
             "no-unused-vars": "off",
             "no-undef": "off",
-            "no-warning-comments": "error",
+            "no-warning-comments": ["error", {
+                "terms": ["todo", "fixme", "xxx"],
+                "location": "anywhere"
+            }],
             "@typescript-eslint/explicit-module-boundary-types": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-unused-vars": "off",
