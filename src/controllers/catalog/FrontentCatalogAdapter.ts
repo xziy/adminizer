@@ -118,12 +118,12 @@ export class VueCatalog {
 		}
 	}
 
-	async handleAction(actionId: string, items: any[], config: any) {
+	async handleAction(actionId: string, items: any[], config: any, req: ReqType) {
 		let arrItems = []
 		for (const item of items) {
 			arrItems.push(await this.catalog.find(item.data))
 		}
-		return this.catalog.handleAction(actionId, arrItems, config);
+		return this.catalog.handleAction(actionId, arrItems, config, req);
 	}
 
 	/**
@@ -145,20 +145,20 @@ export class VueCatalog {
 		return VueCatalogUtils.arrayToNode(rootItems, this.catalog.getGroupType().type);
 	}
 
-	async createItem(data: any) {
+	async createItem(data: any, req: ReqType) {
 		//data = VueCatalogUtils.refinement(data);
 		if (this.catalog.slug !== "navigation") {
 			let item = data.record;
 			item.parenId = data.parenId;
-			return await this.catalog.createItem(item);
+			return await this.catalog.createItem(item, req);
 		} else {
-			return await this.catalog.createItem(data);
+			return await this.catalog.createItem(data, req);
 		}
 	}
 
-	async getChilds(data: any) {
+	async getChilds(data: any, req: ReqType) {
 		data = VueCatalogUtils.refinement(data);
-		return VueCatalogUtils.arrayToNode(await this.catalog.getChilds(data.id), this.catalog.getGroupType().type);
+		return VueCatalogUtils.arrayToNode(await this.catalog.getChilds(data.id, undefined, req), this.catalog.getGroupType().type);
 	}
 
 	// Moved into actions
@@ -167,13 +167,13 @@ export class VueCatalog {
 	//   return this.catalog.getChilds(data.id);
 	// }
 
-	async search(s: string) {
-		let searchResult = await this.catalog.search(s);
+	async search(s: string, req: ReqType) {
+		let searchResult = await this.catalog.search(s, undefined, req);
 		let itemsTree = AbstractCatalog.buildTree(searchResult);
 		return VueCatalogUtils.treeToNode(itemsTree, this.catalog.getGroupType().type);
 	}
 
-	async updateTree(data: RequestData): Promise<any> {
+	async updateTree(data: RequestData, req: ReqType): Promise<any> {
 		let reqNodes = data.reqNode;
 		if (!Array.isArray(data.reqNode)) {
 			reqNodes = [data.reqNode];
@@ -192,7 +192,7 @@ export class VueCatalog {
 		// It’s unclear why he’s coming reqNodes
 		for (const reqNode of reqNodes) {
 
-			const item = await this.catalog.find(reqNode.data);
+			const item = await this.catalog.find(reqNode.data, req);
 			if (!item) {
 				throw `reqNode Item not found`
 			}
@@ -203,29 +203,29 @@ export class VueCatalog {
 		for (const childNode of reqParent.children) {
 			childNode.data.sortOrder = sortCount;
 			childNode.data.parentId = reqParent.data.id
-			await this.catalog.updateItem(childNode.data.id, childNode.data.type, childNode.data);
+			await this.catalog.updateItem(childNode.data.id, childNode.data.type, childNode.data, req);
 			sortCount++;
 		}
 		return Promise.resolve('ok')
 	}
 
 
-	async updateItem(item: any, modelId: string, data: any) {
+	async updateItem(item: any, modelId: string, data: any, req: ReqType) {
 
 		//data = VueCatalogUtils.refinement(data);
 		if (this.catalog.slug !== "navigation") {
-			return await this.catalog.updateModelItems(data.modelId, data.type, data.record);
+			return await this.catalog.updateModelItems(data.modelId, data.type, data.record, req);
 		} else {
-			return await this.catalog.updateModelItems(modelId, item.type, data);
+			return await this.catalog.updateModelItems(modelId, item.type, data, req);
 		}
 	}
 
-	async deleteItem(items: NodeModel<any>[]) {
+	async deleteItem(items: NodeModel<any>[], req: ReqType) {
 		for (const item1 of items) {
 			if (item1.children?.length) {
-				await this.deleteItem(item1.children)
+				await this.deleteItem(item1.children, req)
 			}
-			await this.catalog.deleteItem(item1.data.type, item1.data.id)
+			await this.catalog.deleteItem(item1.data.type, item1.data.id, req)
 		}
 		return { ok: true }
 	}
