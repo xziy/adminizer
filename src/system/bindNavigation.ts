@@ -1,5 +1,5 @@
-import {Navigation} from "../lib/catalog/Navigation";
-import {CatalogHandler} from "../lib/catalog/CatalogHandler";
+import {Navigation} from "../lib/v4/catalog/Navigation";
+import {CatalogHandler} from "../lib/v4/catalog/CatalogHandler";
 import {Adminizer} from "../lib/Adminizer";
 
 export default function bindNavigation(adminizer: Adminizer) {
