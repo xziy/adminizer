@@ -152,9 +152,6 @@ export abstract class BaseItem<T extends Item> {
 
 
 export abstract class AbstractGroup<T extends Item> extends BaseItem<T> {
-
-	// public abstract create(itemId: string, data: T): Promise<T>;
-
 	public readonly type: string = "group";
 	public readonly isGroup: boolean = true;
 	public icon: string = "folder";

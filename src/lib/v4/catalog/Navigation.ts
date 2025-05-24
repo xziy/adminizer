@@ -27,21 +27,16 @@ class StorageService {
 	}
 
 	protected async initModel() {
-		try {
-			// TODO refactor CRUD functions for DataAccessor usage
-			const navigation = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ label: this.id });
-
-			if (navigation) {
-				Adminizer.log.info(`Found existing navigation: ${this.id}`);
-				await this.populateFromTree(navigation.tree);
-			} else {
-				const newNavigation = { label: this.id, tree: [] as any };
-				// TODO refactor CRUD functions for DataAccessor usage
-				await this.adminizer.modelHandler.model.get(this.model)["_create"](newNavigation);
-				Adminizer.log.info(`Created a new navigation: ${this.id}`);
-			}
-		} catch (error) {
-			throw error;
+		// Direct call by model adapter
+		const navigation = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ label: this.id });
+		if (navigation) {
+			Adminizer.log.info(`Found existing navigation: ${this.id}`);
+			await this.populateFromTree(navigation.tree);
+		} else {
+			const newNavigation = { label: this.id, tree: [] as any };
+			// Direct call by model adapter
+			await this.adminizer.modelHandler.model.get(this.model)["_create"](newNavigation);
+			Adminizer.log.info(`Created a new navigation: ${this.id}`);
 		}
 	}
 
@@ -134,7 +129,7 @@ class StorageService {
         console.log({label: this.id},
             {tree: tree})
 		try {
-			// TODO refactor CRUD functions for DataAccessor usage
+			// Direct call by model adapter
            await this.adminizer.modelHandler.model.get(this.model)["_update"](
 				{label: this.id},
 				{tree: tree}
@@ -239,10 +234,10 @@ class NavigationItem extends AbstractItem<NavItem> {
 	protected model: string;
 	protected navigationModel: string;
 	public readonly actionHandlers: ActionHandler[] = []
-	public readonly urlPath: any;
+	public readonly urlPath: string;
 	public readonly adminizer: Adminizer
 
-	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: any) {
+	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: string) {
 		super();
 		this.name = name
 		this.navigationModel = navigationModel
@@ -258,7 +253,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let storage = StorageServices.get(catalogId)
 		let storageData = null
 		if (data._method === 'select') {
-			// TODO refactor CRUD functions for DataAccessor usage
+			// Direct call by model adapter
 			let record = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({id: data.record})
 			storageData = await this.dataPreparation({
 				record: record,
@@ -318,6 +313,10 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementById(itemId);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	async getAddHTML(req: ReqType): Promise<{
         type: 'component' | 'navigation.item' | 'navigation.group' | 'model',
         data: {
@@ -327,7 +326,7 @@ class NavigationItem extends AbstractItem<NavItem> {
         }
     }> {
 		let type: 'navigation.item' = 'navigation.item'
-		// TODO refactor CRUD functions for DataAccessor usage
+		// Direct call by model adapter
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
             return{
@@ -354,6 +353,10 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
 		type: "link" | "html" | "jsonForm";
 		data: string
@@ -437,7 +440,11 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		let storage = StorageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
-
+	
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	getAddHTML(req: ReqType):Promise<{
         type: 'component' | 'model' | string,
         data: {
@@ -474,6 +481,10 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
 		type: "link" | "html" | "jsonForm";
 		data: string
@@ -515,6 +526,10 @@ class LinkItem extends NavigationGroup {
 		super(adminizer, []);
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	// @ts-ignore
 	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
 		let type: 'html' = 'html'
@@ -530,6 +545,10 @@ class LinkItem extends NavigationGroup {
 		})
 	}
 
+	/**
+	 * @deprecated reason: migration for intertia
+	* // TODO: need passing custom React module 
+	*/
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType): Promise<{
 		type: "link" | "html" | "jsonForm";
 		data: string
