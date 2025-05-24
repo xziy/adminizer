@@ -1,5 +1,5 @@
 import {AbstractControls, ControlType, Config, Path} from "../AbstractControls";
-import {Adminizer} from "../../Adminizer";
+import {Adminizer} from "../../../Adminizer";
 
 export class CKeditor extends AbstractControls {
     readonly name: string = 'ckeditor';

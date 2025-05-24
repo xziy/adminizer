@@ -1,4 +1,4 @@
-import CustomBase from "../../lib/widgets/abstractCustom";
+import CustomBase from "../../lib/v4/widgets/abstractCustom";
 
 export async function widgetCustomController(req: ReqType, res: ResType) {
 	let widgetId = req.params.widgetId;

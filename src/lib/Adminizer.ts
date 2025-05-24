@@ -19,7 +19,7 @@ import bindModels from "../system/bindModels";
 import bindForms from "../system/bindForms";
 import bindTranslations from "../system/bindTranslations";
 import {ModelHandler} from "./v4/model/ModelHandler";
-import {WidgetHandler} from "./widgets/widgetHandler";
+import {WidgetHandler} from "./v4/widgets/widgetHandler";
 import {AccessRightsHelper} from "../helpers/accessRightsHelper";
 import bindReqFunctions from "../system/bindReqFunctions";
 import {ConfigHelper} from "../helpers/configHelper";
@@ -31,7 +31,7 @@ import {createServer as createViteServer, ViteDevServer} from 'vite';
 import {bindInertia} from "../system/bindInertia";
 import {MenuHelper} from "../helpers/menuHelper";
 import {bindControls} from "../system/bindControls";
-import {ControlsHandler} from "./controls/ControlsHandler";
+import {ControlsHandler} from "./v4/controls/ControlsHandler";
 import {v4 as uuid} from "uuid";
 
 export class Adminizer {

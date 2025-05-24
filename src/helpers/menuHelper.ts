@@ -166,6 +166,7 @@ export class MenuHelper {
             });
         }
         if (this.config.models) {
+            const _this = this;
             Object.entries<ModelConfig>(this.config.models).forEach(function ([key, val]) {
 
                 const hide =
@@ -179,7 +180,7 @@ export class MenuHelper {
                     if (val.tools && val.tools.length > 0 && val.tools[0].id !== "overview") {
                         val.tools.unshift({
                             id: "overview",
-                            link: this.config.routePrefix + '/model/' + key,
+                            link: _this.config.routePrefix + '/model/' + key,
                             title: 'Overview',
                             type: 'self',
                             icon: "list",
@@ -187,7 +188,7 @@ export class MenuHelper {
                         })
                     }
                     menus.push({
-                        link: this.config.routePrefix + '/model/' + key,
+                        link: _this.config.routePrefix + '/model/' + key,
                         title: val.title || key,
                         icon: val.icon || null,
                         actions: val.tools || null,

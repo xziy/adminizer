@@ -7,7 +7,7 @@ import {
     TuiEditorOptions,
     WysiwygOptions
 } from "../interfaces/adminpanelConfig";
-import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
+import {AbstractControls, ControlType} from "../lib/v4/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
 import { isObject } from "./JsUtils";

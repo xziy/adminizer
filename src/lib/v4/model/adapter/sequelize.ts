@@ -73,19 +73,19 @@ function generateAssociationsFromSchema(
 }
 
 function resolveType(type: any): Attribute["type"] {
-    const sqlType = typeof type.toString === "function"
-        ? type.toString().toLowerCase()
-        : "";
-    if (sqlType.includes("string") || sqlType.includes("uuid")) return "string";
-    if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
-    if (sqlType.includes("bool")) return "boolean";
-    if (sqlType.includes("json")) return "json";
-    if (sqlType.includes("date")) return "string";
-    return "ref";
+  const sqlType = typeof type.toString === "function"
+    ? type.toString().toLowerCase()
+    : "";
+  if (sqlType.includes("string") || sqlType.includes("uuid")) return "string";
+  if (sqlType.includes("int") || sqlType.includes("float") || sqlType.includes("decimal")) return "number";
+  if (sqlType.includes("bool")) return "boolean";
+  if (sqlType.includes("json")) return "json";
+  if (sqlType.includes("date")) return "string";
+  return "ref";
 }
 
 export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string, Attribute> {
-    const result: Record<string, Attribute> = {};
+  const result: Record<string, Attribute> = {};
 
 
   const rawAttrs = model.getAttributes();
@@ -148,73 +148,25 @@ export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string,
 
         break;
     }
+  }
 
-
-    for (const alias in model.associations) {
-        const assoc = model.associations[alias];
-
-        switch (assoc.associationType) {
-            case "BelongsTo": {
-                const a = assoc as BelongsTo;
-                result[a.foreignKey]["primaryKeyForAssociation"] = true;
-                result[alias] = {
-                    type: "association",
-                    model: a.target.name.toLowerCase(),
-                    via: a.foreignKey as string,
-                };
-                break;
-            }
-            case "HasOne": {
-                const a = assoc as HasOne;
-                result[a.foreignKey]["primaryKeyForAssociation"] = true;
-                result[alias] = {
-                    type: "association",
-                    model: a.target.name.toLowerCase(),
-                    via: a.foreignKey as string,
-                };
-                break;
-            }
-            case "HasMany": {
-                const a = assoc as HasMany;
-                result[alias] = {
-                    type: "association-many",
-                    collection: a.target.name.toLowerCase(),
-                    via: a.foreignKey as string,
-                };
-                break;
-            }
-            case "BelongsToMany": {
-                const a = assoc as BelongsToMany;
-                result[alias] = {
-                    type: "association-many",
-                    collection: a.target.name.toLowerCase(),
-                    via: a.otherKey as string,
-                };
-                break;
-            }
-            default:
-
-                break;
-        }
-    }
-
-    return result;
+  return result;
 }
 
 type AbstractFieldType =
-    | "string"
-    | "number"
-    | "boolean"
-    | "json"
-    | "ref"
-    | "association"
-    | "association-many";
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | "ref"
+  | "association"
+  | "association-many";
 
 type AbstractAttribute = {
-    type: AbstractFieldType;
-    required?: boolean;
-    primaryKey?: boolean;
-    unique?: boolean;
+  type: AbstractFieldType;
+  required?: boolean;
+  primaryKey?: boolean;
+  unique?: boolean;
 };
 
 function capitalize(str: string) {
@@ -223,7 +175,7 @@ function capitalize(str: string) {
 
 
 export class SequelizeModel<T> extends AbstractModel<T> {
-    private model: ModelStatic<any>;
+  private model: ModelStatic<any>;
 
   constructor(modelName: string, model: ModelStatic<any>) {
     super(
@@ -400,58 +352,32 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         continue;
       }
 
+      // @ts-ignore accessors is present
+      const { set: setAccessor, add: addAccessor } = assoc.accessors;
 
-    _convertCriteriaToSequelize(criteria: any): any {
-        const result: Record<string, any> = {};
-
-        for (const key in criteria) {
-            const value = criteria[key];
-
-            if (
-                value === undefined ||
-                value === null ||
-                (typeof value === "object" && Object.keys(value).length === 0)
-            ) {
-                continue;
-            }
-
-            // 🧠 Заменяем ключ на `via`, если это ассоциация
-            const attr = this.attributes?.[key];
-            let targetKey = key;
-            if (attr?.type === "association" && attr.via) {
-                targetKey = attr.via;
-            }
-
-            if (typeof value === "object" && !Array.isArray(value)) {
-                const operatorEntries = Object.entries(value)
-                    .filter(([_, v]) => v !== undefined && v !== null)
-                    .map(([op, val]) => {
-                        switch (op) {
-                            case "contains": return [Op.like, `%${val}%`];
-                            case "startsWith": return [Op.startsWith, val];
-                            case "endsWith": return [Op.endsWith, val];
-                            case ">": return [Op.gt, val];
-                            case ">=": return [Op.gte, val];
-                            case "<": return [Op.lt, val];
-                            case "<=": return [Op.lte, val];
-                            case "!=": return [Op.ne, val];
-                            case "in": return [Op.in, val];
-                            case "nin": return [Op.notIn, val];
-                            default: return [Op.eq, val];
-                        }
-                    });
-
-                if (operatorEntries.length > 0) {
-                    result[targetKey] = Object.fromEntries(operatorEntries);
-                }
-            } else {
-                result[targetKey] = value;
-            }
+      if (Array.isArray(ids)) {
+        if (typeof instance[setAccessor] === 'function') {
+          await instance[setAccessor](ids);
+          continue;
         }
+        if (typeof instance[addAccessor] === 'function') {
+          for (const id of ids) {
+            await instance[addAccessor](id);
+          }
+          continue;
+        }
+      }
 
-        return result;
+      if (typeof instance[setAccessor] === 'function') {
+        await instance[setAccessor](ids);
+      } else if (typeof instance[addAccessor] === 'function') {
+        await instance[addAccessor](ids);
+      } else {
+        // console.warn(`No suitable accessor for "${alias}": tried set=${setAccessor}, add=${addAccessor}`);
+      }
     }
 
+    await instance.reload({ include: Object.values(this.model.associations) });
 
     const pk = this.primaryKey;
     const fresh = await this.model.findByPk(
@@ -541,51 +467,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             // console.error(`!! ошибка при вызове ${getAccessor}():`, e);
           }
         }
-
-        // assocData = { example: 5, userAPs: [1,2,3], category: 7, tags: [11,22] }
-        // this.model.associations — ваш объект ассоциаций
-        for (const [alias, ids] of Object.entries(assocData)) {
-            const assoc = this.model.associations[alias];
-            if (!assoc) {
-                // console.warn(`Association "${alias}" not defined on model`);
-                continue;
-            }
-
-            // @ts-ignore accessors is present
-            const { set: setAccessor, add: addAccessor } = assoc.accessors;
-
-            if (Array.isArray(ids)) {
-                if (typeof instance[setAccessor] === 'function') {
-                    await instance[setAccessor](ids);
-                    continue;
-                }
-                if (typeof instance[addAccessor] === 'function') {
-                    for (const id of ids) {
-                        await instance[addAccessor](id);
-                    }
-                    continue;
-                }
-            }
-
-            if (typeof instance[setAccessor] === 'function') {
-                await instance[setAccessor](ids);
-            } else if (typeof instance[addAccessor] === 'function') {
-                await instance[addAccessor](ids);
-            } else {
-                // console.warn(`No suitable accessor for "${alias}": tried set=${setAccessor}, add=${addAccessor}`);
-            }
-        }
-
-        await instance.reload({ include: Object.values(this.model.associations) });
-
-        const pk = this.primaryKey;
-        const fresh = await this.model.findByPk(
-            instance.get(pk),
-            { include: assocNames.map(a => ({ association: a })) }
-        );
-
-        // console.debug(">> Результат после reload:", fresh?.toJSON());
-        return fresh as any;
+      }
     }
 
     const plain = instances.map(i => i.get({ plain: true }) as T);
@@ -691,9 +573,8 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     const raw = record.get({ plain: true });
     await record.destroy();
 
-    // --- UPDATE ONE ---
-    protected async _updateOne(criteria: Partial<T>, data: Partial<T>): Promise<T | null> {
-        const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
+    return raw;
+  }
 
 
   // --- DESTROY MANY ---
@@ -736,160 +617,30 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     const raw = records.map(r => r.get({ plain: true }));
     await this.model.destroy({ where });
 
-        for (const [key, val] of Object.entries(data)) {
-            if (assocNames.includes(key)) {
-                assocData[key] = val;
-            } else {
-                plainData[key] = val;
-            }
-        }
+    return raw;
+  }
 
 
   // --- COUNT ---
   protected async _count(criteria: Partial<T> = {}): Promise<number> {
     const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
-        return record.get({ plain: true }) as T;
-    }
+    const result = await this.model.count({ where });
 
-    // --- UPDATE MANY ---
-    protected async _update(criteria: Partial<T>, data: Partial<T>): Promise<T[]> {
-        const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
+    return result;
+  }
 
-        const assocNames = Object.keys(this.model.associations);
-        const plainData: Record<string, any> = {};
-        const assocData: Record<string, any> = {};
-
-        for (const [key, val] of Object.entries(data)) {
-            if (assocNames.includes(key)) {
-                assocData[key] = val;
-            } else {
-                plainData[key] = val;
-            }
-        }
-
-        const records = await this.model.findAll({ where });
-
-        for (const record of records) {
-            await record.update(plainData);
-            await this._assignAssociations(record, assocData);
-        }
-
-        const reloaded = await this.model.findAll({
-            where,
-            include: Object.values(this.model.associations)
-        });
-
-        return reloaded.map(r => r.get({ plain: true }) as T);
-    }
-
-
-    // --- DESTROY ONE ---
-    protected async _destroyOne(criteria: Partial<T>): Promise<T | null> {
-        const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
-        const record = await this.model.findOne({ where });
-
-        if (!record) return null;
-
-        const assocNames = Object.keys(this.model.associations);
-
-        for (const alias of assocNames) {
-            const assoc = this.model.associations[alias];
-            // @ts-ignore: accessors should exist
-            const getAccessor = assoc.accessors?.get;
-
-            if (typeof record[getAccessor] === "function") {
-                try {
-                    const related = await record[getAccessor]();
-
-                    // 🧹 Удаляем связанные записи
-                    if (Array.isArray(related)) {
-                        for (const r of related) {
-                            if (typeof r.destroy === "function") {
-                                await r.destroy();
-                            }
-                        }
-                    } else if (related && typeof related.destroy === "function") {
-                        await related.destroy();
-                    }
-
-                } catch (e) {
-                    // console.warn(`Failed to fetch/delete relation "${alias}":`, e);
-                }
-            }
-        }
-
-        const raw = record.get({ plain: true });
-        await record.destroy();
-
-        return raw;
-    }
-
-
-    // --- DESTROY MANY ---
-    protected async _destroy(criteria: Partial<T>): Promise<T[]> {
-        const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
-
-        const records = await this.model.findAll({ where });
-        const assocNames = Object.keys(this.model.associations);
-
-        for (const record of records) {
-            for (const alias of assocNames) {
-                const assoc = this.model.associations[alias];
-
-                // 🛑 Не трогаем родительские связи
-                if (assoc.associationType === "BelongsTo") continue;
-
-                // @ts-ignore accessor exists
-                const getAccessor = assoc.accessors?.get;
-
-                if (typeof record[getAccessor] === "function") {
-                    try {
-                        const related = await record[getAccessor]();
-
-                        if (Array.isArray(related)) {
-                            for (const rel of related) {
-                                if (typeof rel.destroy === "function") {
-                                    await rel.destroy();
-                                }
-                            }
-                        } else if (related && typeof related.destroy === "function") {
-                            await related.destroy();
-                        }
-                    } catch (e) {
-                        // console.warn(`Failed to delete relation ${alias}:`, e);
-                    }
-                }
-            }
-        }
-
-        const raw = records.map(r => r.get({ plain: true }));
-        await this.model.destroy({ where });
-
-        return raw;
-    }
-
-
-    // --- COUNT ---
-    protected async _count(criteria: Partial<T> = {}): Promise<number> {
-        const { where } = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
-
-        const result = await this.model.count({ where });
-
-        return result;
-    }
-
-    // --- HELPER ---
-    private _buildIncludes(): IncludeOptions[] {
-        return Object.keys(this.model.associations).map(key => ({ association: key }));
-    }
+  // --- HELPER ---
+  private _buildIncludes(): IncludeOptions[] {
+    return Object.keys(this.model.associations).map(key => ({ association: key }));
+  }
 }
 
 
 
 /** SequelizeAdapter — адаптер, заменяющий WaterlineAdapter */
 export class SequelizeAdapter extends AbstractAdapter {
-    public Model = SequelizeModel;
+  public Model = SequelizeModel;
 
   constructor(private sequelize: Sequelize) {
     super("sequelize", sequelize);
@@ -953,63 +704,63 @@ export class SequelizeAdapter extends AbstractAdapter {
 
 /**Generation of the SEQUELIZE model from the definition, analogue of Waterinecollection.extenD*/
 function generateSequelizeModel(
-    sequelize: Sequelize,
-    modelName: string,
-    rawAttributes: Record<string, any>
+  sequelize: Sequelize,
+  modelName: string,
+  rawAttributes: Record<string, any>
 ) {
-    const attributes: ModelAttributes = {};
-    let primaryKey: string | null = null;
+  const attributes: ModelAttributes = {};
+  let primaryKey: string | null = null;
 
-    for (const field in rawAttributes) {
-        const attr = { ...rawAttributes[field] };
+  for (const field in rawAttributes) {
+    const attr = { ...rawAttributes[field] };
 
-        // 💥 Skip associations (handled separately)
-        if (attr.model || attr.collection) {
-            continue;
-        }
-
-        if (attr.primaryKey) {
-            primaryKey = field;
-            attr.primaryKey = true;
-        }
-
-        if (attr.uuid && attr.type === "string") {
-            attr.type = DataTypes.UUID;
-            attr.defaultValue = DataTypes.UUIDV4;
-            delete attr.uuid;
-        }
-
-        if (attr.autoIncrement) {
-            attr.autoIncrement = true;
-        }
-
-        if (attr.unique) {
-            attr.unique = true;
-        }
-
-        if (typeof attr.type === "string") {
-            switch (attr.type) {
-                case "string": attr.type = DataTypes.STRING; break;
-                case "number": attr.type = DataTypes.INTEGER; break;
-                case "boolean": attr.type = DataTypes.BOOLEAN; break;
-                case "json": attr.type = DataTypes.JSON; break;
-                case "ref": attr.type = DataTypes.JSON; break;
-                case "datetime":
-                case "date": attr.type = DataTypes.DATE; break;
-                default:
-                    throw new Error(`Unrecognized datatype "${attr.type}" for field "${field}" in model "${modelName}"`);
-            }
-        }
-
-        attributes[field] = attr;
+    // 💥 Skip associations (handled separately)
+    if (attr.model || attr.collection) {
+      continue;
     }
 
-    if (!primaryKey) {
-        throw new Error(`Model "${modelName}" must have a primary key`);
+    if (attr.primaryKey) {
+      primaryKey = field;
+      attr.primaryKey = true;
     }
 
-    return sequelize.define(modelName, attributes, {
-        tableName: modelName.toLowerCase(),
-        timestamps: true,
-    });
+    if (attr.uuid && attr.type === "string") {
+      attr.type = DataTypes.UUID;
+      attr.defaultValue = DataTypes.UUIDV4;
+      delete attr.uuid;
+    }
+
+    if (attr.autoIncrement) {
+      attr.autoIncrement = true;
+    }
+
+    if (attr.unique) {
+      attr.unique = true;
+    }
+
+    if (typeof attr.type === "string") {
+      switch (attr.type) {
+        case "string": attr.type = DataTypes.STRING; break;
+        case "number": attr.type = DataTypes.INTEGER; break;
+        case "boolean": attr.type = DataTypes.BOOLEAN; break;
+        case "json": attr.type = DataTypes.JSON; break;
+        case "ref": attr.type = DataTypes.JSON; break;
+        case "datetime":
+        case "date": attr.type = DataTypes.DATE; break;
+        default:
+          throw new Error(`Unrecognized datatype "${attr.type}" for field "${field}" in model "${modelName}"`);
+      }
+    }
+
+    attributes[field] = attr;
+  }
+
+  if (!primaryKey) {
+    throw new Error(`Model "${modelName}" must have a primary key`);
+  }
+
+  return sequelize.define(modelName, attributes, {
+    tableName: modelName.toLowerCase(),
+    timestamps: true,
+  });
 }

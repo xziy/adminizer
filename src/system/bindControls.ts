@@ -1,10 +1,10 @@
-import {CKeditor} from "../lib/controls/wysiwyg/CKeditor";
-import {ToastUiEditor} from "../lib/controls/markdown/ToastUiEditor";
+import {CKeditor} from "../lib/v4/controls/wysiwyg/CKeditor";
+import {ToastUiEditor} from "../lib/v4/controls/markdown/ToastUiEditor";
 import {Adminizer} from "../lib/Adminizer";
-import {Handsontable} from "../lib/controls/table/Handsontable";
-import {JsonEditor} from "../lib/controls/jsoneditor/JsonEditor";
-import {MonacoEditor} from "../lib/controls/codeEditor/MonacoEditor";
-import {GeoEditor} from "../lib/controls/geojsoneditor/GeoEditor";
+import {Handsontable} from "../lib/v4/controls/table/Handsontable";
+import {JsonEditor} from "../lib/v4/controls/jsoneditor/JsonEditor";
+import {MonacoEditor} from "../lib/v4/controls/codeEditor/MonacoEditor";
+import {GeoEditor} from "../lib/v4/controls/geojsoneditor/GeoEditor";
 
 export function bindControls(adminizer: Adminizer): void {
     // bind wysiwyg

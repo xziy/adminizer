@@ -1,6 +1,6 @@
 import {AbstractControls, ControlType, Path, Config } from "../AbstractControls";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
-import {Adminizer} from "../../Adminizer";
+import {Adminizer} from "../../../Adminizer";
 
 export class JsonEditor extends AbstractControls{
     readonly config: Partial<EditorOptions> = {};

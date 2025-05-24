@@ -1,6 +1,6 @@
 export * from "./helpers/configHelper";
 export * from "./helpers/accessRightsHelper";
-export * from "./lib/widgets/widgetHandler";
+export * from "./lib/v4/widgets/widgetHandler";
 export * from "./lib/v4/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
 export * from "./interfaces/adminpanelConfig";

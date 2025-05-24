@@ -1,4 +1,4 @@
-import {MaterialIcon} from "../../interfaces/MaaterialIcons";
+import {MaterialIcon} from "../../../interfaces/MaaterialIcons";
 
 export default abstract class BaseWidget {
 

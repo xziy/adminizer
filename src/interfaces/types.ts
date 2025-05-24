@@ -1,7 +1,7 @@
 import { AbstractModel } from "../lib/v4/model/AbstractModel";
 import {ModelConfig} from "./adminpanelConfig";
-import { Inertia } from '../lib/inertia/inertiaAdapter';
-import { Flash } from '../lib/inertia/flash';
+import { Inertia } from '../lib/v4/inertia/inertiaAdapter';
+import { Flash } from '../lib/v4/inertia/flash';
 import {Adminizer} from "../lib/Adminizer";
 import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
