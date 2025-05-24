@@ -1,7 +1,7 @@
-import {Fields} from '../../helpers/fieldsHelper';
-import {AbstractModel} from '../v4/model/AbstractModel';
-import {DataAccessor} from "../v4/DataAccessor";
-import {BaseFieldConfig} from "../../interfaces/adminpanelConfig";
+import {Fields} from '../../../helpers/fieldsHelper';
+import {AbstractModel} from '../model/AbstractModel';
+import {DataAccessor} from "../DataAccessor";
+import {BaseFieldConfig} from "../../../interfaces/adminpanelConfig";
 
 interface Request {
     start: string;

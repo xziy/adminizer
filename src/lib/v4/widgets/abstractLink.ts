@@ -1,5 +1,5 @@
 import BaseWidget from "./abstractWidgetBase";
-import {MaterialIcon} from "../../interfaces/MaaterialIcons";
+import {MaterialIcon} from "../../../interfaces/MaaterialIcons";
 
 export interface Links {
 	name: string

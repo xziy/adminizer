@@ -515,6 +515,7 @@ class LinkItem extends NavigationGroup {
 		super(adminizer, []);
 	}
 
+	// @ts-ignore
 	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
 		let type: 'html' = 'html'
 		req.i18n.setLocale(req.user.locale);

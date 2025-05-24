@@ -1,5 +1,5 @@
 import {AbstractControls, ControlType, Config, Path} from "../AbstractControls";
-import {Adminizer} from "../../Adminizer";
+import {Adminizer} from "../../../Adminizer";
 
 export class Handsontable extends AbstractControls{
     readonly config: Config = {

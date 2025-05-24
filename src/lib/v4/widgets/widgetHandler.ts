@@ -3,11 +3,11 @@ import InfoBase from "./abstractInfo";
 import ActionBase from "./abstractAction";
 import LinkBase from "./abstractLink";
 import CustomBase from "./abstractCustom";
-import {AdminpanelIcon} from "../../interfaces/adminpanelConfig";
-import {Adminizer} from "../Adminizer";
+import {AdminpanelIcon} from "../../../interfaces/adminpanelConfig";
+import {Adminizer} from "../../Adminizer";
 import {UserAP} from "models/UserAP";
 import * as process from "node:process";
-import {I18n} from "../v4/I18n";
+import {I18n} from "../I18n";
 
 export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
 

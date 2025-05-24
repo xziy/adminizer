@@ -1,4 +1,4 @@
-import ActionBase from "../../lib/widgets/abstractAction";
+import ActionBase from "../../lib/v4/widgets/abstractAction";
 
 export async function widgetActionController(req: ReqType, res: ResType) {
 	let widgetId = req.params.widgetId;

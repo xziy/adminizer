@@ -1,4 +1,4 @@
-import {Adminizer} from "../Adminizer";
+import {Adminizer} from "../../Adminizer";
 
 export type ControlType = 'wysiwyg' | 'jsonEditor' | 'geoJson' | 'markdown' | 'table' | 'codeEditor'
 
