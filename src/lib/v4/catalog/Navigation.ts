@@ -208,7 +208,7 @@ export class Navigation extends AbstractCatalog {
 				configElement.title,
 				configElement.model,
 				config.model,
-				configElement.urlPath
+				configElement.urlPath as string
 			))
 		}
 		items.push(new NavigationGroup(adminizer, config.groupField))

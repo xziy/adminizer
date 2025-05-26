@@ -80,6 +80,10 @@ export class AccessRightsHelper {
 			Adminizer.log.error("Adminpanel > Token is not valid", tokenId, user.login);
 			return false;
 		}
+		if(!user.groups){
+			Adminizer.log.error('User has no groups')
+			return false
+		}
 
 		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
 	}

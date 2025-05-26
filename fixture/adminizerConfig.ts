@@ -97,6 +97,7 @@ const models: AdminpanelConfig["models"] = {
             },
             select: {
                 title: 'Select',
+                type: "select",
                 isIn: ['one', 'two', 'three']
             },
             date: {
