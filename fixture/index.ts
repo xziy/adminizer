@@ -32,6 +32,8 @@ import {SiteLinks} from "./widgets/Links";
 import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
 import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
+import Category from "./models/Category";
+import Page from "./models/Page";
 
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
@@ -42,7 +44,7 @@ process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 if(process.env.ORM === 'sequelize'
-    || true
+    // || true
 ) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
@@ -81,6 +83,8 @@ if(process.env.ORM === 'sequelize'
     orm.registerModel(Example);
     orm.registerModel(Test);
     orm.registerModel(JsonSchema);
+    orm.registerModel(Category);
+    orm.registerModel(Page);
     // TODO getComponents ломается при отрисовке
     orm.initialize(waterlineConfig, async (err, ontology) => {
         if (err) {
