@@ -4,7 +4,7 @@ import Example from "./models/Example";
 const routePrefix = "/adminizer";
 
 const models: AdminpanelConfig["models"] = {
-    test: {
+    Test: {
         title: 'Test model',
         model: 'test',
         userAccessRelation: 'owner',
@@ -34,7 +34,7 @@ const models: AdminpanelConfig["models"] = {
         },
         icon: 'receipt'
     },
-    example: {
+    Example: {
         title: 'All controls',
         model: 'example',
         userAccessRelation: 'owner',
@@ -311,7 +311,7 @@ const models: AdminpanelConfig["models"] = {
         },
         icon: 'inbox'
     },
-    jsonschema: {
+    JsonSchema: {
         title: 'Json schema',
         model: 'jsonschema',
         navbar: {
@@ -371,7 +371,7 @@ const models: AdminpanelConfig["models"] = {
         
         icon: 'pets'
     },
-    category: {
+    Category: {
         title: 'Category',
         model: 'category',
         icon: 'category',
@@ -380,7 +380,7 @@ const models: AdminpanelConfig["models"] = {
             updatedAt: false,
         }
     },
-    page: {
+    Page: {
         title: 'Page',
         model: 'page',
         fields: {
@@ -422,7 +422,7 @@ const config: AdminpanelConfig = {
             },
             {
                 title: 'All controls',
-                model: "example",
+                model: "Example",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'
             }
         ],

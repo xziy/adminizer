@@ -111,7 +111,7 @@ export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string,
         result[a.foreignKey]["primaryKeyForAssociation"] = true;
         result[alias] = {
           type: "association",
-          model: a.target.name.toLowerCase(),
+          model: a.target.name,
           via: a.foreignKey as string,
         };
         break;
@@ -121,7 +121,7 @@ export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string,
         result[a.foreignKey]["primaryKeyForAssociation"] = true;
         result[alias] = {
           type: "association",
-          model: a.target.name.toLowerCase(),
+          model: a.target.name,
           via: a.foreignKey as string,
         };
         break;
@@ -130,7 +130,7 @@ export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string,
         const a = assoc as HasMany;
         result[alias] = {
           type: "association-many",
-          collection: a.target.name.toLowerCase(),
+          collection: a.target.name,
           via: a.foreignKey as string,
         };
         break;
@@ -139,7 +139,7 @@ export function mapSequelizeToWaterline(model: ModelStatic<any>): Record<string,
         const a = assoc as BelongsToMany;
         result[alias] = {
           type: "association-many",
-          collection: a.target.name.toLowerCase(),
+          collection: a.target.name,
           via: a.otherKey as string,
         };
         break;

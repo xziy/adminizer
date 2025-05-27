@@ -24,7 +24,7 @@ const Example = Waterline.Collection.extend({
     // Обратная связь (1:* с Test)
     tests: {
       collection: "Test",
-      via: "example"
+      via: "Example"
     }
   }
 });

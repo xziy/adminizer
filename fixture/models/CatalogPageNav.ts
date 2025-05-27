@@ -11,7 +11,7 @@ const CatalogPageNav = Waterline.Collection.extend({
             type: 'string'
         },
         pages: {
-            model: 'page'
+            model: 'Page'
         },
         catalogOrder: {
             type: 'number'

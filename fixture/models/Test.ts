@@ -8,15 +8,15 @@ const Test = Waterline.Collection.extend({
 		// @ts-ignore
 		id: { type: "number", autoMigrations: { autoIncrement: true } },
 		title: { type: "string", required: true },
-        example: { model: "example" },
+        example: { model: "Example" },
 
 		owner: { 
-			model: 'userap'
+			model: 'UserAP'
 		},
 		// Many-to-many relation with UserAP
 		// @ts-ignore
 		userAPs: {
-			collection: "userap"
+			collection: "UserAP"
 		}
 	}
 });
