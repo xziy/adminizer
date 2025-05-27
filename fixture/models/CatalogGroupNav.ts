@@ -11,7 +11,7 @@ const CatalogGroupNav = Waterline.Collection.extend({
             type: 'string'
         },
         groups: {
-            model: 'groupcatalog'
+            model: 'GroupCatalog'
         },
         childs: {
             type: 'json'

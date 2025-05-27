@@ -22,18 +22,18 @@ const Example = Waterline.Collection.extend({
         editor: { type: "string" },
         selectMany: { type: "json" },
         select: { type: "string" },
-        testRelation: { model: "example" },
+        testRelation: { model: "Example" },
         tui: { type: "string" },
         datatable: { type: "json" },
         json: { type: "json" },
-        tests: { collection: "test", via: "example" },
+        tests: { collection: "Test", via: "Example" },
         datetime: { type: "string" },
         geojson: { type: "json" },
         
         // Many-to-many relation with UserAP
 		// @ts-ignore
         owner: { 
-			model: 'userap'
+			model: 'UserAP'
 		},
     }
 });

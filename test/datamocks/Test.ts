@@ -41,7 +41,7 @@ const Test = Waterline.Collection.extend({
 
     // Односторонняя связь на Example
     example: {
-      model: "example",
+      model: "Example",
     },
 
     // Ассоциация к UserAP (владелец)
