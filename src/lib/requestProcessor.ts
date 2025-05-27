@@ -1,3 +1,4 @@
+import { isObject } from "../helpers/JsUtils";
 import {Fields} from "../helpers/fieldsHelper";
 import {Adminizer} from "./Adminizer";
 
@@ -27,7 +28,6 @@ export class RequestProcessor {
             ...req.body,
         };
         let postParams: PostParams = {};
-
         for (let key of Object.keys(data)) {
             if (fields[key]) {
                 postParams[key] = data[key];
@@ -36,13 +36,19 @@ export class RequestProcessor {
 
         for (let key in postParams) {
             let field = fields[key];
-
-            if (field.model.type === 'boolean') {
-                postParams[key] = ['true', '1', 'yes', "TRUE", "on"].includes(postParams[key].toString().toLowerCase());
-                continue;
+            if(key === 'sort') {
+                console.log(fields[key], key, postParams[key])
             }
 
+            // if (field.model.type === 'boolean') {
+            //     postParams[key] = ['true', '1', 'yes', "TRUE", "on"].includes(postParams[key].toString().toLowerCase());
+            //     continue;
+            // }
+
             if (field.model.type === 'number') {
+                if(isObject(field.config) && field.config.type === "boolean" && typeof postParams[key] === "boolean") {
+                    postParams[key] = postParams[key] ? 1 : 0
+                }
                 postParams[key] = parseFloat(postParams[key] as string);
             }
 
