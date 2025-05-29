@@ -130,7 +130,7 @@ export class DataAccessor {
             }
 
             // Set required and type attributes
-            fldConfig.required = Boolean(fldConfig.required || modelField.required);
+            fldConfig.required = Boolean(fldConfig.required ?? modelField.required);
             // Default type for field. Could be fetched form config file or file model if not defined in config file.
             fldConfig.type = ((fldConfig.type || modelField.type).toLowerCase() as FieldsTypes);
 
