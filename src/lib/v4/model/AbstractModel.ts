@@ -81,6 +81,7 @@ export abstract class AbstractModel<T> {
 
   public async updateOne(criteria: Partial<T>, data: Partial<T>, dataAccessor: DataAccessor): Promise<Partial<T> | null> {
     let _data = dataAccessor.process(data);
+    
     criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
     let record = await this._updateOne(criteria, _data);
     return record ? dataAccessor.process(record) : null;
