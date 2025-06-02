@@ -45,7 +45,7 @@ class StorageService {
 	}
 
 	public async buildTree(): Promise<any> {
-		const rootElements: NavItem[] = await this.findElementsByParentId(null, null);
+		const rootElements: NavItem[] = await this.findElementsByParentId(0, null);
 		const buildSubTree = async (elements: NavItem[]): Promise<any[]> => {
 			const tree = [];
 			for (const element of elements) {
@@ -126,8 +126,7 @@ class StorageService {
 
 	public async saveToDB() {
 		let tree = await this.buildTree()
-        console.log({label: this.id},
-            {tree: tree})
+
 		try {
 			// Direct call by model adapter
            await this.adminizer.modelHandler.model.get(this.model)["_update"](

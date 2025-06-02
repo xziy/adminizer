@@ -1,4 +1,4 @@
-import InfoBase from "../../dist/lib/widgets/abstractInfo";
+import InfoBase from "../../dist/lib/v4/widgets/abstractInfo";
 
 export class InfoOne extends InfoBase {
     icon?: string;
