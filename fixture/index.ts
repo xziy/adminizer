@@ -12,18 +12,18 @@ import waterlineConfig from "./waterlineConfig";
 import Example from "./models/Example";
 import Test from "./models/Test";
 import JsonSchema from "./models/JsonSchema";
-import { Sequelize } from "sequelize-typescript";
+import {Sequelize} from "sequelize-typescript";
 
 // Sequelize imports
 import fs from 'fs/promises';
 import path from 'path';
-import { Example as ExampleSequelize } from "./models/sequelize/Example";
-import { JsonSchema as JsonSchemaSequelize  } from "./models/sequelize/JsonSchema";
-import { Test as TestSequelize } from "./models/sequelize/Test";
+import {Example as ExampleSequelize} from "./models/sequelize/Example";
+import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
+import {Test as TestSequelize} from "./models/sequelize/Test";
 import {Page as PageSequelize} from "./models/sequelize/Page";
 import {Category as CategorySequelize} from "./models/sequelize/Category";
-import { SequelizeAdapter } from "../dist/lib/v4/model/adapter/sequelize";
-import { seedDatabase } from "./helpers/seedDatabase";
+import {SequelizeAdapter} from "../dist/lib/v4/model/adapter/sequelize";
+import {seedDatabase} from "./helpers/seedDatabase";
 
 
 //Widgets imports
@@ -43,15 +43,15 @@ if (!process.env.NO_SEED_DATA) await cleanTempFolder();
 process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
-if(process.env.ORM === 'sequelize'
+if (process.env.ORM === 'sequelize'
     || true
 ) {
     const tmpDir = path.join(process.cwd(), ".tmp");
     const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
     const orm = new Sequelize({
-      dialect: "sqlite",
-      storage: dbPath,
-      logging: false,
+        dialect: "sqlite",
+        storage: dbPath,
+        logging: false,
     });
     await orm.authenticate();
     await SequelizeAdapter.registerSystemModels(orm)
@@ -59,7 +59,7 @@ if(process.env.ORM === 'sequelize'
     TestSequelize.associate(orm)
     ExampleSequelize.associate(orm)
 
-    await orm.sync({ });
+    await orm.sync({});
     const sequelizeAdapter = new SequelizeAdapter(orm);
     const adminizer = new Adminizer([sequelizeAdapter]);
     await ormSharedFixtureLift(adminizer);
@@ -126,7 +126,7 @@ async function cleanTempFolder() {
     try {
         const stats = await fs.stat(tmpPath);
         if (stats.isDirectory()) {
-            await fs.rm(tmpPath, { recursive: true });
+            await fs.rm(tmpPath, {recursive: true});
             console.log(`Temporary folder ${tmpPath} cleaned successfully`);
         }
     } catch (err) {
@@ -204,7 +204,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
 
     // Main app on http
-    const mainApp = http.createServer((req, res) => {
+    const mainApp = http.createServer(async (req, res) => {
         const adminizerHandler = adminizer.getMiddleware();
         if (req.url.startsWith(routePrefix)) {
             // Delete /adminizer from url --------------------->>>>>>>>>>!!!!!!!!!!!!
@@ -221,8 +221,14 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         ) {
             adminizer.vite.middlewares(req, res);
         } else {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
+            if (req.url.startsWith('/nav')) {
+                let header = await adminizer.modelHandler.model.get('navigationap')["_findOne"]({ label: 'header' });
+                res.writeHead(200, {'Content-Type': 'application/json'});
+                res.end(JSON.stringify({header: header}));
+            } else {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
+            }
         }
     });
 

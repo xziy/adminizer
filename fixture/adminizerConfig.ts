@@ -16,8 +16,7 @@ const models: AdminpanelConfig["models"] = {
                 type: 'string',
                 required: true
             },
-            schema: {
-            }
+            schema: {}
         },
         list: {
             fields: {
@@ -368,7 +367,7 @@ const models: AdminpanelConfig["models"] = {
                 },
             }
         },
-        
+
         icon: 'pets'
     },
     Category: {
