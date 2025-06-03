@@ -220,7 +220,7 @@ const CatalogTree = () => {
         // Check if the treeData already has children for this node
         const hasExistingChildren = treeData.some(node => node.parent === id);
 
-        console.log('isOpen: ', isOpen, 'hasExistingChildren: ', hasExistingChildren, 'treeData:', treeData)
+        // console.log('isOpen: ', isOpen, 'hasExistingChildren: ', hasExistingChildren, 'treeData:', treeData)
 
         // If the node has existing children, don't load more
         if (hasExistingChildren) {
@@ -237,7 +237,7 @@ const CatalogTree = () => {
         try {
             let res = await axios.post('', {data: node, _method: 'getChilds'})
             const newChildNodes = res.data.data;
-
+            console.log(newChildNodes)
             // Update the treeData with the new child nodes
             setTreeData(prevTree => [
                 ...prevTree,
