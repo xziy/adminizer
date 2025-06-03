@@ -252,11 +252,10 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
+		console.log('toNode: ', data, groupTypeName)
 		return {
 			data: data,
-			// droppable: data.type !== groupTypeName,
-			droppable: true,
-			// isExpanded: false,
+			droppable: data.type === groupTypeName,
 			id: data.id as string,
 			text: data.name,
 			parent: data.parentId as string,

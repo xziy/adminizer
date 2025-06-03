@@ -434,7 +434,6 @@ const config: AdminpanelConfig = {
                 required: false
             }
         ],
-        movingGroupsRootOnly: true
     },
     forms: {
         data: {

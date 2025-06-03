@@ -30,7 +30,7 @@ import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
-
+const NavLinkAdd = lazy(() => import('@/components/catalog/navigation/link-add.tsx'));
 
 interface AddCatalogProps {
     props: {
@@ -76,8 +76,11 @@ const CatalogTree = () => {
     const [isLoading, setIsLoading] = useState(false)
     const dialogRef = useRef<DialogStackHandle>(null);
     const [addItemProps, setAddItemProps] = useState({items: [], model: "", labels: {}})
-    const [addGropuProps, setAddGroupProps] = useState({items: [], labels: {}})
+    const [addGroupProps, setAddGroupProps] = useState({items: [], labels: {}})
+    const [addLinkProps, setAddLinkProps] = useState({items: [], labels: {}})
     const [popupType, setPopupType] = useState<string>('')
+    const [loadingNodeId, setLoadingNodeId] = useState<string | number | null>(null)
+
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
             actions: [],
@@ -156,6 +159,10 @@ const CatalogTree = () => {
                     setPopupType('navigation.group')
                     setAddGroupProps(data.data)
                     break
+                case 'navigation.link':
+                    setPopupType('navigation.link')
+                    setAddLinkProps(data.data)
+                    break
                 default:
                     break
             }
@@ -215,7 +222,7 @@ const CatalogTree = () => {
      */
     const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
         // Check if the node is already open
-        if(!isOpen) return
+        if (!isOpen) return
 
         // Check if the treeData already has children for this node
         const hasExistingChildren = treeData.some(node => node.parent === id);
@@ -235,6 +242,7 @@ const CatalogTree = () => {
         }
 
         try {
+            setLoadingNodeId(id)
             let res = await axios.post('', {data: node, _method: 'getChilds'})
             const newChildNodes = res.data.data;
             console.log(newChildNodes)
@@ -245,6 +253,9 @@ const CatalogTree = () => {
             ]);
         } catch (error) {
             console.error('Error loading child nodes:', error);
+        }
+        finally {
+            setLoadingNodeId(null)
         }
     }, [treeData])
 
@@ -331,6 +342,7 @@ const CatalogTree = () => {
                                             node={node}
                                             depth={depth}
                                             isOpen={isOpen}
+                                            loading={loadingNodeId === node.id}
                                             isSelected={node.id === selectedNode?.id}
                                             onToggle={(id) => {
                                                 onToggle();
@@ -384,7 +396,12 @@ const CatalogTree = () => {
                                         <NavGropuAdd callback={() => {
                                             dialogRef.current?.close()
                                             reloadCatalog()
-                                        }} {...addGropuProps}/>}
+                                        }} {...addGroupProps}/>}
+                                    {popupType === 'navigation.link' &&
+                                        <NavLinkAdd callback={() => {
+                                            dialogRef.current?.close()
+                                            reloadCatalog()
+                                        }} {...addLinkProps}/>}
                                 </div>
                             </DialogStackContent>
 
