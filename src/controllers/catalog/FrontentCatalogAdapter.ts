@@ -5,8 +5,8 @@ interface NodeModel<TDataType> {
 	text: string;
 	droppable: boolean;
 	// isExpanded: boolean;
-	id: number;
-	parent: number;
+	id: string;
+	parent: string;
 	data?: TDataType;
 	children?: NodeModel<TDataType>[];
 
@@ -57,14 +57,14 @@ export class VueCatalog {
 	 * @deprecated reason: migration for intertia
 	 * // TODO: need passing custom React module
 	 */
-	
+
 	getAddHTML(item: any, req: ReqType) {
 		return this.catalog.getAddHTML(item, req);
 	}
 
 	/**
 	 * @deprecated reason: migration for intertia
-	 * TODO need passing custom React module 
+	 * TODO need passing custom React module
 	 */
 	getEditHTML(item: any, id: string | number, req: ReqType, modelId: string | number) {
 		return this.catalog.getEditHTML(item, id, req, modelId)
@@ -174,33 +174,42 @@ export class VueCatalog {
 	}
 
 	async updateTree(data: RequestData, req: ReqType): Promise<any> {
+		// console.dir(data, {depth: null})
+		// return
 		let reqNodes = data.reqNode;
-		if (!Array.isArray(data.reqNode)) {
-			reqNodes = [data.reqNode];
-		}
-
 		let reqParent = data.reqParent;
-
-		if (reqParent.data.id === 0) {
-			reqParent.data.id = null;
-		}
-
-		if (reqParent.data.id === undefined) {
-			throw `reqParent.data.id not defined`
-		}
+		// if (!Array.isArray(data.reqNode)) {
+		// 	reqNodes = [data.reqNode];
+		// }
+		//
+		// let reqParent = data.reqParent ?? {
+		// 	children: VueCatalogUtils.arrayToNode(await this.catalog.getChilds(0), ''),
+		// 	data: {id: 0}
+		// };
+		// console.log(reqParent)
+		// return
+		// if (reqParent.data.id === 0) {
+		// 	reqParent.data.id = null;
+		// }
+		//
+		// if (reqParent.data.id === undefined) {
+		// 	throw `reqParent.data.id not defined`
+		// }
 
 		// It’s unclear why he’s coming reqNodes
-		for (const reqNode of reqNodes) {
-
-			const item = await this.catalog.find(reqNode.data, req);
-			if (!item) {
-				throw `reqNode Item not found`
-			}
-		}
+		// for (const reqNode of reqNodes) {
+		//
+		// 	const item = await this.catalog.find(reqNode.data, req);
+		// 	if (!item) {
+		// 		throw `reqNode Item not found`
+		// 	}
+		// }
 
 		// Update all items into parent (for two reason: update parent, updare sorting order)
 		let sortCount = 0;
 		for (const childNode of reqParent.children) {
+			// console.log(childNode)
+			// return
 			childNode.data.sortOrder = sortCount;
 			childNode.data.parentId = reqParent.data.id
 			await this.catalog.updateItem(childNode.data.id, childNode.data.type, childNode.data, req);
@@ -244,14 +253,15 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
+		console.log(data)
 		return {
 			data: data,
 			// droppable: data.type !== groupTypeName,
 			droppable: true,
 			// isExpanded: false,
-			id: data.sortOrder + 1,
+			id: data.id as string,
 			text: data.name,
-			parent: 0
+			parent: data.parentId as string,
 		};
 	}
 

@@ -1,10 +1,10 @@
-import {createContext, type Dispatch, lazy, SetStateAction, useCallback, useEffect, useRef, useState} from "react";
+import {lazy, useCallback, useEffect, useRef, useState} from "react";
 import {
     Tree,
     getBackendOptions,
     MultiBackend,
     NodeModel,
-    DragLayerMonitorProps
+    DragLayerMonitorProps, DropOptions
 } from "@minoru/react-dnd-treeview";
 import {DndProvider} from "react-dnd";
 import axios from "axios";
@@ -26,15 +26,11 @@ import CatalogNode from "@/components/catalog/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/CatalogDragPreview.tsx";
 import styles from "@/components/catalog/Catalog.module.css";
 import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
-
+import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
 
-interface CatalogContextProps {
-    messages: Record<string, string>
-    setMessages: Dispatch<SetStateAction<Record<string, string>>>
-}
 
 interface AddCatalogProps {
     props: {
@@ -60,21 +56,12 @@ interface AddCatalogProps {
     }
 }
 
-export const CatalogContext = createContext<CatalogContextProps>({
-    messages: {},
-    setMessages: () => {
-    }
-});
-
-
 const CatalogTree = () => {
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
-    const handleDrop = (newTree: NodeModel<CustomCatalogData>[]) => setTreeData(newTree);
     const [selectedNode, setSelectedNode] = useState<NodeModel | null>(null);
     const handleSelect = (node: NodeModel) => {
         selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
     }
-
     const [catalog, setCatalog] = useState<Catalog>({
         catalogId: "",
         catalogName: "",
@@ -83,6 +70,7 @@ const CatalogTree = () => {
         nodes: [],
         movingGroupsRootOnly: false
     })
+
     const [items, setItems] = useState<CatalogItem[]>([])
     const [messages, setMessages] = useState<Record<string, string>>({})
     const [isLoading, setIsLoading] = useState(false)
@@ -103,10 +91,9 @@ const CatalogTree = () => {
             view: false,
         }
     })
-
     const [firstRender, setFirstRender] = useState(false)
-    const [secondRender, setSecondRender] = useState(false)
 
+    const [secondRender, setSecondRender] = useState(false)
     useEffect(() => {
         const fetchData = async () => {
             const res = await axios.post('', {
@@ -174,6 +161,93 @@ const CatalogTree = () => {
             }
         }
     }, [items])
+
+    /**
+     * Handle drop event
+     * @callback handleDrop
+     */
+    const handleDrop = useCallback(async (
+        newTree: NodeModel<CustomCatalogData>[],
+        {dragSourceId, dropTargetId}: DropOptions<CustomCatalogData>
+    ) => {
+        try {
+            // find dragged node
+            const draggedNode = newTree.find(node => node.id === dragSourceId);
+
+            // find new parent
+            const newParentId = dropTargetId || 0;
+
+            const requestData = {
+                data: {
+                    reqNode: [{
+                        id: draggedNode?.id,
+                        parent: newParentId,
+                        text: draggedNode?.text,
+                        data: draggedNode?.data
+                    }],
+                    reqParent: {
+                        id: newParentId,
+                        children: newTree.filter(node => node.parent === newParentId).map(node => ({
+                            id: node.id,
+                            text: node.text,
+                            data: node.data
+                        })),
+                        data: newParentId === 0
+                            ? {id: 0}
+                            : newTree.find(node => node.id === newParentId)?.data
+                    },
+                },
+                _method: 'updateTree'
+            };
+
+            setTreeData(newTree);
+
+            await axios.put('', requestData);
+
+        } catch (error) {
+            console.error('Error updating tree:', error);
+        }
+    }, []);
+
+    /**
+     * Toggle the open state of a node
+     * @callback handleToggle
+     */
+    const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
+        // Check if the node is already open
+        if(!isOpen) return
+
+        // Check if the treeData already has children for this node
+        const hasExistingChildren = treeData.some(node => node.parent === id);
+
+        console.log('isOpen: ', isOpen, 'hasExistingChildren: ', hasExistingChildren, 'treeData:', treeData)
+
+        // If the node has existing children, don't load more
+        if (hasExistingChildren) {
+            return;
+        }
+
+        // Find the node in the treeData
+        const node = treeData.find(node => node.id === id);
+
+        if (!node) {
+            return;
+        }
+
+        try {
+            let res = await axios.post('', {data: node, _method: 'getChilds'})
+            const newChildNodes = res.data.data;
+
+            // Update the treeData with the new child nodes
+            setTreeData(prevTree => [
+                ...prevTree,
+                ...newChildNodes,
+            ]);
+        } catch (error) {
+            console.error('Error loading child nodes:', error);
+        }
+    }, [treeData])
+
     const addModel = useCallback(async (model: string) => {
         setSecondRender(true)
         const res = await axios.get(`${window.routePrefix}/model/${model}/add?without_layout=true'`)
@@ -258,7 +332,10 @@ const CatalogTree = () => {
                                             depth={depth}
                                             isOpen={isOpen}
                                             isSelected={node.id === selectedNode?.id}
-                                            onToggle={onToggle}
+                                            onToggle={(id) => {
+                                                onToggle();
+                                                handleToggle(id as string, !isOpen)
+                                            }}
                                             onSelect={handleSelect}
                                         />
                                     )}
@@ -268,7 +345,7 @@ const CatalogTree = () => {
                                         draggingSource: styles.draggingSource,
                                         dropTarget: styles.dropTarget,
                                         placeholder: styles.placeholderContainer,
-                                        root: 'py-2'
+                                        root: 'py-4'
                                     }}
                                     canDrop={(_tree, {dragSource, dropTargetId}) => {
                                         if (dragSource?.parent === dropTargetId) {

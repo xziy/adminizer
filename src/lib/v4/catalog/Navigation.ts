@@ -77,10 +77,10 @@ class StorageService {
 
 
 	public async populateFromTree(tree: any[]): Promise<void> {
-		const traverseTree = async (node: any, parentId: string | number | null = null): Promise<void> => {
+		const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
 			const {children, ...itemData} = node;
 			const item = {...itemData, parentId} as NavItem;
-			await this.setElement(item.id, item);
+			await this.setElement(item.id, item, true);
 
 			if (children && children.length > 0) {
 				for (const child of children) {
@@ -95,9 +95,9 @@ class StorageService {
 	}
 
 
-	public async setElement(id: string | number, item: NavItem): Promise<NavItem> {
+	public async setElement(id: string | number, item: NavItem, init: boolean = false): Promise<NavItem> {
 		this.storageMap.set(item.id, item);
-		await this.saveToDB()
+		if(!init) await this.saveToDB()
 		// This like fetch in DB
 		return this.findElementById(item.id);
 	}
