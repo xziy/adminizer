@@ -36,7 +36,7 @@ var adminpanelConfig: AdminpanelConfig = {
      * List of admin pages
      */
     models: {
-        userap: {
+        UserAP: {
             title: "Users AP",
             model: "userap",
             icon: "people",
@@ -78,7 +78,7 @@ var adminpanelConfig: AdminpanelConfig = {
                 }
             }
         },
-        groupap: {
+        GroupAP: {
             title: "Groups AP",
             model: "groupap",
             icon: "group_add",
