@@ -401,13 +401,8 @@ const config: AdminpanelConfig = {
         defaultUserGroup: "guest",
         confirmationRequired: false
     },
-    // auth: {
-    //     enable: true,
-    //     description: "Login `demo`, password `demo`"
-    // },
     dashboard: true,
     navigation: {
-        // model: "Navigation",
         items: [
             {
                 title: 'Page',
