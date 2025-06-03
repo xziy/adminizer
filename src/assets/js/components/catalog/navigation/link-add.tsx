@@ -7,7 +7,7 @@ import React, {useState} from "react";
 import axios from "axios";
 import {LoaderCircle} from "lucide-react";
 
-const GroupAdd = ({...data}: NavGroupAddProps) => {
+const LinkAdd = ({...data}: NavGroupAddProps) => {
     const [targetBlank, setTargetBlank] = useState<boolean>(false)
     const [formData, setFormData] = useState<Record<string, string | boolean>>({});
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -25,7 +25,7 @@ const GroupAdd = ({...data}: NavGroupAddProps) => {
                     ...formData,
                     targetBlank,
                     parentId: '',
-                    type: 'group',
+                    type: 'link',
                 },
                 _method: 'createItem'
             });
@@ -69,4 +69,4 @@ const GroupAdd = ({...data}: NavGroupAddProps) => {
         </div>
     )
 }
-export default GroupAdd
+export default LinkAdd

@@ -516,7 +516,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 
 class LinkItem extends NavigationGroup {
 	readonly allowedRoot: boolean = true;
-	readonly icon: string = 'external-link-alt';
+	readonly icon: string = 'insert_link';
 	readonly name: string = 'Link';
 	readonly type: string = 'link';
 	readonly isGroup: boolean = false;
@@ -529,18 +529,31 @@ class LinkItem extends NavigationGroup {
 	 * @deprecated reason: migration for intertia
 	* // TODO: need passing custom React module 
 	*/
-	// @ts-ignore
-	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
-		let type: 'html' = 'html'
-		req.i18n.setLocale(req.user.locale);
-
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+	getAddHTML(req: ReqType):Promise<{
+		type: 'component' | 'model' | string,
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			labels?: Record<string, string>,
 		}
+	}>  {
+		let type: 'navigation.link' = 'navigation.link'
+		let resItems: { name: string; required: boolean; }[] = [
+			{
+				name: req.i18n.__('Link'),
+				required: true
+			}
+		]
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/LinkItemAdd.ejs'), 'utf8'), {__: __}),
-            data: ''
+			data: {
+				items: resItems,
+				labels: {
+					title: req.i18n.__('Title'),
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
 	}
 
