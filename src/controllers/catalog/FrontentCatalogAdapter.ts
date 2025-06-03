@@ -228,7 +228,6 @@ export class VueCatalog {
 			return await this.catalog.updateModelItems(modelId, item.type, data, req);
 		}
 	}
-
 	async deleteItem(items: NodeModel<any>[], req: ReqType) {
 		for (const item1 of items) {
 			if (item1.children?.length) {
@@ -253,7 +252,6 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
-		console.log(data)
 		return {
 			data: data,
 			// droppable: data.type !== groupTypeName,
