@@ -20,7 +20,6 @@ import path from 'path';
 import {Example as ExampleSequelize} from "./models/sequelize/Example";
 import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
 import {Test as TestSequelize} from "./models/sequelize/Test";
-import {Page as PageSequelize} from "./models/sequelize/Page";
 import {Category as CategorySequelize} from "./models/sequelize/Category";
 import {SequelizeAdapter} from "../dist/lib/v4/model/adapter/sequelize";
 import {seedDatabase} from "./helpers/seedDatabase";
@@ -33,7 +32,6 @@ import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
 import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
 import Category from "./models/Category";
-import Page from "./models/Page";
 
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
@@ -55,7 +53,7 @@ if (process.env.ORM === 'sequelize'
     });
     await orm.authenticate();
     await SequelizeAdapter.registerSystemModels(orm)
-    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, PageSequelize, CategorySequelize])
+    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, CategorySequelize])
     TestSequelize.associate(orm)
     ExampleSequelize.associate(orm)
 
@@ -84,7 +82,6 @@ if (process.env.ORM === 'sequelize'
     orm.registerModel(Test);
     orm.registerModel(JsonSchema);
     orm.registerModel(Category);
-    orm.registerModel(Page);
     // TODO getComponents ломается при отрисовке
     orm.initialize(waterlineConfig, async (err, ontology) => {
         if (err) {

@@ -240,11 +240,11 @@ class NavigationItem extends AbstractItem<NavItem> {
 		super();
 		this.name = name
 		this.navigationModel = navigationModel
-		this.model = model.toLowerCase()
+		this.model = model
 		this.type = model.toLowerCase()
 		this.urlPath = urlPath
 		let configModel = adminizer.config.models[this.model] as ModelConfig
-		this.icon = configModel?.icon ?? 'file'
+		this.icon = configModel?.icon ?? 'file_present'
 		this.adminizer = adminizer;
 	}
 
@@ -287,7 +287,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let items = await storage.findElementByModelId(modelId)
 		let urlPath = eval('`' + this.urlPath + '`')
 		for (const item of items) {
-			item.name = data.record.name
+			item.name = data.record.name ?? data.record.title ?? data.record.id
 			item.urlPath = urlPath
 			if (item.id === data.record.treeId) {
 				item.targetBlank = data.record.targetBlank
@@ -317,7 +317,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	* // TODO: need passing custom React module 
 	*/
 	async getAddHTML(req: ReqType): Promise<{
-        type: 'component' | 'navigation.item' | 'navigation.group' | 'model',
+        type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items: { id: string; name: string}[],
             model: string,
@@ -357,22 +357,16 @@ class NavigationItem extends AbstractItem<NavItem> {
 	* // TODO: need passing custom React module 
 	*/
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let item = await this.find(id, catalogId)
-		let type: 'html' = 'html'
-
-		// This dirty hack is here because the field of view is disappearing
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			item: NavItem
 		}
-
+	}> {
 		return Promise.resolve({
-			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/itemHTMLEdit.ejs'), 'utf8'), {item: item, __: __})
-            data: ''
+			type: 'navigation.item',
+            data: {
+				item: await this.find(id, catalogId)
+			}
 		})
 	}
 

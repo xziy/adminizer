@@ -41,7 +41,8 @@ export default async function edit(req: ReqType, res: ResType) {
         const id = req.params.id as string;
         dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
-        if (!record) return res.status(404).send("Adminpanel > Record not found");;
+        if (!record) return res.status(404).send("Adminpanel > Record not found");
+        ;
     } catch (e) {
         Adminizer.log.error('Admin edit error: ');
         Adminizer.log.error(e);
@@ -147,7 +148,7 @@ export default async function edit(req: ReqType, res: ResType) {
                     for (const section of req.adminizer.config.navigation.sections) {
                         let navigation = CatalogHandler.getCatalog('navigation')
                         navigation.setId(section)
-                        let navItem = navigation.itemTypes.find(item => item.type === entity.name)
+                        let navItem = navigation.itemTypes.find(item => item.type === entity.name.toLowerCase())
                         if (navItem) {
                             await navItem.updateModelItems(newRecord[0].id, {record: newRecord[0]}, section)
                         }
@@ -177,15 +178,12 @@ export default async function edit(req: ReqType, res: ResType) {
             }
         }
     }
-    if (req.query.without_layout) {
-        // return res.viewAdmin("./../ejs/partials/content/editPopup.ejs", {
-        //     entity: entity,
-        //     record: record,
-        //     fields: fields
-        // });
-        return null
+    const props = inertiaAddHelper(req, entity, fields, record)
+    if (req.query?.without_layout) {
+        return res.json({
+            props: props
+        })
     } else {
-        const props = inertiaAddHelper(req, entity, fields, record)
         return req.Inertia.render({
             component: 'add',
             props: props

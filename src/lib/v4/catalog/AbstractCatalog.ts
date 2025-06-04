@@ -133,8 +133,8 @@ export abstract class BaseItem<T extends Item> {
 	 * TODO: pass react module
 	 */
 	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'link' | 'html' | 'jsonForm',
-		data: string
+		type: 'component' | 'model' | string,
+		data: any
 	}>;
 
 	public async _getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<Item[]> {

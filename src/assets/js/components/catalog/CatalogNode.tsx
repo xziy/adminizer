@@ -12,7 +12,7 @@ type Props = {
     isSelected: boolean;
     onToggle: (id: NodeModel["id"]) => void;
     loading: boolean;
-    onSelect: (node: NodeModel) => void;
+    onSelect: (node: NodeModel<CustomCatalogData>) => void;
 };
 
 const CatalogNode: React.FC<Props> = (props) => {
