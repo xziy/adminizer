@@ -150,4 +150,5 @@ export interface CustomCatalogData {
     icon: string
     type: string;
     marked?: boolean
+    modelId: string | number
 }

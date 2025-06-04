@@ -379,15 +379,6 @@ const models: AdminpanelConfig["models"] = {
             updatedAt: false,
         }
     },
-    Page: {
-        title: 'Page',
-        model: 'page',
-        fields: {
-            createdAt: false,
-            updatedAt: false,
-        },
-        icon: 'article'
-    }
 }
 
 const config: AdminpanelConfig = {
@@ -406,12 +397,12 @@ const config: AdminpanelConfig = {
         items: [
             {
                 title: 'Page',
-                model: "page",
+                model: "Page",
                 urlPath: '/page/${data.record.slug}'
             },
             {
                 title: 'Category',
-                model: "category",
+                model: "Category",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'
             },
             {

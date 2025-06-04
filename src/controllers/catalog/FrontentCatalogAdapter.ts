@@ -89,6 +89,7 @@ export class VueCatalog {
 			"Yes, I'm sure": "",
 			"Select Ids": "",
 			"OR": "",
+			"Open in a new window": ""
 		}
 		obj[this.catalog.name] = ""
 		for (const actionHandler of this.catalog.actionHandlers) {
@@ -220,7 +221,6 @@ export class VueCatalog {
 
 
 	async updateItem(item: any, modelId: string, data: any, req: ReqType) {
-
 		//data = VueCatalogUtils.refinement(data);
 		if (this.catalog.slug !== "navigation") {
 			return await this.catalog.updateModelItems(data.modelId, data.type, data.record, req);
@@ -252,7 +252,6 @@ export class VueCatalogUtils {
 	}
 
 	public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
-		console.log('toNode: ', data, groupTypeName)
 		return {
 			data: data,
 			droppable: data.type === groupTypeName,

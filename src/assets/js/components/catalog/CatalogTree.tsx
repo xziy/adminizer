@@ -58,10 +58,8 @@ interface AddCatalogProps {
 
 const CatalogTree = () => {
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
-    const [selectedNode, setSelectedNode] = useState<NodeModel | null>(null);
-    const handleSelect = (node: NodeModel) => {
-        selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
-    }
+    const [selectedNode, setSelectedNode] = useState<NodeModel<CustomCatalogData> | null>(null);
+
     const [catalog, setCatalog] = useState<Catalog>({
         catalogId: "",
         catalogName: "",
@@ -80,6 +78,12 @@ const CatalogTree = () => {
     const [addLinkProps, setAddLinkProps] = useState({items: [], labels: {}})
     const [popupType, setPopupType] = useState<string>('')
     const [loadingNodeId, setLoadingNodeId] = useState<string | number | null>(null)
+    const [itemType, setItemType] = useState<string | null>(null)
+    const [PopupEvent, setPopupEvent] = useState<string | null>(null)
+
+    const [popUpTargetBlank, setPopUpTargetBlank] = useState<boolean>(false)
+    const [isNavigation, setIsNavigation] = useState<boolean>(false)
+
 
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
@@ -106,7 +110,7 @@ const CatalogTree = () => {
             setCatalog(resCatalog);
             setItems(items);
             setTreeData(resCatalog.nodes)
-            console.log(resCatalog)
+            // console.log(resCatalog)
         };
 
         const initLocales = async () => {
@@ -131,43 +135,10 @@ const CatalogTree = () => {
         initCatalog();
     }, []);
 
-    const reloadCatalog = useCallback(async () => {
-        const res = await axios.post('', {
-            _method: 'getCatalog'
-        });
-        const {catalog: resCatalog} = res.data;
-        setTreeData(resCatalog.nodes)
-    }, [])
 
-    const selectCatalogItem = useCallback(async (type: string) => {
-        setFirstRender(true)
-        const res = await axios.post('', {type: type, _method: 'getAddHTML'})
-        await getHTML(res.data)
-        dialogRef.current?.next()
-        setFirstRender(false)
-    }, [items])
-
-    const getHTML = useCallback(async (data: { type: string, data: any }) => {
-        console.log(data)
-        if (data.type.includes('navigation')) {
-            switch (data.type) {
-                case 'navigation.item':
-                    setPopupType('navigation.item')
-                    setAddItemProps(data.data)
-                    break
-                case 'navigation.group':
-                    setPopupType('navigation.group')
-                    setAddGroupProps(data.data)
-                    break
-                case 'navigation.link':
-                    setPopupType('navigation.link')
-                    setAddLinkProps(data.data)
-                    break
-                default:
-                    break
-            }
-        }
-    }, [items])
+    const handleSelect = (node: NodeModel<CustomCatalogData>) => {
+        selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
+    }
 
     /**
      * Handle drop event
@@ -253,19 +224,118 @@ const CatalogTree = () => {
             ]);
         } catch (error) {
             console.error('Error loading child nodes:', error);
-        }
-        finally {
+        } finally {
             setLoadingNodeId(null)
         }
     }, [treeData])
 
-    const addModel = useCallback(async (model: string) => {
+    const reloadCatalog = useCallback(async () => {
+        const res = await axios.post('', {
+            _method: 'getCatalog'
+        });
+        const {catalog: resCatalog} = res.data;
+        setTreeData(resCatalog.nodes)
+    }, [])
+
+    const selectCatalogItem = useCallback(async (type: string) => {
+        setItemType(type)
+        setFirstRender(true)
+        const res = await axios.post('', {type: type, _method: 'getAddHTML'})
+        setPopUpData(res.data)
+        dialogRef.current?.next()
+        setFirstRender(false)
+    }, [items])
+
+    const updateItem = useCallback(async () => {
+        try {
+            const res = await axios.post('', {
+                type: selectedNode?.data?.type,
+                modelId: selectedNode?.data?.modelId ?? null,
+                id: selectedNode?.data?.id,
+                _method: 'getEditHTML'
+            })
+            // console.log(res.data)
+            if (res.data) {
+                const item = res.data.data.item
+                const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
+                setAddProps(resEdit.data)
+                setPopUpTargetBlank(item.targetBlank)
+                setIsNavigation(true)
+                setPopupType('navigation.item')
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }, [PopupEvent, selectedNode, treeData, addProps])
+
+    const setPopUpData = useCallback((data: { type: string, data: any }) => {
+        if (data.type.includes('navigation')) {
+            setIsNavigation(true)
+            switch (data.type) {
+                case 'navigation.item':
+                    setAddItemProps(data.data)
+                    setPopupType('navigation.item')
+                    break
+                case 'navigation.group':
+                    setAddGroupProps(data.data)
+                    setPopupType('navigation.group')
+                    break
+                case 'navigation.link':
+                    setAddLinkProps(data.data)
+                    setPopupType('navigation.link')
+                    break
+                default:
+                    break
+            }
+        }
+    }, [PopupEvent, selectedNode, isNavigation])
+
+
+    const getAddModelJSON = useCallback(async (model: string) => {
         setSecondRender(true)
         const res = await axios.get(`${window.routePrefix}/model/${model}/add?without_layout=true'`)
         setAddProps(res.data)
         dialogRef.current?.next()
         setSecondRender(false)
-    }, [items])
+    }, [itemType])
+
+    const addModel = useCallback(async (record: any, targetBlank: boolean) => {
+        record.targetBlank = targetBlank
+        try {
+            await axios.post('', {
+                data: {
+                    record: record,
+                    parentId: 0,
+                    type: itemType
+                },
+                _method: 'createItem'
+            })
+        } catch (e) {
+            console.log(e)
+        } finally {
+            dialogRef.current?.close()
+            reloadCatalog()
+        }
+    }, [itemType])
+
+    const editModel = useCallback(async (record: any, targetBlank: boolean) => {
+        record[0].targetBlank = targetBlank
+        record[0].treeId = selectedNode?.data?.id
+        try {
+            await axios.put('', {
+                type: selectedNode?.data?.type,
+                data: {record: record[0]},
+                modelId: selectedNode?.data?.modelId,
+                _method: 'updateItem'
+            })
+        } catch (e) {
+            console.log(e)
+        } finally {
+            dialogRef.current?.close()
+            reloadCatalog()
+        }
+    }, [treeData, selectedNode])
+
     return (
         <>
             {isLoading ? (
@@ -302,12 +372,19 @@ const CatalogTree = () => {
                         <div className="flex gap-2">
                             <Button variant="default" size="sm" className="w-fit cursor-pointer rounded-sm"
                                     onClick={() => {
+                                        setPopupEvent('create')
                                         dialogRef.current?.open()
                                     }}>
                                 <Plus/>
                                 {messages.create}
                             </Button>
-                            <Button variant="outline" size="sm" className="w-fit cursor-pointer rounded-sm">
+                            <Button variant="outline" size="sm"
+                                    className={`w-fit cursor-pointer rounded-sm ${selectedNode ? '' : 'opacity-50 pointer-events-none'}`}
+                                    onClick={() => {
+                                        updateItem()
+                                        setPopupEvent('update')
+                                        dialogRef.current?.open()
+                                    }}>
                                 <Pencil/>
                                 {messages.Edit}
                             </Button>
@@ -381,36 +458,64 @@ const CatalogTree = () => {
                         <DialogStackBody>
                             <DialogStackContent>
                                 <div className="relative h-full">
-                                    {firstRender && <LoaderCircle
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                    <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
+                                    {PopupEvent === 'create' && (
+                                        <>
+                                            {firstRender && <LoaderCircle
+                                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
+                                            <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
+                                        </>
+                                    )}
+                                    {PopupEvent === 'update' &&
+                                        <>
+                                            {popupType === 'navigation.item' &&
+                                                <AddForm page={addProps}
+                                                         catalog={true}
+                                                         callback={editModel}
+                                                         openNewWindowLabel={messages["Open in a new window"]}
+                                                         openNewWindow={popUpTargetBlank}
+                                                         isNavigation={isNavigation}
+                                                />
+                                            }
+                                        </>
+                                    }
                                 </div>
                             </DialogStackContent>
 
                             <DialogStackContent>
                                 <div className="relative h-full">
                                     {secondRender && <LoaderCircle
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                    {popupType === 'navigation.item' && <NavItemAdd add={addModel} {...addItemProps} />}
-                                    {popupType === 'navigation.group' &&
-                                        <NavGropuAdd callback={() => {
-                                            dialogRef.current?.close()
-                                            reloadCatalog()
-                                        }} {...addGroupProps}/>}
-                                    {popupType === 'navigation.link' &&
-                                        <NavLinkAdd callback={() => {
-                                            dialogRef.current?.close()
-                                            reloadCatalog()
-                                        }} {...addLinkProps}/>}
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>
+                                    }
+                                    {PopupEvent === 'create' &&
+                                        <>
+                                            {popupType === 'navigation.item' &&
+                                                <NavItemAdd add={getAddModelJSON} {...addItemProps} />
+                                            }
+                                            {popupType === 'navigation.group' &&
+                                                <NavGropuAdd callback={() => {
+                                                    dialogRef.current?.close()
+                                                    reloadCatalog()
+                                                }} {...addGroupProps}/>
+                                            }
+                                            {popupType === 'navigation.link' &&
+                                                <NavLinkAdd callback={() => {
+                                                    dialogRef.current?.close()
+                                                    reloadCatalog()
+                                                }} {...addLinkProps}/>
+                                            }
+                                        </>
+                                    }
                                 </div>
                             </DialogStackContent>
 
                             <DialogStackContent>
                                 <div className="h-full overflow-y-auto mt-5">
-                                    <AddForm page={addProps} catalog={true} callback={() => {
-                                        dialogRef.current?.close()
-                                        reloadCatalog()
-                                    }}/>
+                                    <AddForm page={addProps}
+                                             catalog={true}
+                                             callback={addModel}
+                                             openNewWindowLabel={messages["Open in a new window"]}
+                                             isNavigation={isNavigation}
+                                    />
                                 </div>
                             </DialogStackContent>
                         </DialogStackBody>
