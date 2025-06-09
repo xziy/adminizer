@@ -7,17 +7,15 @@ import axios from "axios";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {useState} from "react";
 
-const ItemAdd = ({type, callback, ...data}: NavItemAddProps) => {
+const ItemAdd = ({type, callback, parentId, ...data}: NavItemAddProps) => {
     const [targetBlank, setTargetBlank] = useState<boolean>(false);
-
-
 
     const handleSelect = async (value: string) => {
         try {
             const res = await axios.post('', {
                 data: {
                     record: value,
-                    parentId: 0,
+                    parentId: parentId,
                     targetBlank: targetBlank,
                     _method: 'select',
                     type: type
