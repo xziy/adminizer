@@ -170,6 +170,8 @@ export class VueCatalog {
 
 	async search(s: string, req: ReqType) {
 		let searchResult = await this.catalog.search(s, undefined, req);
+		// console.log(searchResult)
+		// return ''
 		let itemsTree = AbstractCatalog.buildTree(searchResult);
 		return VueCatalogUtils.treeToNode(itemsTree, this.catalog.getGroupType().type);
 	}
@@ -177,40 +179,11 @@ export class VueCatalog {
 	async updateTree(data: RequestData, req: ReqType): Promise<any> {
 		// console.dir(data, {depth: null})
 		// return
-		let reqNodes = data.reqNode;
 		let reqParent = data.reqParent;
-		// if (!Array.isArray(data.reqNode)) {
-		// 	reqNodes = [data.reqNode];
-		// }
-		//
-		// let reqParent = data.reqParent ?? {
-		// 	children: VueCatalogUtils.arrayToNode(await this.catalog.getChilds(0), ''),
-		// 	data: {id: 0}
-		// };
-		// console.log(reqParent)
-		// return
-		// if (reqParent.data.id === 0) {
-		// 	reqParent.data.id = null;
-		// }
-		//
-		// if (reqParent.data.id === undefined) {
-		// 	throw `reqParent.data.id not defined`
-		// }
-
-		// It’s unclear why he’s coming reqNodes
-		// for (const reqNode of reqNodes) {
-		//
-		// 	const item = await this.catalog.find(reqNode.data, req);
-		// 	if (!item) {
-		// 		throw `reqNode Item not found`
-		// 	}
-		// }
 
 		// Update all items into parent (for two reason: update parent, updare sorting order)
 		let sortCount = 0;
 		for (const childNode of reqParent.children) {
-			// console.log(childNode)
-			// return
 			childNode.data.sortOrder = sortCount;
 			childNode.data.parentId = reqParent.data.id
 			await this.catalog.updateItem(childNode.data.id, childNode.data.type, childNode.data, req);
