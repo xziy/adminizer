@@ -24,7 +24,7 @@ const ItemAdd = ({...data}: NavItemAddProps) => {
             <div className="mt-8">
                 <span><b>{data.labels.OR}</b></span>
             </div>
-            <Button className="mt-8 cursor-pointer" onClick={() => data.add(data.model)}>
+            <Button className="mt-8" onClick={() => data.add(data.model)}>
                 <Plus />
                 {data.labels.createTitle}
             </Button>

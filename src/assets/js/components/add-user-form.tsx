@@ -110,7 +110,7 @@ export default function AddUserForm() {
                         {page.props.btnBack.title}
                     </Link>
                 </Button>
-                <Button variant="green" type="submit" className="w-fit cursor-pointer" form="addUserForm"
+                <Button variant="green" type="submit" className="w-fit" form="addUserForm"
                         disabled={processing || page.props.view}>
                     {processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                     {page.props.btnSave.title}

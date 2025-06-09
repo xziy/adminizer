@@ -84,12 +84,12 @@ export class VueCatalog {
 			"Select Item type": "",
 			"Select Items": "",
 			"Save": "",
-			"No, cancel": "",
+			"No": "",
 			"Are you sure?": "",
-			"Yes, I'm sure": "",
+			"Yes": "",
 			"Select Ids": "",
 			"OR": "",
-			"Open in a new window": ""
+			"Open in a new window": "",
 		}
 		obj[this.catalog.name] = ""
 		for (const actionHandler of this.catalog.actionHandlers) {
@@ -228,14 +228,20 @@ export class VueCatalog {
 			return await this.catalog.updateModelItems(modelId, item.type, data, req);
 		}
 	}
-	async deleteItem(items: NodeModel<any>[], req: ReqType) {
-		for (const item1 of items) {
-			if (item1.children?.length) {
-				await this.deleteItem(item1.children, req)
-			}
-			await this.catalog.deleteItem(item1.data.type, item1.data.id, req)
+
+	async deleteItem(item: Item, req: ReqType): Promise<{ ok: boolean }> {
+		// Получаем всех непосредственных потомков текущего элемента
+		const children = await this.catalog.getChilds(item.id, undefined, req);
+
+		// Рекурсивно удаляем всех потомков
+		for (const child of children) {
+			await this.deleteItem(child, req);
 		}
-		return { ok: true }
+
+		// После удаления всех потомков удаляем сам элемент
+		await this.catalog.deleteItem(item.type, item.id, req);
+
+		return { ok: true };
 	}
 }
 

@@ -136,7 +136,7 @@ const AddForm: FC<{
                                 {btnBack.title}
                             </Link>
                         </Button>
-                        <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden"
+                        <Button variant="green" type="submit" className="w-fit lg:hidden"
                                 form="addUserForm"
                                 disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                             {catalogProcessing || processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
@@ -198,7 +198,7 @@ const AddForm: FC<{
                                     <Label htmlFor="targetBlank">{openNewWindowLabel}</Label>
                                 </div>
                             }
-                            <Button variant="green" type="submit" className="w-fit cursor-pointer"
+                            <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                                 {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                                 {page.props.btnSave.title}

@@ -27,6 +27,7 @@ import CatalogDragPreview from "@/components/catalog/CatalogDragPreview.tsx";
 import styles from "@/components/catalog/Catalog.module.css";
 import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
 import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
+import DeleteModal from "@/components/modals/del-modal.tsx";
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
@@ -268,6 +269,40 @@ const CatalogTree = () => {
         }
     }, [PopupEvent, selectedNode, treeData, addProps])
 
+    const deleteItem = useCallback(async () => {
+        if (!selectedNode) return;
+
+        try {
+            const res = await axios.delete('', { data: selectedNode });
+            if (res.data.data.ok) {
+                // Удаляем ноду и всех её потомков из treeData
+                const removeNodeAndChildren = (id: string | number, nodes: NodeModel<CustomCatalogData>[]) => {
+                    let result = nodes.filter(node => node.id !== id);
+                    let changed = result.length !== nodes.length;
+
+                    // Рекурсивно удаляем детей
+                    const children = nodes.filter(node => node.parent === id);
+                    console.log(children)
+                    if (children.length > 0) {
+                        children.forEach(child => {
+                            const [newResult, wasChanged] = removeNodeAndChildren(child.id, result);
+                            result = newResult;
+                            changed = changed || wasChanged;
+                        });
+                    }
+
+                    return [result, changed];
+                };
+
+                const [newTreeData] = removeNodeAndChildren(selectedNode.id, treeData);
+                setTreeData(newTreeData);
+                setSelectedNode(null);
+            }
+        } catch (error) {
+            console.error('Error deleting node:', error);
+        }
+    }, [selectedNode, treeData])
+
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
             setIsNavigation(true)
@@ -370,7 +405,7 @@ const CatalogTree = () => {
                     <div
                         className="md:grid md:grid-cols-[minmax(70px,_800px)_minmax(150px,_250px)] md:gap-10 justify-between flex flex-col gap-3.5">
                         <div className="flex gap-2">
-                            <Button variant="default" size="sm" className="w-fit cursor-pointer rounded-sm"
+                            <Button variant="default" size="sm" className="w-fit rounded-sm"
                                     onClick={() => {
                                         setPopupEvent('create')
                                         dialogRef.current?.open()
@@ -388,10 +423,19 @@ const CatalogTree = () => {
                                 <Pencil/>
                                 {messages.Edit}
                             </Button>
-                            <Button variant="destructive" size="sm" className="w-fit cursor-pointer rounded-sm">
-                                <Trash2/>
-                                {messages.Delete}
-                            </Button>
+                            <DeleteModal btnTitle={messages.Delete}
+                                         variant="destructive"
+                                         btnCLass={`w-fit text-white hover ${selectedNode ? '' : 'opacity-50 pointer-events-none'}`}
+                                         delModal={
+                                             {
+                                                 yes: messages['Yes'],
+                                                 no: messages['No'],
+                                                 text: messages['Are you sure?']
+                                             }
+                                         }
+                                         isLink={false}
+                                         handleDelete={deleteItem}
+                            />
                         </div>
                         <div>
                             <Input
