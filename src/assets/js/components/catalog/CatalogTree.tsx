@@ -1,9 +1,10 @@
-import {lazy, useCallback, useEffect, useRef, useState} from "react";
+import {lazy, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
     Tree,
     getBackendOptions,
     MultiBackend,
     NodeModel,
+    TreeMethods,
     DragLayerMonitorProps, DropOptions
 } from "@minoru/react-dnd-treeview";
 import {DndProvider} from "react-dnd";
@@ -59,7 +60,7 @@ interface AddCatalogProps {
 }
 
 const CatalogTree = () => {
-    const treeRef = useRef(null);
+    const treeRef = useRef<TreeMethods>(null);
 
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
     const [selectedNode, setSelectedNode] = useState<NodeModel<CustomCatalogData> | null>(null);
@@ -104,6 +105,7 @@ const CatalogTree = () => {
     const [firstRender, setFirstRender] = useState(false)
 
     const [secondRender, setSecondRender] = useState(false)
+
     useEffect(() => {
         const fetchData = async () => {
             const res = await axios.post('', {
@@ -226,16 +228,25 @@ const CatalogTree = () => {
         }
     }, [treeData]);
 
+    const parentid = useMemo(() => {
+        return selectedNode?.droppable ? selectedNode.id : 0;;
+    }, [selectedNode])
+
     /**
      * Reload catalog
      */
     const reloadCatalog = useCallback(async () => {
-        const res = await axios.post('', {
-            _method: 'getCatalog'
-        });
-        const {catalog: resCatalog} = res.data;
-        setTreeData(resCatalog.nodes)
-    }, [])
+        if (selectedNode?.droppable) {
+            treeRef.current?.open(selectedNode.id)
+            await handleToggle(selectedNode.id as string, true)
+        } else {
+            const res = await axios.post('', {
+                _method: 'getCatalog'
+            });
+            const {catalog: resCatalog} = res.data;
+            setTreeData(resCatalog.nodes)
+        }
+    }, [selectedNode, treeData])
 
     const selectCatalogItem = useCallback(async (type: string) => {
         setItemType(type)
@@ -355,7 +366,7 @@ const CatalogTree = () => {
             await axios.post('', {
                 data: {
                     record: record,
-                    parentId: 0,
+                    parentId: parentid,
                     type: itemType
                 },
                 _method: 'createItem'
@@ -366,7 +377,7 @@ const CatalogTree = () => {
             dialogRef.current?.close()
             reloadCatalog()
         }
-    }, [itemType])
+    }, [itemType, selectedNode, treeData])
 
     const editModel = useCallback(async (record: any, targetBlank: boolean) => {
         record[0].targetBlank = targetBlank
@@ -548,7 +559,7 @@ const CatalogTree = () => {
                                         </>
                                     )}
                                     {PopupEvent === 'update' &&
-                                        <>
+                                        <div className="h-full overflow-y-auto mt-5">
                                             {popupType === 'navigation.item' &&
                                                 <AddForm page={addProps}
                                                          catalog={true}
@@ -561,9 +572,9 @@ const CatalogTree = () => {
                                             {popupType === 'navigation.group' &&
                                                 <NavLinkGropuAdd
                                                     callback={() => {
-                                                    dialogRef.current?.close()
-                                                    reloadCatalog()
-                                                }}
+                                                        dialogRef.current?.close()
+                                                        reloadCatalog()
+                                                    }}
                                                     update={true}
                                                     type="group"
                                                     {...addLinksGroupProps}
@@ -572,15 +583,15 @@ const CatalogTree = () => {
                                             {popupType === 'navigation.link' &&
                                                 <NavLinkGropuAdd
                                                     callback={() => {
-                                                    dialogRef.current?.close()
-                                                    reloadCatalog()
-                                                }}
+                                                        dialogRef.current?.close()
+                                                        reloadCatalog()
+                                                    }}
                                                     update={true}
                                                     type="link"
                                                     {...addLinksGroupProps}
                                                 />
                                             }
-                                        </>
+                                        </div>
                                     }
                                 </div>
                             </DialogStackContent>
@@ -600,6 +611,7 @@ const CatalogTree = () => {
                                                         reloadCatalog()
                                                     }}
                                                     type={itemType ?? ''}
+                                                    parentId={parentid}
                                                     {...addItemProps}
                                                 />
                                             }
@@ -610,16 +622,18 @@ const CatalogTree = () => {
                                                         reloadCatalog()
                                                     }}
                                                     type="group"
+                                                    parentId={parentid}
                                                     {...addLinksGroupProps}
                                                 />
                                             }
                                             {popupType === 'navigation.link' &&
                                                 <NavLinkGropuAdd
                                                     callback={() => {
-                                                    dialogRef.current?.close()
-                                                    reloadCatalog()
-                                                }}
+                                                        dialogRef.current?.close()
+                                                        reloadCatalog()
+                                                    }}
                                                     type="link"
+                                                    parentId={parentid}
                                                     {...addLinksGroupProps}
                                                 />
                                             }

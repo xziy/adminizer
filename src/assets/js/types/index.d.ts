@@ -127,6 +127,7 @@ export interface NavItemAddProps {
     labels: Record<string, string>,
     model: string,
     type: string,
+    parentId?: string | number,
     items: {
         id: number,
         name: string
@@ -139,6 +140,7 @@ export interface NavGroupAddProps{
     labels: Record<string, string>
     type: string
     update?: boolean
+    parentId?: string | number
     item?: Record<string, any>
     items: {
         name: string,
