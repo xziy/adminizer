@@ -10,7 +10,7 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {LoaderCircle, Pencil, Plus, Trash2} from "lucide-react";
+import {LoaderCircle, Pencil, Plus} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
 import {
     DialogStack,
@@ -28,10 +28,11 @@ import styles from "@/components/catalog/Catalog.module.css";
 import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
 import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
 import DeleteModal from "@/components/modals/del-modal.tsx";
+import {debounce} from 'lodash-es';
+
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
-const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
-const NavLinkAdd = lazy(() => import('@/components/catalog/navigation/link-add.tsx'));
+const NavLinkGropuAdd = lazy(() => import('@/components/catalog/navigation/group-link-add.tsx'));
 
 interface AddCatalogProps {
     props: {
@@ -58,6 +59,8 @@ interface AddCatalogProps {
 }
 
 const CatalogTree = () => {
+    const treeRef = useRef(null);
+
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
     const [selectedNode, setSelectedNode] = useState<NodeModel<CustomCatalogData> | null>(null);
 
@@ -75,8 +78,7 @@ const CatalogTree = () => {
     const [isLoading, setIsLoading] = useState(false)
     const dialogRef = useRef<DialogStackHandle>(null);
     const [addItemProps, setAddItemProps] = useState({items: [], model: "", labels: {}})
-    const [addGroupProps, setAddGroupProps] = useState({items: [], labels: {}})
-    const [addLinkProps, setAddLinkProps] = useState({items: [], labels: {}})
+    const [addLinksGroupProps, setAddLinksGroupProps] = useState({items: [], labels: {}})
     const [popupType, setPopupType] = useState<string>('')
     const [loadingNodeId, setLoadingNodeId] = useState<string | number | null>(null)
     const [itemType, setItemType] = useState<string | null>(null)
@@ -136,7 +138,6 @@ const CatalogTree = () => {
         initCatalog();
     }, []);
 
-
     const handleSelect = (node: NodeModel<CustomCatalogData>) => {
         selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
     }
@@ -155,6 +156,7 @@ const CatalogTree = () => {
 
             // find new parent
             const newParentId = dropTargetId || 0;
+
 
             const requestData = {
                 data: {
@@ -178,7 +180,6 @@ const CatalogTree = () => {
                 },
                 _method: 'updateTree'
             };
-
             setTreeData(newTree);
 
             await axios.put('', requestData);
@@ -186,50 +187,48 @@ const CatalogTree = () => {
         } catch (error) {
             console.error('Error updating tree:', error);
         }
-    }, []);
+    }, [treeData]);
 
     /**
      * Toggle the open state of a node
      * @callback handleToggle
      */
     const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
-        // Check if the node is already open
-        if (!isOpen) return
-
-        // Check if the treeData already has children for this node
-        const hasExistingChildren = treeData.some(node => node.parent === id);
-
-        // console.log('isOpen: ', isOpen, 'hasExistingChildren: ', hasExistingChildren, 'treeData:', treeData)
-
-        // If the node has existing children, don't load more
-        if (hasExistingChildren) {
-            return;
-        }
-
-        // Find the node in the treeData
-        const node = treeData.find(node => node.id === id);
-
-        if (!node) {
-            return;
-        }
+        // Если нода закрывается - ничего не делаем
+        if (!isOpen) return;
 
         try {
-            setLoadingNodeId(id)
-            let res = await axios.post('', {data: node, _method: 'getChilds'})
+            setLoadingNodeId(id);
+            const node = treeData.find(node => node.id === id);
+            const res = await axios.post('', {data: node, _method: 'getChilds'});
             const newChildNodes = res.data.data;
-            console.log(newChildNodes)
-            // Update the treeData with the new child nodes
-            setTreeData(prevTree => [
-                ...prevTree,
-                ...newChildNodes,
-            ]);
+
+            setTreeData(prevTree => {
+                // Создаем Set из ID существующих нод для быстрой проверки
+                const existingNodeIds = new Set(prevTree.map(n => n.id));
+
+                // Фильтруем новые ноды, оставляем только те, которых еще нет
+                const uniqueNewNodes = newChildNodes.filter(
+                    (child: { id: string | number; }) => !existingNodeIds.has(child.id)
+                );
+
+                // Если все новые ноды уже есть - не обновляем состояние
+                if (uniqueNewNodes.length === 0) return prevTree;
+
+                // Мержим деревья, добавляя только уникальные ноды
+                return [...prevTree, ...uniqueNewNodes];
+            });
+
         } catch (error) {
             console.error('Error loading child nodes:', error);
         } finally {
-            setLoadingNodeId(null)
+            setLoadingNodeId(null);
         }
-    }, [treeData])
+    }, [treeData]);
 
+    /**
+     * Reload catalog
+     */
     const reloadCatalog = useCallback(async () => {
         const res = await axios.post('', {
             _method: 'getCatalog'
@@ -255,14 +254,33 @@ const CatalogTree = () => {
                 id: selectedNode?.data?.id,
                 _method: 'getEditHTML'
             })
-            // console.log(res.data)
             if (res.data) {
-                const item = res.data.data.item
-                const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
-                setAddProps(resEdit.data)
-                setPopUpTargetBlank(item.targetBlank)
-                setIsNavigation(true)
-                setPopupType('navigation.item')
+                // console.log(res.data.type)
+                if (res.data.type.includes('navigation')) {
+                    switch (res.data.type) {
+                        case 'navigation.item':
+                            const item = res.data.data.item
+                            const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
+                            setAddProps(resEdit.data)
+                            setPopUpTargetBlank(item.targetBlank)
+                            setIsNavigation(true)
+                            setPopupType('navigation.item')
+                            break
+                        case 'navigation.group':
+
+                            setAddLinksGroupProps(res.data.data)
+                            setIsNavigation(true)
+                            setPopupType('navigation.group')
+                            break
+                        case 'navigation.link':
+                            setAddLinksGroupProps(res.data.data)
+                            setIsNavigation(true)
+                            setPopupType('navigation.link')
+                            break
+                        default:
+                            break
+                    }
+                }
             }
         } catch (e) {
             console.log(e)
@@ -273,35 +291,31 @@ const CatalogTree = () => {
         if (!selectedNode) return;
 
         try {
-            const res = await axios.delete('', { data: selectedNode });
+            const res = await axios.delete('', {data: selectedNode});
             if (res.data.data.ok) {
                 // Удаляем ноду и всех её потомков из treeData
-                const removeNodeAndChildren = (id: string | number, nodes: NodeModel<CustomCatalogData>[]) => {
+                const removeNodeAndChildren = (id: string | number, nodes: NodeModel<CustomCatalogData>[]): NodeModel<CustomCatalogData>[] => {
                     let result = nodes.filter(node => node.id !== id);
-                    let changed = result.length !== nodes.length;
 
                     // Рекурсивно удаляем детей
                     const children = nodes.filter(node => node.parent === id);
-                    console.log(children)
                     if (children.length > 0) {
                         children.forEach(child => {
-                            const [newResult, wasChanged] = removeNodeAndChildren(child.id, result);
-                            result = newResult;
-                            changed = changed || wasChanged;
+                            result = removeNodeAndChildren(child.id, result);
                         });
                     }
 
-                    return [result, changed];
+                    return result;
                 };
 
-                const [newTreeData] = removeNodeAndChildren(selectedNode.id, treeData);
+                const newTreeData = removeNodeAndChildren(selectedNode.id, treeData);
                 setTreeData(newTreeData);
                 setSelectedNode(null);
             }
         } catch (error) {
             console.error('Error deleting node:', error);
         }
-    }, [selectedNode, treeData])
+    }, [selectedNode, treeData]);
 
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
@@ -312,11 +326,12 @@ const CatalogTree = () => {
                     setPopupType('navigation.item')
                     break
                 case 'navigation.group':
-                    setAddGroupProps(data.data)
+                    console.log(data.data)
+                    setAddLinksGroupProps(data.data)
                     setPopupType('navigation.group')
                     break
                 case 'navigation.link':
-                    setAddLinkProps(data.data)
+                    setAddLinksGroupProps(data.data)
                     setPopupType('navigation.link')
                     break
                 default:
@@ -370,6 +385,25 @@ const CatalogTree = () => {
             reloadCatalog()
         }
     }, [treeData, selectedNode])
+
+    const performSearch = async (s: string) => {
+        if (!s.trim()) {
+            // reloadCatalog();
+            return;
+        }
+        try {
+            const res = await axios.post('', {s: s, _method: 'search'})
+            console.log(res.data)
+        } catch (error) {
+            console.error('Error searching:', error);
+        }
+    };
+
+
+    const handleSearch = useCallback(
+        debounce(performSearch, 500),
+        [treeData, reloadCatalog]
+    );
 
     return (
         <>
@@ -443,12 +477,15 @@ const CatalogTree = () => {
                                 autoFocus={false}
                                 placeholder={messages.Search}
                                 className="w-full max-w-[200px] p-2 border rounded"
-                                // onChange={(e) => {onGlobalSearch(e.target.value)}}
-                                // onKeyDown={(e) => {
-                                //     if (e.key === 'Enter' && handleSearch) {
-                                //         handleSearch()
-                                //     }
-                                // }}
+                                onChange={(e) => {
+                                    handleSearch(e.target.value)
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        performSearch(e.currentTarget.value);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -456,6 +493,7 @@ const CatalogTree = () => {
                         <DndProvider backend={MultiBackend} options={getBackendOptions()}>
                             <div className={styles.app}>
                                 <Tree
+                                    ref={treeRef}
                                     tree={treeData}
                                     rootId={0}
                                     render={(node, {depth, isOpen, onToggle}) => (
@@ -520,6 +558,28 @@ const CatalogTree = () => {
                                                          isNavigation={isNavigation}
                                                 />
                                             }
+                                            {popupType === 'navigation.group' &&
+                                                <NavLinkGropuAdd
+                                                    callback={() => {
+                                                    dialogRef.current?.close()
+                                                    reloadCatalog()
+                                                }}
+                                                    update={true}
+                                                    type="group"
+                                                    {...addLinksGroupProps}
+                                                />
+                                            }
+                                            {popupType === 'navigation.link' &&
+                                                <NavLinkGropuAdd
+                                                    callback={() => {
+                                                    dialogRef.current?.close()
+                                                    reloadCatalog()
+                                                }}
+                                                    update={true}
+                                                    type="link"
+                                                    {...addLinksGroupProps}
+                                                />
+                                            }
                                         </>
                                     }
                                 </div>
@@ -533,19 +593,35 @@ const CatalogTree = () => {
                                     {PopupEvent === 'create' &&
                                         <>
                                             {popupType === 'navigation.item' &&
-                                                <NavItemAdd add={getAddModelJSON} {...addItemProps} />
+                                                <NavItemAdd
+                                                    add={getAddModelJSON}
+                                                    callback={() => {
+                                                        dialogRef.current?.close()
+                                                        reloadCatalog()
+                                                    }}
+                                                    type={itemType ?? ''}
+                                                    {...addItemProps}
+                                                />
                                             }
                                             {popupType === 'navigation.group' &&
-                                                <NavGropuAdd callback={() => {
-                                                    dialogRef.current?.close()
-                                                    reloadCatalog()
-                                                }} {...addGroupProps}/>
+                                                <NavLinkGropuAdd
+                                                    callback={() => {
+                                                        dialogRef.current?.close()
+                                                        reloadCatalog()
+                                                    }}
+                                                    type="group"
+                                                    {...addLinksGroupProps}
+                                                />
                                             }
                                             {popupType === 'navigation.link' &&
-                                                <NavLinkAdd callback={() => {
+                                                <NavLinkGropuAdd
+                                                    callback={() => {
                                                     dialogRef.current?.close()
                                                     reloadCatalog()
-                                                }} {...addLinkProps}/>
+                                                }}
+                                                    type="link"
+                                                    {...addLinksGroupProps}
+                                                />
                                             }
                                         </>
                                     }

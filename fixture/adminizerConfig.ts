@@ -396,11 +396,6 @@ const config: AdminpanelConfig = {
     navigation: {
         items: [
             {
-                title: 'Page',
-                model: "Page",
-                urlPath: '/page/${data.record.slug}'
-            },
-            {
                 title: 'Category',
                 model: "Category",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'

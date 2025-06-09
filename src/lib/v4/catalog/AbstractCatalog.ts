@@ -517,7 +517,7 @@ export abstract class AbstractCatalog {
 				accumulator.push(...extras);
 			}
 
-			if (item.parentId === null) return item;
+			if (item.parentId === 0) return item;
 			const parentItem = await groupType._find(item.parentId, this.id);
 			if (parentItem) {
 				accumulator.push(parentItem);

@@ -341,7 +341,8 @@ class NavigationItem extends AbstractItem<NavItem> {
                 labels: {
                     selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
                     createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
-                    OR: req.i18n.__('OR')
+                    OR: req.i18n.__('OR'),
+					openInNewWindow: req.i18n.__('Open in a new window'),
                 }
             }
 		}
@@ -430,6 +431,10 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async updateModelItems(modelId: string | number, data: NavItem, catalogId: string): Promise<NavItem> {
+		// let storage = StorageServices.get(catalogId)
+		// let item = await storage.findElementById(modelId)
+		// console.log('item: ', item, 'storage: ', storage.getAllElements(), 'data: ', data)
+		// return ''
 		let storage = StorageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
@@ -439,7 +444,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	* // TODO: need passing custom React module 
 	*/
 	getAddHTML(req: ReqType):Promise<{
-        type: 'component' | 'model' | string,
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items?: { name: string, required: boolean }[] | Record<string, any>[],
             model?: string,
@@ -469,37 +474,49 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		})
 	}
 
-	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
-		return await storage.findElementsByParentId(parentId, this.type);
-	}
-
 	/**
 	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
+	 * // TODO: need passing custom React module
+	 */
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let type: 'html' = 'html'
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			item?: NavItem,
+			labels?: Record<string, string>,
+		}
+	}>  {
 		let item = await this.find(id, catalogId)
+		let type: 'navigation.group' = 'navigation.group'
 
-		// This dirty hack is here because the field of view is disappearing
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+		let resItems: { name: string; required: boolean; }[] = []
+		if (this.groupField.length) {
+			resItems = this.groupField.map((field: any) => {
+				return {
+					name: field.name,
+					required: field.required
+				}
+			})
 		}
 
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/GroupHTMLEdit.ejs'), 'utf8'), {
-			// 	fields: this.groupField,
-			// 	item: item,
-			// 	__: __
-			// }),
-            data: ''
+			data: {
+				items: resItems,
+				item: item,
+				labels: {
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					title: req.i18n.__('Title'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
+	}
+
+	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
+		let storage = StorageServices.get(catalogId)
+		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
@@ -524,7 +541,7 @@ class LinkItem extends NavigationGroup {
 	* // TODO: need passing custom React module 
 	*/
 	getAddHTML(req: ReqType):Promise<{
-		type: 'component' | 'model' | string,
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -556,25 +573,35 @@ class LinkItem extends NavigationGroup {
 	* // TODO: need passing custom React module 
 	*/
 	async getEditHTML(id: string | number, catalogId: string, req: ReqType): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let type: 'html' = 'html'
-		let item = await this.find(id, catalogId)
-
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			item?: NavItem,
+			labels?: Record<string, string>,
 		}
+	}>  {
+		let item = await this.find(id, catalogId)
+		let type: 'navigation.group' = 'navigation.group'
+
+		let resItems: { name: string; required: boolean; }[] = [
+			{
+				name: req.i18n.__('Link'),
+				required: true
+			}
+		]
 
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/LinkItemEdit.ejs'), 'utf8'), {
-			// 	fields: this.groupField,
-			// 	item: item,
-			// 	__: __
-			// }),
-            data: ''
+			data: {
+				items: resItems,
+				item: item,
+				labels: {
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					title: req.i18n.__('Title'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
 	}
 
