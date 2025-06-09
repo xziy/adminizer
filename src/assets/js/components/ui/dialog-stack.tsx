@@ -369,7 +369,7 @@ export const DialogStackContent = ({
             {...props}
         >
             {context.activeIndex === index && (
-                <Button asChild variant="ghost" className="absolute z-[1005] top-4 right-4 p-1 size-8 cursor-pointer"
+                <Button asChild variant="ghost" className="absolute z-[1005] top-4 right-4 p-1 size-8"
                         onClick={handleClose} aria-label="Close">
                     <XIcon/>
                 </Button>

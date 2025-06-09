@@ -62,7 +62,7 @@ const GroupAdd = ({...data}: NavGroupAddProps) => {
                     </div>
                 ))}
             </form>
-            <Button className="mt-8 cursor-pointer w-fit" form="group-add" type="submit">
+            <Button className="mt-8 w-fit" form="group-add" type="submit">
                 {data.labels.save}
                 {isLoading && <LoaderCircle className="h-4 w-4 animate-spin"/>}
             </Button>

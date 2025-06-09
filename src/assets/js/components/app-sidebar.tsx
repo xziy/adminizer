@@ -53,7 +53,7 @@ export function AppSidebar() {
                                 <MenubarTrigger asChild
                                                 className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md">
                                     <SidebarMenuButton asChild>
-                                        <Button variant="ghost" asChild className={`cursor-pointer w-full ${!page.props.section ? 'pointer-events-none' : ''}`}>
+                                        <Button variant="ghost" asChild className={`w-full ${!page.props.section ? 'pointer-events-none' : ''}`}>
                                             <div>
                                                 <MaterialIcon name="rocket_launch" className="!text-[18px]"/>
                                                 <span

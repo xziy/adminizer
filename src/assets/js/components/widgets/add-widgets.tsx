@@ -158,9 +158,9 @@ const AddWidgets = ({initWidgets, onAddWidgets, disabled, searchPlaceholder, act
                                         </CardHeader>
                                         <CardFooter className="justify-end">
                                             {item.added ? (
-                                                <Button className="cursor-pointer" variant="destructive" onClick={() => addWidget(item.id)}>Hide</Button>
+                                                <Button variant="destructive" onClick={() => addWidget(item.id)}>Hide</Button>
                                             ) : (
-                                                <Button className="cursor-pointer" onClick={() => addWidget(item.id)}>Show</Button>
+                                                <Button onClick={() => addWidget(item.id)}>Show</Button>
                                             )}
                                         </CardFooter>
                                     </Card>
