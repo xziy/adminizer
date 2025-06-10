@@ -90,6 +90,7 @@ export class VueCatalog {
 			"Select Ids": "",
 			"OR": "",
 			"Open in a new window": "",
+			"Clean": "",
 		}
 		obj[this.catalog.name] = ""
 		for (const actionHandler of this.catalog.actionHandlers) {
