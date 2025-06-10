@@ -292,7 +292,7 @@ const CatalogTree = () => {
     const selectCatalogItem = useCallback(async (type: string) => {
         setItemType(type)
         setFirstRender(true)
-        const res = await axios.post('', {type: type, _method: 'getAddHTML'})
+        const res = await axios.post('', {type: type, _method: 'getAddTemplate'})
         setPopUpData(res.data)
         dialogRef.current?.next()
         setFirstRender(false)
@@ -304,7 +304,7 @@ const CatalogTree = () => {
                 type: selectedNodes[0]?.data?.type,
                 modelId: selectedNodes[0]?.data?.modelId ?? null,
                 id: selectedNodes[0]?.data?.id,
-                _method: 'getEditHTML'
+                _method: 'getEditTemplate'
             })
             if (res.data) {
                 // console.log(res.data.type)

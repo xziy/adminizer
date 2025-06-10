@@ -1,10 +1,8 @@
 import {AbstractCatalog, AbstractGroup, AbstractItem, ActionHandler, Item} from "./AbstractCatalog";
 import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../../interfaces/adminpanelConfig";
-import * as fs from "node:fs";
 
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../../Adminizer";
-import inertiaAddHelper from "../../../helpers/inertiaAddHelper";
 
 export interface NavItem extends Item {
 	urlPath?: string;
@@ -316,7 +314,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	 * @deprecated reason: migration for intertia
 	* // TODO: need passing custom React module 
 	*/
-	async getAddHTML(req: ReqType): Promise<{
+	async getAddTemplate(req: ReqType): Promise<{
         type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items: { id: string; name: string}[],
@@ -353,11 +351,8 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
+
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
 		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			item: NavItem
@@ -431,19 +426,11 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async updateModelItems(modelId: string | number, data: NavItem, catalogId: string): Promise<NavItem> {
-		// let storage = StorageServices.get(catalogId)
-		// let item = await storage.findElementById(modelId)
-		// console.log('item: ', item, 'storage: ', storage.getAllElements(), 'data: ', data)
-		// return ''
 		let storage = StorageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
-	
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	getAddHTML(req: ReqType):Promise<{
+
+	getAddTemplate(req: ReqType):Promise<{
 		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items?: { name: string, required: boolean }[] | Record<string, any>[],
@@ -474,11 +461,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		})
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
-	 */
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
 		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
@@ -536,11 +519,7 @@ class LinkItem extends NavigationGroup {
 		super(adminizer, []);
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	getAddHTML(req: ReqType):Promise<{
+	getAddTemplate(req: ReqType):Promise<{
 		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
@@ -568,11 +547,7 @@ class LinkItem extends NavigationGroup {
 		})
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType): Promise<{
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType): Promise<{
 		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],

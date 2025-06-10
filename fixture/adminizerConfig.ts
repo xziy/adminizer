@@ -379,6 +379,18 @@ const models: AdminpanelConfig["models"] = {
             updatedAt: false,
         }
     },
+    TestCatalog: {
+        title: '',
+        model: 'testcatalog',
+        icon: 'category',
+        navbar: {
+            visible: false,
+        },
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+        }
+    },
 }
 
 const config: AdminpanelConfig = {
@@ -475,6 +487,13 @@ const config: AdminpanelConfig = {
                 link: `${routePrefix}/catalog/navigation/footer`,
                 title: 'Nav Footer',
                 icon: 'menu'
+            },
+            {
+                id: '5',
+                type: "self",
+                link: `${routePrefix}/catalog/test-catalog`,
+                title: 'Test Catalog',
+                icon: 'bug_report'
             }
         ]
     },
