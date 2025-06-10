@@ -1,4 +1,5 @@
 import {lazy, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {router} from '@inertiajs/react'
 import {
     Tree,
     getBackendOptions,
@@ -11,7 +12,7 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {LoaderCircle, Pencil, Plus} from "lucide-react";
+import {LoaderCircle, Pencil, Plus, Ban} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
 import {
     DialogStack,
@@ -30,7 +31,12 @@ import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
 import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
 import DeleteModal from "@/components/modals/del-modal.tsx";
 import {debounce} from 'lodash-es';
-
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 
 const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
 const NavLinkGropuAdd = lazy(() => import('@/components/catalog/navigation/group-link-add.tsx'));
@@ -62,8 +68,10 @@ interface AddCatalogProps {
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
 
+    const deleteModalRef = useRef<HTMLButtonElement>(null);
+
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
-    const [selectedNode, setSelectedNode] = useState<NodeModel<CustomCatalogData> | null>(null);
+    const [selectedNodes, setSelectedNodes] = useState<NodeModel<CustomCatalogData>[]>([]);
 
     const [catalog, setCatalog] = useState<Catalog>({
         catalogId: "",
@@ -141,8 +149,20 @@ const CatalogTree = () => {
     }, []);
 
     const handleSelect = (node: NodeModel<CustomCatalogData>) => {
-        selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
-    }
+        const item = selectedNodes.find((n) => n.id === node.id);
+
+        if (!item) {
+            setSelectedNodes([...selectedNodes, node]);
+        } else {
+            setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
+        }
+    };
+
+    const handleClear = (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            setSelectedNodes([]);
+        }
+    };
 
     /**
      * Handle drop event
@@ -229,24 +249,45 @@ const CatalogTree = () => {
     }, [treeData]);
 
     const parentid = useMemo(() => {
-        return selectedNode?.droppable ? selectedNode.id : 0;;
-    }, [selectedNode])
+        return selectedNodes[0]?.droppable ? selectedNodes[0].id : 0;
+        ;
+    }, [selectedNodes])
 
     /**
      * Reload catalog
      */
     const reloadCatalog = useCallback(async () => {
-        if (selectedNode?.droppable) {
-            treeRef.current?.open(selectedNode.id)
-            await handleToggle(selectedNode.id as string, true)
+        if (selectedNodes[0]?.droppable) {
+            treeRef.current?.open(selectedNodes[0].id);
+            await handleToggle(selectedNodes[0].id as string, true);
         } else {
-            const res = await axios.post('', {
-                _method: 'getCatalog'
-            });
-            const {catalog: resCatalog} = res.data;
-            setTreeData(resCatalog.nodes)
+            try {
+                const res = await axios.post('', {
+                    _method: 'getCatalog'
+                });
+                const {catalog: resCatalog} = res.data;
+
+                setTreeData(prevTree => {
+                    // Создаем Map существующих нод для быстрого поиска
+                    const existingNodesMap = new Map(prevTree.map(node => [node.id, node]));
+                    const newNodes = resCatalog.nodes;
+
+                    // Фильтруем новые ноды, оставляем только те, которых еще нет
+                    const nodesToAdd = newNodes.filter(
+                        (newNode: NodeModel<CustomCatalogData>) => !existingNodesMap.has(newNode.id)
+                    );
+
+                    // Если нечего добавлять - возвращаем предыдущее состояние
+                    if (nodesToAdd.length === 0) return prevTree;
+
+                    // Объединяем старые и новые ноды
+                    return [...prevTree, ...nodesToAdd];
+                });
+            } catch (error) {
+                console.error('Error reloading catalog:', error);
+            }
         }
-    }, [selectedNode, treeData])
+    }, [selectedNodes, handleToggle]);
 
     const selectCatalogItem = useCallback(async (type: string) => {
         setItemType(type)
@@ -260,9 +301,9 @@ const CatalogTree = () => {
     const updateItem = useCallback(async () => {
         try {
             const res = await axios.post('', {
-                type: selectedNode?.data?.type,
-                modelId: selectedNode?.data?.modelId ?? null,
-                id: selectedNode?.data?.id,
+                type: selectedNodes[0]?.data?.type,
+                modelId: selectedNodes[0]?.data?.modelId ?? null,
+                id: selectedNodes[0]?.data?.id,
                 _method: 'getEditHTML'
             })
             if (res.data) {
@@ -296,37 +337,52 @@ const CatalogTree = () => {
         } catch (e) {
             console.log(e)
         }
-    }, [PopupEvent, selectedNode, treeData, addProps])
+    }, [PopupEvent, selectedNodes, treeData, addProps])
 
     const deleteItem = useCallback(async () => {
-        if (!selectedNode) return;
+        if (!selectedNodes.length) return;
 
         try {
-            const res = await axios.delete('', {data: selectedNode});
-            if (res.data.data.ok) {
-                // Удаляем ноду и всех её потомков из treeData
-                const removeNodeAndChildren = (id: string | number, nodes: NodeModel<CustomCatalogData>[]): NodeModel<CustomCatalogData>[] => {
-                    let result = nodes.filter(node => node.id !== id);
+            for (const selectedNode of selectedNodes) {
+                const res = await axios.delete('', {data: selectedNode});
 
-                    // Рекурсивно удаляем детей
-                    const children = nodes.filter(node => node.parent === id);
-                    if (children.length > 0) {
+                if (res.data.data.ok) {
+                    // Создаем копию текущего treeData для модификации
+                    let updatedTreeData = [...treeData];
+
+                    // Удаляем все выбранные ноды и их потомков
+                    const removeNodeAndChildren = (
+                        id: string | number,
+                        nodes: NodeModel<CustomCatalogData>[]): NodeModel<CustomCatalogData>[] => {
+
+                        // Фильтруем ноды, удаляя текущую ноду
+                        let result = nodes.filter(node => node.id !== id);
+
+                        // Находим всех детей текущей ноды
+                        const children = nodes.filter(node => node.parent === id);
+
+                        // Рекурсивно удаляем каждого ребенка
                         children.forEach(child => {
                             result = removeNodeAndChildren(child.id, result);
                         });
-                    }
 
-                    return result;
-                };
+                        return result;
+                    };
 
-                const newTreeData = removeNodeAndChildren(selectedNode.id, treeData);
-                setTreeData(newTreeData);
-                setSelectedNode(null);
+                    // Применяем удаление для каждой выбранной ноды
+                    selectedNodes.forEach(selectedNode => {
+                        updatedTreeData = removeNodeAndChildren(selectedNode.id, updatedTreeData);
+                    });
+
+                    // Обновляем состояние
+                    setTreeData(updatedTreeData);
+                    setSelectedNodes([]);
+                }
             }
         } catch (error) {
             console.error('Error deleting node:', error);
         }
-    }, [selectedNode, treeData]);
+    }, [selectedNodes, treeData]);
 
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
@@ -349,8 +405,7 @@ const CatalogTree = () => {
                     break
             }
         }
-    }, [PopupEvent, selectedNode, isNavigation])
-
+    }, [PopupEvent, selectedNodes, isNavigation])
 
     const getAddModelJSON = useCallback(async (model: string) => {
         setSecondRender(true)
@@ -377,16 +432,16 @@ const CatalogTree = () => {
             dialogRef.current?.close()
             reloadCatalog()
         }
-    }, [itemType, selectedNode, treeData])
+    }, [itemType, selectedNodes, treeData])
 
     const editModel = useCallback(async (record: any, targetBlank: boolean) => {
         record[0].targetBlank = targetBlank
-        record[0].treeId = selectedNode?.data?.id
+        record[0].treeId = selectedNodes[0]?.data?.id
         try {
             await axios.put('', {
-                type: selectedNode?.data?.type,
+                type: selectedNodes[0]?.data?.type,
                 data: {record: record[0]},
-                modelId: selectedNode?.data?.modelId,
+                modelId: selectedNodes[0]?.data?.modelId,
                 _method: 'updateItem'
             })
         } catch (e) {
@@ -395,7 +450,7 @@ const CatalogTree = () => {
             dialogRef.current?.close()
             reloadCatalog()
         }
-    }, [treeData, selectedNode])
+    }, [treeData, selectedNodes])
 
     const performSearch = async (s: string) => {
         if (!s.trim()) {
@@ -410,11 +465,25 @@ const CatalogTree = () => {
         }
     };
 
-
     const handleSearch = useCallback(
         debounce(performSearch, 500),
         [treeData, reloadCatalog]
     );
+
+    const handleOpenContextMenu = useCallback((open: boolean, node: NodeModel<CustomCatalogData>) => {
+        if (open) {
+            // Проверяем, выделена ли текущая нода
+            const isNodeSelected = selectedNodes.some(n => n.id === node.id);
+
+            // Сбрасываем все выделенные ноды
+            setSelectedNodes([]);
+
+            // Если нода не была выделена - выделяем её
+            if (!isNodeSelected) {
+                handleSelect(node);
+            }
+        }
+    }, [])
 
     return (
         <>
@@ -434,7 +503,10 @@ const CatalogTree = () => {
                     <div className="flex gap-8 items-center mb-4">
                         <h1 className="text-[28px] leading-[36px] text-foreground">{messages[catalog.catalogName]}</h1>
                         {catalog.idList.length > 0 &&
-                            <Select defaultValue={catalog.catalogId}>
+                            <Select defaultValue={catalog.catalogId}
+                                    onValueChange={(value) => {
+                                        router.get(`${window.routePrefix}/catalog/${catalog.catalogSlug}/${value}`)
+                                    }}>
                                 <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
                                     <SelectValue placeholder={messages["Select Ids"]}/>
                                 </SelectTrigger>
@@ -450,7 +522,13 @@ const CatalogTree = () => {
                     <div
                         className="md:grid md:grid-cols-[minmax(70px,_800px)_minmax(150px,_250px)] md:gap-10 justify-between flex flex-col gap-3.5">
                         <div className="flex gap-2">
-                            <Button variant="default" size="sm" className="w-fit rounded-sm"
+                            <Button variant="default" size="sm"
+                                    className={`w-fit rounded-sm ${
+                                        selectedNodes.length === 0 ||
+                                        (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
+                                            ? ''
+                                            : 'opacity-50 pointer-events-none'
+                                    }`}
                                     onClick={() => {
                                         setPopupEvent('create')
                                         dialogRef.current?.open()
@@ -459,7 +537,8 @@ const CatalogTree = () => {
                                 {messages.create}
                             </Button>
                             <Button variant="outline" size="sm"
-                                    className={`w-fit cursor-pointer rounded-sm ${selectedNode ? '' : 'opacity-50 pointer-events-none'}`}
+                                    className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
+                                        'opacity-50 pointer-events-none' : ''}`}
                                     onClick={() => {
                                         updateItem()
                                         setPopupEvent('update')
@@ -469,8 +548,9 @@ const CatalogTree = () => {
                                 {messages.Edit}
                             </Button>
                             <DeleteModal btnTitle={messages.Delete}
+                                         ref={deleteModalRef}
                                          variant="destructive"
-                                         btnCLass={`w-fit text-white hover ${selectedNode ? '' : 'opacity-50 pointer-events-none'}`}
+                                         btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
                                          delModal={
                                              {
                                                  yes: messages['Yes'],
@@ -481,6 +561,14 @@ const CatalogTree = () => {
                                          isLink={false}
                                          handleDelete={deleteItem}
                             />
+                            <Button variant="secondary" size="sm"
+                                    className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                    onClick={() => {
+                                        setSelectedNodes([])
+                                    }}>
+                                <Ban/>
+                                {messages["Clean"]}
+                            </Button>
                         </div>
                         <div>
                             <Input
@@ -508,18 +596,51 @@ const CatalogTree = () => {
                                     tree={treeData}
                                     rootId={0}
                                     render={(node, {depth, isOpen, onToggle}) => (
-                                        <CatalogNode
-                                            node={node}
-                                            depth={depth}
-                                            isOpen={isOpen}
-                                            loading={loadingNodeId === node.id}
-                                            isSelected={node.id === selectedNode?.id}
-                                            onToggle={(id) => {
-                                                onToggle();
-                                                handleToggle(id as string, !isOpen)
-                                            }}
-                                            onSelect={handleSelect}
-                                        />
+                                        <ContextMenu
+                                            onOpenChange={(open: boolean) => handleOpenContextMenu(open, node)}>
+                                            <ContextMenuTrigger>
+                                                <CatalogNode
+                                                    node={node}
+                                                    depth={depth}
+                                                    isOpen={isOpen}
+                                                    loading={loadingNodeId === node.id}
+                                                    isSelected={!!selectedNodes.find((n) => n.id === node.id)}
+                                                    onToggle={(id) => {
+                                                        onToggle();
+                                                        handleToggle(id as string, !isOpen)
+                                                    }}
+                                                    onSelect={handleSelect}
+                                                />
+                                            </ContextMenuTrigger>
+                                            <ContextMenuContent>
+                                                <ContextMenuItem
+                                                    className={`${selectedNodes[0]?.droppable ? '' : 'opacity-50 pointer-events-none'}`}
+                                                    onClick={() => {
+                                                        setPopupEvent('create')
+                                                        dialogRef.current?.open()
+                                                        console.log(selectedNodes[0])
+                                                    }}>
+                                                    {messages.create}
+                                                </ContextMenuItem>
+                                                <ContextMenuItem onClick={() => {
+                                                    updateItem()
+                                                    setPopupEvent('update')
+                                                    dialogRef.current?.open()
+                                                }}>
+                                                    {messages.Edit}
+                                                </ContextMenuItem>
+                                                <ContextMenuItem
+                                                    variant="destructive"
+                                                    onClick={() => {
+                                                        document.body.removeAttribute('style')
+                                                        deleteModalRef.current?.click()
+                                                    }}
+                                                    className={selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}
+                                                >
+                                                    {messages["Delete"]}
+                                                </ContextMenuItem>
+                                            </ContextMenuContent>
+                                        </ContextMenu>
                                     )}
                                     dropTargetOffset={5}
                                     insertDroppableFirst={false}
@@ -542,6 +663,9 @@ const CatalogTree = () => {
                                     placeholderRender={(node, {depth}) => (
                                         <Placeholder node={node} depth={depth}/>
                                     )}
+                                    rootProps={{
+                                        onClick: handleClear
+                                    }}
                                 />
                             </div>
                         </DndProvider>

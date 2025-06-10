@@ -1,3 +1,4 @@
+import {forwardRef} from 'react';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -27,23 +28,19 @@ interface DeleteModalProps {
     btnCLass?: string
 }
 
-export default function DeleteModal({
-                                        btnTitle,
-                                        link,
-                                        delModal,
-                                        handleDelete,
-                                        variant,
-                                        btnCLass,
-                                        isLink = true
-                                    }: DeleteModalProps) {
+const DeleteModal = forwardRef<HTMLButtonElement, DeleteModalProps>((
+    {btnTitle, link, delModal, handleDelete, variant, btnCLass, isLink = true},
+    ref
+) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button size="list" variant={variant ?? "ghost"}
-                        className={cn(
-                            "cursor-pointer",
-                            btnCLass
-                        )}>
+                <Button
+                    ref={ref}
+                    size="list"
+                    variant={variant ?? "ghost"}
+                    className={cn("cursor-pointer", btnCLass)}
+                >
                     <Icon iconNode={Trash2}/>
                     {btnTitle}
                 </Button>
@@ -75,5 +72,9 @@ export default function DeleteModal({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
-}
+    );
+});
+
+DeleteModal.displayName = 'DeleteModal';
+
+export default DeleteModal;
