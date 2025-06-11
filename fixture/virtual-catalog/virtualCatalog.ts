@@ -232,7 +232,14 @@ export class TestItem extends AbstractItem<Item> {
         type: "component" | "navigation.item" | "navigation.group" | "navigation.link" | "model";
         data: any;
     }> {
-        throw new Error("Method not implemented.");
+        let type: 'component'
+
+        return Promise.resolve({
+            type: type,
+            data: {
+
+            }
+        })
     }
 
     getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
