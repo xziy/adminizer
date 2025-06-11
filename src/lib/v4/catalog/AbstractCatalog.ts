@@ -104,6 +104,7 @@ export abstract class BaseItem<T extends Item> {
 	 * @param modelId
 	 * @param data
 	 * @param catalogId
+	 * @param req
 	 */
 	public abstract updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<T>;
 
@@ -111,6 +112,7 @@ export abstract class BaseItem<T extends Item> {
 	 * Create catalog
 	 * @param data
 	 * @param catalogId
+	 * @param req
 	 */
 	public abstract create(data: T, catalogId: string, req?: ReqType): Promise<T>;
 
@@ -120,21 +122,24 @@ export abstract class BaseItem<T extends Item> {
 	public abstract deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void>;
 
 	/**
-	 * @deprecated
-	 * TODO: pass react module
+	 * get add template
+	 * @param req
 	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
+	public abstract getAddTemplate(req: ReqType): Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
 		data: any
 	}>
 
 	/**
-	 * @deprecated
-	 * TODO: pass react module
+	 * get edit template
+	 * @param id
+	 * @param catalogId
+	 * @param req
+	 * @param modelId
 	 */
-	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'link' | 'html' | 'jsonForm',
-		data: string
+	public abstract getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: any
 	}>;
 
 	public async _getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<Item[]> {
@@ -155,37 +160,10 @@ export abstract class AbstractGroup<T extends Item> extends BaseItem<T> {
 	public readonly type: string = "group";
 	public readonly isGroup: boolean = true;
 	public icon: string = "folder";
-
-	/**
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
-	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
-		data: {
-			items?: { name: string, required: boolean }[] | Record<string, any>[],
-			model?: string,
-			labels?: Record<string, string>,
-		}
-	}>
 }
 
 export abstract class AbstractItem<T extends Item> extends BaseItem<T> {
 	public readonly isGroup: boolean = false;
-
-
-	/**
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
-	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
-		data: {
-			items?: Record<string, any>[],
-			model?: string,
-			labels?: Record<string, string>,
-		}
-	}>
 }
 
 /// ContextHandler
@@ -386,21 +364,23 @@ export abstract class AbstractCatalog {
 	}
 
 	/**
-	 * Receives HTML to update an element for projection into a popup
-	* @deprecated reason: migration for intertia
-	 * todo need passing custom React module
+	 * Get edit template from an item type
+	 * @param item
+	 * @param id
+	 * @param req
+	 * @param modelId
 	 */
-	public getEditHTML(item: Item, id: string | number, req: ReqType, modelId?: string | number) {
-		return this.getItemType(item.type)?.getEditHTML(id, this.id, req, modelId);
+	public getEditTemplate(item: Item, id: string | number, req: ReqType, modelId?: string | number) {
+		return this.getItemType(item.type)?.getEditTemplate(id, this.id, req, modelId);
 	}
 
 	/**
-	 * Receives HTML to create an element for projection into a popup
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	public getAddHTML(item: Item, req: ReqType) {
-		return this.getItemType(item.type)?.getAddHTML(req);
+	 * Get add template from an item type
+	 * @param item
+	 * @param req
+	 */
+	public getAddTemplate(item: Item, req: ReqType) {
+		return this.getItemType(item.type)?.getAddTemplate(req);
 	}
 
 	public addActionHandler(actionHandler: ActionHandler) {
@@ -471,6 +451,7 @@ export abstract class AbstractCatalog {
 	/**
 	 *
 	 * @param data
+	 * @param req
 	 */
 	public async createItem<T extends Item>(data: T, req?: ReqType): Promise<T> {
 		const promise = this.getItemType(data.type)?.create(data, this.id, req) as Promise<T>;
@@ -485,9 +466,10 @@ export abstract class AbstractCatalog {
 
 	/**
 	 * To update all items in the tree after updating the model
-	 * @param id
+	 * @param modelId
 	 * @param type
 	 * @param data
+	 * @param req
 	 */
 	public async updateModelItems<T extends Item>(modelId: string | number, type: string, data: T, req?: ReqType): Promise<T> {
 		const promise = this.getItemType(type)?.updateModelItems(modelId, data, this.id, req) as Promise<T>;
@@ -517,7 +499,7 @@ export abstract class AbstractCatalog {
 				accumulator.push(...extras);
 			}
 
-			if (item.parentId === null) return item;
+			if (item.parentId === 0) return item;
 			const parentItem = await groupType._find(item.parentId, this.id);
 			if (parentItem) {
 				accumulator.push(parentItem);

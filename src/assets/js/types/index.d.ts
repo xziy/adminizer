@@ -126,20 +126,27 @@ export interface CatalogItem {
 export interface NavItemAddProps {
     labels: Record<string, string>,
     model: string,
+    type: string,
+    parentId?: string | number,
     items: {
         id: number,
         name: string
     }[]
     add: (model:string) => void
+    callback: () => void
 }
 
 export interface NavGroupAddProps{
     labels: Record<string, string>
+    type: string
+    update?: boolean
+    parentId?: string | number
+    item?: Record<string, any>
     items: {
         name: string,
         required: boolean
     }[],
-    callback: () => void
+    callback: (item: any) => void
 }
 
 export interface CustomCatalogData {
@@ -150,4 +157,5 @@ export interface CustomCatalogData {
     icon: string
     type: string;
     marked?: boolean
+    modelId: string | number
 }

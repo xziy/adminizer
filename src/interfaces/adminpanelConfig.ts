@@ -511,7 +511,7 @@ export interface NavigationConfig {
     groupField: { name: string, required: boolean }[]
     allowContentInGroup?: boolean
     items: NavigationItemTypeConfig[],
-    movingGroupsRootOnly: boolean
+    movingGroupsRootOnly?: boolean
 }
 
 export interface MediaManagerConfig {
