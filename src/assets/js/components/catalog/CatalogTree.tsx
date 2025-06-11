@@ -217,6 +217,7 @@ const CatalogTree = () => {
      * @callback handleToggle
      */
     const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
+
         // Если нода закрывается - ничего не делаем
         if (!isOpen) return;
 
@@ -298,7 +299,7 @@ const CatalogTree = () => {
      * Reload catalog
      */
     const reloadCatalog = useCallback(async (item?: any) => {
-        if (item) {
+        if (item) { // Если элемент отредактирован
             // Обновляем конкретную ноду в treeData
             setTreeData(prevTree => {
                 return prevTree.map(node => {
@@ -315,16 +316,15 @@ const CatalogTree = () => {
                     return node;
                 });
             });
-        }
-
-        if (selectedNodes[0]?.droppable) {
-            treeRef.current?.open(selectedNodes[0].id);
-            await handleToggle(selectedNodes[0].id as string, true);
         } else {
-            await updateCatalog();
+            if (selectedNodes[0]?.droppable) {
+                treeRef.current?.open(selectedNodes[0].id);
+                await handleToggle(selectedNodes[0].id as string, true);
+            } else {
+                await updateCatalog();
+            }
         }
     }, [selectedNodes, handleToggle, setTreeData]);
-
 
     const selectCatalogItem = useCallback(async (type: string) => {
         setItemType(type)
