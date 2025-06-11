@@ -1,6 +1,7 @@
 import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
-import {NodeModel} from "@minoru/react-dnd-treeview";
+import {NodeModel, TreeMethods} from "@minoru/react-dnd-treeview";
+import {useRef, useState} from "react";
 
 export interface Auth {
     user: User;
@@ -159,4 +160,37 @@ export interface CustomCatalogData {
     type: string;
     marked?: boolean
     modelId: string | number
+}
+
+export interface AddCatalogProps {
+    props: {
+        actions: {
+            link: string;
+            id: string;
+            title: string;
+            icon: string;
+        }[];
+        notFound?: string
+        search?: string,
+        btnBack: {
+            title: string;
+            link: string;
+        };
+        fields: Field[];
+        edit: boolean;
+        view: boolean;
+        btnSave: {
+            title: string;
+        },
+        postLink: string,
+    }
+}
+
+export interface DynamicComponent {
+    default: FC<{
+        parentId?: string | number
+        callback: (item: any) => void
+        item?: Record<string, any>
+        update?: boolean
+    }>;
 }
