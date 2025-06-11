@@ -32,9 +32,7 @@ export default async function bindModels(adminizer: Adminizer) {
     return modelName.toLowerCase();
   });
   
-  const modelsFromConfig = Object.values(adminizer.config.models)
-    .filter((item): item is ModelConfig => typeof item !== "boolean" && item?.model !== undefined)
-    .map(item => item.model.toLowerCase());
+  const modelsFromConfig = Object.keys(adminizer.config.models)
 
   Adminizer.log.debug(`Bind models > Models from config: ${modelsFromConfig}`)
   // Bind project models using config
