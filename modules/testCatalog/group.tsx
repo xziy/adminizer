@@ -27,7 +27,6 @@ const Group = ({update = false, parentId, ...data}: ItemProps) => {
         if (data.item) {
             setTitle(data.item.title);
         }
-        console.log(parentId)
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

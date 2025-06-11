@@ -1,4 +1,4 @@
-import React, {FC, lazy, useCallback, useEffect, useRef, useState} from "react";
+import React, {lazy, useCallback, useEffect, useRef, useState} from "react";
 import {router} from '@inertiajs/react'
 import {
     Tree,
@@ -12,18 +12,10 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {LoaderCircle, Pencil, Plus, Ban} from "lucide-react";
+import {Pencil, Plus, Ban} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {
-    DialogStack,
-    DialogStackBody,
-    DialogStackContent, DialogStackHandle,
-    DialogStackOverlay
-} from "@/components/ui/dialog-stack.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, Field} from "@/types";
-import SelectCatalogItem from "@/components/catalog/select-catalog-item.tsx";
+import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import AddForm from "@/components/add-form.tsx";
 import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
 import styles from "@/components/catalog/catalogUI/Catalog.module.css";
@@ -37,42 +29,8 @@ import {
     ContextMenuItem,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-
-const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
-const NavLinkGropuAdd = lazy(() => import('@/components/catalog/navigation/group-link-add.tsx'));
-
-interface AddCatalogProps {
-    props: {
-        actions: {
-            link: string;
-            id: string;
-            title: string;
-            icon: string;
-        }[];
-        notFound?: string
-        search?: string,
-        btnBack: {
-            title: string;
-            link: string;
-        };
-        fields: Field[];
-        edit: boolean;
-        view: boolean;
-        btnSave: {
-            title: string;
-        },
-        postLink: string,
-    }
-}
-
-interface DynamicComponent {
-    default: FC<{
-        parentId?: string | number
-        callback: (item: any) => void
-        item?: Record<string, any>
-        update?: boolean
-    }>;
-}
+import CatalogDialogStack from "@/components/catalog/CatalogDialogStack.tsx";
+import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
@@ -178,10 +136,6 @@ const CatalogTree = () => {
         }
     };
 
-    /**
-     * Handle drop event
-     * @callback handleDrop
-     */
     const handleDrop = useCallback(async (
         newTree: NodeModel<CustomCatalogData>[],
         {dragSourceId, dropTargetId}: DropOptions<CustomCatalogData>
@@ -225,10 +179,6 @@ const CatalogTree = () => {
         }
     }, [treeData]);
 
-    /**
-     * Toggle the open state of a node
-     * @callback handleToggle
-     */
     const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
 
         // Если нода закрывается - ничего не делаем
@@ -262,7 +212,6 @@ const CatalogTree = () => {
             setLoadingNodeId(null);
         }
     }, [treeData]);
-
 
     const updateCatalog = useCallback(async () => {
         try {
@@ -304,9 +253,6 @@ const CatalogTree = () => {
         }
     }, [])
 
-    /**
-     * Reload catalog
-     */
     const reloadCatalog = useCallback(async (item?: any) => {
         if (item) { // Если элемент отредактирован
             // Обновляем конкретную ноду в treeData
@@ -384,7 +330,7 @@ const CatalogTree = () => {
                                 const Component = Module.default as DynamicComponent['default'];
                                 setDynamicComponent(<Component
                                     key={`${res.data.data.id}-${res.data.data.item.name}`}
-                                    callback={(item) => {
+                                    callback={(item: any) => {
                                         dialogRef.current?.close()
                                         reloadCatalog(item)
                                     }}
@@ -479,7 +425,7 @@ const CatalogTree = () => {
                         const Component = Module.default as DynamicComponent['default'];
                         setDynamicComponent(<Component
                             parentId={parentid}
-                            callback={(item) => {
+                            callback={(item: any) => {
                                 dialogRef.current?.close()
                                 reloadCatalog(item)
                             }}
@@ -785,132 +731,28 @@ const CatalogTree = () => {
                             </div>
                         </DndProvider>
                     </div>
-                    <DialogStack ref={dialogRef}>
-                        <DialogStackOverlay/>
-                        <DialogStackBody>
-                            <DialogStackContent>
-                                <div className="relative h-full">
-                                    {PopupEvent === 'create' && (
-                                        <>
-                                            {firstRender && <LoaderCircle
-                                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                            <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
-                                        </>
-                                    )}
-                                    {PopupEvent === 'update' &&
-                                        <div className="h-full overflow-y-auto mt-5">
-                                            {!firstRender ? (
-                                                <>
-                                                    {popupType === 'model' &&
-                                                        <AddForm page={addProps}
-                                                                 catalog={true}
-                                                                 callback={editModel}
-                                                                 openNewWindowLabel={messages["Open in a new window"]}
-                                                                 openNewWindow={popUpTargetBlank}
-                                                                 isNavigation={isNavigation}
-                                                        />
-                                                    }
-                                                    {popupType === 'navigation.group' &&
-                                                        <NavLinkGropuAdd
-                                                            callback={(item) => {
-                                                                dialogRef.current?.close()
-                                                                reloadCatalog(item)
-                                                            }}
-                                                            update={true}
-                                                            type="group"
-                                                            {...addLinksGroupProps}
-                                                        />
-                                                    }
-                                                    {popupType === 'navigation.link' &&
-                                                        <NavLinkGropuAdd
-                                                            callback={(item) => {
-                                                                dialogRef.current?.close()
-                                                                reloadCatalog(item)
-                                                            }}
-                                                            update={true}
-                                                            type="link"
-                                                            {...addLinksGroupProps}
-                                                        />
-                                                    }
-                                                    {popupType === 'component' &&
-                                                        <>
-                                                            {DynamicComponent}
-                                                        </>
-                                                    }
-                                                </>
-                                            ) : (
-                                                <LoaderCircle
-                                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>
-                                            )}
-                                        </div>
-                                    }
-                                </div>
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <div className="relative h-full">
-                                    {secondRender && <LoaderCircle
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>
-                                    }
-                                    {PopupEvent === 'create' &&
-                                        <>
-                                            {popupType === 'model' &&
-                                                <NavItemAdd
-                                                    add={getAddModelJSON}
-                                                    callback={() => {
-                                                        dialogRef.current?.close()
-                                                        reloadCatalog(null)
-                                                    }}
-                                                    type={itemType ?? ''}
-                                                    parentId={parentid}
-                                                    isNavigation={isNavigation}
-                                                    {...addItemProps}
-                                                />
-                                            }
-                                            {popupType === 'navigation.group' &&
-                                                <NavLinkGropuAdd
-                                                    callback={(item) => {
-                                                        dialogRef.current?.close()
-                                                        reloadCatalog(item)
-                                                    }}
-                                                    type="group"
-                                                    parentId={parentid}
-                                                    {...addLinksGroupProps}
-                                                />
-                                            }
-                                            {popupType === 'navigation.link' &&
-                                                <NavLinkGropuAdd
-                                                    callback={(item) => {
-                                                        dialogRef.current?.close()
-                                                        reloadCatalog(item)
-                                                    }}
-                                                    type="link"
-                                                    parentId={parentid}
-                                                    {...addLinksGroupProps}
-                                                />
-                                            }
-                                            {popupType === 'component' &&
-                                                <>
-                                                    {DynamicComponent}
-                                                </>
-                                            }
-                                        </>
-                                    }
-                                </div>
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <div className="h-full overflow-y-auto mt-5">
-                                    <AddForm page={addProps}
-                                             catalog={true}
-                                             callback={addModel}
-                                             openNewWindowLabel={messages["Open in a new window"]}
-                                             isNavigation={isNavigation}
-                                    />
-                                </div>
-                            </DialogStackContent>
-                        </DialogStackBody>
-                    </DialogStack>
+                    <CatalogDialogStack
+                        dialogRef={dialogRef}
+                        PopupEvent={PopupEvent}
+                        firstRender={firstRender}
+                        secondRender={secondRender}
+                        popupType={popupType}
+                        addProps={addProps}
+                        editModel={editModel}
+                        popUpTargetBlank={popUpTargetBlank}
+                        isNavigation={isNavigation}
+                        messages={messages}
+                        DynamicComponent={DynamicComponent}
+                        addLinksGroupProps={addLinksGroupProps}
+                        reloadCatalog={reloadCatalog}
+                        itemType={itemType}
+                        parentid={parentid}
+                        addItemProps={addItemProps}
+                        getAddModelJSON={getAddModelJSON}
+                        addModel={addModel}
+                        items={items}
+                        selectCatalogItem={selectCatalogItem}
+                    />
                 </CatalogContext.Provider>
             )}
         </>
