@@ -222,7 +222,7 @@ const WidgetLayout = () => {
 
                             <DialogStack>
                                 <DialogStackTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="cursor-pointer">
+                                    <Button variant="ghost" size="icon">
                                         <MaterialIcon name="add_box" className="text-primary"/>
                                     </Button>
                                 </DialogStackTrigger>

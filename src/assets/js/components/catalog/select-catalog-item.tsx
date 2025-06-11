@@ -1,6 +1,6 @@
 import {Label} from "@/components/ui/label.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {CatalogContext} from "@/components/catalog/CatalogTree.tsx";
+import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
 import {useContext, useState} from "react";
 import {CatalogItem} from "@/types";
 

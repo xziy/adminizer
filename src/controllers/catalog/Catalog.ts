@@ -42,7 +42,6 @@ export async function catalogController(req: ReqType, res: ResType) {
 	if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
 		const data = req.body
 		const frontendCatalog = new VueCatalog(_catalog);
-
 		if (!frontendCatalog) return res.status(404);
 
 		frontendCatalog.setId(id)
@@ -50,14 +49,12 @@ export async function catalogController(req: ReqType, res: ResType) {
 		switch (method) {
 			case 'POST':
 				switch (data._method) {
-					// TODO: deprecated, passing react module instead html
-					case 'getAddHTML':
-						return res.json(await frontendCatalog.getAddHTML(item, req))
-					// TODO: deprecated, passing react module instead html
-					case 'getEditHTML':
-						return res.json(await frontendCatalog.getEditHTML(item, data.id, req, data.modelId))
+					case 'getAddTemplate':
+						return res.json(await frontendCatalog.getAddTemplate(item, req))
+					case 'getEditTemplate':
+						return res.json(await frontendCatalog.getEditTemplate(item, data.id, req, data.modelId))
 					case 'getCatalog':
-						{ 
+						{
 							const __catalog = await frontendCatalog.getCatalog();
 							return res.json({
 								items: frontendCatalog.getitemTypes(),
@@ -70,7 +67,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 									idList: idList
 								},
 								toolsActions: await frontendCatalog.getActions([], 'tools')
-							}) 
+							})
 						}
 					case 'createItem':
 						return res.json({'data': await frontendCatalog.createItem(data.data, req)})

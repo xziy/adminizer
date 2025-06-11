@@ -149,7 +149,7 @@ export default function Login() {
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <Button type="submit" className="w-fit cursor-pointer"
+                            <Button type="submit" className="w-fit"
                                     disabled={processing || captchaProcessing}>{page.props.submitButton}</Button>
                             {page.props.registerLink && <Button asChild variant="outline">
                                 <Link href={page.props.registerLink.link}

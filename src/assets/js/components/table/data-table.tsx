@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>(
                             }
                         }}
                     />
-                    <Button className="cursor-pointer" variant="outline" size="icon" onClick={handleSearch}>
+                    <Button variant="outline" size="icon" onClick={handleSearch}>
                         <Icon iconNode={Search} className="size-5"/>
                     </Button>
                 </div>

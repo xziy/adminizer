@@ -1,7 +1,7 @@
 import React from "react";
 import {NodeModel} from "@minoru/react-dnd-treeview";
 import styles from "@/components/catalog/CatalogNode.module.css";
-import {ChevronRight} from "lucide-react";
+import {ChevronRight, LoaderCircle} from "lucide-react";
 import {CustomCatalogData} from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";
 
@@ -11,7 +11,8 @@ type Props = {
     isOpen: boolean;
     isSelected: boolean;
     onToggle: (id: NodeModel["id"]) => void;
-    onSelect: (node: NodeModel) => void;
+    loading: boolean;
+    onSelect: (node: NodeModel<CustomCatalogData>) => void;
 };
 
 const CatalogNode: React.FC<Props> = (props) => {
@@ -48,6 +49,8 @@ const CatalogNode: React.FC<Props> = (props) => {
             <div className={styles.labelGridItem}>
                 <span>{props.node.text}</span>
             </div>
+            {props.loading && <LoaderCircle
+                className="size-4 animate-spin"/>}
         </div>
     );
 };

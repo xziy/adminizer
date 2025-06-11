@@ -239,7 +239,7 @@ export class Adminizer {
                 if (error instanceof Error) {
                     this.logger.error(`${error.message}\nStack: ${error.stack}`);
                 } else {
-                    this.logger.error(args.join(" "));
+                    this.logger.error(args.join(" ") + "\n" + new Error().stack);
                 }
             },
             debug: (...args: any[]) => this.logger.debug(args.join(" ")),

@@ -16,8 +16,7 @@ const models: AdminpanelConfig["models"] = {
                 type: 'string',
                 required: true
             },
-            schema: {
-            }
+            schema: {}
         },
         list: {
             fields: {
@@ -368,7 +367,7 @@ const models: AdminpanelConfig["models"] = {
                 },
             }
         },
-        
+
         icon: 'pets'
     },
     Category: {
@@ -380,15 +379,18 @@ const models: AdminpanelConfig["models"] = {
             updatedAt: false,
         }
     },
-    Page: {
-        title: 'Page',
-        model: 'page',
+    TestCatalog: {
+        title: '',
+        model: 'testcatalog',
+        icon: 'category',
+        navbar: {
+            visible: false,
+        },
         fields: {
             createdAt: false,
             updatedAt: false,
-        },
-        icon: 'article'
-    }
+        }
+    },
 }
 
 const config: AdminpanelConfig = {
@@ -402,22 +404,12 @@ const config: AdminpanelConfig = {
         defaultUserGroup: "guest",
         confirmationRequired: false
     },
-    // auth: {
-    //     enable: true,
-    //     description: "Login `demo`, password `demo`"
-    // },
     dashboard: true,
     navigation: {
-        // model: "Navigation",
         items: [
             {
-                title: 'Page',
-                model: "page",
-                urlPath: '/page/${data.record.slug}'
-            },
-            {
                 title: 'Category',
-                model: "category",
+                model: "Category",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'
             },
             {
@@ -440,7 +432,6 @@ const config: AdminpanelConfig = {
                 required: false
             }
         ],
-        movingGroupsRootOnly: true
     },
     forms: {
         data: {
@@ -496,6 +487,13 @@ const config: AdminpanelConfig = {
                 link: `${routePrefix}/catalog/navigation/footer`,
                 title: 'Nav Footer',
                 icon: 'menu'
+            },
+            {
+                id: '5',
+                type: "self",
+                link: `${routePrefix}/catalog/test-catalog`,
+                title: 'Test Catalog',
+                icon: 'bug_report'
             }
         ]
     },

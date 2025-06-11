@@ -1,10 +1,8 @@
 import {AbstractCatalog, AbstractGroup, AbstractItem, ActionHandler, Item} from "./AbstractCatalog";
 import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../../interfaces/adminpanelConfig";
-import * as fs from "node:fs";
 
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../../Adminizer";
-import inertiaAddHelper from "../../../helpers/inertiaAddHelper";
 
 export interface NavItem extends Item {
 	urlPath?: string;
@@ -45,7 +43,7 @@ class StorageService {
 	}
 
 	public async buildTree(): Promise<any> {
-		const rootElements: NavItem[] = await this.findElementsByParentId(null, null);
+		const rootElements: NavItem[] = await this.findElementsByParentId(0, null);
 		const buildSubTree = async (elements: NavItem[]): Promise<any[]> => {
 			const tree = [];
 			for (const element of elements) {
@@ -77,10 +75,10 @@ class StorageService {
 
 
 	public async populateFromTree(tree: any[]): Promise<void> {
-		const traverseTree = async (node: any, parentId: string | number | null = null): Promise<void> => {
+		const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
 			const {children, ...itemData} = node;
 			const item = {...itemData, parentId} as NavItem;
-			await this.setElement(item.id, item);
+			await this.setElement(item.id, item, true);
 
 			if (children && children.length > 0) {
 				for (const child of children) {
@@ -95,9 +93,9 @@ class StorageService {
 	}
 
 
-	public async setElement(id: string | number, item: NavItem): Promise<NavItem> {
+	public async setElement(id: string | number, item: NavItem, init: boolean = false): Promise<NavItem> {
 		this.storageMap.set(item.id, item);
-		await this.saveToDB()
+		if(!init) await this.saveToDB()
 		// This like fetch in DB
 		return this.findElementById(item.id);
 	}
@@ -126,8 +124,7 @@ class StorageService {
 
 	public async saveToDB() {
 		let tree = await this.buildTree()
-        console.log({label: this.id},
-            {tree: tree})
+
 		try {
 			// Direct call by model adapter
            await this.adminizer.modelHandler.model.get(this.model)["_update"](
@@ -241,11 +238,11 @@ class NavigationItem extends AbstractItem<NavItem> {
 		super();
 		this.name = name
 		this.navigationModel = navigationModel
-		this.model = model.toLowerCase()
+		this.model = model
 		this.type = model.toLowerCase()
 		this.urlPath = urlPath
 		let configModel = adminizer.config.models[this.model] as ModelConfig
-		this.icon = configModel?.icon ?? 'file'
+		this.icon = configModel?.icon ?? 'file_present'
 		this.adminizer = adminizer;
 	}
 
@@ -287,15 +284,16 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let storage = StorageServices.get(catalogId)
 		let items = await storage.findElementByModelId(modelId)
 		let urlPath = eval('`' + this.urlPath + '`')
+		let response = []
 		for (const item of items) {
-			item.name = data.record.name
+			item.name = data.record.name ?? data.record.title ?? data.record.id
 			item.urlPath = urlPath
 			if (item.id === data.record.treeId) {
 				item.targetBlank = data.record.targetBlank
 			}
-			await storage.setElement(item.id, item);
+			response.push(await storage.setElement(item.id, item));
 		}
-		return Promise.resolve(undefined)
+		return response[0]
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
@@ -317,15 +315,15 @@ class NavigationItem extends AbstractItem<NavItem> {
 	 * @deprecated reason: migration for intertia
 	* // TODO: need passing custom React module 
 	*/
-	async getAddHTML(req: ReqType): Promise<{
-        type: 'component' | 'navigation.item' | 'navigation.group' | 'model',
+	async getAddTemplate(req: ReqType): Promise<{
+        type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items: { id: string; name: string}[],
             model: string,
             labels?: Record<string, string>,
         }
     }> {
-		let type: 'navigation.item' = 'navigation.item'
+		let type: 'model' = 'model'
 		// Direct call by model adapter
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -342,7 +340,8 @@ class NavigationItem extends AbstractItem<NavItem> {
                 labels: {
                     selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
                     createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
-                    OR: req.i18n.__('OR')
+                    OR: req.i18n.__('OR'),
+					openInNewWindow: req.i18n.__('Open in a new window'),
                 }
             }
 		}
@@ -353,27 +352,18 @@ class NavigationItem extends AbstractItem<NavItem> {
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let item = await this.find(id, catalogId)
-		let type: 'html' = 'html'
 
-		// This dirty hack is here because the field of view is disappearing
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			item: NavItem
 		}
-
+	}> {
 		return Promise.resolve({
-			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/itemHTMLEdit.ejs'), 'utf8'), {item: item, __: __})
-            data: ''
+			type: 'model',
+            data: {
+				item: await this.find(id, catalogId)
+			}
 		})
 	}
 
@@ -440,13 +430,9 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		let storage = StorageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
-	
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	getAddHTML(req: ReqType):Promise<{
-        type: 'component' | 'model' | string,
+
+	getAddTemplate(req: ReqType):Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items?: { name: string, required: boolean }[] | Record<string, any>[],
             model?: string,
@@ -476,37 +462,45 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		})
 	}
 
-	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
-		return await storage.findElementsByParentId(parentId, this.type);
-	}
-
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let type: 'html' = 'html'
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			item?: NavItem,
+			labels?: Record<string, string>,
+		}
+	}>  {
 		let item = await this.find(id, catalogId)
+		let type: 'navigation.group' = 'navigation.group'
 
-		// This dirty hack is here because the field of view is disappearing
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+		let resItems: { name: string; required: boolean; }[] = []
+		if (this.groupField.length) {
+			resItems = this.groupField.map((field: any) => {
+				return {
+					name: field.name,
+					required: field.required
+				}
+			})
 		}
 
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/GroupHTMLEdit.ejs'), 'utf8'), {
-			// 	fields: this.groupField,
-			// 	item: item,
-			// 	__: __
-			// }),
-            data: ''
+			data: {
+				items: resItems,
+				item: item,
+				labels: {
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					title: req.i18n.__('Title'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
+	}
+
+	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
+		let storage = StorageServices.get(catalogId)
+		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
@@ -517,7 +511,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 
 class LinkItem extends NavigationGroup {
 	readonly allowedRoot: boolean = true;
-	readonly icon: string = 'external-link-alt';
+	readonly icon: string = 'insert_link';
 	readonly name: string = 'Link';
 	readonly type: string = 'link';
 	readonly isGroup: boolean = false;
@@ -526,49 +520,64 @@ class LinkItem extends NavigationGroup {
 		super(adminizer, []);
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	// @ts-ignore
-	getAddHTML(req: ReqType): Promise<{ type: "link" | "html" | "jsonForm"; data: string }> {
-		let type: 'html' = 'html'
-		req.i18n.setLocale(req.user.locale);
-
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+	getAddTemplate(req: ReqType):Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			labels?: Record<string, string>,
 		}
+	}>  {
+		let type: 'navigation.link' = 'navigation.link'
+		let resItems: { name: string; required: boolean; }[] = [
+			{
+				name: req.i18n.__('Link'),
+				required: true
+			}
+		]
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/LinkItemAdd.ejs'), 'utf8'), {__: __}),
-            data: ''
+			data: {
+				items: resItems,
+				labels: {
+					title: req.i18n.__('Title'),
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
 	}
 
-	/**
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	async getEditHTML(id: string | number, catalogId: string, req: ReqType): Promise<{
-		type: "link" | "html" | "jsonForm";
-		data: string
-	}> {
-		let type: 'html' = 'html'
-		let item = await this.find(id, catalogId)
-
-		req.i18n.setLocale(req.user.locale);
-		const __ = (s: string) => {
-			return req.i18n.__(s)
+	async getEditTemplate(id: string | number, catalogId: string, req: ReqType): Promise<{
+		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		data: {
+			items?: { name: string, required: boolean }[] | Record<string, any>[],
+			model?: string,
+			item?: NavItem,
+			labels?: Record<string, string>,
 		}
+	}>  {
+		let item = await this.find(id, catalogId)
+		let type: 'navigation.group' = 'navigation.group'
+
+		let resItems: { name: string; required: boolean; }[] = [
+			{
+				name: req.i18n.__('Link'),
+				required: true
+			}
+		]
 
 		return Promise.resolve({
 			type: type,
-			// data: ejs.render(fs.readFileSync(ViewsHelper.getViewPath('./../../views/ejs/navigation/LinkItemEdit.ejs'), 'utf8'), {
-			// 	fields: this.groupField,
-			// 	item: item,
-			// 	__: __
-			// }),
-            data: ''
+			data: {
+				items: resItems,
+				item: item,
+				labels: {
+					openInNewWindow: req.i18n.__('Open in a new window'),
+					title: req.i18n.__('Title'),
+					save: req.i18n.__('Save')
+				}
+			}
 		})
 	}
 

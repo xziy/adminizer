@@ -145,7 +145,7 @@ export default function InitUser() {
                             </Select>
                         </div>
                         <div className="flex gap-4">
-                            <Button type="submit" className="w-fit cursor-pointer"
+                            <Button type="submit" className="w-fit"
                                     disabled={processing}>{page.props.submitButton}</Button>
                         </div>
                     </div>
