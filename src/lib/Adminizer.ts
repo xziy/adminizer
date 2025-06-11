@@ -247,4 +247,8 @@ export class Adminizer {
             silly: (...args: any[]) => this.logger.silly(args.join(" ")),
         };
     }
+
+    get defaultConfig() {
+        return getDefaultConfig();
+    }
 }
