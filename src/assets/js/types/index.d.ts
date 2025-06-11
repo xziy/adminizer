@@ -146,7 +146,7 @@ export interface NavGroupAddProps{
         name: string,
         required: boolean
     }[],
-    callback: () => void
+    callback: (item: any) => void
 }
 
 export interface CustomCatalogData {

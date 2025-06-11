@@ -43,7 +43,7 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
         setIsLoading(true);
 
         try {
-            let res = null;
+            let res = null
 
             if (update) {
                 res = await axios.put('', {
@@ -56,8 +56,9 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                     },
                     _method: 'updateItem'
                 });
+                data.callback(res.data.data);
             } else {
-                res = await axios.post('', {
+                await axios.post('', {
                     data: {
                         ...formData,
                         targetBlank,
@@ -66,10 +67,9 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                     },
                     _method: 'createItem'
                 });
+                data.callback(null);
             }
 
-            console.log(res?.data);
-            data.callback();
         } catch (e) {
             console.error(e);
         } finally {

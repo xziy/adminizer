@@ -284,15 +284,16 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let storage = StorageServices.get(catalogId)
 		let items = await storage.findElementByModelId(modelId)
 		let urlPath = eval('`' + this.urlPath + '`')
+		let response = []
 		for (const item of items) {
 			item.name = data.record.name ?? data.record.title ?? data.record.id
 			item.urlPath = urlPath
 			if (item.id === data.record.treeId) {
 				item.targetBlank = data.record.targetBlank
 			}
-			await storage.setElement(item.id, item);
+			response.push(await storage.setElement(item.id, item));
 		}
-		return Promise.resolve(undefined)
+		return response[0]
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
@@ -322,7 +323,7 @@ class NavigationItem extends AbstractItem<NavItem> {
             labels?: Record<string, string>,
         }
     }> {
-		let type: 'navigation.item' = 'navigation.item'
+		let type: 'model' = 'model'
 		// Direct call by model adapter
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -359,7 +360,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 		}
 	}> {
 		return Promise.resolve({
-			type: 'navigation.item',
+			type: 'model',
             data: {
 				item: await this.find(id, catalogId)
 			}
