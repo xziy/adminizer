@@ -75,7 +75,7 @@ const LazyField: FC<{
 const AddForm: FC<{
     page: { props: AddProps },
     catalog: boolean,
-    callback?: (record: any, targetBlank: boolean) => void,
+    callback?: (record: any, targetBlank?: boolean) => void,
     openNewWindow?: boolean,
     openNewWindowLabel?: string,
     isNavigation?: boolean
@@ -118,7 +118,7 @@ const AddForm: FC<{
                 const res = await axios.post(page.props.postLink, data)
                 if (res.status === 200) {
                     if (callback) {
-                        callback(res.data.record, navTargetBlank)
+                        isNavigation ? callback(res.data.record, navTargetBlank) : callback(res.data.record)
                     }
                 }
             } else {

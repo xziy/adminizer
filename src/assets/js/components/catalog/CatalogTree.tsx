@@ -1,4 +1,4 @@
-import {lazy, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {FC, lazy, useCallback, useEffect, useRef, useState} from "react";
 import {router} from '@inertiajs/react'
 import {
     Tree,
@@ -24,11 +24,11 @@ import {Catalog, CatalogItem, CustomCatalogData, Field} from "@/types";
 import SelectCatalogItem from "@/components/catalog/select-catalog-item.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import AddForm from "@/components/add-form.tsx";
-import CatalogNode from "@/components/catalog/CatalogNode.tsx";
-import CatalogDragPreview from "@/components/catalog/CatalogDragPreview.tsx";
-import styles from "@/components/catalog/Catalog.module.css";
-import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
-import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
+import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
+import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
+import styles from "@/components/catalog/catalogUI/Catalog.module.css";
+import {Placeholder} from "@/components/catalog/catalogUI/CatalogPlaceholder.tsx";
+import {CatalogContext} from "@/components/catalog/catalogUI/CatalogContext.ts";
 import DeleteModal from "@/components/modals/del-modal.tsx";
 import {debounce} from 'lodash-es';
 import {
@@ -65,6 +65,15 @@ interface AddCatalogProps {
     }
 }
 
+interface DynamicComponent {
+    default: FC<{
+        parentId?: string | number
+        callback: (item: any) => void
+        item?: Record<string, any>
+        update?: boolean
+    }>;
+}
+
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
 
@@ -92,10 +101,12 @@ const CatalogTree = () => {
     const [loadingNodeId, setLoadingNodeId] = useState<string | number | null>(null)
     const [itemType, setItemType] = useState<string | null>(null)
     const [PopupEvent, setPopupEvent] = useState<string | null>(null)
+    const [parentid, setParentId] = useState<string | number>(0)
 
     const [popUpTargetBlank, setPopUpTargetBlank] = useState<boolean>(false)
     const [isNavigation, setIsNavigation] = useState<boolean>(false)
 
+    const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
 
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
@@ -123,6 +134,7 @@ const CatalogTree = () => {
             setCatalog(resCatalog);
             setItems(items);
             setTreeData(resCatalog.nodes)
+            setIsNavigation(resCatalog.catalogSlug === "navigation");
             // console.log(resCatalog)
         };
 
@@ -148,13 +160,14 @@ const CatalogTree = () => {
         initCatalog();
     }, []);
 
-
     const handleSelect = (node: NodeModel<CustomCatalogData>) => {
         const item = selectedNodes.find((n) => n.id === node.id);
 
         if (!item) {
+            setParentId(node.id)
             setSelectedNodes([...selectedNodes, node]);
         } else {
+            setParentId(0)
             setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
         }
     };
@@ -250,10 +263,6 @@ const CatalogTree = () => {
         }
     }, [treeData]);
 
-    const parentid = useMemo(() => {
-        return selectedNodes[0]?.droppable ? selectedNodes[0].id : 0;
-        ;
-    }, [selectedNodes])
 
     const updateCatalog = useCallback(async () => {
         try {
@@ -333,7 +342,7 @@ const CatalogTree = () => {
         setPopUpData(res.data)
         dialogRef.current?.next()
         setFirstRender(false)
-    }, [items])
+    }, [parentid, firstRender, itemType])
 
     const initUpdateItem = useCallback(async () => {
         try {
@@ -350,13 +359,11 @@ const CatalogTree = () => {
                     switch (res.data.type) {
                         case 'navigation.group':
                             setAddLinksGroupProps(res.data.data)
-                            setIsNavigation(true)
                             setPopupType('navigation.group')
                             setFirstRender(false)
                             break
                         case 'navigation.link':
                             setAddLinksGroupProps(res.data.data)
-                            setIsNavigation(true)
                             setPopupType('navigation.link')
                             setFirstRender(false)
                             break
@@ -368,11 +375,26 @@ const CatalogTree = () => {
                             const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
                             setAddProps(resEdit.data)
                             setPopUpTargetBlank(item.targetBlank)
-                            setIsNavigation(true)
                             setPopupType('model')
                             setFirstRender(false)
                             break
                         default:
+                            const initModule = async () => {
+                                const Module = await import(/* @vite-ignore */ res.data.data.path as string);
+                                const Component = Module.default as DynamicComponent['default'];
+                                setDynamicComponent(<Component
+                                    key={`${res.data.data.id}-${res.data.data.item.name}`}
+                                    callback={(item) => {
+                                        dialogRef.current?.close()
+                                        reloadCatalog(item)
+                                    }}
+                                    update={true}
+                                    item={res.data.data.item}
+                                />);
+                            }
+                            initModule();
+                            setPopupType('component')
+                            setFirstRender(false)
                             break
                     }
                 }
@@ -429,7 +451,6 @@ const CatalogTree = () => {
 
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
-            setIsNavigation(true)
             switch (data.type) {
                 case 'model':
                     setAddItemProps(data.data)
@@ -453,6 +474,19 @@ const CatalogTree = () => {
                     setPopupType('model')
                     break
                 default:
+                    const initModule = async () => {
+                        const Module = await import(/* @vite-ignore */ data.data.path as string);
+                        const Component = Module.default as DynamicComponent['default'];
+                        setDynamicComponent(<Component
+                            parentId={parentid}
+                            callback={(item) => {
+                                dialogRef.current?.close()
+                                reloadCatalog(item)
+                            }}
+                        />);
+                    }
+                    initModule();
+                    setPopupType('component')
                     break
             }
         }
@@ -466,8 +500,8 @@ const CatalogTree = () => {
         setSecondRender(false)
     }, [itemType])
 
-    const addModel = useCallback(async (record: any, targetBlank: boolean) => {
-        record.targetBlank = targetBlank
+    const addModel = useCallback(async (record: any, targetBlank?: boolean) => {
+        if (targetBlank) record.targetBlank = targetBlank
         try {
             await axios.post('', {
                 data: {
@@ -485,21 +519,22 @@ const CatalogTree = () => {
         }
     }, [itemType, selectedNodes, treeData])
 
-    const editModel = useCallback(async (record: any, targetBlank: boolean) => {
-        record[0].targetBlank = targetBlank;
+    const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
+        if (targetBlank) record[0].targetBlank = targetBlank;
+
         record[0].treeId = selectedNodes[0]?.data?.id;
 
         try {
             const res = await axios.put('', {
                 type: selectedNodes[0]?.data?.type,
-                data: { record: record[0] },
+                data: {record: record[0]},
                 modelId: selectedNodes[0]?.data?.modelId,
                 _method: 'updateItem'
             });
 
             // Обновляем ВСЕ ноды с совпадающими modelId и type
             setTreeData(prevTree => {
-                const { modelId, type, name } = res.data.data;
+                const {modelId, type, name} = res.data.data;
 
                 // Если нет modelId или type, не обновляем дерево
                 if (modelId === undefined || type === undefined) {
@@ -797,6 +832,11 @@ const CatalogTree = () => {
                                                             {...addLinksGroupProps}
                                                         />
                                                     }
+                                                    {popupType === 'component' &&
+                                                        <>
+                                                            {DynamicComponent}
+                                                        </>
+                                                    }
                                                 </>
                                             ) : (
                                                 <LoaderCircle
@@ -823,6 +863,7 @@ const CatalogTree = () => {
                                                     }}
                                                     type={itemType ?? ''}
                                                     parentId={parentid}
+                                                    isNavigation={isNavigation}
                                                     {...addItemProps}
                                                 />
                                             }
@@ -847,6 +888,11 @@ const CatalogTree = () => {
                                                     parentId={parentid}
                                                     {...addLinksGroupProps}
                                                 />
+                                            }
+                                            {popupType === 'component' &&
+                                                <>
+                                                    {DynamicComponent}
+                                                </>
                                             }
                                         </>
                                     }

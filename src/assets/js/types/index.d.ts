@@ -126,6 +126,7 @@ export interface CatalogItem {
 export interface NavItemAddProps {
     labels: Record<string, string>,
     model: string,
+    isNavigation: boolean,
     type: string,
     parentId?: string | number,
     items: {

@@ -126,7 +126,7 @@ export abstract class BaseItem<T extends Item> {
 	 * @param req
 	 */
 	public abstract getAddTemplate(req: ReqType): Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: any
 	}>
 
@@ -138,7 +138,7 @@ export abstract class BaseItem<T extends Item> {
 	 * @param modelId
 	 */
 	public abstract getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: any
 	}>;
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeModel } from "@minoru/react-dnd-treeview";
-import styles from "@/components/catalog/CatalogPlaceholder.module.css";
+import styles from "@/components/catalog/catalogUI/CatalogPlaceholder.module.css";
 
 type Props = {
     node: NodeModel;
