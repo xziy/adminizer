@@ -2,6 +2,7 @@ import { UserAP } from "models/UserAP";
 import { AccessRightsToken } from "../interfaces/types";
 import { Adminizer } from "../lib/Adminizer";
 import { GroupAP } from "models/GroupAP";
+import { bool } from "sharp";
 
 export class AccessRightsHelper {
 
@@ -18,10 +19,10 @@ export class AccessRightsHelper {
 			throw new Error("Adminpanel > Can not register token: Missed one or more required parameters");
 		}
 
-		for (let token of this._tokens) {
-			if (token.id === accessRightsToken.id) {
-				Adminizer.log.error(`Adminpanel > Can not register token: Token with this id ["${token.id}"] already registered`);
-				continue
+		for (let i = 0; i < this._tokens.length; i++) {
+			if (this._tokens[i].id === accessRightsToken.id) {
+				this._tokens.splice(i, 1);
+				break;
 			}
 		}
 		this._tokens.push(accessRightsToken);
