@@ -316,7 +316,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	* // TODO: need passing custom React module 
 	*/
 	async getAddTemplate(req: ReqType): Promise<{
-        type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items: { id: string; name: string}[],
             model: string,
@@ -354,7 +354,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			item: NavItem
 		}
@@ -432,7 +432,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	getAddTemplate(req: ReqType):Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
             items?: { name: string, required: boolean }[] | Record<string, any>[],
             model?: string,
@@ -463,7 +463,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -521,7 +521,7 @@ class LinkItem extends NavigationGroup {
 	}
 
 	getAddTemplate(req: ReqType):Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -549,7 +549,7 @@ class LinkItem extends NavigationGroup {
 	}
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType): Promise<{
-		type: 'component' | 'navigation.item' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,

@@ -1,6 +1,6 @@
 import React from "react";
 import {NodeModel} from "@minoru/react-dnd-treeview";
-import styles from "@/components/catalog/CatalogNode.module.css";
+import styles from "@/components/catalog/catalogUI/CatalogNode.module.css";
 import {ChevronRight, LoaderCircle} from "lucide-react";
 import {CustomCatalogData} from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";

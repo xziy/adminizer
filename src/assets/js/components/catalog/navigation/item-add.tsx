@@ -7,7 +7,7 @@ import axios from "axios";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {useState} from "react";
 
-const ItemAdd = ({type, callback, parentId, ...data}: NavItemAddProps) => {
+const ItemAdd = ({type, callback, parentId, isNavigation, ...data}: NavItemAddProps) => {
     const [targetBlank, setTargetBlank] = useState<boolean>(false);
 
     const handleSelect = async (value: string) => {
@@ -30,7 +30,7 @@ const ItemAdd = ({type, callback, parentId, ...data}: NavItemAddProps) => {
     return (
         <div className="p-8">
             <div className="flex gap-4 flex-col">
-                <div className={`grid gap-4 ${!data.items.length  ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className={`grid gap-4 ${!data.items.length ? 'opacity-50 pointer-events-none' : ''}`}>
                     <Label>{data.labels.selectTitle}</Label>
                     <Select onValueChange={handleSelect}>
                         <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
@@ -44,15 +44,17 @@ const ItemAdd = ({type, callback, parentId, ...data}: NavItemAddProps) => {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex gap-4 items-center">
-                    <Checkbox
-                        id="targetBlank"
-                        checked={targetBlank}
-                        onCheckedChange={(checked) => setTargetBlank(!!checked)}
-                        className="cursor-pointer size-5"
-                    />
-                    <Label htmlFor="targetBlank">{data.labels.openInNewWindow}</Label>
-                </div>
+                {isNavigation &&
+                    <div className="flex gap-4 items-center">
+                        <Checkbox
+                            id="targetBlank"
+                            checked={targetBlank}
+                            onCheckedChange={(checked) => setTargetBlank(!!checked)}
+                            className="cursor-pointer size-5"
+                        />
+                        <Label htmlFor="targetBlank">{data.labels.openInNewWindow}</Label>
+                    </div>
+                }
             </div>
             <div className="mt-8">
                 <span><b>{data.labels.OR}</b></span>

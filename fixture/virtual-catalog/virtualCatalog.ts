@@ -5,13 +5,16 @@ import {
     ActionHandler,
     Item
 } from "../../dist/lib/v4/catalog/AbstractCatalog";
-import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../dist/interfaces/adminpanelConfig";
 import {Adminizer} from "../../dist";
-import {NavItem} from "../../src/lib/v4/catalog/Navigation";
+import {v4 as uuid} from "uuid";
+import {NavItem, StorageServices} from "../../src/lib/v4/catalog/Navigation";
 
+interface TestItem extends Item {
+    modelId?: string
+}
 
 class TestCatalogStorageService {
-    protected storageMap: Map<string | number, NavItem> = new Map();
+    protected storageMap: Map<string | number, TestItem> = new Map();
     protected model: string
     protected readonly adminizer: Adminizer
 
@@ -36,8 +39,8 @@ class TestCatalogStorageService {
     }
 
     public async buildTree(): Promise<any> {
-        const rootElements: NavItem[] = await this.findElementsByParentId(0, null);
-        const buildSubTree = async (elements: NavItem[]): Promise<any[]> => {
+        const rootElements: TestItem[] = await this.findElementsByParentId(0, null);
+        const buildSubTree = async (elements: TestItem[]): Promise<any[]> => {
             const tree = [];
             for (const element of elements) {
                 const children = await this.findElementsByParentId(element.id, null);
@@ -69,7 +72,7 @@ class TestCatalogStorageService {
     public async populateFromTree(tree: any[]): Promise<void> {
         const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
             const {children, ...itemData} = node;
-            const item = {...itemData, parentId} as NavItem;
+            const item = {...itemData, parentId} as TestItem;
             await this.setElement(item.id, item, true);
 
             if (children && children.length > 0) {
@@ -84,7 +87,7 @@ class TestCatalogStorageService {
         }
     }
 
-    public async setElement(id: string | number, item: NavItem, init: boolean = false): Promise<NavItem> {
+    public async setElement(id: string | number, item: TestItem, init: boolean = false): Promise<TestItem> {
         this.storageMap.set(item.id, item);
         if (!init) await this.saveToDB()
         // This like fetch in DB
@@ -99,12 +102,12 @@ class TestCatalogStorageService {
 
     }
 
-    public async findElementById(id: string | number): Promise<NavItem | undefined> {
+    public async findElementById(id: string | number): Promise<TestItem | undefined> {
         return this.storageMap.get(id);
     }
 
-    public async findElementByModelId(modelId: string | number): Promise<NavItem[] | undefined> {
-        const elements: NavItem[] = [];
+    public async findElementByModelId(modelId: string | number): Promise<TestItem[] | undefined> {
+        const elements: TestItem[] = [];
         for (const item of this.storageMap.values()) {
             if (item.modelId === modelId) {
                 elements.push(item)
@@ -115,7 +118,6 @@ class TestCatalogStorageService {
 
     public async saveToDB() {
         let tree = await this.buildTree()
-
         try {
             // Direct call by model adapter
             await this.adminizer.modelHandler.model.get(this.model)["_update"](
@@ -124,12 +126,12 @@ class TestCatalogStorageService {
             )
         } catch (e) {
             console.log(e)
-            throw 'navigation model update error'
+            throw 'test catalog model update error'
         }
     }
 
-    public async findElementsByParentId(parentId: string | number, type: string | null): Promise<NavItem[]> {
-        const elements: NavItem[] = [];
+    public async findElementsByParentId(parentId: string | number, type: string | null): Promise<TestItem[]> {
+        const elements: TestItem[] = [];
         for (const item of this.storageMap.values()) {
             if (type === null && item.parentId === parentId) {
                 elements.push(item);
@@ -142,13 +144,13 @@ class TestCatalogStorageService {
         return elements;
     }
 
-    public async getAllElements(): Promise<NavItem[]> {
+    public async getAllElements(): Promise<TestItem[]> {
         return Array.from(this.storageMap.values());
     }
 
-    public async search(s: string, type: string): Promise<NavItem[]> {
+    public async search(s: string, type: string): Promise<TestItem[]> {
         const lowerCaseQuery = s.toLowerCase(); // Convert query to lowercase for case-insensitive search
-        const matchedElements: NavItem[] = [];
+        const matchedElements: TestItem[] = [];
 
         for (const item of this.storageMap.values()) {
             // Check if item type matches the specified type
@@ -167,7 +169,8 @@ class TestCatalogStorageService {
 class StorageHandler {
     private static instance: TestCatalogStorageService = null
 
-    private constructor() {}
+    private constructor() {
+    }
 
     public static setStorage(storage: TestCatalogStorageService): void {
         this.instance = storage;
@@ -189,18 +192,16 @@ export class TestCatalog extends AbstractCatalog {
         let storage = new TestCatalogStorageService(adminizer, model);
         StorageHandler.setStorage(storage);
         let items = []
-        items.push(new TestItem(adminizer))
         items.push(new TestGroup(adminizer))
+        items.push(new TestItemM(adminizer))
         super(adminizer, items);
     }
 }
 
-export class TestItem extends AbstractItem<Item> {
-    type: string = "item";
+export class TestGroup extends AbstractGroup<TestItem> {
     adminizer: Adminizer
-    name: string = "Test Item";
+    name: string = "Test Group";
     allowedRoot: boolean = true;
-    icon: string = 'sell';
     actionHandlers: ActionHandler[] = []
 
     constructor(adminizer: Adminizer) {
@@ -208,59 +209,210 @@ export class TestItem extends AbstractItem<Item> {
         this.adminizer = adminizer;
     }
 
-    async find(itemId: string | number, catalogId: string, req?: ReqType): Promise<Item> {
+    async find(itemId: string | number, catalogId: string, req?: ReqType): Promise<TestItem> {
         return await StorageHandler.getStorage().findElementById(itemId);
     }
 
-    update(itemId: string | number, data: Item, catalogId: string, req?: ReqType): Promise<Item> {
-        throw new Error("Method not implemented.");
+    async update(itemId: string | number, data: TestItem, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.setElement(itemId, data);
     }
 
-    updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<Item> {
-        throw new Error("Method not implemented.");
+    async updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.setElement(modelId, data);
     }
 
-    create(data: Item, catalogId: string, req?: ReqType): Promise<Item> {
-        throw new Error("Method not implemented.");
+    async create(data: any, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+
+        let storageData = await this.dataPreparation(data, catalogId)
+        delete data.name
+        delete data.parentId
+        storageData = {...storageData, ...data}
+
+        return await storage.setElement(storageData.id, storageData) as TestItem;
     }
 
-    deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void> {
-        throw new Error("Method not implemented.");
+    protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
+        let storage = StorageHandler.getStorage()
+        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        return {
+            id: uuid(),
+            name: data.title,
+            parentId: parentId,
+            sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
+            icon: this.icon,
+            type: this.type
+        };
+    }
+
+    async deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void> {
+        let storage = StorageHandler.getStorage()
+        return await storage.removeElementById(itemId);
     }
 
     getAddTemplate(req: ReqType): Promise<{
-        type: "component" | "navigation.item" | "navigation.group" | "navigation.link" | "model";
+        type: "component" | "navigation.group" | "navigation.link" | "model";
         data: any;
     }> {
-        let type: 'component'
+        let type: 'component' = 'component';
 
         return Promise.resolve({
             type: type,
             data: {
-
+                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : ''
             }
         })
     }
 
-    getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-        type: "component" | "navigation.item" | "navigation.group" | "navigation.link" | "model";
+    async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
+        type: "component" | "navigation.group" | "navigation.link" | "model";
         data: any;
     }> {
-        throw new Error("Method not implemented.");
+        let type: 'component' = 'component';
+        let item = await this.find(id, '')
+        return Promise.resolve({
+            type: type,
+            data: {
+                item: item,
+                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : ''
+            }
+        })
     }
 
-    async getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<Item[]> {
+    async getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<TestItem[]> {
         return await StorageHandler.getStorage().findElementsByParentId(parentId, this.type);
     }
 
-    search(s: string, catalogId: string, req?: ReqType): Promise<Item[]> {
-        throw new Error("Method not implemented.");
+    async search(s: string, catalogId: string, req?: ReqType): Promise<TestItem[]> {
+        let storage = StorageHandler.getStorage()
+        return await storage.search(s, this.type);
     }
 }
 
-class TestGroup extends TestItem {
-    name: string = "Test Group";
-    public readonly type: string = "group";
-    public readonly isGroup: boolean = true;
-    public icon: string = "folder";
+class TestItemM extends AbstractItem<TestItem> {
+    type: string = 'category';
+    model: string = 'category';
+    adminizer: Adminizer;
+    name: string = 'Category';
+    allowedRoot: boolean = true;
+    icon: string = 'file_present';
+
+    constructor(adminizer: Adminizer) {
+        super();
+        this.adminizer = adminizer;
+    }
+
+    async find(itemId: string | number, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.findElementById(itemId);
+    }
+
+    async update(itemId: string | number, data: TestItem, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.setElement(itemId, data);
+    }
+
+    async updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        let items = await storage.findElementByModelId(modelId)
+        let response = []
+        for (const item of items) {
+            item.name = data.record.name ?? data.record.title ?? data.record.id
+            response.push(await storage.setElement(item.id, item));
+        }
+        return response[0]
+    }
+
+    async create(data: any, catalogId: string): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        let storageData = null
+        if (data._method === 'select') {
+            // Direct call by model adapter
+            let record = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({id: data.record})
+            storageData = await this.dataPreparation({
+                record: record,
+                parentId: data.parentId,
+            }, catalogId)
+        } else {
+            storageData = await this.dataPreparation(data, catalogId)
+        }
+        return await storage.setElement(data.id, storageData) as TestItem;
+    }
+
+    protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
+        let storage = StorageHandler.getStorage()
+        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        return {
+            id: uuid(),
+            modelId: data.record.id,
+            name: data.record.title,
+            parentId: parentId,
+            sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
+            icon: this.icon,
+            type: this.type,
+        };
+    }
+
+    async deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void> {
+        let storage = StorageHandler.getStorage()
+        return await storage.removeElementById(itemId);
+    }
+
+    async getAddTemplate(req: ReqType): Promise<{
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        data: {
+            items: { id: string; name: string}[],
+            model: string,
+            labels?: Record<string, string>,
+        }
+    }> {
+        let type: 'model' = 'model'
+        // Direct call by model adapter
+        let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
+        let items = itemsDB.map((item: any) => {
+            return{
+                id: item.id,
+                name: item.name ?? item.title ?? item.id
+            }
+        })
+        return {
+            type: type,
+            data: {
+                items: items,
+                model: this.model,
+                labels: {
+                    selectTitle: `${req.i18n.__('Select')} ${req.i18n.__(this.name + 's')}`,
+                    createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
+                    OR: req.i18n.__('OR'),
+                }
+            }
+        }
+    }
+
+    async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        data: {
+            item: NavItem
+        }
+    }> {
+        return Promise.resolve({
+            type: 'model',
+            data: {
+                item: await this.find(id, catalogId)
+            }
+        })
+    }
+
+    async getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<TestItem[]> {
+        let storage = StorageHandler.getStorage()
+        return await storage.findElementsByParentId(parentId, this.type);
+    }
+
+    async search(s: string, catalogId: string, req?: ReqType): Promise<TestItem[]> {
+        let storage = StorageHandler.getStorage()
+        return await storage.search(s, this.type);
+    }
+
 }

@@ -140,14 +140,15 @@ export class VueCatalog {
     }
 
     async createItem(data: any, req: ReqType) {
+        // TODO It's not clear why it's here.
         //data = VueCatalogUtils.refinement(data);
-        if (this.catalog.slug !== "navigation") {
-            let item = data.record;
-            item.parenId = data.parenId;
-            return await this.catalog.createItem(item, req);
-        } else {
-            return await this.catalog.createItem(data, req);
-        }
+        // if (this.catalog.slug !== "navigation") {
+        //     let item = data.record;
+        //     item.parenId = data.parenId;
+        //     return await this.catalog.createItem(item, req);
+        // } else {
+        return await this.catalog.createItem(data, req);
+        // }
     }
 
     async getChilds(data: any, req: ReqType) {
@@ -187,12 +188,13 @@ export class VueCatalog {
 
 
     async updateItem(item: any, modelId: string, data: any, req: ReqType) {
+        //TODO It's not clear why it's here.
         //data = VueCatalogUtils.refinement(data);
-        if (this.catalog.slug !== "navigation") {
-            return await this.catalog.updateModelItems(data.modelId, data.type, data.record, req);
-        } else {
-            return await this.catalog.updateModelItems(modelId, item.type, data, req);
-        }
+        // if (this.catalog.slug !== "navigation") {
+        //     return await this.catalog.updateModelItems(data.modelId, data.type, data.record, req);
+        // } else {
+        return await this.catalog.updateModelItems(modelId, item.type, data, req);
+        // }
     }
 
     async deleteItem(item: Item, req: ReqType): Promise<{ ok: boolean }> {
