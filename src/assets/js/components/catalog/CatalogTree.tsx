@@ -1,4 +1,4 @@
-import React, {lazy, useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {router} from '@inertiajs/react'
 import {
     Tree,
@@ -14,7 +14,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Button} from "@/components/ui/button.tsx";
 import {Pencil, Plus, Ban} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps} from "@/types";
+import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps, CatalogActions} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/context-menu"
 import CatalogDialogStack from "@/components/catalog/CatalogDialogStack.tsx";
 import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
+import MaterialIcon from "@/components/material-icon.tsx";
 
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
@@ -66,6 +67,9 @@ const CatalogTree = () => {
 
     const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
 
+    const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
+    const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
+
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
             actions: [],
@@ -92,8 +96,9 @@ const CatalogTree = () => {
             setCatalog(resCatalog);
             setItems(items);
             setTreeData(resCatalog.nodes)
+            setActionsTools(toolsActions)
             setIsNavigation(resCatalog.catalogSlug === "navigation");
-            // console.log(resCatalog)
+            // console.log(toolsActions)
         };
 
         const initLocales = async () => {
@@ -546,6 +551,21 @@ const CatalogTree = () => {
         }
     }, [])
 
+    const initAction = useCallback(async (id: string) => {
+        const action = actionsTools.find(e => e.id === id) ?? actionsContext.find(e => e.id === id)
+        console.log(action)
+        if (!action) return
+        let res = null
+        switch (action.type) {
+            case 'link':
+                res = await axios.put('', {actionId: action.id, _method: 'getLink'})
+                if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                break
+            default:
+                break
+        }
+    }, [actionsTools, selectedNodes])
+
     return (
         <>
             {isLoading ? (
@@ -630,6 +650,15 @@ const CatalogTree = () => {
                                 <Ban/>
                                 {messages["Clean"]}
                             </Button>
+                            <div className="ml-4">
+                                {actionsTools.map((item) => (
+                                    <Button variant="secondary" size="sm" key={item.id}
+                                            onClick={() => initAction(item.id)}>
+                                        <MaterialIcon name={item.icon}/>
+                                        {item.name}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                         <div>
                             <Input

@@ -90,8 +90,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 					case 'handleAction':
 						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config, req)})
 					case 'getPopUpHTML':
-						// TODO: deprecated, passing react module instead html
-						return res.json({data: await frontendCatalog.getPopUpHTML(data.actionId)})
+						return res.json({data: await frontendCatalog.getPopUpTemplate(data.actionId)})
 					case 'updateItem':
 						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data, req)})
 				}

@@ -172,8 +172,8 @@ export abstract class ActionHandler {
 	 * Three actions are possible, without configuration, configuration via pop-up, and just external action
 	 * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
 	 * */
-	public abstract readonly type: "basic" |
-		"json-forms" |
+	public abstract readonly type:
+		"basic" |
 		"external" |
 		"link" |
 		"partial"
@@ -187,19 +187,10 @@ export abstract class ActionHandler {
 	 */
 	public abstract readonly displayTool: boolean
 
-	/** (!*1)
-	 * Only for json-forms
-	 * ref: https://jsonforms.io/docs
-	 */
-	public abstract readonly uiSchema: any
-	public abstract readonly jsonSchema: JSONSchema4
-
 	/**
-	 * For "json-forms" | "external"
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
+	 * For "external"
 	 */
-	public abstract getPopUpHTML(data?: any): Promise<string>
+	public abstract getPopUpTemplate(data?: any): Promise<string>
 
 
 	/**
@@ -439,13 +430,11 @@ export abstract class AbstractCatalog {
 	}
 
 	/**
-	 * For Extermal and JsonForms actions
+	 * For Extermal and actions
 	 * @param actionId
-	* @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
 	 */
-	public async getPopUpHTML(actionId: string) {
-		return this.actionHandlers.find((it) => it.id === actionId)?.getPopUpHTML();
+	public async getPopUpTemplate(actionId: string) {
+		return this.actionHandlers.find((it) => it.id === actionId)?.getPopUpTemplate();
 	}
 
 	/**
