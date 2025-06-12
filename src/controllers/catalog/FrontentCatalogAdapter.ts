@@ -120,12 +120,8 @@ export class VueCatalog {
         return this.catalog.handleAction(actionId, arrItems, config, req);
     }
 
-    /**
-     * @deprecated reason: migration for intertia
-     * // TODO: need passing custom React module
-     */
-    async getPopUpHTML(actionId: string) {
-        return this.catalog.getPopUpHTML(actionId);
+    async getPopUpTemplate(actionId: string) {
+        return this.catalog.getPopUpTemplate(actionId);
     }
 
     async getLink(actionId: string) {

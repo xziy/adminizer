@@ -7,7 +7,7 @@ import {
 } from "../../dist/lib/v4/catalog/AbstractCatalog";
 import {Adminizer} from "../../dist";
 import {v4 as uuid} from "uuid";
-import {NavItem, StorageServices} from "../../src/lib/v4/catalog/Navigation";
+import {NavItem, StorageServices} from "../../dist/lib/v4/catalog/Navigation";
 
 interface TestItem extends Item {
     modelId?: string
@@ -195,6 +195,7 @@ export class TestCatalog extends AbstractCatalog {
         items.push(new TestGroup(adminizer))
         items.push(new TestItemM(adminizer))
         super(adminizer, items);
+        this.addActionHandler(new Link())
     }
 }
 
@@ -363,7 +364,7 @@ class TestItemM extends AbstractItem<TestItem> {
     async getAddTemplate(req: ReqType): Promise<{
         type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
         data: {
-            items: { id: string; name: string}[],
+            items: { id: string; name: string }[],
             model: string,
             labels?: Record<string, string>,
         }
@@ -372,7 +373,7 @@ class TestItemM extends AbstractItem<TestItem> {
         // Direct call by model adapter
         let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
-            return{
+            return {
                 id: item.id,
                 name: item.name ?? item.title ?? item.id
             }
@@ -414,5 +415,30 @@ class TestItemM extends AbstractItem<TestItem> {
         let storage = StorageHandler.getStorage()
         return await storage.search(s, this.type);
     }
+
+}
+
+export class Link extends ActionHandler {
+    readonly icon: string = 'link';
+    readonly id: string = 'download';
+    readonly name: string = 'Link';
+    public readonly displayTool: boolean = true
+    public readonly displayContext: boolean = false
+    public readonly type = 'link'
+    public readonly selectedItemTypes: string[] = []
+
+
+    getPopUpTemplate(data?: any): Promise<string> {
+        return Promise.resolve("");
+    }
+
+    getLink(data?: any): Promise<string> {
+        return Promise.resolve('https://www.example.com/');
+    }
+
+    handler(items: Item[], data?: any, req?: ReqType): Promise<void> {
+        return Promise.resolve(undefined);
+    }
+
 
 }

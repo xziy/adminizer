@@ -194,3 +194,13 @@ export interface DynamicComponent {
         update?: boolean
     }>;
 }
+
+export interface CatalogActions {
+    type: string;
+    displayTool: boolean;
+    displayContext: boolean;
+    selectedItemTypes: string[];
+    id: string;
+    icon: string;
+    name: string
+}
