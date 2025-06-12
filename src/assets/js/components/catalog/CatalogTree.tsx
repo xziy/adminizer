@@ -12,7 +12,7 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Pencil, Plus, Ban} from "lucide-react";
+import {Pencil, Plus, Ban, LoaderCircle} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
 import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps, CatalogActions} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
@@ -32,6 +32,8 @@ import {
 import CatalogDialogStack from "@/components/catalog/CatalogDialogStack.tsx";
 import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
+import {Toaster} from "@/components/ui/sonner.tsx";
+import {toast} from "sonner";
 
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
@@ -69,6 +71,7 @@ const CatalogTree = () => {
 
     const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
     const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
+    const [actionLoading, setActionLoading] = useState<boolean>(false)
 
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
@@ -392,11 +395,13 @@ const CatalogTree = () => {
 
                     // Обновляем состояние
                     setTreeData(updatedTreeData);
-                    setSelectedNodes([]);
                 }
             }
         } catch (error) {
             console.error('Error deleting node:', error);
+        } finally {
+            setSelectedNodes([]);
+            setParentId(0)
         }
     }, [selectedNodes, treeData]);
 
@@ -547,13 +552,32 @@ const CatalogTree = () => {
             // Если нода не была выделена - выделяем её
             if (!isNodeSelected) {
                 handleSelect(node);
+                getActionsContext(node)
             }
+        }
+    }, [])
+
+    const getActionsContext = useCallback(async (node: NodeModel<CustomCatalogData>) => {
+        setActionsContext([])
+        setActionLoading(true)
+        try {
+            const res = await axios.post('', {
+                items: [node],
+                type: 'context',
+                _method: 'getActions'
+            })
+            if (res.data && res?.data?.data?.length) {
+                setActionsContext(res.data.data)
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setActionLoading(false)
         }
     }, [])
 
     const initAction = useCallback(async (id: string) => {
         const action = actionsTools.find(e => e.id === id) ?? actionsContext.find(e => e.id === id)
-        console.log(action)
         if (!action) return
         let res = null
         switch (action.type) {
@@ -561,10 +585,24 @@ const CatalogTree = () => {
                 res = await axios.put('', {actionId: action.id, _method: 'getLink'})
                 if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
                 break
+            case 'basic':
+                let data = {
+                    actionID: action.id,
+                    items: [selectedNodes[0]],
+                }
+                try {
+                    toast.warning(messages['Performing an action...'])
+                    await axios.put('', {data: data, _method: 'handleAction'})
+                } catch (e) {
+                    console.error(e)
+                } finally {
+                    toast.success(messages['Action completed'])
+                }
+                break
             default:
                 break
         }
-    }, [actionsTools, selectedNodes])
+    }, [actionsTools, selectedNodes, actionsContext])
 
     return (
         <>
@@ -581,6 +619,7 @@ const CatalogTree = () => {
                         setMessages
                     }
                 }>
+                    <Toaster position="top-center" richColors closeButton/>
                     <div className="flex gap-8 items-center mb-4">
                         <h1 className="text-[28px] leading-[36px] text-foreground">{messages[catalog.catalogName]}</h1>
                         {catalog.idList.length > 0 &&
@@ -729,6 +768,16 @@ const CatalogTree = () => {
                                                 >
                                                     {messages["Delete"]}
                                                 </ContextMenuItem>
+                                                {actionLoading ? (
+                                                    <LoaderCircle
+                                                        className="mx-auto size-3 animate-spin"/>
+                                                ) : (
+                                                    actionsContext.map((item) => (
+                                                        <ContextMenuItem key={item.id} onClick={() => initAction(item.id)}>
+                                                            {item.name}
+                                                        </ContextMenuItem>
+                                                    ))
+                                                )}
                                             </ContextMenuContent>
                                         </ContextMenu>
                                     )}
