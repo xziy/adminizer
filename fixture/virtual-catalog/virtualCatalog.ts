@@ -196,6 +196,7 @@ export class TestCatalog extends AbstractCatalog {
         items.push(new TestItemM(adminizer))
         super(adminizer, items);
         this.addActionHandler(new Link())
+        this.addActionHandler(new ContextAction())
     }
 }
 
@@ -419,7 +420,7 @@ class TestItemM extends AbstractItem<TestItem> {
 }
 
 export class Link extends ActionHandler {
-    readonly icon: string = 'link';
+    readonly icon: "basic" | "external" | "link" = 'link';
     readonly id: string = 'download';
     readonly name: string = 'Link';
     public readonly displayTool: boolean = true
@@ -440,5 +441,38 @@ export class Link extends ActionHandler {
         return Promise.resolve(undefined);
     }
 
+}
+
+export class ContextAction extends ActionHandler {
+    type: "basic" | "external" | "link" = 'basic';
+    icon: string = 'drive_file_rename_outline';
+    displayContext: boolean = true;
+    displayTool: boolean = false;
+    id: string = 'context1';
+    name: string = 'Context Action';
+    public readonly selectedItemTypes: string[] = [
+        'group'
+    ]
+
+    getPopUpTemplate(data?: any): Promise<string> {
+        return Promise.resolve("");
+    }
+    getLink(data?: any): Promise<string> {
+        return Promise.resolve("");
+    }
+    handler(items: Item[], req?: ReqType): Promise<void> {
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                try {
+                    console.log('Processing items:', items);
+                    // some logic here
+                    resolve();
+                } catch (error) {
+                    console.error('Error in handler:', error);
+                    resolve();
+                }
+            }, 5000);
+        });
+    }
 
 }

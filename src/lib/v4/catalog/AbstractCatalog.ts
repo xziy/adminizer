@@ -175,8 +175,7 @@ export abstract class ActionHandler {
 	public abstract readonly type:
 		"basic" |
 		"external" |
-		"link" |
-		"partial"
+		"link"
 
 	/**
 	 * Will be shown in the context menu section
@@ -217,9 +216,9 @@ export abstract class ActionHandler {
 	 * Implementation of a method that will do something with elements.
 	 * there's really not much you can do with the context menu
 	 * @param items
-	 * @param config
+	 * @param req
 	 */
-	public abstract handler(items: Item[], data?: any, req?: ReqType): Promise<void>;
+	public abstract handler(items: Item[], req?: ReqType): Promise<void>;
 
 }
 
@@ -403,7 +402,7 @@ export abstract class AbstractCatalog {
 	/**
 	 * Implements search and execution of a specific action.handler
 	 */
-	public async handleAction(actionId: string, items?: Item[], config?: any, req?: ReqType): Promise<void> {
+	public async handleAction(actionId: string, items?: Item[], req?: ReqType): Promise<void> {
 		let action: ActionHandler = null;
 		if (items.length === 1) {
 			const item = items[0];
@@ -418,7 +417,7 @@ export abstract class AbstractCatalog {
 		}
 
 		if (!action) throw `Action with id \`${actionId}\` not found`
-		return await action.handler(items, config, req);
+		return await action.handler(items, req);
 	}
 
 	/**

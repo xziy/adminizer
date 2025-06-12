@@ -83,6 +83,8 @@ export class VueCatalog {
             "OR": "",
             "Open in a new window": "",
             "Clean": "",
+            "Performing an action...": "",
+            "Action completed": "",
         }
         obj[this.catalog.name] = ""
         for (const actionHandler of this.catalog.actionHandlers) {
@@ -112,12 +114,12 @@ export class VueCatalog {
         }
     }
 
-    async handleAction(actionId: string, items: any[], config: any, req: ReqType) {
+    async handleAction(actionId: string, items: any[], req: ReqType) {
         let arrItems = []
         for (const item of items) {
             arrItems.push(await this.catalog.find(item.data))
         }
-        return this.catalog.handleAction(actionId, arrItems, config, req);
+        return this.catalog.handleAction(actionId, arrItems, req);
     }
 
     async getPopUpTemplate(actionId: string) {
