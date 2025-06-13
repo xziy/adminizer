@@ -167,7 +167,7 @@ export class MenuHelper {
                     id: additionalLink.id || additionalLink.title.replace(" ", "_"),
                     actions: additionalLink.subItems || null,
                     icon: additionalLink.icon || null,
-                    accessRightsToken: additionalLink.accessRightsToken || null
+                    accessRightsToken: additionalLink.accessRightsToken || null,
                     section: additionalLink.section || 'Platform',
                 });
             });
