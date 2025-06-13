@@ -138,6 +138,7 @@ const ListTable = () => {
                                         <DropdownMenuItem asChild className="cursor-pointer">
                                             <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
                                                          delModal={page.props.header.delModal}
+                                                         btnCLass="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start"
                                                          link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
                                         </DropdownMenuItem>
                                     )}
@@ -345,7 +346,7 @@ const ListTable = () => {
                             <div className="block lg:hidden ml-6">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="icon" className="cursor-pointer">
+                                        <Button variant="outline" size="icon">
                                             <BetweenHorizontalStart/>
                                         </Button>
                                     </DropdownMenuTrigger>

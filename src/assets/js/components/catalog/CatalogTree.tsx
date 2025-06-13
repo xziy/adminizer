@@ -1,67 +1,48 @@
-import {lazy, useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {router} from '@inertiajs/react'
 import {
     Tree,
     getBackendOptions,
     MultiBackend,
     NodeModel,
+    TreeMethods,
     DragLayerMonitorProps, DropOptions
 } from "@minoru/react-dnd-treeview";
 import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {LoaderCircle, Pencil, Plus, Trash2} from "lucide-react";
+import {Pencil, Plus, Ban, LoaderCircle} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {
-    DialogStack,
-    DialogStackBody,
-    DialogStackContent, DialogStackHandle,
-    DialogStackOverlay
-} from "@/components/ui/dialog-stack.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, Field} from "@/types";
-import SelectCatalogItem from "@/components/catalog/select-catalog-item.tsx";
+import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps, CatalogActions} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import AddForm from "@/components/add-form.tsx";
-import CatalogNode from "@/components/catalog/CatalogNode.tsx";
-import CatalogDragPreview from "@/components/catalog/CatalogDragPreview.tsx";
-import styles from "@/components/catalog/Catalog.module.css";
-import {Placeholder} from "@/components/catalog/CatalogPlaceholder.tsx";
-import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
-
-const NavItemAdd = lazy(() => import('@/components/catalog/navigation/item-add.tsx'));
-const NavGropuAdd = lazy(() => import('@/components/catalog/navigation/group-add.tsx'));
-
-
-interface AddCatalogProps {
-    props: {
-        actions: {
-            link: string;
-            id: string;
-            title: string;
-            icon: string;
-        }[];
-        notFound?: string
-        search?: string,
-        btnBack: {
-            title: string;
-            link: string;
-        };
-        fields: Field[];
-        edit: boolean;
-        view: boolean;
-        btnSave: {
-            title: string;
-        },
-        postLink: string,
-    }
-}
+import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
+import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
+import styles from "@/components/catalog/catalogUI/Catalog.module.css";
+import {Placeholder} from "@/components/catalog/catalogUI/CatalogPlaceholder.tsx";
+import {CatalogContext} from "@/components/catalog/catalogUI/CatalogContext.ts";
+import DeleteModal from "@/components/modals/del-modal.tsx";
+import {debounce} from 'lodash-es';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import CatalogDialogStack from "@/components/catalog/CatalogDialogStack.tsx";
+import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
+import MaterialIcon from "@/components/material-icon.tsx";
+import {Toaster} from "@/components/ui/sonner.tsx";
+import {toast} from "sonner";
 
 const CatalogTree = () => {
+    const treeRef = useRef<TreeMethods>(null);
+
+    const deleteModalRef = useRef<HTMLButtonElement>(null);
+
     const [treeData, setTreeData] = useState<NodeModel<CustomCatalogData>[]>([]);
-    const [selectedNode, setSelectedNode] = useState<NodeModel | null>(null);
-    const handleSelect = (node: NodeModel) => {
-        selectedNode === node ? setSelectedNode(null) : setSelectedNode(node)
-    }
+    const [selectedNodes, setSelectedNodes] = useState<NodeModel<CustomCatalogData>[]>([]);
+
     const [catalog, setCatalog] = useState<Catalog>({
         catalogId: "",
         catalogName: "",
@@ -76,8 +57,22 @@ const CatalogTree = () => {
     const [isLoading, setIsLoading] = useState(false)
     const dialogRef = useRef<DialogStackHandle>(null);
     const [addItemProps, setAddItemProps] = useState({items: [], model: "", labels: {}})
-    const [addGropuProps, setAddGroupProps] = useState({items: [], labels: {}})
+    const [addLinksGroupProps, setAddLinksGroupProps] = useState({items: [], labels: {}})
     const [popupType, setPopupType] = useState<string>('')
+    const [loadingNodeId, setLoadingNodeId] = useState<string | number | null>(null)
+    const [itemType, setItemType] = useState<string | null>(null)
+    const [PopupEvent, setPopupEvent] = useState<string | null>(null)
+    const [parentid, setParentId] = useState<string | number>(0)
+
+    const [popUpTargetBlank, setPopUpTargetBlank] = useState<boolean>(false)
+    const [isNavigation, setIsNavigation] = useState<boolean>(false)
+
+    const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
+
+    const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
+    const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
+    const [actionLoading, setActionLoading] = useState<boolean>(false)
+
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
             actions: [],
@@ -94,6 +89,7 @@ const CatalogTree = () => {
     const [firstRender, setFirstRender] = useState(false)
 
     const [secondRender, setSecondRender] = useState(false)
+
     useEffect(() => {
         const fetchData = async () => {
             const res = await axios.post('', {
@@ -103,7 +99,9 @@ const CatalogTree = () => {
             setCatalog(resCatalog);
             setItems(items);
             setTreeData(resCatalog.nodes)
-            console.log(resCatalog)
+            setActionsTools(toolsActions)
+            setIsNavigation(resCatalog.catalogSlug === "navigation");
+            // console.log(toolsActions)
         };
 
         const initLocales = async () => {
@@ -128,44 +126,24 @@ const CatalogTree = () => {
         initCatalog();
     }, []);
 
-    const reloadCatalog = useCallback(async () => {
-        const res = await axios.post('', {
-            _method: 'getCatalog'
-        });
-        const {catalog: resCatalog} = res.data;
-        setTreeData(resCatalog.nodes)
-    }, [])
+    const handleSelect = (node: NodeModel<CustomCatalogData>) => {
+        const item = selectedNodes.find((n) => n.id === node.id);
 
-    const selectCatalogItem = useCallback(async (type: string) => {
-        setFirstRender(true)
-        const res = await axios.post('', {type: type, _method: 'getAddHTML'})
-        await getHTML(res.data)
-        dialogRef.current?.next()
-        setFirstRender(false)
-    }, [items])
-
-    const getHTML = useCallback(async (data: { type: string, data: any }) => {
-        console.log(data)
-        if (data.type.includes('navigation')) {
-            switch (data.type) {
-                case 'navigation.item':
-                    setPopupType('navigation.item')
-                    setAddItemProps(data.data)
-                    break
-                case 'navigation.group':
-                    setPopupType('navigation.group')
-                    setAddGroupProps(data.data)
-                    break
-                default:
-                    break
-            }
+        if (!item) {
+            setParentId(node.id)
+            setSelectedNodes([...selectedNodes, node]);
+        } else {
+            setParentId(0)
+            setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
         }
-    }, [items])
+    };
 
-    /**
-     * Handle drop event
-     * @callback handleDrop
-     */
+    const handleClear = (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            setSelectedNodes([]);
+        }
+    };
+
     const handleDrop = useCallback(async (
         newTree: NodeModel<CustomCatalogData>[],
         {dragSourceId, dropTargetId}: DropOptions<CustomCatalogData>
@@ -176,6 +154,7 @@ const CatalogTree = () => {
 
             // find new parent
             const newParentId = dropTargetId || 0;
+
 
             const requestData = {
                 data: {
@@ -199,7 +178,6 @@ const CatalogTree = () => {
                 },
                 _method: 'updateTree'
             };
-
             setTreeData(newTree);
 
             await axios.put('', requestData);
@@ -207,54 +185,425 @@ const CatalogTree = () => {
         } catch (error) {
             console.error('Error updating tree:', error);
         }
-    }, []);
+    }, [treeData]);
 
-    /**
-     * Toggle the open state of a node
-     * @callback handleToggle
-     */
     const handleToggle = useCallback(async (id: string, isOpen: boolean) => {
-        // Check if the node is already open
-        if(!isOpen) return
 
-        // Check if the treeData already has children for this node
-        const hasExistingChildren = treeData.some(node => node.parent === id);
-
-        // console.log('isOpen: ', isOpen, 'hasExistingChildren: ', hasExistingChildren, 'treeData:', treeData)
-
-        // If the node has existing children, don't load more
-        if (hasExistingChildren) {
-            return;
-        }
-
-        // Find the node in the treeData
-        const node = treeData.find(node => node.id === id);
-
-        if (!node) {
-            return;
-        }
+        // Если нода закрывается - ничего не делаем
+        if (!isOpen) return;
 
         try {
-            let res = await axios.post('', {data: node, _method: 'getChilds'})
+            setLoadingNodeId(id);
+            const node = treeData.find(node => node.id === id);
+            const res = await axios.post('', {data: node, _method: 'getChilds'});
             const newChildNodes = res.data.data;
-            console.log(newChildNodes)
-            // Update the treeData with the new child nodes
-            setTreeData(prevTree => [
-                ...prevTree,
-                ...newChildNodes,
-            ]);
+
+            setTreeData(prevTree => {
+                // Создаем Set из ID существующих нод для быстрой проверки
+                const existingNodeIds = new Set(prevTree.map(n => n.id));
+
+                // Фильтруем новые ноды, оставляем только те, которых еще нет
+                const uniqueNewNodes = newChildNodes.filter(
+                    (child: { id: string | number; }) => !existingNodeIds.has(child.id)
+                );
+
+                // Если все новые ноды уже есть - не обновляем состояние
+                if (uniqueNewNodes.length === 0) return prevTree;
+
+                // Мержим деревья, добавляя только уникальные ноды
+                return [...prevTree, ...uniqueNewNodes];
+            });
+
         } catch (error) {
             console.error('Error loading child nodes:', error);
+        } finally {
+            setLoadingNodeId(null);
         }
-    }, [treeData])
+    }, [treeData]);
 
-    const addModel = useCallback(async (model: string) => {
+    const updateCatalog = useCallback(async () => {
+        try {
+            const res = await axios.post('', {
+                _method: 'getCatalog'
+            });
+            const {catalog: resCatalog} = res.data;
+
+            setTreeData(prevTree => {
+                // Создаем Map существующих нод для быстрого поиска
+                const existingNodesMap = new Map(prevTree.map(node => [node.id, node]));
+                const newNodes = resCatalog.nodes;
+
+                // Обновляем дерево: добавляем новые ноды и обновляем существующие если text изменился
+                const updatedTree = prevTree.map(node => {
+                    const newNode = newNodes.find((n: NodeModel<CustomCatalogData>) => n.id === node.id);
+                    return newNode && newNode.text !== node.text ? newNode : node;
+                });
+
+                // Добавляем новые ноды, которых еще нет
+                const nodesToAdd = newNodes.filter(
+                    (newNode: NodeModel<CustomCatalogData>) =>
+                        !existingNodesMap.has(newNode.id) ||
+                        (existingNodesMap.get(newNode.id)?.text !== newNode.text)
+                );
+
+                // Если нечего добавлять и нечего обновлять - возвращаем предыдущее состояние
+                if (nodesToAdd.length === 0 &&
+                    updatedTree.length === prevTree.length &&
+                    updatedTree.every((node, i) => node === prevTree[i])) {
+                    return prevTree;
+                }
+
+                // Объединяем обновленные и новые ноды
+                return [...updatedTree, ...nodesToAdd];
+            });
+        } catch (error) {
+            console.error('Error reloading catalog:', error);
+        }
+    }, [])
+
+    const reloadCatalog = useCallback(async (item?: any) => {
+        if (item) { // Если элемент отредактирован
+            // Обновляем конкретную ноду в treeData
+            setTreeData(prevTree => {
+                return prevTree.map(node => {
+                    if (node.id === item.id) {
+                        return {
+                            ...node,
+                            text: item.name, // Обновляем текст из ответа сервера
+                            data: {
+                                ...node.data,
+                                ...item // Обновляем все остальные данные из ответа
+                            }
+                        };
+                    }
+                    return node;
+                });
+            });
+        } else {
+            if (selectedNodes[0]?.droppable) {
+                treeRef.current?.open(selectedNodes[0].id);
+                await handleToggle(selectedNodes[0].id as string, true);
+            } else {
+                await updateCatalog();
+            }
+        }
+    }, [selectedNodes, handleToggle, setTreeData]);
+
+    const selectCatalogItem = useCallback(async (type: string) => {
+        setItemType(type)
+        setFirstRender(true)
+        const res = await axios.post('', {type: type, _method: 'getAddTemplate'})
+        setPopUpData(res.data)
+        dialogRef.current?.next()
+        setFirstRender(false)
+    }, [parentid, firstRender, itemType])
+
+    const initUpdateItem = useCallback(async () => {
+        try {
+            setFirstRender(true)
+            const res = await axios.post('', {
+                type: selectedNodes[0]?.data?.type,
+                modelId: selectedNodes[0]?.data?.modelId ?? null,
+                id: selectedNodes[0]?.data?.id,
+                _method: 'getEditTemplate'
+            })
+            if (res.data) {
+                // console.log(res.data.type)
+                if (res.data.type.includes('navigation')) {
+                    switch (res.data.type) {
+                        case 'navigation.group':
+                            setAddLinksGroupProps(res.data.data)
+                            setPopupType('navigation.group')
+                            setFirstRender(false)
+                            break
+                        case 'navigation.link':
+                            setAddLinksGroupProps(res.data.data)
+                            setPopupType('navigation.link')
+                            setFirstRender(false)
+                            break
+                    }
+                } else {
+                    switch (res.data.type) {
+                        case 'model':
+                            const item = res.data.data.item
+                            const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
+                            setAddProps(resEdit.data)
+                            setPopUpTargetBlank(item.targetBlank)
+                            setPopupType('model')
+                            setFirstRender(false)
+                            break
+                        default:
+                            const initModule = async () => {
+                                const Module = await import(/* @vite-ignore */ res.data.data.path as string);
+                                const Component = Module.default as DynamicComponent['default'];
+                                setDynamicComponent(<Component
+                                    key={`${res.data.data.id}-${res.data.data.item.name}`}
+                                    callback={(item: any) => {
+                                        dialogRef.current?.close()
+                                        reloadCatalog(item)
+                                    }}
+                                    update={true}
+                                    item={res.data.data.item}
+                                />);
+                            }
+                            initModule();
+                            setPopupType('component')
+                            setFirstRender(false)
+                            break
+                    }
+                }
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }, [PopupEvent, selectedNodes, treeData, addProps])
+
+    const deleteItem = useCallback(async () => {
+        if (!selectedNodes.length) return;
+
+        try {
+            for (const selectedNode of selectedNodes) {
+                const res = await axios.delete('', {data: selectedNode});
+
+                if (res.data.data.ok) {
+                    // Создаем копию текущего treeData для модификации
+                    let updatedTreeData = [...treeData];
+
+                    // Удаляем все выбранные ноды и их потомков
+                    const removeNodeAndChildren = (
+                        id: string | number,
+                        nodes: NodeModel<CustomCatalogData>[]): NodeModel<CustomCatalogData>[] => {
+
+                        // Фильтруем ноды, удаляя текущую ноду
+                        let result = nodes.filter(node => node.id !== id);
+
+                        // Находим всех детей текущей ноды
+                        const children = nodes.filter(node => node.parent === id);
+
+                        // Рекурсивно удаляем каждого ребенка
+                        children.forEach(child => {
+                            result = removeNodeAndChildren(child.id, result);
+                        });
+
+                        return result;
+                    };
+
+                    // Применяем удаление для каждой выбранной ноды
+                    selectedNodes.forEach(selectedNode => {
+                        updatedTreeData = removeNodeAndChildren(selectedNode.id, updatedTreeData);
+                    });
+
+                    // Обновляем состояние
+                    setTreeData(updatedTreeData);
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting node:', error);
+        } finally {
+            setSelectedNodes([]);
+            setParentId(0)
+        }
+    }, [selectedNodes, treeData]);
+
+    const setPopUpData = useCallback((data: { type: string, data: any }) => {
+        if (data.type.includes('navigation')) {
+            switch (data.type) {
+                case 'model':
+                    setAddItemProps(data.data)
+                    setPopupType('model')
+                    break
+                case 'navigation.group':
+                    console.log(data.data)
+                    setAddLinksGroupProps(data.data)
+                    setPopupType('navigation.group')
+                    break
+                case 'navigation.link':
+                    setAddLinksGroupProps(data.data)
+                    setPopupType('navigation.link')
+                    break
+
+            }
+        } else {
+            switch (data.type) {
+                case 'model':
+                    setAddItemProps(data.data)
+                    setPopupType('model')
+                    break
+                default:
+                    const initModule = async () => {
+                        const Module = await import(/* @vite-ignore */ data.data.path as string);
+                        const Component = Module.default as DynamicComponent['default'];
+                        setDynamicComponent(<Component
+                            parentId={parentid}
+                            callback={(item: any) => {
+                                dialogRef.current?.close()
+                                reloadCatalog(item)
+                            }}
+                        />);
+                    }
+                    initModule();
+                    setPopupType('component')
+                    break
+            }
+        }
+    }, [PopupEvent, selectedNodes, isNavigation])
+
+    const getAddModelJSON = useCallback(async (model: string) => {
         setSecondRender(true)
         const res = await axios.get(`${window.routePrefix}/model/${model}/add?without_layout=true'`)
         setAddProps(res.data)
         dialogRef.current?.next()
         setSecondRender(false)
-    }, [items])
+    }, [itemType])
+
+    const addModel = useCallback(async (record: any, targetBlank?: boolean) => {
+        if (targetBlank) record.targetBlank = targetBlank
+        try {
+            await axios.post('', {
+                data: {
+                    record: record,
+                    parentId: parentid,
+                    type: itemType
+                },
+                _method: 'createItem'
+            })
+        } catch (e) {
+            console.log(e)
+        } finally {
+            dialogRef.current?.close()
+            reloadCatalog()
+        }
+    }, [itemType, selectedNodes, treeData])
+
+    const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
+        if (targetBlank) record[0].targetBlank = targetBlank;
+
+        record[0].treeId = selectedNodes[0]?.data?.id;
+
+        try {
+            const res = await axios.put('', {
+                type: selectedNodes[0]?.data?.type,
+                data: {record: record[0]},
+                modelId: selectedNodes[0]?.data?.modelId,
+                _method: 'updateItem'
+            });
+
+            // Обновляем ВСЕ ноды с совпадающими modelId и type
+            setTreeData(prevTree => {
+                const {modelId, type, name} = res.data.data;
+
+                // Если нет modelId или type, не обновляем дерево
+                if (modelId === undefined || type === undefined) {
+                    console.warn('No modelId or type in response!');
+                    return prevTree;
+                }
+                return prevTree.map(node => {
+                    // Проверяем, что data существует и modelId + type совпадают
+                    if (
+                        node.data?.modelId === modelId &&
+                        node.data?.type === type
+                    ) {
+                        return {
+                            ...node,
+                            text: name, // Берём name из ответа сервера
+                            data: {
+                                ...node.data,
+                                ...res.data, // Обновляем все данные из ответа
+                            },
+                        };
+                    }
+                    return node;
+                });
+            });
+
+        } catch (e) {
+            console.error('Error updating model:', e);
+        } finally {
+            dialogRef.current?.close();
+        }
+    }, [selectedNodes, setTreeData]);
+
+    const performSearch = async (s: string) => {
+        if (!s.trim()) {
+            // reloadCatalog();
+            return;
+        }
+        try {
+            const res = await axios.post('', {s: s, _method: 'search'})
+            console.log(res.data)
+        } catch (error) {
+            console.error('Error searching:', error);
+        }
+    };
+
+    const handleSearch = useCallback(
+        debounce(performSearch, 500),
+        [treeData, reloadCatalog]
+    );
+
+    const handleOpenContextMenu = useCallback((open: boolean, node: NodeModel<CustomCatalogData>) => {
+        if (open) {
+            // Проверяем, выделена ли текущая нода
+            const isNodeSelected = selectedNodes.some(n => n.id === node.id);
+
+            // Сбрасываем все выделенные ноды
+            setSelectedNodes([]);
+
+            // Если нода не была выделена - выделяем её
+            if (!isNodeSelected) {
+                handleSelect(node);
+                getActionsContext(node)
+            }
+        }
+    }, [])
+
+    const getActionsContext = useCallback(async (node: NodeModel<CustomCatalogData>) => {
+        setActionsContext([])
+        setActionLoading(true)
+        try {
+            const res = await axios.post('', {
+                items: [node],
+                type: 'context',
+                _method: 'getActions'
+            })
+            if (res.data && res?.data?.data?.length) {
+                setActionsContext(res.data.data)
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setActionLoading(false)
+        }
+    }, [])
+
+    const initAction = useCallback(async (id: string) => {
+        const action = actionsTools.find(e => e.id === id) ?? actionsContext.find(e => e.id === id)
+        if (!action) return
+        let res = null
+        switch (action.type) {
+            case 'link':
+                res = await axios.put('', {actionId: action.id, _method: 'getLink'})
+                if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                break
+            case 'basic':
+                let data = {
+                    actionID: action.id,
+                    items: [selectedNodes[0]],
+                }
+                try {
+                    toast.warning(messages['Performing an action...'])
+                    await axios.put('', {data: data, _method: 'handleAction'})
+                } catch (e) {
+                    console.error(e)
+                } finally {
+                    toast.success(messages['Action completed'])
+                }
+                break
+            default:
+                break
+        }
+    }, [actionsTools, selectedNodes, actionsContext])
+
     return (
         <>
             {isLoading ? (
@@ -270,10 +619,14 @@ const CatalogTree = () => {
                         setMessages
                     }
                 }>
+                    <Toaster position="top-center" richColors closeButton/>
                     <div className="flex gap-8 items-center mb-4">
                         <h1 className="text-[28px] leading-[36px] text-foreground">{messages[catalog.catalogName]}</h1>
                         {catalog.idList.length > 0 &&
-                            <Select defaultValue={catalog.catalogId}>
+                            <Select defaultValue={catalog.catalogId}
+                                    onValueChange={(value) => {
+                                        router.get(`${window.routePrefix}/catalog/${catalog.catalogSlug}/${value}`)
+                                    }}>
                                 <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
                                     <SelectValue placeholder={messages["Select Ids"]}/>
                                 </SelectTrigger>
@@ -289,21 +642,62 @@ const CatalogTree = () => {
                     <div
                         className="md:grid md:grid-cols-[minmax(70px,_800px)_minmax(150px,_250px)] md:gap-10 justify-between flex flex-col gap-3.5">
                         <div className="flex gap-2">
-                            <Button variant="default" size="sm" className="w-fit cursor-pointer rounded-sm"
+                            <Button variant="default" size="sm"
+                                    className={`w-fit rounded-sm ${
+                                        selectedNodes.length === 0 ||
+                                        (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
+                                            ? ''
+                                            : 'opacity-50 pointer-events-none'
+                                    }`}
                                     onClick={() => {
+                                        setPopupEvent('create')
                                         dialogRef.current?.open()
                                     }}>
                                 <Plus/>
                                 {messages.create}
                             </Button>
-                            <Button variant="outline" size="sm" className="w-fit cursor-pointer rounded-sm">
+                            <Button variant="outline" size="sm"
+                                    className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
+                                        'opacity-50 pointer-events-none' : ''}`}
+                                    onClick={() => {
+                                        initUpdateItem()
+                                        setPopupEvent('update')
+                                        dialogRef.current?.open()
+                                    }}>
                                 <Pencil/>
                                 {messages.Edit}
                             </Button>
-                            <Button variant="destructive" size="sm" className="w-fit cursor-pointer rounded-sm">
-                                <Trash2/>
-                                {messages.Delete}
+                            <DeleteModal btnTitle={messages.Delete}
+                                         ref={deleteModalRef}
+                                         variant="destructive"
+                                         btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                         delModal={
+                                             {
+                                                 yes: messages['Yes'],
+                                                 no: messages['No'],
+                                                 text: messages['Are you sure?']
+                                             }
+                                         }
+                                         isLink={false}
+                                         handleDelete={deleteItem}
+                            />
+                            <Button variant="secondary" size="sm"
+                                    className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                    onClick={() => {
+                                        setSelectedNodes([])
+                                    }}>
+                                <Ban/>
+                                {messages["Clean"]}
                             </Button>
+                            <div className="ml-4">
+                                {actionsTools.map((item) => (
+                                    <Button variant="secondary" size="sm" key={item.id}
+                                            onClick={() => initAction(item.id)}>
+                                        <MaterialIcon name={item.icon}/>
+                                        {item.name}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                         <div>
                             <Input
@@ -311,12 +705,15 @@ const CatalogTree = () => {
                                 autoFocus={false}
                                 placeholder={messages.Search}
                                 className="w-full max-w-[200px] p-2 border rounded"
-                                // onChange={(e) => {onGlobalSearch(e.target.value)}}
-                                // onKeyDown={(e) => {
-                                //     if (e.key === 'Enter' && handleSearch) {
-                                //         handleSearch()
-                                //     }
-                                // }}
+                                onChange={(e) => {
+                                    handleSearch(e.target.value)
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        performSearch(e.currentTarget.value);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -324,20 +721,65 @@ const CatalogTree = () => {
                         <DndProvider backend={MultiBackend} options={getBackendOptions()}>
                             <div className={styles.app}>
                                 <Tree
+                                    ref={treeRef}
                                     tree={treeData}
                                     rootId={0}
                                     render={(node, {depth, isOpen, onToggle}) => (
-                                        <CatalogNode
-                                            node={node}
-                                            depth={depth}
-                                            isOpen={isOpen}
-                                            isSelected={node.id === selectedNode?.id}
-                                            onToggle={(id) => {
-                                                onToggle();
-                                                handleToggle(id as string, !isOpen)
-                                            }}
-                                            onSelect={handleSelect}
-                                        />
+                                        <ContextMenu
+                                            onOpenChange={(open: boolean) => handleOpenContextMenu(open, node)}>
+                                            <ContextMenuTrigger>
+                                                <CatalogNode
+                                                    node={node}
+                                                    depth={depth}
+                                                    isOpen={isOpen}
+                                                    loading={loadingNodeId === node.id}
+                                                    isSelected={!!selectedNodes.find((n) => n.id === node.id)}
+                                                    onToggle={(id) => {
+                                                        onToggle();
+                                                        handleToggle(id as string, !isOpen)
+                                                    }}
+                                                    onSelect={handleSelect}
+                                                />
+                                            </ContextMenuTrigger>
+                                            <ContextMenuContent>
+                                                <ContextMenuItem
+                                                    className={`${selectedNodes[0]?.droppable ? '' : 'opacity-50 pointer-events-none'}`}
+                                                    onClick={() => {
+                                                        setPopupEvent('create')
+                                                        dialogRef.current?.open()
+                                                        console.log(selectedNodes[0])
+                                                    }}>
+                                                    {messages.create}
+                                                </ContextMenuItem>
+                                                <ContextMenuItem onClick={() => {
+                                                    initUpdateItem()
+                                                    setPopupEvent('update')
+                                                    dialogRef.current?.open()
+                                                }}>
+                                                    {messages.Edit}
+                                                </ContextMenuItem>
+                                                <ContextMenuItem
+                                                    variant="destructive"
+                                                    onClick={() => {
+                                                        document.body.removeAttribute('style')
+                                                        deleteModalRef.current?.click()
+                                                    }}
+                                                    className={selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}
+                                                >
+                                                    {messages["Delete"]}
+                                                </ContextMenuItem>
+                                                {actionLoading ? (
+                                                    <LoaderCircle
+                                                        className="mx-auto size-3 animate-spin"/>
+                                                ) : (
+                                                    actionsContext.map((item) => (
+                                                        <ContextMenuItem key={item.id} onClick={() => initAction(item.id)}>
+                                                            {item.name}
+                                                        </ContextMenuItem>
+                                                    ))
+                                                )}
+                                            </ContextMenuContent>
+                                        </ContextMenu>
                                     )}
                                     dropTargetOffset={5}
                                     insertDroppableFirst={false}
@@ -360,44 +802,35 @@ const CatalogTree = () => {
                                     placeholderRender={(node, {depth}) => (
                                         <Placeholder node={node} depth={depth}/>
                                     )}
+                                    rootProps={{
+                                        onClick: handleClear
+                                    }}
                                 />
                             </div>
                         </DndProvider>
                     </div>
-                    <DialogStack ref={dialogRef}>
-                        <DialogStackOverlay/>
-                        <DialogStackBody>
-                            <DialogStackContent>
-                                <div className="relative h-full">
-                                    {firstRender && <LoaderCircle
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                    <SelectCatalogItem items={items} onSelect={selectCatalogItem}/>
-                                </div>
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <div className="relative h-full">
-                                    {secondRender && <LoaderCircle
-                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>}
-                                    {popupType === 'navigation.item' && <NavItemAdd add={addModel} {...addItemProps} />}
-                                    {popupType === 'navigation.group' &&
-                                        <NavGropuAdd callback={() => {
-                                            dialogRef.current?.close()
-                                            reloadCatalog()
-                                        }} {...addGropuProps}/>}
-                                </div>
-                            </DialogStackContent>
-
-                            <DialogStackContent>
-                                <div className="h-full overflow-y-auto mt-5">
-                                    <AddForm page={addProps} catalog={true} callback={() => {
-                                        dialogRef.current?.close()
-                                        reloadCatalog()
-                                    }}/>
-                                </div>
-                            </DialogStackContent>
-                        </DialogStackBody>
-                    </DialogStack>
+                    <CatalogDialogStack
+                        dialogRef={dialogRef}
+                        PopupEvent={PopupEvent}
+                        firstRender={firstRender}
+                        secondRender={secondRender}
+                        popupType={popupType}
+                        addProps={addProps}
+                        editModel={editModel}
+                        popUpTargetBlank={popUpTargetBlank}
+                        isNavigation={isNavigation}
+                        messages={messages}
+                        DynamicComponent={DynamicComponent}
+                        addLinksGroupProps={addLinksGroupProps}
+                        reloadCatalog={reloadCatalog}
+                        itemType={itemType}
+                        parentid={parentid}
+                        addItemProps={addItemProps}
+                        getAddModelJSON={getAddModelJSON}
+                        addModel={addModel}
+                        items={items}
+                        selectCatalogItem={selectCatalogItem}
+                    />
                 </CatalogContext.Provider>
             )}
         </>

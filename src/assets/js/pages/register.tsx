@@ -194,7 +194,7 @@ export default function Register() {
                             </Select>
                         </div>
                         <div className="flex gap-4">
-                            <Button type="submit" className="w-fit cursor-pointer"
+                            <Button type="submit" className="w-fit"
                                     disabled={processing}>{page.props.submitButton}</Button>
                             <Button asChild variant="outline">
                                 <Link href={page.props.backToLogin.link}

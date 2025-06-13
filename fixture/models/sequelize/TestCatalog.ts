@@ -8,11 +8,10 @@ import {
 } from 'sequelize-typescript';
 import { InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
 
-
-@Table({ tableName: 'page', timestamps: true })
-export class Page extends Model<
-    InferAttributes<Page>,
-    InferCreationAttributes<Page>
+@Table({ tableName: 'testcatalog', timestamps: false })
+export class TestCatalog extends Model<
+    InferAttributes<TestCatalog>,
+    InferCreationAttributes<TestCatalog>
 > {
 
     @PrimaryKey
@@ -20,6 +19,7 @@ export class Page extends Model<
     @Column(DataType.INTEGER)
     declare id: number;
 
-    @Column(DataType.STRING)
-    declare title: string;
+    @Column(DataType.JSON)
+    declare tree: object;
+
 }
