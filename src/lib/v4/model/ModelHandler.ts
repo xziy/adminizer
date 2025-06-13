@@ -8,9 +8,6 @@ export class ModelHandler {
     
 
     const modelname = modelName.toLowerCase()
-    if (this.models.has(modelname)) {
-      throw new Error(`Model "${modelname}" is already registered.`);
-    }
     this.models.set(modelname, modelInstance);
     Adminizer.log.debug(`Model with name [${modelname}] was registered`)
   }

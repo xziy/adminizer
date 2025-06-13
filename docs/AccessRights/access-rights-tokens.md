@@ -25,6 +25,29 @@ if (sails.config.adminpanel.auth) {
     }
 ```
 
+### Registering Custom Tokens
+
+Custom tokens let you restrict access to additional features beyond the standard CRUD actions. Register them when your application starts:
+
+```ts
+adminizer.accessRightsHelper.registerTokens([
+  {
+    id: 'reports-export',
+    name: 'Export reports',
+    description: 'Permission to export data from Reports',
+    department: 'reports'
+  }
+])
+```
+
+Assign the token to a group so members inherit the permission:
+
+```ts
+await GroupAP.updateOne({ name: 'managers' }).set({
+  tokens: ['reports-export']
+})
+```
+
 
 ## Users and Groups
 In Model `Users` admin or someone who has access can create user profiles and give them specific access rights by adding them to `Groups`.

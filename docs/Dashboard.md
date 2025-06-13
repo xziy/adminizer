@@ -41,7 +41,7 @@ module.exports.adminpanel = {
 # Widgets
 
 ### WidgetHandler
- WidgetHandler is a static class that process handling widgets maked with abstract class of widgets. Widget can have 4 types: 
+ WidgetHandler is a static class that processes widgets made with the abstract widget classes. A widget can have four types:
  * info [InfoBase] - give information without any action
  * switcher [SwitcherBase] - switcher change boolean state 
  * action [ActionBase] - start action by click on widget
@@ -49,13 +49,13 @@ module.exports.adminpanel = {
  * custom [CustomBase] - mount JS/html widget into dashboard widget
  
 Widgets have magic on loading sails project such as model or service. This function work on 
-`sails.config.adminpanel.autoloadWidgetsPath: string`. Widget is a class which created by abstract class and pass it in WidgetHanler.add
+`sails.config.adminpanel.autoloadWidgetsPath: string`. A widget class is created from an abstract base and passed to `WidgetHandler.add`.
 
-> ⚠️ Any new Widget type must be added to `WidgetType` inside `/lib/widgets/widgetHandller.ts` file. Additionally, within this handler, the logic for the new type needs to be implemented inside the `getAll` method specifically created for the added type.
+ > ⚠️ Any new widget type must be added to `WidgetType` inside `/lib/widgets/widgetHandller.ts`. Within this handler you also need to implement the logic for the new type in the `getAll` method.
 
 > ⚠️ You can access widget handler by call method of admin panel `sails.hooks.adminpanel.getWidgetHandler()`
 
-> ⚠️ You can add widget by call method of admin panel `sails.hooks.adminpanel.addDashboardWidget(widget: WidgetType) `
+ > ⚠️ You can add a widget by calling `sails.hooks.adminpanel.addDashboardWidget(widget: WidgetType)`.
 
 
 WidgetBase instance has this props:
@@ -67,15 +67,15 @@ WidgetBase instance has this props:
 - `size`: {h: number, w: number} | null; size of box on client
 - `widgetType`: 
         /** An informational widget type that only shows the state */
-		"info" |
-		 Binary state switching 
-		"switcher" |
-		/** Run task */
-		"action" |
-		/** Change location, or open in new tab */
-		"link" |
-        /**  any tast from js file */
-		"custom"
+        "info" |
+        /** Binary state switching */
+        "switcher" |
+        /** Run task */
+        "action" |
+        /** Change location, or open in new tab */
+        "link" |
+        /**  any task from JS file */
+        "custom"
  
 The new type of widgets created on the WidgetBase will have their own field which have to be as `public abstract readonly`
 
@@ -85,7 +85,7 @@ Promotions that are displayed in the interface cannot be single, for the flag `i
 
 > ⚠️  You can use this mechanism to display the user's personal promotions, as he transfers the user when calculating the promotion
 
-The public promotion can turn on a banner, or make some other action if such a connection is available through Emmiter `Emmit (` Apply-Promotion`, Promotion) ` -->
+The public promotion can turn on a banner or perform another action if such a connection is available through the emitter `Emit('Apply-Promotion', promotion)`.
 
 **Example**
 First we have to create widget type `abstractCustom`. In the way like this.
