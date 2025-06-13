@@ -37,9 +37,12 @@ let adminpanelConfig: AdminpanelConfig = {
      */
     models: {
         UserAP: {
-            title: "Users AP",
+            title: "Users",
             model: "userap",
             icon: "people",
+            navbar: {
+                section: "System"
+            },
             add: {
                 controller: "../controllers/addUser"
             },
@@ -79,9 +82,12 @@ let adminpanelConfig: AdminpanelConfig = {
             }
         },
         GroupAP: {
-            title: "Groups AP",
+            title: "Groups",
             model: "groupap",
             icon: "group_add",
+            navbar: {
+                section: "System"
+            },
             add: {
                 controller: "../controllers/addGroup"
             },

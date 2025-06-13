@@ -253,6 +253,10 @@ export interface ModelConfig {
          * For which it will be shown if not established will be shown to all groups who have the rights to read
          */
         groupsAccessRights?: string[]
+        /**
+         * Optional section grouping for navbar items (side navigation)
+         */
+        section?: string
     }
     /**
      * Entity fields configuration
@@ -494,6 +498,10 @@ export interface HrefConfig {
      * For menu items only
      * */
     subItems?: HrefConfig[]
+    /**
+     * Optional section grouping for navbar items (side navigation)
+     */
+    section?: string
 }
 
 export interface NavigationItemTypeConfig {
