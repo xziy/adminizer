@@ -6,7 +6,7 @@ import timezones from "../lib/timezones";
 /**
  * Default admin config
  */
-var adminpanelConfig: AdminpanelConfig = {
+let adminpanelConfig: AdminpanelConfig = {
     /** Default route prefix */
     routePrefix: '/adminizer',
 

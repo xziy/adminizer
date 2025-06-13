@@ -35,6 +35,14 @@ import {ControlsHandler} from "./v4/controls/ControlsHandler";
 import {v4 as uuid} from "uuid";
 
 export class Adminizer {
+    // Preconfigures
+    /**
+     * If you convey this default Middleware, it will add it to the very top of the router, 
+     * and will contact each request
+     */
+    defaultMiddleware: MiddlewareType
+
+    // Instances
     app: Express
     public config: AdminpanelConfig
     private readonly _emitter: EventEmitter
@@ -48,6 +56,7 @@ export class Adminizer {
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
 
+    // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
     static logger = winston.createLogger({
@@ -246,5 +255,9 @@ export class Adminizer {
             verbose: (...args: any[]) => this.logger.verbose(args.join(" ")),
             silly: (...args: any[]) => this.logger.silly(args.join(" ")),
         };
+    }
+
+    get defaultConfig() {
+        return getDefaultConfig();
     }
 }
