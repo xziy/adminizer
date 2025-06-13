@@ -34,6 +34,15 @@ export default class Router {
 			return;
 		}
 
+
+		if (
+			typeof adminizer.defaultMiddleware === 'function' &&
+			adminizer.defaultMiddleware.length >= 3 &&
+			adminizer.defaultMiddleware.length <= 4
+		) {
+			adminizer.app.use(adminizer.defaultMiddleware);
+		}
+
 		/**
 		 * List or one policy that should be bound to actions
 		 * @type {MiddlewareType[]}
@@ -163,7 +172,7 @@ export default class Router {
 		/**
 		 * Create a default dashboard
 		 */
-		if (Boolean(adminizer.config.dashboard)) {
+		if (adminizer.config.dashboard) {
 			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _dashboard));
 		} else {
 			adminizer.app.all(adminizer.config.routePrefix, adminizer.policyManager.bindPolicies(policies, _welcome));
