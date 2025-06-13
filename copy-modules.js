@@ -7,6 +7,9 @@ const CONFIG = {
         'modules/controls/wysiwyg/react-quill-editor.es.js',
         'modules/controls/wysiwyg/react-quill-editor.css',
         'modules/test/ComponentB.es.js',
+        'modules/testCatalog/button-Dk9HuYNn.js',
+        'modules/testCatalog/catalogAction.es.js',
+        'modules/testCatalog/Group.es.js'
     ],
     targetDir: path.normalize('dist/assets/modules')
 };

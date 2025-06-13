@@ -14,7 +14,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Button} from "@/components/ui/button.tsx";
 import {Pencil, Plus, Ban, LoaderCircle} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps, CatalogActions} from "@/types";
+import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, DynamicActionComponent, AddCatalogProps, CatalogActions} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
@@ -68,6 +68,7 @@ const CatalogTree = () => {
     const [isNavigation, setIsNavigation] = useState<boolean>(false)
 
     const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
+    const [DynamicActionComponent, setDynamicActionComponent] = useState<React.ReactElement | null>(null);
 
     const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
     const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
@@ -101,7 +102,7 @@ const CatalogTree = () => {
             setTreeData(resCatalog.nodes)
             setActionsTools(toolsActions)
             setIsNavigation(resCatalog.catalogSlug === "navigation");
-            // console.log(toolsActions)
+            console.log(toolsActions)
         };
 
         const initLocales = async () => {
@@ -296,7 +297,7 @@ const CatalogTree = () => {
         setPopUpData(res.data)
         dialogRef.current?.next()
         setFirstRender(false)
-    }, [parentid, firstRender, itemType])
+    }, [parentid])
 
     const initUpdateItem = useCallback(async () => {
         try {
@@ -356,7 +357,7 @@ const CatalogTree = () => {
         } catch (e) {
             console.log(e)
         }
-    }, [PopupEvent, selectedNodes, treeData, addProps])
+    }, [selectedNodes])
 
     const deleteItem = useCallback(async () => {
         if (!selectedNodes.length) return;
@@ -434,6 +435,7 @@ const CatalogTree = () => {
                         const Module = await import(/* @vite-ignore */ data.data.path as string);
                         const Component = Module.default as DynamicComponent['default'];
                         setDynamicComponent(<Component
+                            key={JSON.stringify(new Date())}
                             parentId={parentid}
                             callback={(item: any) => {
                                 dialogRef.current?.close()
@@ -446,7 +448,7 @@ const CatalogTree = () => {
                     break
             }
         }
-    }, [PopupEvent, selectedNodes, isNavigation])
+    }, [selectedNodes, isNavigation])
 
     const getAddModelJSON = useCallback(async (model: string) => {
         setSecondRender(true)
@@ -521,7 +523,7 @@ const CatalogTree = () => {
         } finally {
             dialogRef.current?.close();
         }
-    }, [selectedNodes, setTreeData]);
+    }, [selectedNodes, setTreeData, treeData]);
 
     const performSearch = async (s: string) => {
         if (!s.trim()) {
@@ -538,7 +540,7 @@ const CatalogTree = () => {
 
     const handleSearch = useCallback(
         debounce(performSearch, 500),
-        [treeData, reloadCatalog]
+        [reloadCatalog]
     );
 
     const handleOpenContextMenu = useCallback((open: boolean, node: NodeModel<CustomCatalogData>) => {
@@ -582,13 +584,18 @@ const CatalogTree = () => {
         let res = null
         switch (action.type) {
             case 'link':
-                res = await axios.put('', {actionId: action.id, _method: 'getLink'})
-                if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                try {
+                    res = await axios.put('', {actionId: action.id, _method: 'getLink'})
+                    if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                } catch (e) {
+                    console.error(e)
+                }
                 break
             case 'basic':
                 let data = {
                     actionID: action.id,
-                    items: [selectedNodes[0]],
+                    items: selectedNodes,
+                    data: ''
                 }
                 try {
                     toast.warning(messages['Performing an action...'])
@@ -597,6 +604,29 @@ const CatalogTree = () => {
                     console.error(e)
                 } finally {
                     toast.success(messages['Action completed'])
+                }
+                break
+            case 'external':
+                try {
+                    const res = await axios.put('', {actionId: action.id, _method: 'getPopUpTemplate'})
+                    if (res.data) {
+                        const initModule = async () => {
+                            const Module = await import(/* @vite-ignore */ res.data.data as string);
+                            const Component = Module.default as DynamicActionComponent['default'];
+                            setDynamicActionComponent(<Component
+                                key={JSON.stringify(selectedNodes)}
+                                items={selectedNodes}
+                                callback={() => {
+                                    dialogRef.current?.close()
+                                }}
+                            />);
+                        }
+                        initModule();
+                        dialogRef.current?.open()
+                        setPopupEvent('action')
+                    }
+                } catch (e) {
+                    console.error(e)
                 }
                 break
             default:
@@ -684,14 +714,15 @@ const CatalogTree = () => {
                             <Button variant="secondary" size="sm"
                                     className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
                                     onClick={() => {
+                                        setParentId(0)
                                         setSelectedNodes([])
                                     }}>
                                 <Ban/>
                                 {messages["Clean"]}
                             </Button>
-                            <div className="ml-4">
+                            <div className="ml-4 flex gap-2">
                                 {actionsTools.map((item) => (
-                                    <Button variant="secondary" size="sm" key={item.id}
+                                    <Button variant="outline" size="sm" key={item.id}
                                             onClick={() => initAction(item.id)}>
                                         <MaterialIcon name={item.icon}/>
                                         {item.name}
@@ -747,7 +778,6 @@ const CatalogTree = () => {
                                                     onClick={() => {
                                                         setPopupEvent('create')
                                                         dialogRef.current?.open()
-                                                        console.log(selectedNodes[0])
                                                     }}>
                                                     {messages.create}
                                                 </ContextMenuItem>
@@ -773,7 +803,8 @@ const CatalogTree = () => {
                                                         className="mx-auto size-3 animate-spin"/>
                                                 ) : (
                                                     actionsContext.map((item) => (
-                                                        <ContextMenuItem key={item.id} onClick={() => initAction(item.id)}>
+                                                        <ContextMenuItem key={item.id}
+                                                                         onClick={() => initAction(item.id)}>
                                                             {item.name}
                                                         </ContextMenuItem>
                                                     ))
@@ -821,6 +852,7 @@ const CatalogTree = () => {
                         isNavigation={isNavigation}
                         messages={messages}
                         DynamicComponent={DynamicComponent}
+                        DynamicActionComponent={DynamicActionComponent}
                         addLinksGroupProps={addLinksGroupProps}
                         reloadCatalog={reloadCatalog}
                         itemType={itemType}
