@@ -41,6 +41,6 @@ Key features:
 
 ---
 
-
+> All agents must read the **AGENTS.md** file before proceeding. It contains important guidelines and responsibilities required for proper operation.
 
 [Go to the documentation](https://github.com/adminization/adminizer/blob/main/docs/index.md)
