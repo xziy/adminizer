@@ -1,6 +1,6 @@
 import React from "react";
 import { DragLayerMonitorProps } from "@minoru/react-dnd-treeview";
-import styles from "@/components/catalog/CatalogDragPreview.module.css";
+import styles from "@/components/catalog/catalogUI/CatalogDragPreview.module.css";
 import {CustomCatalogData} from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";
 

@@ -104,6 +104,7 @@ export abstract class BaseItem<T extends Item> {
 	 * @param modelId
 	 * @param data
 	 * @param catalogId
+	 * @param req
 	 */
 	public abstract updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<T>;
 
@@ -111,6 +112,7 @@ export abstract class BaseItem<T extends Item> {
 	 * Create catalog
 	 * @param data
 	 * @param catalogId
+	 * @param req
 	 */
 	public abstract create(data: T, catalogId: string, req?: ReqType): Promise<T>;
 
@@ -120,21 +122,24 @@ export abstract class BaseItem<T extends Item> {
 	public abstract deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void>;
 
 	/**
-	 * @deprecated
-	 * TODO: pass react module
+	 * get add template
+	 * @param req
 	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
+	public abstract getAddTemplate(req: ReqType): Promise<{
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
 		data: any
 	}>
 
 	/**
-	 * @deprecated
-	 * TODO: pass react module
+	 * get edit template
+	 * @param id
+	 * @param catalogId
+	 * @param req
+	 * @param modelId
 	 */
-	public abstract getEditHTML(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'link' | 'html' | 'jsonForm',
-		data: string
+	public abstract getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		data: any
 	}>;
 
 	public async _getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<Item[]> {
@@ -155,37 +160,10 @@ export abstract class AbstractGroup<T extends Item> extends BaseItem<T> {
 	public readonly type: string = "group";
 	public readonly isGroup: boolean = true;
 	public icon: string = "folder";
-
-	/**
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
-	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
-		data: {
-			items?: { name: string, required: boolean }[] | Record<string, any>[],
-			model?: string,
-			labels?: Record<string, string>,
-		}
-	}>
 }
 
 export abstract class AbstractItem<T extends Item> extends BaseItem<T> {
 	public readonly isGroup: boolean = false;
-
-
-	/**
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
-	 */
-	public abstract getAddHTML(req: ReqType): Promise<{
-		type: 'component' | 'model' | string,
-		data: {
-			items?: Record<string, any>[],
-			model?: string,
-			labels?: Record<string, string>,
-		}
-	}>
 }
 
 /// ContextHandler
@@ -194,11 +172,10 @@ export abstract class ActionHandler {
 	 * Three actions are possible, without configuration, configuration via pop-up, and just external action
 	 * For the first two, a handler is provided, but the third type of action simply calls the HTML in the popup; the controller will be implemented externally
 	 * */
-	public abstract readonly type: "basic" |
-		"json-forms" |
+	public abstract readonly type:
+		"basic" |
 		"external" |
-		"link" |
-		"partial"
+		"link"
 
 	/**
 	 * Will be shown in the context menu section
@@ -209,19 +186,10 @@ export abstract class ActionHandler {
 	 */
 	public abstract readonly displayTool: boolean
 
-	/** (!*1)
-	 * Only for json-forms
-	 * ref: https://jsonforms.io/docs
-	 */
-	public abstract readonly uiSchema: any
-	public abstract readonly jsonSchema: JSONSchema4
-
 	/**
-	 * For "json-forms" | "external"
-	 * @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
+	 * For "external"
 	 */
-	public abstract getPopUpHTML(data?: any): Promise<string>
+	public abstract getPopUpTemplate(data?: any): Promise<string>
 
 
 	/**
@@ -248,9 +216,9 @@ export abstract class ActionHandler {
 	 * Implementation of a method that will do something with elements.
 	 * there's really not much you can do with the context menu
 	 * @param items
-	 * @param config
+	 * @param req
 	 */
-	public abstract handler(items: Item[], data?: any, req?: ReqType): Promise<void>;
+	public abstract handler(items: Item[], req?: ReqType): Promise<void>;
 
 }
 
@@ -386,21 +354,23 @@ export abstract class AbstractCatalog {
 	}
 
 	/**
-	 * Receives HTML to update an element for projection into a popup
-	* @deprecated reason: migration for intertia
-	 * todo need passing custom React module
+	 * Get edit template from an item type
+	 * @param item
+	 * @param id
+	 * @param req
+	 * @param modelId
 	 */
-	public getEditHTML(item: Item, id: string | number, req: ReqType, modelId?: string | number) {
-		return this.getItemType(item.type)?.getEditHTML(id, this.id, req, modelId);
+	public getEditTemplate(item: Item, id: string | number, req: ReqType, modelId?: string | number) {
+		return this.getItemType(item.type)?.getEditTemplate(id, this.id, req, modelId);
 	}
 
 	/**
-	 * Receives HTML to create an element for projection into a popup
-	 * @deprecated reason: migration for intertia
-	* // TODO: need passing custom React module 
-	*/
-	public getAddHTML(item: Item, req: ReqType) {
-		return this.getItemType(item.type)?.getAddHTML(req);
+	 * Get add template from an item type
+	 * @param item
+	 * @param req
+	 */
+	public getAddTemplate(item: Item, req: ReqType) {
+		return this.getItemType(item.type)?.getAddTemplate(req);
 	}
 
 	public addActionHandler(actionHandler: ActionHandler) {
@@ -432,7 +402,7 @@ export abstract class AbstractCatalog {
 	/**
 	 * Implements search and execution of a specific action.handler
 	 */
-	public async handleAction(actionId: string, items?: Item[], config?: any, req?: ReqType): Promise<void> {
+	public async handleAction(actionId: string, items?: Item[], req?: ReqType): Promise<void> {
 		let action: ActionHandler = null;
 		if (items.length === 1) {
 			const item = items[0];
@@ -447,7 +417,7 @@ export abstract class AbstractCatalog {
 		}
 
 		if (!action) throw `Action with id \`${actionId}\` not found`
-		return await action.handler(items, config, req);
+		return await action.handler(items, req);
 	}
 
 	/**
@@ -459,18 +429,17 @@ export abstract class AbstractCatalog {
 	}
 
 	/**
-	 * For Extermal and JsonForms actions
+	 * For Extermal and actions
 	 * @param actionId
-	* @deprecated reason: migration for intertia
-	 * // TODO: need passing custom React module
 	 */
-	public async getPopUpHTML(actionId: string) {
-		return this.actionHandlers.find((it) => it.id === actionId)?.getPopUpHTML();
+	public async getPopUpTemplate(actionId: string) {
+		return this.actionHandlers.find((it) => it.id === actionId)?.getPopUpTemplate();
 	}
 
 	/**
 	 *
 	 * @param data
+	 * @param req
 	 */
 	public async createItem<T extends Item>(data: T, req?: ReqType): Promise<T> {
 		const promise = this.getItemType(data.type)?.create(data, this.id, req) as Promise<T>;
@@ -485,9 +454,10 @@ export abstract class AbstractCatalog {
 
 	/**
 	 * To update all items in the tree after updating the model
-	 * @param id
+	 * @param modelId
 	 * @param type
 	 * @param data
+	 * @param req
 	 */
 	public async updateModelItems<T extends Item>(modelId: string | number, type: string, data: T, req?: ReqType): Promise<T> {
 		const promise = this.getItemType(type)?.updateModelItems(modelId, data, this.id, req) as Promise<T>;
@@ -517,7 +487,7 @@ export abstract class AbstractCatalog {
 				accumulator.push(...extras);
 			}
 
-			if (item.parentId === null) return item;
+			if (item.parentId === 0) return item;
 			const parentItem = await groupType._find(item.parentId, this.id);
 			if (parentItem) {
 				accumulator.push(parentItem);

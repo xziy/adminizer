@@ -1,6 +1,7 @@
 import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
-import {NodeModel} from "@minoru/react-dnd-treeview";
+import {NodeModel, TreeMethods} from "@minoru/react-dnd-treeview";
+import {useRef, useState} from "react";
 
 export interface Auth {
     user: User;
@@ -126,20 +127,28 @@ export interface CatalogItem {
 export interface NavItemAddProps {
     labels: Record<string, string>,
     model: string,
+    isNavigation: boolean,
+    type: string,
+    parentId?: string | number,
     items: {
         id: number,
         name: string
     }[]
     add: (model:string) => void
+    callback: () => void
 }
 
 export interface NavGroupAddProps{
     labels: Record<string, string>
+    type: string
+    update?: boolean
+    parentId?: string | number
+    item?: Record<string, any>
     items: {
         name: string,
         required: boolean
     }[],
-    callback: () => void
+    callback: (item: any) => void
 }
 
 export interface CustomCatalogData {
@@ -150,4 +159,48 @@ export interface CustomCatalogData {
     icon: string
     type: string;
     marked?: boolean
+    modelId: string | number
+}
+
+export interface AddCatalogProps {
+    props: {
+        actions: {
+            link: string;
+            id: string;
+            title: string;
+            icon: string;
+        }[];
+        notFound?: string
+        search?: string,
+        btnBack: {
+            title: string;
+            link: string;
+        };
+        fields: Field[];
+        edit: boolean;
+        view: boolean;
+        btnSave: {
+            title: string;
+        },
+        postLink: string,
+    }
+}
+
+export interface DynamicComponent {
+    default: FC<{
+        parentId?: string | number
+        callback: (item: any) => void
+        item?: Record<string, any>
+        update?: boolean
+    }>;
+}
+
+export interface CatalogActions {
+    type: string;
+    displayTool: boolean;
+    displayContext: boolean;
+    selectedItemTypes: string[];
+    id: string;
+    icon: string;
+    name: string
 }

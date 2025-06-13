@@ -49,12 +49,10 @@ export async function catalogController(req: ReqType, res: ResType) {
 		switch (method) {
 			case 'POST':
 				switch (data._method) {
-					// TODO: deprecated, passing react module instead html
-					case 'getAddHTML':
-						return res.json(await frontendCatalog.getAddHTML(item, req))
-					// TODO: deprecated, passing react module instead html
-					case 'getEditHTML':
-						return res.json(await frontendCatalog.getEditHTML(item, data.id, req, data.modelId))
+					case 'getAddTemplate':
+						return res.json(await frontendCatalog.getAddTemplate(item, req))
+					case 'getEditTemplate':
+						return res.json(await frontendCatalog.getEditTemplate(item, data.id, req, data.modelId))
 					case 'getCatalog':
 						{
 							const __catalog = await frontendCatalog.getCatalog();
@@ -90,10 +88,9 @@ export async function catalogController(req: ReqType, res: ResType) {
 					case 'getLink':
 						return res.json({data: await frontendCatalog.getLink(data.actionId)})
 					case 'handleAction':
-						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.config, req)})
+						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, req)})
 					case 'getPopUpHTML':
-						// TODO: deprecated, passing react module instead html
-						return res.json({data: await frontendCatalog.getPopUpHTML(data.actionId)})
+						return res.json({data: await frontendCatalog.getPopUpTemplate(data.actionId)})
 					case 'updateItem':
 						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data, req)})
 				}

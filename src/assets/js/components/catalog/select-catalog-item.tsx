@@ -1,6 +1,6 @@
 import {Label} from "@/components/ui/label.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {CatalogContext} from "@/components/catalog/CatalogContext.ts";
+import {CatalogContext} from "@/components/catalog/catalogUI/CatalogContext.ts";
 import {useContext, useState} from "react";
 import {CatalogItem} from "@/types";
 
@@ -13,14 +13,15 @@ const SelectCatalogItem = ({items, onSelect}: ItemProps) => {
     const context = useContext(CatalogContext);
     const [selectedValue, setSelectedValue] = useState("");
 
-    const checkPermission = (type: string) => {
-        // if (props.selectedNode.length && props.movingGroupsRootOnly) {
-        //     return type === 'group'
-        // } else{
-        //     return false
-        // }
-        return false
-    }
+    // const checkPermission = (type: string) => {
+    //     console.log(type)
+    //     // if (props.selectedNode.length && props.movingGroupsRootOnly) {
+    //     //     return type === 'group'
+    //     // } else{
+    //     //     return false
+    //     // }
+    //     return false
+    // }
 
     const handleSelect = (value: string) => {
         setSelectedValue(value);
@@ -38,7 +39,7 @@ const SelectCatalogItem = ({items, onSelect}: ItemProps) => {
                 <SelectContent>
                     {items.map((item) => (
                         <SelectItem value={item.type}
-                                    key={`${item.type}-${item.name}`} disabled={checkPermission(item.type)}>{item.name}</SelectItem>
+                                    key={`${item.type}-${item.name}`}>{item.name}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>

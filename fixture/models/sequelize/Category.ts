@@ -22,4 +22,7 @@ export class Category extends Model<
 
     @Column(DataType.STRING)
     declare title: string;
+
+    @Column(DataType.STRING)
+    declare slug: string;
 }

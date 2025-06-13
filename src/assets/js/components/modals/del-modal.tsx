@@ -1,3 +1,4 @@
+import {forwardRef} from 'react';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -11,23 +12,35 @@ import {
 import {Trash2} from 'lucide-react';
 import {Icon} from "@/components/icon.tsx";
 import {Link} from "@inertiajs/react";
+import {cn} from "@/lib/utils"
 
 interface DeleteModalProps {
     btnTitle: string,
-    link: string,
+    link?: string,
+    handleDelete?: () => void,
+    isLink?: boolean,
     delModal: {
         yes: string,
         no: string
         text: string
     }
+    variant?: "link" | "default" | "destructive" | "green" | "outline" | "secondary" | "ghost" | null | undefined
+    btnCLass?: string
 }
 
-export default function DeleteModal({btnTitle, link, delModal}: DeleteModalProps) {
+const DeleteModal = forwardRef<HTMLButtonElement, DeleteModalProps>((
+    {btnTitle, link, delModal, handleDelete, variant, btnCLass, isLink = true},
+    ref
+) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button size="list" variant="ghost"
-                        className="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start">
+                <Button
+                    ref={ref}
+                    size="list"
+                    variant={variant ?? "ghost"}
+                    className={cn("cursor-pointer", btnCLass)}
+                >
                     <Icon iconNode={Trash2}/>
                     {btnTitle}
                 </Button>
@@ -41,11 +54,17 @@ export default function DeleteModal({btnTitle, link, delModal}: DeleteModalProps
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="destructive" asChild>
-                            <Link href={link}>
-                                {delModal.yes}
-                            </Link>
-                        </Button>
+                        {isLink ? (
+                            <Button variant="destructive" asChild>
+                                <Link href={link ?? '#'}>
+                                    {delModal.yes}
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button variant="destructive" asChild onClick={handleDelete}>
+                                <span>{delModal.yes}</span>
+                            </Button>
+                        )}
                     </DialogClose>
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">{delModal.no}</Button>
@@ -53,5 +72,9 @@ export default function DeleteModal({btnTitle, link, delModal}: DeleteModalProps
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
-}
+    );
+});
+
+DeleteModal.displayName = 'DeleteModal';
+
+export default DeleteModal;

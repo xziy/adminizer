@@ -379,15 +379,18 @@ const models: AdminpanelConfig["models"] = {
             updatedAt: false,
         }
     },
-    Page: {
-        title: 'Page',
-        model: 'page',
+    TestCatalog: {
+        title: '',
+        model: 'testcatalog',
+        icon: 'category',
+        navbar: {
+            visible: false,
+        },
         fields: {
             createdAt: false,
             updatedAt: false,
-        },
-        icon: 'article'
-    }
+        }
+    },
 }
 
 const config: AdminpanelConfig = {
@@ -405,13 +408,8 @@ const config: AdminpanelConfig = {
     navigation: {
         items: [
             {
-                title: 'Page',
-                model: "page",
-                urlPath: '/page/${data.record.slug}'
-            },
-            {
                 title: 'Category',
-                model: "category",
+                model: "Category",
                 urlPath: '/longlinkkkkk/category/${data.record.slug}'
             },
             {
@@ -434,7 +432,6 @@ const config: AdminpanelConfig = {
                 required: false
             }
         ],
-        movingGroupsRootOnly: true
     },
     forms: {
         data: {
@@ -490,6 +487,13 @@ const config: AdminpanelConfig = {
                 link: `${routePrefix}/catalog/navigation/footer`,
                 title: 'Nav Footer',
                 icon: 'menu'
+            },
+            {
+                id: '5',
+                type: "self",
+                link: `${routePrefix}/catalog/test-catalog`,
+                title: 'Test Catalog',
+                icon: 'bug_report'
             }
         ]
     },

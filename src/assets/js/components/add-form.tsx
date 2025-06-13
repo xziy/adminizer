@@ -14,6 +14,7 @@ import {getFieldError, hasFormErrors, resetFormErrors} from '@/hooks/form-state'
 import InputError from "@/components/input-error.tsx";
 import {AddProps} from '@/pages/add';
 import axios from "axios";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
 
 export type FieldValue = string | boolean | number | Date | any[] | Content;
 
@@ -71,8 +72,15 @@ const LazyField: FC<{
 });
 
 
-const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () => void }> =
-    ({page, catalog, callback}) => {
+const AddForm: FC<{
+    page: { props: AddProps },
+    catalog: boolean,
+    callback?: (record: any, targetBlank?: boolean) => void,
+    openNewWindow?: boolean,
+    openNewWindowLabel?: string,
+    isNavigation?: boolean
+}> =
+    ({page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation}) => {
 
         const {fields, btnBack, view, notFound} = page.props;
         const {
@@ -85,14 +93,18 @@ const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () =
             jsonPopupCatalog: catalog
         });
         const [catalogProcessing, setCatalogProcessing] = useState(false)
+        const [navTargetBlank, setNavTargetBlank] = useState(openNewWindow ?? false)
 
+        // Forcibly updating data when changing passes
         useEffect(() => {
-            // Reset errors
+            setNavTargetBlank(openNewWindow ?? false);
             resetFormErrors();
-            return () => {
-                resetFormErrors();
-            };
-        }, []);
+            setData({
+                ...Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])),
+                jsonPopupCatalog: catalog
+            });
+            return () => resetFormErrors();
+        }, [fields, catalog, openNewWindow]);
 
         const handleFieldChange = useCallback(
             (fieldName: string, value: FieldValue) => {
@@ -106,7 +118,7 @@ const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () =
                 const res = await axios.post(page.props.postLink, data)
                 if (res.status === 200) {
                     if (callback) {
-                        callback()
+                        isNavigation ? callback(res.data.record, navTargetBlank) : callback(res.data.record)
                     }
                 }
             } else {
@@ -124,7 +136,7 @@ const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () =
                                 {btnBack.title}
                             </Link>
                         </Button>
-                        <Button variant="green" type="submit" className="w-fit cursor-pointer lg:hidden"
+                        <Button variant="green" type="submit" className="w-fit lg:hidden"
                                 form="addUserForm"
                                 disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                             {catalogProcessing || processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
@@ -137,7 +149,8 @@ const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () =
                     onSubmit={submit}
                     className={view ? 'cursor-not-allowed' : ''}
                 >
-                    <div className="grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8">
+                    <div
+                        className={`grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8 ${catalog ? 'lg:grid-cols-[1fr_200px]' : 'lg:grid-cols-[1fr_150px]'}`}>
                         <div className="flex flex-col gap-10">
                             {fields.map((field) => (
                                 <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`}
@@ -172,8 +185,20 @@ const AddForm: FC<{ page: { props: AddProps }, catalog: boolean, callback?: () =
                                 </div>
                             ))}
                         </div>
-                        <div className={`p-4 rounded-md h-fit sticky shadow hidden lg:block ${catalog ? 'top-0' : 'top-[84px] '}`}>
-                            <Button variant="green" type="submit" className="w-fit cursor-pointer"
+                        <div
+                            className={`p-4 rounded-md h-fit sticky shadow ${catalog ? 'top-0 grid gap-4' : 'top-[84px] hidden lg:block'}`}>
+                            {isNavigation &&
+                                <div className="flex gap-4 items-center">
+                                    <Checkbox
+                                        id="targetBlank"
+                                        checked={navTargetBlank}
+                                        onCheckedChange={(checked) => setNavTargetBlank(!!checked)}
+                                        className="cursor-pointer size-5"
+                                    />
+                                    <Label htmlFor="targetBlank">{openNewWindowLabel}</Label>
+                                </div>
+                            }
+                            <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                                 {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin"/>}
                                 {page.props.btnSave.title}
