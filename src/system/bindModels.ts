@@ -43,7 +43,7 @@ export default async function bindModels(adminizer: Adminizer) {
       )?.[1];
 
     if (!systemModels.includes(modelName)) {
-      const adapterName = typeof modelConfig !== "boolean" ? modelConfig.adapter || defaultOrmAdapter : defaultOrmAdapter;
+      const adapterName = typeof modelConfig !== "boolean" ? modelConfig?.adapter || defaultOrmAdapter : defaultOrmAdapter;
       const ormAdapter = adminizer.getOrmAdapter(adapterName);
       if (!ormAdapter) {
         throw new Error(`Adapter ${adapterName} was not found for model ${modelName}. Please check your configuration`)
