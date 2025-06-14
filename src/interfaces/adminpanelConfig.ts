@@ -86,7 +86,11 @@ export interface AdminpanelConfig {
      * by default is false
      */
     auth?: {
+        /** Enable or disable authentication for admin panel */
         enable: boolean,
+        /** Enable crypto-puzzle CAPTCHA (default: true) */
+        captcha?: boolean,
+        /** Description displayed on login page */
         description?: string
     }
     /**

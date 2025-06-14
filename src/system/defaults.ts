@@ -145,7 +145,8 @@ let adminpanelConfig: AdminpanelConfig = {
     },
 
     auth: {
-        enable: false
+        enable: false,
+        captcha: true
     }
 }
 
