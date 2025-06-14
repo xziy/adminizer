@@ -27,7 +27,7 @@ import {I18n} from "./v4/I18n";
 import {getDefaultConfig} from "../system/defaults";
 import {AbstractAdapter} from "./v4/model/AbstractModel";
 import bindExpressUtils from "../system/bindExpressUtils";
-import {createServer as createViteServer, ViteDevServer} from 'vite';
+import type {ViteDevServer} from 'vite';
 import {bindInertia} from "../system/bindInertia";
 import {MenuHelper} from "../helpers/menuHelper";
 import {bindControls} from "../system/bindControls";
@@ -100,15 +100,15 @@ export class Adminizer {
      * @protected
      */
     protected async viteMiddleware() {
-        // Create a Vite server in middleware mode
+        const { createServer: createViteServer } = await import('vite');
+        const chalk = (await import('chalk')).default;
         this.vite = await createViteServer({
-            server: {middlewareMode: true}, // Enable middleware mode
-            appType: 'custom', // Specify the application type
+            server: { middlewareMode: true },
+            appType: 'custom',
         });
-
-        // Use Vite Middleware
         this.app.use(this.vite.middlewares);
-
+        
+        // eslint-disable-next-line no-console
         console.log(
             chalk.green.bold('Vite is running in development mode!') +
             chalk.blue('\nAccess your app at http://localhost:3000')
