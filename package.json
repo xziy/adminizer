@@ -52,6 +52,7 @@
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
+		"isomorphic-webcrypto": "^2.3.8",
 		"@babel/plugin-proposal-decorators": "^7.27.1",
 		"@ckeditor/ckeditor5-react": "^9.5.0",
 		"@eslint/compat": "^1.2.9",
