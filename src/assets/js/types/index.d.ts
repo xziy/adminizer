@@ -25,7 +25,11 @@ export interface Columns {
 }
 
 export interface NavItem extends MenuItem {
-    type: 'blank' | 'self'
+    type: 'blank' | 'self';
+    /**
+     * Section grouping for navbar items (side navigation)
+     */
+    section?: string;
 }
 
 type FlashMessages = 'info' | 'error' | 'success' | string;

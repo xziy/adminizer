@@ -34,6 +34,8 @@ export default function Login() {
     }, []);
 
     const page = usePage<LoginProps>()
+    // Determine if CAPTCHA is enabled (non-empty task)
+    const hasCaptcha = Array.isArray(page.props.captchaTask) && page.props.captchaTask.length > 0;
 
     const [captchaMessage, setCaptchaMessage] = useState("I'm not a robot");
     const [showCheckmark, setShowCheckmark] = useState(false);
@@ -46,6 +48,17 @@ export default function Login() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault()
+        // If CAPTCHA is disabled, submit immediately
+        if (!hasCaptcha) {
+            post(page.props.submitLink, {
+                onError: (errors) => {
+                    for (const key of Object.keys(errors)) {
+                        toast.error(errors[key])
+                    }
+                }
+            })
+            return
+        }
         setCaptchaProcessing(true)
         setCaptchaMessage("Solving CAPTCHA...")
         setShowCheckmark(false)
@@ -58,7 +71,7 @@ export default function Login() {
                 // spinner does not have time to appear, so call sleep function
                 await sleep(100)
 
-                // Start solving
+                        // Start solving
                 const puzzle = new Uint8Array(page.props.captchaTask)
 
                 const solution = await Puzzle.solve(puzzle);
@@ -72,7 +85,7 @@ export default function Login() {
                     captchaSolution: solution
                 }))
 
-                post(page.props.submitLink, {
+                        post(page.props.submitLink, {
                     onError: (errors) => {
                         for (const key of Object.keys(errors)) {
                             toast.error(errors[key])
@@ -105,7 +118,7 @@ export default function Login() {
                 )}
                 <form onSubmit={submit}>
                     <div className="grid gap-5">
-                        <InputError message={errors.captchaSolution}/>
+                        {hasCaptcha && <InputError message={errors.captchaSolution}/>}
                         <div className="grid gap-4">
                             <Label htmlFor="login">{page.props.login}</Label>
                             <div className="relative">
@@ -157,6 +170,7 @@ export default function Login() {
                             </Button>}
                         </div>
                     </div>
+                    {hasCaptcha && (
                     <div className="bg-white rounded-lg shadow-lg p-4 mt-6 flex items-center space-x-4">
                         <div className="relative">
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -184,6 +198,7 @@ export default function Login() {
                             </svg>
                         </div>
                     </div>
+                    )}
                 </form>
             </div>
         </div>
