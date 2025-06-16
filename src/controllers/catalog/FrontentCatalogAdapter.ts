@@ -164,10 +164,9 @@ export class VueCatalog {
 
     async search(s: string, req: ReqType) {
         let searchResult = await this.catalog.search(s, undefined, req);
-        // console.log(searchResult)
-        // return ''
-        let itemsTree = AbstractCatalog.buildTree(searchResult);
-        return VueCatalogUtils.treeToNode(itemsTree, this.catalog.getGroupType().type);
+        // let itemsTree = AbstractCatalog.buildTree(searchResult);
+        // console.log(itemsTree)
+        return VueCatalogUtils.treeToNode(searchResult, this.catalog.getGroupType().type);
     }
 
     async updateTree(data: RequestData, req: ReqType): Promise<any> {

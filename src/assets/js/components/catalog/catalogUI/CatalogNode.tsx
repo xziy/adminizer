@@ -28,9 +28,7 @@ const CatalogNode: React.FC<Props> = (props) => {
 
     return (
         <div
-            className={`tree-node ${styles.root} ${
-                props.isSelected ? styles.isSelected : ""
-            }`}
+            className={`tree-node ${styles.root} ${props.isSelected ? styles.isSelected : ""} ${props.node.data?.marked ? 'bg-gray-200' : ""}`}
             style={{paddingInlineStart: indent}}
             onClick={handleSelect}
         >
