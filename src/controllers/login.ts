@@ -41,10 +41,12 @@ export default async function login(req: ReqType, res: ResType) {
                 return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
             }
 
-            // Verify CAPTCHA solution
-            const isCaptchaValid = powCaptcha.check(captchaSolution, `login:${req.ip}`);
-            if (!isCaptchaValid) {
-                return inertiaAdminMessage(req, "Invalid CAPTCHA solution", 'captchaSolution');
+            // Verify CAPTCHA solution if enabled
+            if (req.adminizer.config.auth.captcha !== false) {
+                const isCaptchaValid = powCaptcha.check(captchaSolution, `login:${req.ip}`);
+                if (!isCaptchaValid) {
+                    return inertiaAdminMessage(req, "Invalid CAPTCHA solution", 'captchaSolution');
+                }
             }
 
 
@@ -77,8 +79,11 @@ export default async function login(req: ReqType, res: ResType) {
         }
 
         if (req.method.toUpperCase() === "GET") {
-            // Generate new CAPTCHA job
-            const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
+            // Generate new CAPTCHA task if enabled
+            let captchaTask: number[] = [];
+            if (req.adminizer.config.auth.captcha !== false) {
+                captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
+            }
             return req.Inertia.render({
                 component: 'login',
                 props: {
@@ -109,7 +114,11 @@ export default async function login(req: ReqType, res: ResType) {
 async function inertiaAdminMessage(req: ReqType, message: string, messageType: string) {
     Adminizer.log.warn(message)
     const powCaptcha = new POWCaptcha();
-    const captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
+    // Generate new CAPTCHA task if enabled
+    let captchaTask: number[] = [];
+    if (req.adminizer.config.auth.captcha !== false) {
+        captchaTask = await powCaptcha.getJob(`login:${req.ip}`);
+    }
 
     let errors: Record<string, string> = {};
     errors[messageType] = message
@@ -123,4 +132,3 @@ async function inertiaAdminMessage(req: ReqType, message: string, messageType: s
         }
     })
 }
-

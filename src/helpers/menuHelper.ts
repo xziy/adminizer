@@ -16,6 +16,10 @@ export type MenuItem = {
     icon: string;
     accessRightsToken: string;
     entityName?: string;
+    /**
+     * Section grouping for navbar items (side navigation)
+     */
+    section?: string;
 }
 
 export class MenuHelper {
@@ -150,6 +154,8 @@ export class MenuHelper {
                 subItems: any;
                 icon: any;
                 accessRightsToken: any;
+                /** Optional section grouping for navbar items */
+                section?: any;
             }) {
                 if (!additionalLink.link || !additionalLink.title || additionalLink.disabled) {
                     return;
@@ -161,7 +167,8 @@ export class MenuHelper {
                     id: additionalLink.id || additionalLink.title.replace(" ", "_"),
                     actions: additionalLink.subItems || null,
                     icon: additionalLink.icon || null,
-                    accessRightsToken: additionalLink.accessRightsToken || null
+                    accessRightsToken: additionalLink.accessRightsToken || null,
+                    section: additionalLink.section || 'Platform',
                 });
             });
         }
@@ -194,7 +201,8 @@ export class MenuHelper {
                         actions: val.tools || null,
                         id: val.title ? val.title.replace(" ", "_") : key,
                         entityName: key,
-                        accessRightsToken: `read-${key}-model`
+                        accessRightsToken: `read-${key}-model`,
+                        section: val.navbar?.section || 'Platform',
                     });
                 }
             });

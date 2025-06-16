@@ -133,7 +133,7 @@ export function bindInertia(adminizer: Adminizer) {
             title: menuHelper.getBrandTitle(),
             brand: menuHelper.getBrandTitle(),
             logout: menuHelper.getLogoutUrl(),
-            logoutBtn: req.user?.locale == 'ru' ? 'Выход' : "Log out",
+            logoutBtn: req.i18n.__("Log out"),
             section: req.user ? [
                 {
                     title: req.i18n.__("Adminpanel"),
@@ -141,10 +141,15 @@ export function bindInertia(adminizer: Adminizer) {
                     link: req.adminizer.config.routePrefix,
                     icon: "rocket_launch",
                 },
-                ...(req.adminizer.configHelper.getConfig().sections)
+                ...((req.adminizer.configHelper.getConfig().sections || [])
+                    .map((sec: any) => ({
+                        ...sec,
+                        title: req.i18n.__(sec.title),
+                    }))
+                )
             ] : null,
             showVersion: req.adminizer.config.showVersion ?? false
-        })
+        });
 
         next();
     })
