@@ -12,9 +12,17 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Pencil, Plus, Ban, LoaderCircle} from "lucide-react";
+import {Pencil, Plus, Ban, LoaderCircle, BetweenHorizontalStart} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, DynamicActionComponent, AddCatalogProps, CatalogActions} from "@/types";
+import {
+    Catalog,
+    CatalogItem,
+    CustomCatalogData,
+    DynamicComponent,
+    DynamicActionComponent,
+    AddCatalogProps,
+    CatalogActions
+} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
@@ -34,6 +42,8 @@ import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
 import {Toaster} from "@/components/ui/sonner.tsx";
 import {toast} from "sonner";
+import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
+import {DropdownMenuContent, DropdownMenuGroup, DropdownMenuTrigger} from "@/components/ui/dropdown-menu.tsx";
 
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
@@ -458,7 +468,7 @@ const CatalogTree = () => {
         setSecondRender(false)
     }, [itemType])
 
-    const addModel = useCallback(async (record: any, targetBlank?: boolean) => {
+    const addModel = async (record: any, targetBlank?: boolean) => {
         if (targetBlank) record.targetBlank = targetBlank
         try {
             await axios.post('', {
@@ -475,7 +485,7 @@ const CatalogTree = () => {
             dialogRef.current?.close()
             reloadCatalog()
         }
-    }, [itemType, selectedNodes, treeData])
+    }
 
     const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
         if (targetBlank) record[0].targetBlank = targetBlank;
@@ -693,74 +703,100 @@ const CatalogTree = () => {
                         }
                     </div>
                     <div
-                        className="md:grid md:grid-cols-[minmax(70px,_800px)_minmax(150px,_250px)] md:gap-10 justify-between flex flex-col gap-3.5">
-                        <div className="flex gap-2">
-                            <Button variant="default" size="sm"
-                                    className={`w-fit rounded-sm ${
-                                        selectedNodes.length === 0 ||
-                                        (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
-                                            ? ''
-                                            : 'opacity-50 pointer-events-none'
-                                    }`}
-                                    onClick={() => {
-                                        setPopupEvent('create')
-                                        dialogRef.current?.open()
-                                    }}>
-                                <Plus/>
-                                {messages.create}
-                            </Button>
-                            <Button variant="outline" size="sm"
-                                    className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
-                                        'opacity-50 pointer-events-none' : ''}`}
-                                    onClick={() => {
-                                        initUpdateItem()
-                                        setPopupEvent('update')
-                                        dialogRef.current?.open()
-                                    }}>
-                                <Pencil/>
-                                {messages.Edit}
-                            </Button>
-                            <DeleteModal btnTitle={messages.Delete}
-                                         ref={deleteModalRef}
-                                         variant="destructive"
-                                         btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
-                                         delModal={
-                                             {
-                                                 yes: messages['Yes'],
-                                                 no: messages['No'],
-                                                 text: messages['Are you sure?']
+                        className="xl:gap-10 justify-between flex flex-col xl:flex-row gap-3.5">
+                        <div className="flex gap-2 items-center">
+                            <div className="flex gap-2 items-center flex-wrap md:flex-nowrap">
+                                <Button variant="default" size="sm"
+                                        className={`w-fit rounded-sm ${
+                                            selectedNodes.length === 0 ||
+                                            (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
+                                                ? ''
+                                                : 'opacity-50 pointer-events-none'
+                                        }`}
+                                        onClick={() => {
+                                            setPopupEvent('create')
+                                            dialogRef.current?.open()
+                                        }}>
+                                    <Plus/>
+                                    {messages.create}
+                                </Button>
+                                <Button variant="outline" size="sm"
+                                        className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
+                                            'opacity-50 pointer-events-none' : ''}`}
+                                        onClick={() => {
+                                            initUpdateItem()
+                                            setPopupEvent('update')
+                                            dialogRef.current?.open()
+                                        }}>
+                                    <Pencil/>
+                                    {messages.Edit}
+                                </Button>
+                                <DeleteModal btnTitle={messages.Delete}
+                                             ref={deleteModalRef}
+                                             variant="destructive"
+                                             btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                             delModal={
+                                                 {
+                                                     yes: messages['Yes'],
+                                                     no: messages['No'],
+                                                     text: messages['Are you sure?']
+                                                 }
                                              }
-                                         }
-                                         isLink={false}
-                                         handleDelete={deleteItem}
-                            />
-                            <Button variant="secondary" size="sm"
-                                    className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
-                                    onClick={() => {
-                                        setParentId(0)
-                                        setSelectedNodes([])
-                                    }}>
-                                <Ban/>
-                                {messages["Clean"]}
-                            </Button>
-                            <div className="ml-4 flex gap-2">
-                                {actionsTools.map((item) => (
-                                    <Button variant="outline" size="sm" key={item.id}
-                                            onClick={() => initAction(item.id)}>
-                                        <MaterialIcon name={item.icon}/>
-                                        {item.name}
-                                    </Button>
-                                ))}
+                                             isLink={false}
+                                             handleDelete={deleteItem}
+                                />
+                                <Button variant="secondary" size="sm"
+                                        className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                        onClick={() => {
+                                            setParentId(0)
+                                            setSelectedNodes([])
+                                        }}>
+                                    <Ban/>
+                                    {messages["Clean"]}
+                                </Button>
+                            </div>
+                            <div className="ml-4">
+                                <div className="hidden lg:flex gap-2">
+                                    {actionsTools.map((item) => (
+                                        <Button variant="outline" size="sm" key={item.id}
+                                                onClick={() => initAction(item.id)}>
+                                            <MaterialIcon name={item.icon}/>
+                                            {item.name}
+                                        </Button>
+                                    ))}
+                                </div>
+                                {actionsTools.length > 0 &&
+                                    <div className="block lg:hidden">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" size="icon">
+                                                    <BetweenHorizontalStart/>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-fit" side="right" align="start">
+                                                <DropdownMenuGroup className="grid gap-2">
+                                                    {actionsTools.map((item) => (
+                                                        <Button variant="outline" size="sm" key={item.id}
+                                                                onClick={() => initAction(item.id)}>
+                                                            <MaterialIcon name={item.icon}/>
+                                                            {item.name}
+                                                        </Button>
+                                                    ))}
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                }
                             </div>
                         </div>
-                        <div className="flex gap-2 items-center justify-end">
+                        <div className="flex gap-2 items-center justify-start xl:justify-end">
                             {searhing && <LoaderCircle
-                                className="size-4 animate-spin"/>}
+                                className="size-4 animate-spin order-2 xl:order-1"/>}
                             <Input
                                 type="search"
                                 autoFocus={false}
                                 placeholder={messages.Search}
-                                className="w-[200px] p-2 border rounded"
+                                className="w-[200px] p-2 border rounded order-1 xl:order-2"
                                 onChange={(e) => {
                                     handleSearch(e.target.value)
                                 }}
