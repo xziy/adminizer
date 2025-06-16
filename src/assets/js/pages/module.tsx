@@ -27,7 +27,7 @@ export default function Module() {
       if (!cssPath) return;
 
       // Проверим, не был ли он уже добавлен
-      if ([...document.head.querySelectorAll("link[rel='stylesheet']")].some(link => link.href.includes(cssPath))) {
+      if ([...document.head.querySelectorAll("link[rel='stylesheet']")].some(link => (link as HTMLLinkElement).href.includes(cssPath))) {
         return;
       }
 

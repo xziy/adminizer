@@ -73,7 +73,7 @@ const CatalogTree = () => {
     const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
     const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
     const [actionLoading, setActionLoading] = useState<boolean>(false)
-
+    const [searhing, setSearching] = useState<boolean>(false)
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
             actions: [],
@@ -526,22 +526,45 @@ const CatalogTree = () => {
     }, [selectedNodes, setTreeData, treeData]);
 
     const performSearch = async (s: string) => {
+        setSelectedNodes([])
+        setSearching(true)
         if (!s.trim()) {
-            // reloadCatalog();
+            const res = await axios.post('', {
+                _method: 'getCatalog'
+            });
+            const {catalog: resCatalog} = res.data;
+            setTreeData(resCatalog.nodes)
+
+            // Ждём два цикла рендеринга
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (treeRef.current) {
+                        treeRef.current.closeAll?.();
+                        setSearching(false)
+                    }
+                });
+            });
             return;
         }
         try {
             const res = await axios.post('', {s: s, _method: 'search'})
-            console.log(res.data)
+            setTreeData(res.data.data)
+
+            // Ждём два цикла рендеринга
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (treeRef.current) {
+                        treeRef.current.openAll?.();
+                        setSearching(false)
+                    }
+                });
+            });
         } catch (error) {
             console.error('Error searching:', error);
         }
     };
 
-    const handleSearch = useCallback(
-        debounce(performSearch, 500),
-        [reloadCatalog]
-    );
+    const handleSearch = debounce(performSearch, 500)
 
     const handleOpenContextMenu = useCallback((open: boolean, node: NodeModel<CustomCatalogData>) => {
         if (open) {
@@ -730,12 +753,14 @@ const CatalogTree = () => {
                                 ))}
                             </div>
                         </div>
-                        <div>
+                        <div className="flex gap-2 items-center justify-end">
+                            {searhing && <LoaderCircle
+                                className="size-4 animate-spin"/>}
                             <Input
                                 type="search"
                                 autoFocus={false}
                                 placeholder={messages.Search}
-                                className="w-full max-w-[200px] p-2 border rounded"
+                                className="w-[200px] p-2 border rounded"
                                 onChange={(e) => {
                                     handleSearch(e.target.value)
                                 }}
