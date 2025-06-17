@@ -12,7 +12,7 @@ export default defineConfig({
         viteExternalsPlugin({
             react: 'React',
             'react-dom': 'ReactDOM',
-            //'@/components/ui/button.tsx': 'UIComponents' // Test Btn for module.
+            '@/components/ui/button.tsx': 'UIComponents' // Test Btn for module.
         }),
     ],
     build: {
@@ -29,7 +29,7 @@ export default defineConfig({
         rollupOptions: {
             external: [
                 'tailwindcss',
-                //'@/components/ui/button.tsx' //Test Btn for module.
+                '@/components/ui/button.tsx' //Test Btn for module.
             ],
         },
     },
