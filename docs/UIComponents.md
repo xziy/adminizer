@@ -33,3 +33,17 @@ Below is a brief overview of each React UI component exposed via `window.UICompo
 - **Tooltip** – hover or focus information bubble.
 
 These components live under `src/assets/js/components/ui` and can be imported from the global container for reuse in external modules.
+
+## Importing from the NPM package
+
+After running `npm run build`, all UI components are also compiled to the `dist/ui` directory of the package. This allows you to import them directly from your project:
+
+```tsx
+import { Button } from 'adminizer/ui/button.js';
+
+export default function Example() {
+  return <Button>Click</Button>;
+}
+```
+
+The `package.json` exports map exposes the `./ui/*` path so TypeScript and bundlers can resolve the compiled files.

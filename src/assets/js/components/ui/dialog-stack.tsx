@@ -19,7 +19,7 @@ import type {
     ReactNode,
     SetStateAction,
 } from 'react';
-import {Button} from "@/components/ui/button.tsx";
+import {Button} from "@/components/ui/button";
 import {XIcon} from "lucide-react";
 import * as React from "react";
 
