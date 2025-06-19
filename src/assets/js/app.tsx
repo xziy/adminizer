@@ -7,14 +7,17 @@ import '@toast-ui/editor/dist/toastui-editor.css';
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
 import "leaflet/dist/leaflet.css";
 
-import { createInertiaApp } from '@inertiajs/react';
+import * as InertiajsReact from '@inertiajs/react'
 import { createRoot } from 'react-dom/client';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import { registerUIComponents } from "./ui-globals";
+
+const { createInertiaApp } = InertiajsReact;
 window.React = React;
 window.ReactDOM = ReactDOM;
+//@ts-ignore
+window.InertiajsReact = InertiajsReact
 registerUIComponents();
 
 
