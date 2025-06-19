@@ -3,6 +3,9 @@
 - Expanded Global UI documentation with external usage examples.
 
 ## 2025-06-19
+- Fixed startup error when `window.UIComponents` was undefined. `registerUIComponents()` now initializes the global container and documentation updated.
+
+## 2025-06-19
 - Added `UIComponents.md` with a summary of all global UI components.
 
 ## 2025-06-19
