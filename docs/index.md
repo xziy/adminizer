@@ -28,3 +28,4 @@
 * [Model-Level Permissions](AccessControl/ModelPermissions.md)
 * [Field-Level Restrictions](AccessControl/FieldRestrictions.md)
 * [Role & Group Management](AccessControl/RoleGroups.md)
+* [Global UI Components](GlobalUI.md)
