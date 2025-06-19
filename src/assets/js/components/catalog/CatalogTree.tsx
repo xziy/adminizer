@@ -12,9 +12,17 @@ import {DndProvider} from "react-dnd";
 import axios from "axios";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Pencil, Plus, Ban, LoaderCircle} from "lucide-react";
+import {Pencil, Plus, Ban, LoaderCircle, BetweenHorizontalStart} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
-import {Catalog, CatalogItem, CustomCatalogData, DynamicComponent, AddCatalogProps, CatalogActions} from "@/types";
+import {
+    Catalog,
+    CatalogItem,
+    CustomCatalogData,
+    DynamicComponent,
+    DynamicActionComponent,
+    AddCatalogProps,
+    CatalogActions
+} from "@/types";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import CatalogNode from "@/components/catalog/catalogUI/CatalogNode.tsx";
 import CatalogDragPreview from "@/components/catalog/catalogUI/CatalogDragPreview.tsx";
@@ -34,6 +42,8 @@ import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
 import {Toaster} from "@/components/ui/sonner.tsx";
 import {toast} from "sonner";
+import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
+import {DropdownMenuContent, DropdownMenuGroup, DropdownMenuTrigger} from "@/components/ui/dropdown-menu.tsx";
 
 const CatalogTree = () => {
     const treeRef = useRef<TreeMethods>(null);
@@ -68,11 +78,12 @@ const CatalogTree = () => {
     const [isNavigation, setIsNavigation] = useState<boolean>(false)
 
     const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
+    const [DynamicActionComponent, setDynamicActionComponent] = useState<React.ReactElement | null>(null);
 
     const [actionsTools, setActionsTools] = useState<CatalogActions[]>([]);
     const [actionsContext, setActionsContext] = useState<CatalogActions[]>([]);
     const [actionLoading, setActionLoading] = useState<boolean>(false)
-
+    const [searhing, setSearching] = useState<boolean>(false)
     const [addProps, setAddProps] = useState<AddCatalogProps>({
         props: {
             actions: [],
@@ -101,7 +112,7 @@ const CatalogTree = () => {
             setTreeData(resCatalog.nodes)
             setActionsTools(toolsActions)
             setIsNavigation(resCatalog.catalogSlug === "navigation");
-            // console.log(toolsActions)
+            console.log(toolsActions)
         };
 
         const initLocales = async () => {
@@ -296,7 +307,7 @@ const CatalogTree = () => {
         setPopUpData(res.data)
         dialogRef.current?.next()
         setFirstRender(false)
-    }, [parentid, firstRender, itemType])
+    }, [parentid])
 
     const initUpdateItem = useCallback(async () => {
         try {
@@ -356,7 +367,7 @@ const CatalogTree = () => {
         } catch (e) {
             console.log(e)
         }
-    }, [PopupEvent, selectedNodes, treeData, addProps])
+    }, [selectedNodes])
 
     const deleteItem = useCallback(async () => {
         if (!selectedNodes.length) return;
@@ -434,6 +445,7 @@ const CatalogTree = () => {
                         const Module = await import(/* @vite-ignore */ data.data.path as string);
                         const Component = Module.default as DynamicComponent['default'];
                         setDynamicComponent(<Component
+                            key={JSON.stringify(new Date())}
                             parentId={parentid}
                             callback={(item: any) => {
                                 dialogRef.current?.close()
@@ -446,7 +458,7 @@ const CatalogTree = () => {
                     break
             }
         }
-    }, [PopupEvent, selectedNodes, isNavigation])
+    }, [selectedNodes, isNavigation])
 
     const getAddModelJSON = useCallback(async (model: string) => {
         setSecondRender(true)
@@ -456,7 +468,7 @@ const CatalogTree = () => {
         setSecondRender(false)
     }, [itemType])
 
-    const addModel = useCallback(async (record: any, targetBlank?: boolean) => {
+    const addModel = async (record: any, targetBlank?: boolean) => {
         if (targetBlank) record.targetBlank = targetBlank
         try {
             await axios.post('', {
@@ -473,7 +485,7 @@ const CatalogTree = () => {
             dialogRef.current?.close()
             reloadCatalog()
         }
-    }, [itemType, selectedNodes, treeData])
+    }
 
     const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
         if (targetBlank) record[0].targetBlank = targetBlank;
@@ -521,25 +533,48 @@ const CatalogTree = () => {
         } finally {
             dialogRef.current?.close();
         }
-    }, [selectedNodes, setTreeData]);
+    }, [selectedNodes, setTreeData, treeData]);
 
     const performSearch = async (s: string) => {
+        setSelectedNodes([])
+        setSearching(true)
         if (!s.trim()) {
-            // reloadCatalog();
+            const res = await axios.post('', {
+                _method: 'getCatalog'
+            });
+            const {catalog: resCatalog} = res.data;
+            setTreeData(resCatalog.nodes)
+
+            // Ждём два цикла рендеринга
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (treeRef.current) {
+                        treeRef.current.closeAll?.();
+                        setSearching(false)
+                    }
+                });
+            });
             return;
         }
         try {
             const res = await axios.post('', {s: s, _method: 'search'})
-            console.log(res.data)
+            setTreeData(res.data.data)
+
+            // Ждём два цикла рендеринга
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (treeRef.current) {
+                        treeRef.current.openAll?.();
+                        setSearching(false)
+                    }
+                });
+            });
         } catch (error) {
             console.error('Error searching:', error);
         }
     };
 
-    const handleSearch = useCallback(
-        debounce(performSearch, 500),
-        [treeData, reloadCatalog]
-    );
+    const handleSearch = debounce(performSearch, 500)
 
     const handleOpenContextMenu = useCallback((open: boolean, node: NodeModel<CustomCatalogData>) => {
         if (open) {
@@ -582,13 +617,18 @@ const CatalogTree = () => {
         let res = null
         switch (action.type) {
             case 'link':
-                res = await axios.put('', {actionId: action.id, _method: 'getLink'})
-                if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                try {
+                    res = await axios.put('', {actionId: action.id, _method: 'getLink'})
+                    if (res.data) window.open(`${res.data.data}`, '_blank')?.focus()
+                } catch (e) {
+                    console.error(e)
+                }
                 break
             case 'basic':
                 let data = {
                     actionID: action.id,
-                    items: [selectedNodes[0]],
+                    items: selectedNodes,
+                    data: ''
                 }
                 try {
                     toast.warning(messages['Performing an action...'])
@@ -597,6 +637,29 @@ const CatalogTree = () => {
                     console.error(e)
                 } finally {
                     toast.success(messages['Action completed'])
+                }
+                break
+            case 'external':
+                try {
+                    const res = await axios.put('', {actionId: action.id, _method: 'getPopUpTemplate'})
+                    if (res.data) {
+                        const initModule = async () => {
+                            const Module = await import(/* @vite-ignore */ res.data.data as string);
+                            const Component = Module.default as DynamicActionComponent['default'];
+                            setDynamicActionComponent(<Component
+                                key={JSON.stringify(selectedNodes)}
+                                items={selectedNodes}
+                                callback={() => {
+                                    dialogRef.current?.close()
+                                }}
+                            />);
+                        }
+                        initModule();
+                        dialogRef.current?.open()
+                        setPopupEvent('action')
+                    }
+                } catch (e) {
+                    console.error(e)
                 }
                 break
             default:
@@ -640,71 +703,100 @@ const CatalogTree = () => {
                         }
                     </div>
                     <div
-                        className="md:grid md:grid-cols-[minmax(70px,_800px)_minmax(150px,_250px)] md:gap-10 justify-between flex flex-col gap-3.5">
-                        <div className="flex gap-2">
-                            <Button variant="default" size="sm"
-                                    className={`w-fit rounded-sm ${
-                                        selectedNodes.length === 0 ||
-                                        (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
-                                            ? ''
-                                            : 'opacity-50 pointer-events-none'
-                                    }`}
-                                    onClick={() => {
-                                        setPopupEvent('create')
-                                        dialogRef.current?.open()
-                                    }}>
-                                <Plus/>
-                                {messages.create}
-                            </Button>
-                            <Button variant="outline" size="sm"
-                                    className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
-                                        'opacity-50 pointer-events-none' : ''}`}
-                                    onClick={() => {
-                                        initUpdateItem()
-                                        setPopupEvent('update')
-                                        dialogRef.current?.open()
-                                    }}>
-                                <Pencil/>
-                                {messages.Edit}
-                            </Button>
-                            <DeleteModal btnTitle={messages.Delete}
-                                         ref={deleteModalRef}
-                                         variant="destructive"
-                                         btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
-                                         delModal={
-                                             {
-                                                 yes: messages['Yes'],
-                                                 no: messages['No'],
-                                                 text: messages['Are you sure?']
+                        className="xl:gap-10 justify-between flex flex-col xl:flex-row gap-3.5">
+                        <div className="flex gap-2 items-center">
+                            <div className="flex gap-2 items-center flex-wrap md:flex-nowrap">
+                                <Button variant="default" size="sm"
+                                        className={`w-fit rounded-sm ${
+                                            selectedNodes.length === 0 ||
+                                            (selectedNodes.length === 1 && selectedNodes[0]?.droppable)
+                                                ? ''
+                                                : 'opacity-50 pointer-events-none'
+                                        }`}
+                                        onClick={() => {
+                                            setPopupEvent('create')
+                                            dialogRef.current?.open()
+                                        }}>
+                                    <Plus/>
+                                    {messages.create}
+                                </Button>
+                                <Button variant="outline" size="sm"
+                                        className={`w-fit cursor-pointer rounded-sm ${(selectedNodes.length > 1 || !selectedNodes.length) ?
+                                            'opacity-50 pointer-events-none' : ''}`}
+                                        onClick={() => {
+                                            initUpdateItem()
+                                            setPopupEvent('update')
+                                            dialogRef.current?.open()
+                                        }}>
+                                    <Pencil/>
+                                    {messages.Edit}
+                                </Button>
+                                <DeleteModal btnTitle={messages.Delete}
+                                             ref={deleteModalRef}
+                                             variant="destructive"
+                                             btnCLass={`w-fit text-white hover ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                             delModal={
+                                                 {
+                                                     yes: messages['Yes'],
+                                                     no: messages['No'],
+                                                     text: messages['Are you sure?']
+                                                 }
                                              }
-                                         }
-                                         isLink={false}
-                                         handleDelete={deleteItem}
-                            />
-                            <Button variant="secondary" size="sm"
-                                    className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
-                                    onClick={() => {
-                                        setSelectedNodes([])
-                                    }}>
-                                <Ban/>
-                                {messages["Clean"]}
-                            </Button>
+                                             isLink={false}
+                                             handleDelete={deleteItem}
+                                />
+                                <Button variant="secondary" size="sm"
+                                        className={`w-fit cursor-pointer rounded-sm ${selectedNodes.length ? '' : 'opacity-50 pointer-events-none'}`}
+                                        onClick={() => {
+                                            setParentId(0)
+                                            setSelectedNodes([])
+                                        }}>
+                                    <Ban/>
+                                    {messages["Clean"]}
+                                </Button>
+                            </div>
                             <div className="ml-4">
-                                {actionsTools.map((item) => (
-                                    <Button variant="secondary" size="sm" key={item.id}
-                                            onClick={() => initAction(item.id)}>
-                                        <MaterialIcon name={item.icon}/>
-                                        {item.name}
-                                    </Button>
-                                ))}
+                                <div className="hidden lg:flex gap-2">
+                                    {actionsTools.map((item) => (
+                                        <Button variant="outline" size="sm" key={item.id}
+                                                onClick={() => initAction(item.id)}>
+                                            <MaterialIcon name={item.icon}/>
+                                            {item.name}
+                                        </Button>
+                                    ))}
+                                </div>
+                                {actionsTools.length > 0 &&
+                                    <div className="block lg:hidden">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" size="icon">
+                                                    <BetweenHorizontalStart/>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-fit" side="right" align="start">
+                                                <DropdownMenuGroup className="grid gap-2">
+                                                    {actionsTools.map((item) => (
+                                                        <Button variant="outline" size="sm" key={item.id}
+                                                                onClick={() => initAction(item.id)}>
+                                                            <MaterialIcon name={item.icon}/>
+                                                            {item.name}
+                                                        </Button>
+                                                    ))}
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                }
                             </div>
                         </div>
-                        <div>
+                        <div className="flex gap-2 items-center justify-start xl:justify-end">
+                            {searhing && <LoaderCircle
+                                className="size-4 animate-spin order-2 xl:order-1"/>}
                             <Input
                                 type="search"
                                 autoFocus={false}
                                 placeholder={messages.Search}
-                                className="w-full max-w-[200px] p-2 border rounded"
+                                className="w-[200px] p-2 border rounded order-1 xl:order-2"
                                 onChange={(e) => {
                                     handleSearch(e.target.value)
                                 }}
@@ -747,7 +839,6 @@ const CatalogTree = () => {
                                                     onClick={() => {
                                                         setPopupEvent('create')
                                                         dialogRef.current?.open()
-                                                        console.log(selectedNodes[0])
                                                     }}>
                                                     {messages.create}
                                                 </ContextMenuItem>
@@ -773,7 +864,8 @@ const CatalogTree = () => {
                                                         className="mx-auto size-3 animate-spin"/>
                                                 ) : (
                                                     actionsContext.map((item) => (
-                                                        <ContextMenuItem key={item.id} onClick={() => initAction(item.id)}>
+                                                        <ContextMenuItem key={item.id}
+                                                                         onClick={() => initAction(item.id)}>
                                                             {item.name}
                                                         </ContextMenuItem>
                                                     ))
@@ -821,6 +913,7 @@ const CatalogTree = () => {
                         isNavigation={isNavigation}
                         messages={messages}
                         DynamicComponent={DynamicComponent}
+                        DynamicActionComponent={DynamicActionComponent}
                         addLinksGroupProps={addLinksGroupProps}
                         reloadCatalog={reloadCatalog}
                         itemType={itemType}

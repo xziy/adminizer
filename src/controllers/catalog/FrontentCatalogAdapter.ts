@@ -107,6 +107,7 @@ export class VueCatalog {
         for (const item of items) {
             arrItems.push(await this.catalog.find(item.data))
         }
+        console.log(arrItems)
         if (type === 'tools') {
             return (await this.catalog.getActions(arrItems))?.filter(e => e.displayTool);
         } else {
@@ -114,16 +115,17 @@ export class VueCatalog {
         }
     }
 
-    async handleAction(actionId: string, items: any[], req: ReqType) {
+    async handleAction(actionId: string, items: any[], data: any, req: ReqType) {
         let arrItems = []
         for (const item of items) {
             arrItems.push(await this.catalog.find(item.data))
         }
-        return this.catalog.handleAction(actionId, arrItems, req);
+        console.log(arrItems)
+        return this.catalog.handleAction(actionId, arrItems, data, req);
     }
 
-    async getPopUpTemplate(actionId: string) {
-        return this.catalog.getPopUpTemplate(actionId);
+    async getPopUpTemplate(actionId: string, req: ReqType) {
+        return this.catalog.getPopUpTemplate(actionId, req);
     }
 
     async getLink(actionId: string) {
@@ -162,10 +164,9 @@ export class VueCatalog {
 
     async search(s: string, req: ReqType) {
         let searchResult = await this.catalog.search(s, undefined, req);
-        // console.log(searchResult)
-        // return ''
-        let itemsTree = AbstractCatalog.buildTree(searchResult);
-        return VueCatalogUtils.treeToNode(itemsTree, this.catalog.getGroupType().type);
+        // let itemsTree = AbstractCatalog.buildTree(searchResult);
+        // console.log(itemsTree)
+        return VueCatalogUtils.treeToNode(searchResult, this.catalog.getGroupType().type);
     }
 
     async updateTree(data: RequestData, req: ReqType): Promise<any> {
