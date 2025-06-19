@@ -29,3 +29,17 @@ The configuration system looks up the model config by exact key match. If the ke
 **Planned Improvements:**
 
 In the future, we will introduce the concept of a *model entity*, which will allow for more flexible and case-independent model resolution.
+
+### 🛠️ "Cannot convert undefined or null to object" when starting
+
+**Description:**
+
+If `window.UIComponents` is not initialized before calling `registerUIComponents()`, the application may fail with the following error:
+
+```
+Uncaught TypeError: Cannot convert undefined or null to object
+```
+
+**Solution:**
+
+As of version 4.1.0, `registerUIComponents()` now creates `window.UIComponents` automatically when it is missing. Ensure you are using the latest code and simply call `registerUIComponents()` once during app startup.
