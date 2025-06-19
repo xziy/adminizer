@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src/assets/js",
+    "outDir": "./dist/ui",
+    "noEmit": false,
+    "declaration": true,
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src/assets/js/components/ui/**/*"]
+}
