@@ -12,15 +12,19 @@ import { createRoot } from 'react-dom/client';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { registerUIComponents } from "./ui-globals";
-
+import * as LucideReact from 'lucide-react'
 const { createInertiaApp } = InertiajsReact;
 window.React = React;
 window.ReactDOM = ReactDOM;
 //@ts-ignore
 window.InertiajsReact = InertiajsReact
+
+
+// Passing icons
+//@ts-ignore 
+window.LucideReact = LucideReact
+
 registerUIComponents();
-
-
 
 export async function resolvePageComponent<T>(path: string | string[], pages: Record<string, Promise<T> | (() => Promise<T>)>): Promise<T>{
     for (const p of (Array.isArray(path) ? path : [path])) {
