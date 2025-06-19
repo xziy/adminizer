@@ -12,24 +12,25 @@ export default defineConfig({
         viteExternalsPlugin({
             react: 'React',
             'react-dom': 'ReactDOM',
-            '@/components/ui/button.tsx': 'UIComponents' // Test Btn for module.
         }),
     ],
     build: {
         outDir: path.resolve(import.meta.dirname, ''),
-        // outDir: path.resolve(import.meta.dirname, 'dist/assets'),
         emptyOutDir: false,
         lib: {
-            // Library entrance point
-            entry: path.resolve(import.meta.dirname, 'ComponentB.tsx'),
-            name: 'ComponentB',
+            // Указываем несколько точек входа
+            entry: {
+                catalogAction: path.resolve(import.meta.dirname, 'action.tsx'),
+                Group: path.resolve(import.meta.dirname, 'group.tsx'),
+                // Можно добавить больше компонентов
+            },
+            // name больше не нужно, так как у каждого компонента будет свое имя
             formats: ['es'],
-            fileName: (format) => `ComponentB.${format}.js`,
+            fileName: (format, entryName) => `${entryName}.${format}.js`,
         },
         rollupOptions: {
             external: [
                 'tailwindcss',
-                '@/components/ui/button.tsx' //Test Btn for module.
             ],
         },
     },

@@ -24,6 +24,7 @@ interface CatalogDialogStackProps {
     isNavigation: boolean;
     messages: Record<string, string>;
     DynamicComponent: React.ReactElement | null;
+    DynamicActionComponent: React.ReactElement | null;
     addLinksGroupProps: any;
     reloadCatalog: (item?: any) => Promise<void>;
     itemType: string | null;
@@ -47,6 +48,7 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = ({
                                                                    isNavigation,
                                                                    messages,
                                                                    DynamicComponent,
+                                                                   DynamicActionComponent,
                                                                    addLinksGroupProps,
                                                                    reloadCatalog,
                                                                    itemType,
@@ -116,6 +118,11 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = ({
                                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 animate-spin"/>
                                 )}
                             </div>
+                        }
+                        {PopupEvent === 'action' &&
+                            <>
+                                {DynamicActionComponent}
+                            </>
                         }
                     </div>
                 </DialogStackContent>

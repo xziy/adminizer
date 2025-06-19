@@ -88,9 +88,9 @@ export async function catalogController(req: ReqType, res: ResType) {
 					case 'getLink':
 						return res.json({data: await frontendCatalog.getLink(data.actionId)})
 					case 'handleAction':
-						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, req)})
-					case 'getPopUpHTML':
-						return res.json({data: await frontendCatalog.getPopUpTemplate(data.actionId)})
+						return res.json({data: await frontendCatalog.handleAction(data.data.actionID, data.data.items, data.data.data, req)})
+					case 'getPopUpTemplate':
+						return res.json({data: await frontendCatalog.getPopUpTemplate(data.actionId, req)})
 					case 'updateItem':
 						return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data, req)})
 				}

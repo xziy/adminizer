@@ -12,17 +12,17 @@ import { createRoot } from 'react-dom/client';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-// import { Button } from '@/components/ui/button.tsx';
+import { Button } from '@/components/ui/button.tsx';
 
 window.React = React;
 window.ReactDOM = ReactDOM;
 
 
 // TODO Test Btn for module. When we write the modules, we need to test this. If everything goes well, then you need to move all UI components to the global window variable, as with a button, and analyze the components to exclude imports. Instead, use window.UIComponents['need component'].
-// @ts-ignore
-// window.UIComponents = window.UIComponents || {};
-// @ts-ignore
-// window.UIComponents.Button = Button;
+//@ts-ignore
+window.UIComponents = window.UIComponents || {};
+//@ts-ignore
+window.UIComponents.Button = Button;
 
 
 export async function resolvePageComponent<T>(path: string | string[], pages: Record<string, Promise<T> | (() => Promise<T>)>): Promise<T>{

@@ -197,6 +197,7 @@ export class TestCatalog extends AbstractCatalog {
         super(adminizer, items);
         this.addActionHandler(new Link())
         this.addActionHandler(new ContextAction())
+        this.addActionHandler(new ExternalAction())
     }
 }
 
@@ -263,7 +264,7 @@ export class TestGroup extends AbstractGroup<TestItem> {
         return Promise.resolve({
             type: type,
             data: {
-                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : ''
+                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : `${this.adminizer.config.routePrefix}/assets/modules/Group.es.js`
             }
         })
     }
@@ -278,7 +279,7 @@ export class TestGroup extends AbstractGroup<TestItem> {
             type: type,
             data: {
                 item: item,
-                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : ''
+                path: process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/group.tsx' : `${req.adminizer.config.routePrefix}/assets/modules/Group.es.js`
             }
         })
     }
@@ -428,7 +429,6 @@ export class Link extends ActionHandler {
     public readonly type = 'link'
     public readonly selectedItemTypes: string[] = []
 
-
     getPopUpTemplate(data?: any): Promise<string> {
         return Promise.resolve("");
     }
@@ -457,14 +457,16 @@ export class ContextAction extends ActionHandler {
     getPopUpTemplate(data?: any): Promise<string> {
         return Promise.resolve("");
     }
+
     getLink(data?: any): Promise<string> {
         return Promise.resolve("");
     }
-    handler(items: Item[], req?: ReqType): Promise<void> {
+
+    handler(items: Item[], data?: any, req?: ReqType): Promise<void | string> {
         return new Promise((resolve) => {
             setTimeout(async () => {
                 try {
-                    console.log('Processing items:', items);
+                    console.log('Processing items:', items, 'data: ', data);
                     // some logic here
                     resolve();
                 } catch (error) {
@@ -473,6 +475,40 @@ export class ContextAction extends ActionHandler {
                 }
             }, 5000);
         });
+    }
+
+}
+
+export class ExternalAction extends ActionHandler {
+    displayContext: boolean = false;
+    type: "link" | "basic" | "external" = 'external';
+    displayTool: boolean = true;
+    id: string = 'external_action';
+    icon: string = 'launch';
+    name: string = 'External Action';
+    public readonly selectedItemTypes: string[] = []
+
+    getPopUpTemplate(req?: ReqType): Promise<string> {
+        return Promise.resolve(process.env.VITE_ENV === 'dev' ? '/modules/testCatalog/action.tsx' : `${req.adminizer.config.routePrefix}/assets/modules/catalogAction.es.js`);
+    }
+
+    getLink(data?: any): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    handler(items: Item[], data?: any, req?: ReqType): Promise<void | string> {
+        console.log('HTMLAction handler items: ', items, 'data: ', parseInt(data.number) === 7)
+        return new Promise((resolve, reject) => {
+            if (parseInt(data.number) === 7) {
+                setTimeout(() => {
+                    resolve('ok')
+                }, 1000)
+            } else {
+                setTimeout(() => {
+                    resolve('error')
+                }, 1000)
+            }
+        })
     }
 
 }

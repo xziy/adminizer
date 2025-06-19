@@ -1,4 +1,4 @@
-var x = { exports: {} }, e = {};
+var x = { exports: {} }, r = {};
 /**
  * @license React
  * react-jsx-runtime.production.js
@@ -8,39 +8,39 @@ var x = { exports: {} }, e = {};
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var l;
-function p() {
-  if (l) return e;
-  l = 1;
-  var u = Symbol.for("react.transitional.element"), n = Symbol.for("react.fragment");
-  function s(o, r, t) {
+var d;
+function R() {
+  if (d) return r;
+  d = 1;
+  var o = Symbol.for("react.transitional.element"), n = Symbol.for("react.fragment");
+  function s(u, t, e) {
     var a = null;
-    if (t !== void 0 && (a = "" + t), r.key !== void 0 && (a = "" + r.key), "key" in r) {
-      t = {};
-      for (var d in r)
-        d !== "key" && (t[d] = r[d]);
-    } else t = r;
-    return r = t.ref, {
-      $$typeof: u,
-      type: o,
+    if (e !== void 0 && (a = "" + e), t.key !== void 0 && (a = "" + t.key), "key" in t) {
+      e = {};
+      for (var l in t)
+        l !== "key" && (e[l] = t[l]);
+    } else e = t;
+    return t = e.ref, {
+      $$typeof: o,
+      type: u,
       key: a,
-      ref: r !== void 0 ? r : null,
-      props: t
+      ref: t !== void 0 ? t : null,
+      props: e
     };
   }
-  return e.Fragment = n, e.jsx = s, e.jsxs = s, e;
+  return r.Fragment = n, r.jsx = s, r.jsxs = s, r;
 }
 var c;
-function R() {
-  return c || (c = 1, x.exports = p()), x.exports;
+function p() {
+  return c || (c = 1, x.exports = R()), x.exports;
 }
-var i = R();
-const v = window.React.useState;
-function m({ message: u }) {
-  const [n, s] = v(0), o = () => s(n + 1);
+var i = p();
+const v = window.React.useState, h = window.UIComponents.Button;
+function j({ message: o }) {
+  const [n, s] = v(0), u = () => s(n + 1);
   return /* @__PURE__ */ i.jsxs("div", { className: "grid gap-4", children: [
-    /* @__PURE__ */ i.jsx("h1", { children: u }),
-    /* @__PURE__ */ i.jsx("button", { onClick: o, className: "rounded-md bg-primary px-4 py-2 w-fit text-primary-foreground hover:bg-primary/90 cursor-pointer", children: "Click me" }),
+    /* @__PURE__ */ i.jsx("h1", { children: o }),
+    /* @__PURE__ */ i.jsx(h, { onClick: u, className: "w-fit", children: "Click me" }),
     /* @__PURE__ */ i.jsxs("h2", { children: [
       "State is ",
       n
@@ -48,5 +48,5 @@ function m({ message: u }) {
   ] });
 }
 export {
-  m as default
+  j as default
 };

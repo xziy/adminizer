@@ -199,6 +199,13 @@ export interface DynamicComponent {
     }>;
 }
 
+export interface DynamicActionComponent {
+    default: FC<{
+        items: any,
+        callback: () => void
+    }>;
+}
+
 export interface CatalogActions {
     type: string;
     displayTool: boolean;
