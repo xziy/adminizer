@@ -35,3 +35,5 @@ export default function Example() {
 ```
 
 Make sure the Adminizer bundle is loaded before your module so that `registerUIComponents()` has populated `window.UIComponents`.
+
+The `registerUIComponents()` function automatically creates `window.UIComponents` if it doesn't already exist. This avoids runtime errors like `Uncaught TypeError: Cannot convert undefined or null to object` when the container is missing.

@@ -208,6 +208,9 @@ import {
 export function registerUIComponents(): void {
 
 //@ts-ignore
+window.UIComponents ??= {};
+
+//@ts-ignore
 Object.assign(window.UIComponents, {
     Avatar,
     AvatarImage,
