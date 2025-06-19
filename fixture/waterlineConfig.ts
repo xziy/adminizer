@@ -1,4 +1,4 @@
-import { Config } from "waterline";
+import type { Config } from "waterline";
 // @ts-ignore
 import sailsDisk from "sails-disk";
 // import sailsPostgresql from "sails-postgresql";

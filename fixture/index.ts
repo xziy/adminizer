@@ -7,11 +7,6 @@ import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
 // Waterline imports
-import Waterline from "waterline";
-import waterlineConfig from "./waterlineConfig";
-import Example from "./models/Example";
-import Test from "./models/Test";
-import JsonSchema from "./models/JsonSchema";
 import {Sequelize} from "sequelize-typescript";
 
 // Sequelize imports
