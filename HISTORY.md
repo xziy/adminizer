@@ -9,3 +9,7 @@
 - Exposed all UI components on `window.UIComponents` for use by external modules.
 - Updated module build config to treat each UI component as an external.
 - Documented global UI components usage.
+## 2025-06-19
+- Compiled UI components to `dist/ui` so they can be imported from the package.
+- Added exports mapping for `./ui/*` paths.
+- Updated UI component documentation with import example.
