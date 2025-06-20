@@ -52,7 +52,7 @@ const LazyField: FC<{
 }> = memo(({field, value, onChange, processing, notFound, search}) => {
     const [ref, inView] = useInView({
         triggerOnce: true,
-        rootMargin: '100px 0px', // Начинаем загружать заранее
+        rootMargin: '100px 0px',
     });
 
     return (
