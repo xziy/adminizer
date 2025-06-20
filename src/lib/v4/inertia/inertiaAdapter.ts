@@ -53,7 +53,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
 
             res.cookie('XSRF-TOKEN', csrfToken, {
                 httpOnly: false,
-                secure: true,
+                secure: process.env.NODE_ENV === 'production' && process.env.CSRF_COOKIE_INSECURE !== '1',
                 sameSite: 'lax',
             });
 
