@@ -4,8 +4,8 @@
 	"version": "4.2.0",
 	"main": "index.js",
 	"exports": {
-			".": "./index.js",
-			"./ui/*": "./dist/ui/components/ui/*.js"
+	".": "./index.js",
+	"./ui/*": "./dist/ui/components/ui/*.js"
 	},
 	"scripts": {
 		"test": "vitest --reporter verbose",
