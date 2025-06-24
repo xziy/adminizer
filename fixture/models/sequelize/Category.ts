@@ -25,4 +25,7 @@ export class Category extends Model<
 
     @Column(DataType.STRING)
     declare slug: string;
+
+    @Column(DataType.JSON)
+    declare mediamanager_one: object
 }
