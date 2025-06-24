@@ -13,7 +13,7 @@ import {ModelAnyField} from "../lib/v4/model/AbstractModel";
 import { isObject } from "./JsUtils";
 
 export type PropsFieldType =
-   'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'checkbox' | ControlType
+   'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'mediamanager' | 'checkbox' | ControlType
 
 interface FieldProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
@@ -148,6 +148,11 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if (['geojson', 'geo-polygon', 'geo-marker'].includes(type)) {
             fieldType = 'geoJson';
             options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'leaflet')
+        }
+
+        if(type === 'mediamanager'){
+            fieldType = 'mediamanager'
+            options = {}
         }
 
         props.fields.push({

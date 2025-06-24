@@ -11,6 +11,8 @@ import {Field} from "@/types";
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 
 import MultiSelect from "@/components/multi-select.tsx";
+import {Pages} from "@/components/media-manager/Pages.tsx";
+import {Layout} from '@/components/media-manager/Page';
 
 const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
 const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
@@ -262,6 +264,10 @@ const FieldRenderer: FC<{
                                      onChange={handleJSONChange} disabled={processing || field.disabled}/>
                 )
             }
+        case 'mediamanager':
+            return (
+                <Pages layout={Layout.Grid} />
+            )
         default:
             return (
                 <Input

@@ -377,6 +377,14 @@ const models: AdminpanelConfig["models"] = {
         fields: {
             createdAt: false,
             updatedAt: false,
+            mediamanager_one: {
+                title: 'Images 1',
+                type: 'mediamanager',
+                options: {
+                    id: 'banner'
+                }
+            },
+
         }
     },
     TestCatalog: {
