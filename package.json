@@ -10,8 +10,8 @@
 	"scripts": {
 		"test": "vitest --reporter verbose",
 		"start": "cross-env NO_SEED_DATA=true ORM=sequelize tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
-		"dev": "cross-env VITE_ENV=dev tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
-		"dev:sequelize": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=sequelize tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+                "dev": "cross-env VITE_ENV=dev ORM=sequelize tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+                "dev:waterline": "cross-env VITE_ENV=dev ORM=waterline tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
 		"compile:backend": "tsc -p src/tsconfig.json",
 		"compile:ui": "tsc -p tsconfig.ui.json",
@@ -112,6 +112,7 @@
 		"cross-env": "^7.0.3",
 		"eslint": "^9.26.0",
 		"handsontable": "^15.2.0",
+		"image-size": "^2.0.2",
 		"isomorphic-webcrypto": "^2.3.8",
 		"json-schema": "^0.4.0",
 		"leaflet": "^1.9.4",

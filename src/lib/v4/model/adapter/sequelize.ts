@@ -36,13 +36,14 @@ function generateAssociationsFromSchema(
         }
         // 💡 O:M связь (один ко многим)
         else {
+          const foreignKey = field.collection === modelName ? field.via : `${modelName}Id`;
           model.hasMany(targetModel, {
             as: fieldName,
-            foreignKey: `${modelName}Id`,
+            foreignKey,
           });
           targetModel.belongsTo(model, {
             as: field.via,
-            foreignKey: `${modelName}Id`,
+            foreignKey,
           });
         }
       }

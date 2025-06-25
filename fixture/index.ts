@@ -1,6 +1,16 @@
 import {Adminizer} from "../dist/lib/Adminizer";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
+import Waterline from "waterline";
+import waterlineConfig from "./waterlineConfig";
+import ExampleWaterline from "./models/Example";
+import TestWaterline from "./models/Test";
+import JsonSchemaWaterline from "./models/JsonSchema";
+import CategoryWaterline from "./models/Category";
+import CatalogGroupNav from "./models/CatalogGroupNav";
+import CatalogPageNav from "./models/CatalogPageNav";
+import GroupCatalog from "./models/GroupCatalog";
+import UserWaterline from "./models/User";
 import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 
@@ -38,31 +48,66 @@ process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 
 
-const tmpDir = path.join(process.cwd(), ".tmp");
-const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
-const orm = new Sequelize({
-    dialect: "sqlite",
-    storage: dbPath,
-    logging: false,
-});
-await orm.authenticate();
-await SequelizeAdapter.registerSystemModels(orm)
-orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, CategorySequelize, TestCatalogSequelize])
-TestSequelize.associate(orm)
-ExampleSequelize.associate(orm)
+const ormType = process.env.ORM ?? "sequelize";
+let adminizer: Adminizer;
 
-await orm.sync({});
-const sequelizeAdapter = new SequelizeAdapter(orm);
-const adminizer = new Adminizer([sequelizeAdapter]);
-await ormSharedFixtureLift(adminizer);
+if (ormType === "waterline") {
+    const orm = new Waterline();
+    await WaterlineAdapter.registerSystemModels(orm);
+    orm.registerModel(ExampleWaterline);
+    orm.registerModel(TestWaterline);
+    orm.registerModel(JsonSchemaWaterline);
+    orm.registerModel(CategoryWaterline);
+    orm.registerModel(CatalogGroupNav);
+    orm.registerModel(CatalogPageNav);
+    orm.registerModel(GroupCatalog);
+    orm.registerModel(UserWaterline);
 
+    const ontology = await new Promise<any>((resolve, reject) => {
+        orm.initialize(waterlineConfig as any, (err, ontology) => {
+            if (err) return reject(err);
+            resolve(ontology);
+        });
+    });
 
-if (!process.env.NO_SEED_DATA) {
-    try {
-        await seedDatabase(orm.models, 77);
-        console.log("Database seeded with random data!");
-    } catch (seedErr) {
-        console.error("Error during database seeding:", seedErr);
+    const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
+    adminizer = new Adminizer([waterlineAdapter]);
+    await ormSharedFixtureLift(adminizer);
+
+    if (!process.env.NO_SEED_DATA) {
+        try {
+            await seedDatabase(waterlineAdapter.models, 77);
+            console.log("Database seeded with random data!");
+        } catch (seedErr) {
+            console.error("Error during database seeding:", seedErr);
+        }
+    }
+} else {
+    const tmpDir = path.join(process.cwd(), ".tmp");
+    const dbPath = path.join(tmpDir, "adminizer_fixture.sqlite");
+    const orm = new Sequelize({
+        dialect: "sqlite",
+        storage: dbPath,
+        logging: false,
+    });
+    await orm.authenticate();
+    await SequelizeAdapter.registerSystemModels(orm);
+    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, CategorySequelize, TestCatalogSequelize]);
+    TestSequelize.associate(orm);
+    ExampleSequelize.associate(orm);
+
+    await orm.sync({});
+    const sequelizeAdapter = new SequelizeAdapter(orm);
+    adminizer = new Adminizer([sequelizeAdapter]);
+    await ormSharedFixtureLift(adminizer);
+
+    if (!process.env.NO_SEED_DATA) {
+        try {
+            await seedDatabase(orm.models, 77);
+            console.log("Database seeded with random data!");
+        } catch (seedErr) {
+            console.error("Error during database seeding:", seedErr);
+        }
     }
 }
 
