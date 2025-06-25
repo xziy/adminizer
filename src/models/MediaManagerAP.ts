@@ -39,7 +39,7 @@ export default {
   },
   meta: {
     collection: "MediaManagerMetaAP",
-    via: "parentMedia"
+    via: "parentNode"
   },
   modelAssociation: {
     collection: "MediaManagerAssociationsAP",

@@ -1,6 +1,8 @@
 ## Development
-- **`npm run dev`**  
-  Starts the application in development mode with file watching, using the Waterline fixture configuration and `VITE_ENV=dev`.
+- **`npm run dev`**
+  Starts the application in development mode using Sequelize with file watching.
+- **`npm run dev:waterline`**
+  Starts the application in development mode using Waterline with file watching.
 
 - **`npm run watch:backend`**  
   Watches for changes in backend files and recompiles TypeScript continuously.
