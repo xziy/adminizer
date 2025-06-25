@@ -9,13 +9,12 @@ export default {
     primaryKey: true,
     required: true
   },
-  // WARN!!!  renamed from parent is confict, PARENT is reserved word in sequlize
-  parentMedia: {
+  parentNode: {
     model: "MediaManagerAP"
   },
   variants: {
     collection: "MediaManagerAP",
-    via: "parent"
+    via: "parentNode"
   },
   mimeType: { 
     type: "string"
@@ -49,7 +48,7 @@ export default {
 }
 export interface MediaManagerAP {
   id: string;
-  parent?: MediaManagerAP;
+  parentNode?: MediaManagerAP;
   variants?: MediaManagerAP[];
   mimeType?: string;
   path?: string;

@@ -1,4 +1,4 @@
-import { MediaManagerAP } from "./MediaManagerAP_ts";
+import { MediaManagerAP } from "./MediaManagerAP";
 
 export default {
   id: {
@@ -17,7 +17,7 @@ export default {
   isPublic: {
     type: "boolean"
   },
-  parent: {
+  parentNode: {
     model: "MediaManagerAP"
   }
 }
@@ -28,5 +28,5 @@ export interface MediaManagerMetaAP {
   key?: string;
   value?: Record<string, unknown>;
   isPublic?: boolean;
-  parent?: MediaManagerAP;
+  parentNode?: MediaManagerAP;
 }
