@@ -12,7 +12,7 @@ import bindAssets from "../system/bindAssets";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
 import bindNavigation from "../system/bindNavigation";
-// import bindMediaManager from "../system/bindMediaManager";
+import bindMediaManager from "../system/bindMediaManager";
 import bindAccessRights from "../system/bindAccessRights";
 import bindAuthorization from "../system/bindAuthorization";
 import bindModels from "../system/bindModels";
@@ -202,7 +202,7 @@ export class Adminizer {
 
         bindNavigation(this);
 
-        // bindMediaManager(this);
+        bindMediaManager(this);
 
         await bindAccessRights(this);
 
