@@ -33,6 +33,13 @@ export class DataAccessor {
 
     }
 
+    private getModelConfig(modelName: string): ModelConfig | undefined {
+        const entry = Object.entries(this.adminizer.config.models)
+            .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
+        const config = entry ? entry[1] : undefined;
+        return isObject(config) ? config as ModelConfig : undefined;
+    }
+
     /**
      * Retrieves the fields for the given entity based on action type,
      * taking into account access rights and configuration settings.
@@ -120,11 +127,12 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-                        const configEntry = Object.entries(this.adminizer.config.models)
-                            .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
-                        let _modelConfig = configEntry ? configEntry[1] : undefined;
-                        if(!isObject(_modelConfig)) throw `type error: model config  of ${modelName} is ${typeof this.adminizer.config.models[modelName]} expected object`
-                        associatedModelConfig = _modelConfig
+                        const modelCfg = this.getModelConfig(modelName);
+                        if (modelCfg) {
+                            associatedModelConfig = modelCfg;
+                        } else {
+                            Adminizer.log.error(`DataAccessor > getFieldsConfig > Model config not found: ${modelName}`);
+                        }
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
@@ -150,11 +158,8 @@ export class DataAccessor {
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
 
         const model = this.adminizer.modelHandler.model.get(modelName);
-        const configEntry = Object.entries(this.adminizer.config.models)
-            .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
-        const modelConfig = configEntry ? configEntry[1] : undefined;
-
-        if (!model || !modelConfig || typeof modelConfig === "boolean") {
+        const modelConfig = this.getModelConfig(modelName);
+        if (!model || !modelConfig) {
             return undefined;
         }
 

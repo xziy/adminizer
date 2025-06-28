@@ -6,3 +6,5 @@
 - Simplified ThemeSwitcher to a single button cycling through modes.
 - Added tests validating system model registration for Waterline and Sequelize.
 - Updated tests documentation with instructions on skipping unstable Sequelize suite.
+
+- Fixed failing unit tests; updated ORM adapters to handle case-insensitive model names and unique Sequelize associations.
