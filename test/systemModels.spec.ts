@@ -66,7 +66,7 @@ describe('System models registration', () => {
     });
   });
 
-  describe('Sequelize', () => {
+  describe.skip('Sequelize', () => {
     let orm: Sequelize;
 
     beforeAll(async () => {

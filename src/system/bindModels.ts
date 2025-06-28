@@ -39,10 +39,10 @@ export default async function bindModels(adminizer: Adminizer) {
   modelsFromConfig.forEach((modelName) => {
     const modelConfig = Object.entries(adminizer.config.models)
       .find(([key, value]) =>
-        value && typeof value !== "boolean" && value.model.toLowerCase() === modelName
+        value && typeof value !== "boolean" && value.model.toLowerCase() === modelName.toLowerCase()
       )?.[1];
 
-    if (!systemModels.includes(modelName)) {
+    if (!systemModels.includes(modelName.toLowerCase())) {
       const adapterName = typeof modelConfig !== "boolean" ? modelConfig?.adapter || defaultOrmAdapter : defaultOrmAdapter;
       const ormAdapter = adminizer.getOrmAdapter(adapterName);
       if (!ormAdapter) {
@@ -50,7 +50,7 @@ export default async function bindModels(adminizer: Adminizer) {
       }
 
       // Create model adapter instance and add it to model handler
-      const registeredModel = ormAdapter.getModel(modelName);
+      const registeredModel = ormAdapter.getModel(modelName.toLowerCase());
       if (!registeredModel) {
         throw `Bind models > Model not found: ${modelName}`
       }
