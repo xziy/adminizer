@@ -45,7 +45,6 @@ function generateAssociationsFromSchema(
             as: fieldName,
             foreignKey,
           });
-<<<<<<< HEAD
 
           const alias = field.via;
           const belongsToOptions = { foreignKey } as any;
@@ -56,15 +55,6 @@ function generateAssociationsFromSchema(
           }
 
           targetModel.belongsTo(model, belongsToOptions);
-=======
-          const belongsAlias = model.rawAttributes[field.via] ? `${field.via}Assoc` : field.via;
-          if (!targetModel.associations[belongsAlias]) {
-            targetModel.belongsTo(model, {
-              as: belongsAlias,
-              foreignKey,
-            });
-          }
->>>>>>> исправить-столкновение-имен-в-модели-mediamanagerap
         }
       }
 
@@ -73,7 +63,6 @@ function generateAssociationsFromSchema(
         const targetModel = models[field.model];
         if (!targetModel) continue;
 
-<<<<<<< HEAD
         // Avoid naming collisions by using an explicit foreign key
         const alias = fieldName;
         const foreignKey = `${alias}Id`;
@@ -88,20 +77,6 @@ function generateAssociationsFromSchema(
           as: asName,
           foreignKey,
         });
-=======
-        // Avoid naming collision by making FK explicit: `${fieldName}Id`
-        const foreignKey = `${fieldName}Id`;
-        const alias = fieldName;
-
-        // If attribute already exists, use a different alias to avoid collision
-        const associationAlias = model.rawAttributes[alias] ? `${alias}Assoc` : alias;
-        if (!model.associations[associationAlias]) {
-          model.belongsTo(targetModel, {
-            as: associationAlias,
-            foreignKey,
-          });
-        }
->>>>>>> исправить-столкновение-имен-в-модели-mediamanagerap
       }
     }
   }
