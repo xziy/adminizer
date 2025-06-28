@@ -1,3 +1,6 @@
+
+## 4.1.4
+- Fixed Sequelize system model registration errors in tests.
 ## 4.1.3
 - Fixed build issues when compiling media manager
 - Added material-icons dependency and troubleshooting notes

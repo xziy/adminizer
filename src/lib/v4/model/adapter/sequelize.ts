@@ -41,10 +41,13 @@ function generateAssociationsFromSchema(
             as: fieldName,
             foreignKey,
           });
-          targetModel.belongsTo(model, {
-            as: field.via,
-            foreignKey,
-          });
+          const belongsAlias = model.rawAttributes[field.via] ? `${field.via}Assoc` : field.via;
+          if (!targetModel.associations[belongsAlias]) {
+            targetModel.belongsTo(model, {
+              as: belongsAlias,
+              foreignKey,
+            });
+          }
         }
       }
 
@@ -57,15 +60,12 @@ function generateAssociationsFromSchema(
         const foreignKey = `${fieldName}Id`;
         const alias = fieldName;
 
-        // Если поле уже существует — избегаем конфликта
-        if (model.rawAttributes[alias]) {
+        // If attribute already exists, use a different alias to avoid collision
+        const associationAlias = model.rawAttributes[alias] ? `${alias}Assoc` : alias;
+        if (!model.associations[associationAlias]) {
           model.belongsTo(targetModel, {
-            as: alias,
+            as: associationAlias,
             foreignKey,
-          });
-        } else {
-          model.belongsTo(targetModel, {
-            foreignKey: alias, // если нет конфликта, можно использовать alias как FK
           });
         }
       }
@@ -672,7 +672,10 @@ export class SequelizeAdapter extends AbstractAdapter {
 
   /**Registration of system models*/
   static async registerSystemModels(sequelize: Sequelize): Promise<void> {
-    const modelsDir = path.resolve(import.meta.dirname, "../../../../models");
+    let modelsDir = path.resolve(import.meta.dirname, "../../../../models");
+    if (!fs.existsSync(modelsDir)) {
+      modelsDir = path.resolve(import.meta.dirname, "../../../../src/models");
+    }
     let files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
 
     if (!files.length) {

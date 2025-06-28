@@ -1,4 +1,5 @@
 # Change Log
+- Fixed Sequelize system model registration errors in tests.
 - Documented material-icons dependency and build step.
 
 - Added system theme option and ThemeSwitcher component.
