@@ -122,7 +122,10 @@ export class WaterlineAdapter extends AbstractAdapter {
 
   /** Method that processes custom waterline model creation. Is used for system models. Replaces beforeCreate method in waterline */
   static async registerSystemModels(waterlineORM: Waterline.Waterline): Promise<void> {
-    const systemModelsDir = path.resolve(import.meta.dirname, "../../../../models");
+    let systemModelsDir = path.resolve(import.meta.dirname, "../../../../models");
+    if (!fs.existsSync(systemModelsDir)) {
+      systemModelsDir = path.resolve(import.meta.dirname, "../../../../src/models");
+    }
 
     let systemModelsFiles = fs.readdirSync(systemModelsDir).filter(file => file.endsWith(".js"));
 
@@ -143,6 +146,7 @@ export class WaterlineAdapter extends AbstractAdapter {
     }))
 
     function generateWaterlineModel(modelName: string, attributes: any) {
+      attributes = JSON.parse(JSON.stringify(attributes));
       const primaryKey = Object.keys(attributes).find(fieldName =>
         attributes[fieldName]?.primaryKey === true
       );
