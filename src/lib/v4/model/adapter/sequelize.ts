@@ -36,18 +36,25 @@ function generateAssociationsFromSchema(
         }
         // 💡 O:M связь (один ко многим)
         else {
-          const foreignKey = field.collection === modelName ? `${field.via}Id` : `${modelName}Id`;
+          let foreignKey = `${modelName}Id`;
+          if (field.collection === modelName) {
+            foreignKey = `${field.via}Id`;
+          }
+
           model.hasMany(targetModel, {
             as: fieldName,
             foreignKey,
           });
-          const belongsAlias = model.rawAttributes[field.via] ? `${field.via}Assoc` : field.via;
-          if (!targetModel.associations[belongsAlias]) {
-            targetModel.belongsTo(model, {
-              as: belongsAlias,
-              foreignKey,
-            });
+
+          const alias = field.via;
+          const belongsToOptions = { foreignKey } as any;
+          if (targetModel.rawAttributes[alias]) {
+            belongsToOptions.as = `${alias}Ref`;
+          } else {
+            belongsToOptions.as = alias;
           }
+
+          targetModel.belongsTo(model, belongsToOptions);
         }
       }
 
@@ -60,12 +67,15 @@ function generateAssociationsFromSchema(
         const foreignKey = `${fieldName}Id`;
         const alias = fieldName;
 
-        // If attribute already exists, use a different alias to avoid collision
-        const associationAlias = model.rawAttributes[alias] ? `${alias}Assoc` : alias;
-        if (!model.associations[associationAlias]) {
+        // If attribute with the same name already exists, use a unique alias to avoid collisions
+        if (model.rawAttributes[alias]) {
           model.belongsTo(targetModel, {
-            as: associationAlias,
+            as: `${alias}Ref`,
             foreignKey,
+          });
+        } else {
+          model.belongsTo(targetModel, {
+            foreignKey: alias,
           });
         }
       }
