@@ -1,4 +1,4 @@
-import {MaterialIcon} from "material-icons";
+import {MaterialIcon} from "../../../interfaces/MaaterialIcons";
 
 export default abstract class CustomBase {
     /** Widget unique id */

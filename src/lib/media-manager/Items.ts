@@ -105,9 +105,12 @@ export class ImageItem extends File<MediaManagerItem> {
 
       let {width, height} = this.imageSizes[sizeKey];
 
+      const buffer = fs.readFileSync(file.path)
+      const image = sizeOf(buffer)
+
       if (
-        sizeOf(file.path).width < width ||
-        sizeOf(file.path).height < height
+        image.width < width ||
+        image.height < height
       )
         continue;
 
@@ -162,9 +165,10 @@ export class ImageItem extends File<MediaManagerItem> {
 
   protected async addFileMeta(file: string, id: string): Promise<void> {
     // TODO refactor CRUD functions for DataAccessor usage
+    const metaBuffer = fs.readFileSync(file)
     await this.adminizer.modelHandler.model.get(this.metaModel)["_create"]({
       key: 'imageSizes',
-      value: sizeOf(file),
+      value: sizeOf(metaBuffer),
       parent: id,
       isPublic: false
     });
@@ -203,7 +207,8 @@ export class ImageItem extends File<MediaManagerItem> {
   }
 
   public async uploadVariant(parent: MediaManagerItem, file: UploaderFile, filename: string, group: string, localeId: string): Promise<MediaManagerItem> {
-    let {width, height} = sizeOf(file.path)
+    const variantBuffer = fs.readFileSync(file.path)
+    const {width, height} = sizeOf(variantBuffer)
     // TODO refactor CRUD functions for DataAccessor usage
     let item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
         parent: parent.id,
