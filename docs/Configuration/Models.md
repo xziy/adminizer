@@ -13,3 +13,7 @@ The provided models are:
 
 They can be created and queried like any other models once registered.
 
+When using Sequelize the adapter generates explicit foreign keys using the
+`<fieldName>Id` pattern. This prevents naming collisions between attributes and
+associations when models reference themselves or each other.
+
