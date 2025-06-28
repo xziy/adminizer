@@ -9,12 +9,12 @@ export default {
     primaryKey: true,
     required: true
   },
-  parentNode: {
+  parent: {
     model: "MediaManagerAP"
   },
   variants: {
     collection: "MediaManagerAP",
-    via: "parentNode"
+    via: "parent"
   },
   mimeType: { 
     type: "string"
@@ -39,7 +39,7 @@ export default {
   },
   meta: {
     collection: "MediaManagerMetaAP",
-    via: "parentNode"
+    via: "parent"
   },
   modelAssociation: {
     collection: "MediaManagerAssociationsAP",
@@ -48,7 +48,7 @@ export default {
 }
 export interface MediaManagerAP {
   id: string;
-  parentNode?: MediaManagerAP;
+  parent?: MediaManagerAP;
   variants?: MediaManagerAP[];
   mimeType?: string;
   path?: string;

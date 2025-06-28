@@ -47,4 +47,22 @@ Install the `material-icons` package so the CSS can be resolved:
 npm install material-icons --legacy-peer-deps
 ```
 
+### Naming Collision Between Attributes and Associations in Sequelize
+
+**Description:**
+
+Starting the application may fail with an error similar to:
+
+```
+Error: Naming collision between attribute 'parentNode' and association 'parentNode' on model MediaManagerAP
+```
+
+**Cause:**
+
+Both an attribute and an association shared the alias `parentNode` in the `MediaManagerAP` model. Sequelize treats association aliases as properties on the model, so duplicate names are not allowed.
+
+**Solution:**
+
+Rename the association or attribute so that they use unique names. In version 4.2.1, the `parentNode` association has been renamed to `parent` across the related models.
+
 

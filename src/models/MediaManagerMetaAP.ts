@@ -17,7 +17,7 @@ export default {
   isPublic: {
     type: "boolean"
   },
-  parentNode: {
+  parent: {
     model: "MediaManagerAP"
   }
 }
@@ -28,5 +28,5 @@ export interface MediaManagerMetaAP {
   key?: string;
   value?: Record<string, unknown>;
   isPublic?: boolean;
-  parentNode?: MediaManagerAP;
+  parent?: MediaManagerAP;
 }
