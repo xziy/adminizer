@@ -6,37 +6,31 @@ import { Moon, Sun, Monitor } from 'lucide-react';
 export function ThemeSwitcher() {
     const { appearance, updateAppearance } = useAppearance();
 
-    const handleChange = (mode: Appearance) => () => updateAppearance(mode);
+    const nextAppearance: Record<Appearance, Appearance> = {
+        light: 'dark',
+        dark: 'system',
+        system: 'light',
+    };
 
-    const buttonVariant = (mode: Appearance) => (appearance === mode ? 'secondary' : 'ghost');
+    const icons: Record<Appearance, any> = {
+        light: Sun,
+        dark: Moon,
+        system: Monitor,
+    };
+
+    const handleClick = () => updateAppearance(nextAppearance[appearance]);
+
+    const CurrentIcon = icons[appearance];
 
     return (
-        <div className="flex gap-1">
-            <Button
-                variant={buttonVariant('light')}
-                size="icon"
-                onClick={handleChange('light')}
-                className="shrink-0"
-            >
-                <Icon iconNode={Sun} />
-            </Button>
-            <Button
-                variant={buttonVariant('dark')}
-                size="icon"
-                onClick={handleChange('dark')}
-                className="shrink-0"
-            >
-                <Icon iconNode={Moon} />
-            </Button>
-            <Button
-                variant={buttonVariant('system')}
-                size="icon"
-                onClick={handleChange('system')}
-                className="shrink-0"
-            >
-                <Icon iconNode={Monitor} />
-            </Button>
-        </div>
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClick}
+            className="shrink-0"
+        >
+            <Icon iconNode={CurrentIcon} />
+        </Button>
     );
 }
 
