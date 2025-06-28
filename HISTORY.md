@@ -2,3 +2,5 @@
 - Added documentation on assigning icons using the Lucide set.
 - Updated widget example to reference Lucide icons.
 
+- Added system model tests for Waterline and Sequelize.
+
