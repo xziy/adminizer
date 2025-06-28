@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { UserAP } from '../src/models/UserAP';
 import { DataAccessor } from '../src/lib/v4/DataAccessor';
@@ -91,6 +90,7 @@ describe('DataAccessor test', () => {
     };
 
     entity = ControllerHelper.findEntityObject(buildMockReq(adminizer, "/admin/model/test"));
+    if (!entity.model) throw new Error('entity.model is not defined. Check adminizer and model registration.');
   });
 
   it('groupsAccessRights field config checks works for plain data', () => {
@@ -181,8 +181,10 @@ describe('DataAccessor test', () => {
   });
 
   it('`setUserRelationAccess()` assigns user to field if userap', async () => {
+    if (!entity.config) throw new Error('entity.config is not defined');
+    if (!entity.model) throw new Error('entity.model is not defined');
     entity.config.userAccessRelation = 'userField';
-    entity.model.attributes.userField = { model: 'UserAP' };
+    entity.model.attributes.userField = { model: 'UserAP', type: 'association' };
 
     const record = { title: 'Sample' };
     instance = new DataAccessor(adminizer, editorUser, entity, 'add');
@@ -191,8 +193,10 @@ describe('DataAccessor test', () => {
   });
 
   it('`setUserRelationAccess()` assigns group if groupap and one group', async () => {
+    if (!entity.config) throw new Error('entity.config is not defined');
+    if (!entity.model) throw new Error('entity.model is not defined');
     entity.config.userAccessRelation = 'groupField';
-    entity.model.attributes.groupField = { model: 'GroupAP' };
+    entity.model.attributes.groupField = { model: 'GroupAP', type: 'association' };
 
     const record = { title: 'With group' };
     instance = new DataAccessor(adminizer, managerUser, entity, 'add');
@@ -205,8 +209,10 @@ describe('DataAccessor test', () => {
       ...managerUser,
       groups: [{ name: 'one', id: 10 }, { name: 'two', id: 20 }]
     };
+    if (!entity.config) throw new Error('entity.config is not defined');
+    if (!entity.model) throw new Error('entity.model is not defined');
     entity.config.userAccessRelation = 'groupField';
-    entity.model.attributes.groupField = { model: 'GroupAP' };
+    entity.model.attributes.groupField = { model: 'GroupAP', type: 'association' };
 
     instance = new DataAccessor(adminizer, multiGroupUser, entity, 'add');
     await expect(instance.setUserRelationAccess({})).rejects.toThrow(
@@ -217,10 +223,10 @@ describe('DataAccessor test', () => {
   it('sanitizes access to only own records (userAccessRelation)', async () => {
     instance = new DataAccessor(adminizer, editorUser, entity, "list");
 
-    const criteria = await instance.sanitizeUserRelationAccess({});
+    const criteria = await instance.sanitizeUserRelationAccess({} as any);
     // Ожидаем, что критерии фильтруются по user.id
     expect(criteria).toHaveProperty("userField");
-    expect(criteria["userField"]).toBe(editorUser.id);
+    expect((criteria as any)["userField"]).toBe(editorUser.id);
   });
 
   it('sets userAccessRelation automatically when creating record', async () => {
@@ -229,10 +235,10 @@ describe('DataAccessor test', () => {
     const record = await instance.setUserRelationAccess({
       title: "Test Title",
       userField: 999
-    });
+    } as any);
 
     expect(record).toHaveProperty("userField");
-    expect(record.userField).toBe(editorUser.id);
+    expect((record as any).userField).toBe(editorUser.id);
   });
 });
 
