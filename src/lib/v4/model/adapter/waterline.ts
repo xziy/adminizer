@@ -100,11 +100,19 @@ export class WaterlineAdapter extends AbstractAdapter {
   }
 
   getModel(modelName: string): Record<string, any> {
-    return this.orm.ontology.collections[modelName];
+    const matchedKey = Object.keys(this.orm.ontology.collections).find(
+      key => key.toLowerCase() === modelName.toLowerCase()
+    );
+
+    if (!matchedKey) {
+      return undefined;
+    }
+
+    return this.orm.ontology.collections[matchedKey];
   }
 
   getAttributes(modelName: string): Waterline.Attributes {
-    const model = this.orm.ontology.collections[modelName];
+    const model = this.getModel(modelName);
     if (!model) {
       throw new Error(`Model "${modelName}" was not found`);
     }
@@ -128,7 +136,7 @@ export class WaterlineAdapter extends AbstractAdapter {
       const modelName = path.basename(file).replace(/\.(ts|js)$/, "");
       const systemModelPath = path.resolve(systemModelsDir, file);
       const adminizerModel = (await import(pathToFileURL(systemModelPath).href)).default;
-      const waterlineLikeModel = generateWaterlineModel(modelName, adminizerModel);
+      const waterlineLikeModel = generateWaterlineModel(modelName, structuredClone(adminizerModel));
 
       // Register model in Waterline ORM
       waterlineORM.registerModel(waterlineLikeModel);
