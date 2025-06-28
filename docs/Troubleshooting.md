@@ -29,3 +29,22 @@ The configuration system looks up the model config by exact key match. If the ke
 **Planned Improvements:**
 
 In the future, we will introduce the concept of a *model entity*, which will allow for more flexible and case-independent model resolution.
+### Build Fails Due to Missing `material-icons` CSS
+
+**Description:**
+
+Running `npm run build` may fail with an error like:
+
+```
+Can't resolve 'material-icons/iconfont/material-icons.css'
+```
+
+**Solution:**
+
+Install the `material-icons` package so the CSS can be resolved:
+
+```
+npm install material-icons --legacy-peer-deps
+```
+
+
