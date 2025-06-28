@@ -1,7 +1,7 @@
 import { Appearance, useAppearance } from '@/hooks/use-appearance';
 import { Button } from './ui/button';
 import { Icon } from './icon';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, SunMoon } from 'lucide-react';
 
 export function ThemeSwitcher() {
     const { appearance, updateAppearance } = useAppearance();
@@ -15,7 +15,7 @@ export function ThemeSwitcher() {
     const icons: Record<Appearance, any> = {
         light: Sun,
         dark: Moon,
-        system: Monitor,
+        system: SunMoon,
     };
 
     const handleClick = () => updateAppearance(nextAppearance[appearance]);
