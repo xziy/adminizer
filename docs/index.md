@@ -18,6 +18,7 @@
 
 * [Inertia Adapter & Flash](InertiaAdapter.md)
 * [Form Error Management](FormError.md)
+* [Appearance](Appearance.md)
 
 ## 4. Admin Panel Features
 
