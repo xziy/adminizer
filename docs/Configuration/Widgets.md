@@ -4,7 +4,7 @@ This is an example of customizing a custom widget (CustomOne) in a React applica
 - This is a widget class (`CustomOne`) that extends a base widget class (`CustomBase`).
 - It defines metadata for the widget, such as:
     - `id`, `name`, `description`, and `department` (e.g., `"test"`)
-    - `icon` (using a Material icon name, `"takeout_dining"`)
+    - `icon` (using a Lucide icon name, `"activity"`)
     - Default `size` (height and width in grid units)
     - `backgroundCSS` (a light gray color)
 - It specifies JavaScript paths for **development** (direct `.tsx` file) and **production** (a compiled `.es.js` file).

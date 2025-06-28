@@ -67,7 +67,7 @@ export function useAppearance() {
 
     useEffect(() => {
         const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'light');
+        updateAppearance(savedAppearance || 'system');
 
         // Listen for localStorage changes (from other tabs)
         const handleStorageChange = (e: StorageEvent) => {

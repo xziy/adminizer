@@ -14,10 +14,12 @@
 ## Other
 
 * [Localization](Configuration/Localization.md)
+* [Icons](Icons.md)
 ## 3. Frontend Integration
 
 * [Inertia Adapter & Flash](InertiaAdapter.md)
 * [Form Error Management](FormError.md)
+* [Appearance](Appearance.md)
 
 ## 4. Admin Panel Features
 
