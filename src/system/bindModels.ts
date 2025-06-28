@@ -21,7 +21,7 @@ export default async function bindModels(adminizer: Adminizer) {
 
   // Bind system models reading them from ../models and get the whole list of them for further checks
   const systemModels = systemModelsFiles.map((file) => {
-    const modelName = path.basename(file, path.extname(file)); // убираем .js/.ts
+    const modelName = path.basename(file, path.extname(file)); // remove extension
     const ormAdapter = adminizer.getOrmAdapter(defaultOrmAdapter);
 
     // Create model adapter instance and add it to model handler
@@ -42,7 +42,7 @@ export default async function bindModels(adminizer: Adminizer) {
         value && typeof value !== "boolean" && value.model.toLowerCase() === modelName
       )?.[1];
 
-    if (!systemModels.includes(modelName)) {
+    if (!systemModels.includes(modelName.toLowerCase())) {
       const adapterName = typeof modelConfig !== "boolean" ? modelConfig?.adapter || defaultOrmAdapter : defaultOrmAdapter;
       const ormAdapter = adminizer.getOrmAdapter(adapterName);
       if (!ormAdapter) {
@@ -50,7 +50,7 @@ export default async function bindModels(adminizer: Adminizer) {
       }
 
       // Create model adapter instance and add it to model handler
-      const registeredModel = ormAdapter.getModel(modelName);
+      const registeredModel = ormAdapter.getModel(modelName.toLowerCase());
       if (!registeredModel) {
         throw `Bind models > Model not found: ${modelName}`
       }
