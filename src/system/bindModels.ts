@@ -39,7 +39,7 @@ export default async function bindModels(adminizer: Adminizer) {
   modelsFromConfig.forEach((modelName) => {
     const modelConfig = Object.entries(adminizer.config.models)
       .find(([key, value]) =>
-        value && typeof value !== "boolean" && value.model.toLowerCase() === modelName
+        value && typeof value !== "boolean" && value.model.toLowerCase() === modelName.toLowerCase()
       )?.[1];
 
     if (!systemModels.includes(modelName.toLowerCase())) {

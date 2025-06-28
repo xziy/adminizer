@@ -122,8 +122,8 @@ export class DataAccessor {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
                         const configEntry = Object.entries(this.adminizer.config.models)
                             .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
-                        const _modelConfig = configEntry ? configEntry[1] : undefined;
-                        if(!isObject(_modelConfig)) throw `type error: model config  of ${modelName} is ${typeof _modelConfig} expected object`
+                        let _modelConfig = configEntry ? configEntry[1] : undefined;
+                        if(!isObject(_modelConfig)) throw `type error: model config  of ${modelName} is ${typeof this.adminizer.config.models[modelName]} expected object`
                         associatedModelConfig = _modelConfig
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
@@ -148,7 +148,7 @@ export class DataAccessor {
     }
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
-        
+
         const model = this.adminizer.modelHandler.model.get(modelName);
         const configEntry = Object.entries(this.adminizer.config.models)
             .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
