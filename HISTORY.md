@@ -1,1 +1,4 @@
-* Added support for running development server with Sequelize or Waterline via new scripts. Fixed self-referential associations for Sequelize.
+## 4.1.2
+- Added documentation on assigning icons using the Lucide set.
+- Updated widget example to reference Lucide icons.
+
