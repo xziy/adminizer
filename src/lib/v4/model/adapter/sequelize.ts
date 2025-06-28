@@ -36,15 +36,25 @@ function generateAssociationsFromSchema(
         }
         // 💡 O:M связь (один ко многим)
         else {
-          const foreignKey = field.collection === modelName ? field.via : `${modelName}Id`;
+          let foreignKey = `${modelName}Id`;
+          if (field.collection === modelName) {
+            foreignKey = `${field.via}Id`;
+          }
+
           model.hasMany(targetModel, {
             as: fieldName,
             foreignKey,
           });
-          targetModel.belongsTo(model, {
-            as: field.via,
-            foreignKey,
-          });
+
+          const alias = field.via;
+          const belongsToOptions = { foreignKey } as any;
+          if (targetModel.rawAttributes[alias]) {
+            belongsToOptions.as = `${alias}Ref`;
+          } else {
+            belongsToOptions.as = alias;
+          }
+
+          targetModel.belongsTo(model, belongsToOptions);
         }
       }
 
@@ -57,15 +67,15 @@ function generateAssociationsFromSchema(
         const foreignKey = `${fieldName}Id`;
         const alias = fieldName;
 
-        // Если поле уже существует — избегаем конфликта
+        // If attribute with the same name already exists, use a unique alias to avoid collisions
         if (model.rawAttributes[alias]) {
           model.belongsTo(targetModel, {
-            as: alias,
+            as: `${alias}Ref`,
             foreignKey,
           });
         } else {
           model.belongsTo(targetModel, {
-            foreignKey: alias, // если нет конфликта, можно использовать alias как FK
+            foreignKey: alias,
           });
         }
       }

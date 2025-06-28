@@ -8,3 +8,6 @@
 
 - Added system model tests for Waterline and Sequelize.
 
+
+## 4.2.1
+- Fixed failing tests by adding case-insensitive model lookup and resolving Sequelize association naming conflicts.
