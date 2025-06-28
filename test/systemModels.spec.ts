@@ -1,5 +1,6 @@
 import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import Waterline from 'waterline';
+// @ts-ignore
 import sailsDisk from 'sails-disk';
 import { Sequelize } from 'sequelize-typescript';
 import {
@@ -28,7 +29,7 @@ async function initWaterline() {
 
 describe('System models registration', () => {
   describe('Waterline', () => {
-    let orm: Waterline;
+    let orm: Waterline.Waterline;
     let ontology: any;
 
     beforeAll(async () => {
@@ -52,9 +53,9 @@ describe('System models registration', () => {
       const group = await ontology.collections.groupap.create({ name: 'g1' }).fetch();
       const user = await ontology.collections.userap.create({ login: 'u1', fullName: 'User One' }).fetch();
       const nav = await ontology.collections.navigationap.create({ label: 'main', tree: {} }).fetch();
-      const file = await ontology.collections.mediamanagerap.create({}).fetch();
-      const assoc = await ontology.collections.mediamanagerassociationsap.create({}).fetch();
-      const meta = await ontology.collections.mediamanagermetaap.create({}).fetch();
+      const file = await ontology.collections.mediamanagerap.create({ id: 'file-1' }).fetch();
+      const assoc = await ontology.collections.mediamanagerassociationsap.create({ id: 'assoc-1' }).fetch();
+      const meta = await ontology.collections.mediamanagermetaap.create({ id: 'meta-1' }).fetch();
 
       expect(group).toHaveProperty('id');
       expect(user).toHaveProperty('id');
@@ -91,9 +92,9 @@ describe('System models registration', () => {
       const group = await GroupAP.create({ name: 'g2' });
       const user = await UserAP.create({ login: 'u2', fullName: 'User Two' });
       const nav = await NavigationAP.create({ label: 'nav', tree: {} });
-      const file = await MediaManagerAP.create({});
-      const assoc = await MediaManagerAssociationsAP.create({});
-      const meta = await MediaManagerMetaAP.create({});
+      const file = await MediaManagerAP.create({ id: 'file-2' });
+      const assoc = await MediaManagerAssociationsAP.create({ id: 'assoc-2' });
+      const meta = await MediaManagerMetaAP.create({ id: 'meta-2' });
 
       expect(group.id).toBeDefined();
       expect(user.id).toBeDefined();

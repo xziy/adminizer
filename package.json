@@ -8,7 +8,8 @@
 		"./ui/*": "./dist/ui/components/ui/*.js"
 	},
 	"scripts": {
-		"test": "vitest --reporter verbose",
+		"test": "vitest --watch=false",
+		"test:watch": "vitest --reporter verbose",
 		"start": "cross-env NO_SEED_DATA=true ORM=sequelize tsx --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev": "cross-env VITE_ENV=dev ORM=sequelize tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev:waterline": "cross-env VITE_ENV=dev ORM=waterline tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
