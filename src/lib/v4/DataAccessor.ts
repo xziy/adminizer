@@ -127,20 +127,12 @@ export class DataAccessor {
                     const model = this.adminizer.modelHandler.model.get(modelName);
                     if (model) {
                         populatedModelFieldsConfig = this.getAssociatedFieldsConfig(modelName);
-<<<<<<< HEAD
                         const modelCfg = this.getModelConfig(modelName);
                         if (modelCfg) {
                             associatedModelConfig = modelCfg;
                         } else {
                             Adminizer.log.error(`DataAccessor > getFieldsConfig > Model config not found: ${modelName}`);
                         }
-=======
-                        const configEntry = Object.entries(this.adminizer.config.models)
-                            .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
-                        const _modelConfig = configEntry ? configEntry[1] : undefined;
-                        if(!isObject(_modelConfig)) throw `type error: model config  of ${modelName} is ${typeof _modelConfig} expected object`
-                        associatedModelConfig = _modelConfig
->>>>>>> исправить-столкновение-имен-в-модели-mediamanagerap
                     } else {
                         Adminizer.log.error(`DataAccessor > getFieldsConfig > Model not found: ${modelName} when ${key}`);
                     }
@@ -166,16 +158,8 @@ export class DataAccessor {
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
         
         const model = this.adminizer.modelHandler.model.get(modelName);
-<<<<<<< HEAD
         const modelConfig = this.getModelConfig(modelName);
         if (!model || !modelConfig) {
-=======
-        const configEntry = Object.entries(this.adminizer.config.models)
-            .find(([key]) => key.toLowerCase() === modelName.toLowerCase());
-        const modelConfig = configEntry ? configEntry[1] : undefined;
-
-        if (!model || !modelConfig || typeof modelConfig === "boolean") {
->>>>>>> исправить-столкновение-имен-в-модели-mediamanagerap
             return undefined;
         }
 
@@ -187,11 +171,6 @@ export class DataAccessor {
         }
 
         const associatedFields: { [fieldName: string]: Field } = {};
-<<<<<<< HEAD
-=======
-
-        if(!isObject(modelConfig)) throw `Type error ModelConfig should is object`
->>>>>>> исправить-столкновение-имен-в-модели-mediamanagerap
         // Get the main fields configuration
         const fieldsConfig = modelConfig.fields || {};
 
