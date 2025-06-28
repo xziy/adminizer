@@ -36,12 +36,12 @@ const Test = Waterline.Collection.extend({
 
     // Самореференсная ассоциация
     selfAssociation: {
-      model: "Test",
+      model: "test",
     },
 
     // Односторонняя связь на Example
     example: {
-      model: "Example",
+      model: "example",
     },
 
     // Ассоциация к UserAP (владелец)
@@ -50,6 +50,7 @@ const Test = Waterline.Collection.extend({
     },
 
     // Многих пользователей (many-to-many)
+    // @ts-ignore
     userAPs: {
       collection: "userap"
     }
