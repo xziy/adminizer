@@ -36,15 +36,17 @@ function generateAssociationsFromSchema(
         }
         // 💡 O:M связь (один ко многим)
         else {
-          const foreignKey = field.collection === modelName ? field.via : `${modelName}Id`;
+          const foreignKey = field.collection === modelName ? `${field.via}Id` : `${modelName}Id`;
           model.hasMany(targetModel, {
             as: fieldName,
             foreignKey,
           });
-          targetModel.belongsTo(model, {
-            as: field.via,
-            foreignKey,
-          });
+          if (!targetModel.associations[field.via]) {
+            targetModel.belongsTo(model, {
+              as: field.via,
+              foreignKey,
+            });
+          }
         }
       }
 
@@ -57,15 +59,10 @@ function generateAssociationsFromSchema(
         const foreignKey = `${fieldName}Id`;
         const alias = fieldName;
 
-        // Если поле уже существует — избегаем конфликта
-        if (model.rawAttributes[alias]) {
+        if (!model.associations[alias]) {
           model.belongsTo(targetModel, {
             as: alias,
             foreignKey,
-          });
-        } else {
-          model.belongsTo(targetModel, {
-            foreignKey: alias, // если нет конфликта, можно использовать alias как FK
           });
         }
       }
@@ -757,7 +754,12 @@ function generateSequelizeModel(
   }
 
   if (!primaryKey) {
-    throw new Error(`Model "${modelName}" must have a primary key`);
+    primaryKey = "id";
+    attributes[primaryKey] = {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    };
   }
 
   return sequelize.define(modelName, attributes, {
