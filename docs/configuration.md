@@ -670,8 +670,8 @@ module.exports.adminpanel = {
     },
     models: {
         pages: {
-            title: 'Pages',
-            model: 'Page',
+            title: 'MediaManager',
+            model: 'Item',
             tools: [
                 {
                     id: "0",

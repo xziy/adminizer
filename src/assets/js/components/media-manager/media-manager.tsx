@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {
     closestCenter,
     DndContext,
@@ -26,11 +26,15 @@ import {
 } from '@dnd-kit/sortable';
 import {CSS, isKeyboardEvent} from '@dnd-kit/utilities';
 
-import {Page, Layout, Position} from './Page';
-import type {Props as PageProps} from './Page';
-import styles from './Pages.module.css';
-import pageStyles from './Page.module.css';
+import {Item, Layout, Position} from './Item.tsx';
+import type {Props as PageProps} from './Item.tsx';
+import styles from './Manager.module.css';
+import pageStyles from './Item.module.css';
 import {cn} from "@/lib/utils.ts";
+import {Button} from "@/components/ui/button.tsx";
+import {Grid2x2Plus} from "lucide-react";
+import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
+import MediaDialogStack from "@/components/media-manager/MediadialogStack.tsx";
 
 interface Props {
     layout: Layout;
@@ -63,46 +67,57 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-export function Pages({layout}: Props) {
+export function MediaManager({layout}: Props) {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-    const [items, setItems] = useState(Array.from({length: 10}, (_, i) => i + 1));
-    const activeIndex = activeId != null ? items.indexOf(+activeId) : -1;
+    const [items, setItems] = useState([1]);
+    const activeIndex = activeId !== null ? items.indexOf(+activeId) : -1;
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
+    const dialogRef = useRef<DialogStackHandle>(null);
+
     return (
-        <DndContext
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            measuring={measuring}
-        >
-            <SortableContext items={items}>
-                <ul className={cn(styles.Pages, styles[layout])}>
-                    {items.map((id, index) => (
-                        <SortablePage
-                            id={id}
-                            index={index + 1}
-                            key={id}
-                            layout={layout}
-                            activeIndex={activeIndex}
-                            onRemove={() =>
-                                setItems((items) => items.filter((itemId) => itemId !== id))
-                            }
-                        />
-                    ))}
-                </ul>
-            </SortableContext>
-            <DragOverlay dropAnimation={dropAnimation}>
-                {activeId != null ? (
-                    <PageOverlay id={activeId} layout={layout} items={items} />
-                ) : null}
-            </DragOverlay>
-        </DndContext>
+        <div>
+            <Button size="icon" variant="ghost" onClick={(e) => {
+                e.preventDefault()
+                dialogRef.current?.open()
+            }}>
+                <Grid2x2Plus className="size-7 text-chart-2"/>
+            </Button>
+            <DndContext
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                measuring={measuring}
+            >
+                <SortableContext items={items}>
+                    <ul className={cn(styles.Pages, styles[layout])}>
+                        {items.map((id, index) => (
+                            <SortablePage
+                                id={id}
+                                index={index + 1}
+                                key={id}
+                                layout={layout}
+                                activeIndex={activeIndex}
+                                onRemove={() =>
+                                    setItems((items) => items.filter((itemId) => itemId !== id))
+                                }
+                            />
+                        ))}
+                    </ul>
+                </SortableContext>
+                <DragOverlay dropAnimation={dropAnimation}>
+                    {activeId != null ? (
+                        <PageOverlay id={activeId} layout={layout} items={items}/>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
+            <MediaDialogStack dialogRef={dialogRef}/>
+        </div>
     );
 
     function handleDragStart({active}: DragStartEvent) {
@@ -132,14 +147,14 @@ function PageOverlay({
                          id,
                          items,
                          ...props
-                     }: Omit<PageProps, 'index'> & {items: UniqueIdentifier[]}) {
+                     }: Omit<PageProps, 'index'> & { items: UniqueIdentifier[] }) {
     const {activatorEvent, over} = useDndContext();
     const isKeyboardSorting = isKeyboardEvent(activatorEvent);
     const activeIndex = items.indexOf(id);
     const overIndex = over?.id ? items.indexOf(over?.id) : -1;
 
     return (
-        <Page
+        <Item
             id={id}
             {...props}
             clone
@@ -158,7 +173,7 @@ function SortablePage({
                           id,
                           activeIndex,
                           ...props
-                      }: PageProps & {activeIndex: number}) {
+                      }: PageProps & { activeIndex: number }) {
     const {
         attributes,
         listeners,
@@ -175,7 +190,7 @@ function SortablePage({
     });
 
     return (
-        <Page
+        <Item
             ref={setNodeRef}
             id={id}
             active={isDragging}

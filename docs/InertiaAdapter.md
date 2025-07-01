@@ -49,7 +49,7 @@ The adapter accepts the following configuration options:
 interface Options {
     readonly enableReload?: boolean;       // Enable component reloading
     readonly version: string;              // Asset version for cache busting
-    readonly html: (page: Page, viewData: props) => string; // HTML template function
+    readonly html: (page: Item, viewData: props) => string; // HTML template function
     readonly flashMessages?: (req: Request) => props; // Flash messages handler
     readonly csrf?: {                      // CSRF protection configuration
         enabled: boolean;
@@ -77,7 +77,7 @@ The adapter adds an `Inertia` object to the Express request with these methods:
 * Merges provided headers with existing headers
 * Returns the Inertia instance for chaining
 
-`render(page: Page)`
+`render(page: Item)`
 * Renders the page as either:
   * JSON response for Inertia requests
   * HTML response for full page loads
@@ -92,11 +92,11 @@ The adapter adds an `Inertia` object to the Express request with these methods:
   * 303 for PUT/PATCH/DELETE requests
   * 302 for other methods
 * Returns the Express Response object
-## Page Object Structure
+## Item Object Structure
 ```typescript
 type props = Record<string | number | symbol, unknown>
 
-interface Page {
+interface Item {
     readonly component: string;  // Name of the frontend component
     props: props;                // Component props
     readonly url?: string;       // Current URL
