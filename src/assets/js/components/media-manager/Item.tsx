@@ -2,7 +2,7 @@ import {forwardRef, HTMLAttributes} from 'react';
 import type {UniqueIdentifier} from '@dnd-kit/core';
 
 import {removeIcon} from './icons';
-import styles from './Page.module.css';
+import styles from './Item.module.css';
 import {cn} from "@/lib/utils.ts";
 
 export enum Position {
@@ -26,7 +26,7 @@ export interface Props extends Omit<HTMLAttributes<HTMLButtonElement>, 'id'> {
     onRemove?(): void;
 }
 
-export const Page = forwardRef<HTMLLIElement, Props>(function Page(
+export const Item = forwardRef<HTMLLIElement, Props>(function Page(
     {id, index, active, clone, insertPosition, layout, onRemove, style, ...props},
     ref
 ) {

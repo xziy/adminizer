@@ -44,7 +44,7 @@ export function generatePagination(
         startPage = Math.max(1, endPage - showPages + 1);
     }
 
-    // Page numbers
+    // Item numbers
     for (let page = startPage; page <= endPage; page++) {
         links.push({
             label: page.toString(),

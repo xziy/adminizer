@@ -381,10 +381,26 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Images 1',
                 type: 'mediamanager',
                 options: {
-                    id: 'banner'
+                    id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
+                    config: {
+                        convert: 'image/jpeg',
+                        sizes: [
+                            {
+                                lg: {
+                                    width: 750,
+                                    height: 750
+                                }
+                            },
+                            {
+                                sm: {
+                                    width: 350,
+                                    height: 350
+                                }
+                            },
+                        ]
+                    }
                 }
             },
-
         }
     },
     TestCatalog: {

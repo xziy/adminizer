@@ -3,7 +3,7 @@ import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
 import {Fields, Field} from "./fieldsHelper";
 import {
     BaseFieldConfig,
-    HandsontableOptions,
+    HandsontableOptions, MediaManagerOptionsField,
     TuiEditorOptions,
     WysiwygOptions
 } from "../interfaces/adminpanelConfig";
@@ -72,7 +72,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         let fieldType: PropsFieldType = 'text'
         let disabled = fieldConfig.disabled ?? false
         let required = fieldConfig.required ?? false
-        let options: Record<string, unknown> | Record<string, unknown>[] = {}
+        let options: any = {}
         let value = record ? record[key] : undefined
 
         //@ts-ignore TODO: fix field type
@@ -152,7 +152,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
         if(type === 'mediamanager'){
             fieldType = 'mediamanager'
-            options = {}
+            options = (field.config as BaseFieldConfig).options
         }
 
         props.fields.push({

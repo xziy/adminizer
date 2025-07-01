@@ -215,3 +215,19 @@ export interface CatalogActions {
     icon: string;
     name: string
 }
+
+export interface MediaManagerItem {
+    id: string;
+    parent: string;
+    variants: MediaManagerItem[];
+    mimeType: string;
+    path: string;
+    size: number;
+    tag: string;
+    group?: string;
+    url: string;
+    filename: string;
+    meta: string[];
+    createdAt: number;
+    updatedAt: number;
+}

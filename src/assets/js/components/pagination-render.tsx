@@ -29,7 +29,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
     return (
         <Pagination>
             <PaginationContent className="flex-wrap">
-                {/* First Page Button*/}
+                {/* First Item Button*/}
                 <PaginationItem className={`${!isFirstPageVisible ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
                     <PaginationLink
                         className={`px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}`}
@@ -43,7 +43,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         First
                     </PaginationLink>
                 </PaginationItem>
-                {/* Previous Page Button */}
+                {/* Previous Item Button */}
                 <PaginationItem>
                     <PaginationPrevious
                         className={`cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${!pagination.prev_page_url ? 'opacity-50 pointer-events-none' : ''}`}
@@ -55,7 +55,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         }}
                     />
                 </PaginationItem>
-                {/* Page Numbers */}
+                {/* Item Numbers */}
                 {pagination.links.map((link, index) => {
                     if (link.label === 'Previous' || link.label === 'Next') return null;
                     return (
@@ -74,7 +74,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         </PaginationItem>
                     );
                 })}
-                {/* Next Page Button */}
+                {/* Next Item Button */}
                 <PaginationItem>
                     <PaginationNext
                         className={`cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${!pagination.next_page_url ? 'opacity-50 pointer-events-none' : ''}`}
@@ -86,7 +86,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         }}
                     />
                 </PaginationItem>
-                {/* Last Page Button  */}
+                {/* Last Item Button  */}
                 <PaginationItem className={`${!isLastPageVisible ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
                     <PaginationLink
                         className={`px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${currentPage === pagination.last_page ? 'opacity-50 pointer-events-none' : ''}`}

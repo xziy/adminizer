@@ -409,6 +409,10 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 
 export interface MediaManagerOptionsField {
     id: string
+    config?: {
+        convert: 'image/webp' | 'image/jpeg'
+        sizes: Record<string, { width: number; height: number }>[]
+    }
 }
 
 interface RangeType {
