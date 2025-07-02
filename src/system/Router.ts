@@ -19,7 +19,9 @@ import { mediaManagerController } from "../controllers/media-manager/mediaManage
 import { thumbController } from "../controllers/media-manager/ThumbController";
 import {Adminizer} from "../lib/Adminizer";
 import timezones from "../controllers/timezones";
-
+import multer from 'multer';
+import path from "path";
+import fs from "fs";
 
 export default class Router {
 
@@ -97,8 +99,33 @@ export default class Router {
 		/**
 		 * Media Manager
 		 */
-		adminizer.app.all(`/media-manager-uploader/:id`, adminizer.policyManager.bindPolicies(policies, mediaManagerController));
-		adminizer.app.all(`/get-thumbs`, adminizer.policyManager.bindPolicies(policies, thumbController));
+		const dir = adminizer.config.mediamanager.fileStoragePath;
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, {recursive: true});
+		}
+
+		const storage = multer.diskStorage({
+			destination: function (req, file, cb) {
+				cb(null, dir);
+			},
+			filename: function (req, file, cb) {
+				const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+				cb(null, uniqueSuffix + path.extname(file.originalname));
+			}
+		});
+
+		const upload = multer({ storage: storage });
+
+		adminizer.app.post(
+			`${adminizer.config.routePrefix}/media-manager-uploader/:id/upload`,
+			upload.single('file'),
+			adminizer.policyManager.bindPolicies(policies, mediaManagerController)
+		);
+		adminizer.app.all(
+			`${adminizer.config.routePrefix}/media-manager-uploader/:id`,
+			adminizer.policyManager.bindPolicies(policies, mediaManagerController)
+		);
+		adminizer.app.all(`${adminizer.config.routePrefix}/get-thumbs`, adminizer.policyManager.bindPolicies(policies, thumbController));
 
 		/**
 		 * List of records
