@@ -126,6 +126,7 @@ export class MediaManagerAdapter {
     public async upload(req: ReqType, res: ResType): Promise<void> {
         const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
         const group = req.body.group as string
+        console.log(req.body)
 
         const uploadFile = req.file;
         const byteCount = uploadFile.size;

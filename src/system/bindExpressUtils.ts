@@ -19,7 +19,7 @@ export default function bindExpressUtils(app: Express) {
   );
 
   /** Bind multer (important: before body-parser) */
-  app.use(upload.none()); // Processes form-data without files
+  // app.use(upload.none()); // Processes form-data without files
 
   /** Bind body-parser */
   app.use(bodyParser.urlencoded({ extended: true })); // To process application/x-www-form-urlencoded

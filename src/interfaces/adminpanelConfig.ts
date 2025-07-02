@@ -1,10 +1,10 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {GridSettings as HandsontableSettings} from "handsontable/settings";
-import { Actions } from "helpers/inertiaActionsHelper";
-import { Adminizer } from "lib/Adminizer";
-import { GroupAP } from "models/GroupAP";
-import { UserAP } from "models/UserAP";
+import {Actions} from "helpers/inertiaActionsHelper";
+import {Adminizer} from "lib/Adminizer";
+import {GroupAP} from "models/GroupAP";
+import {UserAP} from "models/UserAP";
 
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
@@ -61,7 +61,7 @@ export type FieldsTypes =
 type SetFunction = (slug: string, key: string, data: any) => Promise<void>;
 type GetFunction = (slug: string, key: string) => Promise<any>;
 
-export type ActionType =  "list" | "edit" | "add" | "remove" | "view"
+export type ActionType = "list" | "edit" | "add" | "remove" | "view"
 
 interface DashboardConfig {
     autoloadWidgetsPath: string
@@ -183,7 +183,7 @@ export interface AdminpanelConfig {
          * */
         set?: SetFunction
     }
-    
+
     /**
      * Prime administrator login credentials
      * */
@@ -243,7 +243,7 @@ export interface ModelConfig {
      * Model name
      * */
     model: string
-    
+
     /**
      * If the field is not definitely, then it will appear in Navbar
      * */
@@ -338,7 +338,7 @@ export interface ModelConfig {
     /**
      * @IDEA
      * If you need override values on the save in DB, this can be done here
-       createUpdateOverride?: (data: any, action: ActionType) => any
+     createUpdateOverride?: (data: any, action: ActionType) => any
      */
 }
 
@@ -351,10 +351,10 @@ export interface FieldsForms {
 export type ModelFieldConfig = (BaseFieldConfig | TuiEditorFieldConfig) & { groupsAccessRights?: string[] }
 
 export interface FieldsModels {
-    [key: string]: 
-    boolean | 
-    string | 
-    ModelFieldConfig
+    [key: string]:
+        boolean |
+        string |
+        ModelFieldConfig
 }
 
 interface FormFieldConfig extends BaseFieldConfig {
@@ -409,6 +409,7 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 
 export interface MediaManagerOptionsField {
     id: string
+    group: string
     config?: {
         convert: 'image/webp' | 'image/jpeg'
         sizes: Record<string, { width: number; height: number }>[]
@@ -425,7 +426,7 @@ export interface TuiEditorOptions {
     config: Partial<EditorOptions>;
 }
 
-export interface HandsontableOptions{
+export interface HandsontableOptions {
     name?: string;
     config?: HandsontableSettings
 }
@@ -531,6 +532,7 @@ export interface NavigationConfig {
 }
 
 export interface MediaManagerConfig {
+    fileStoragePath: string
     allowMIME?: string[]
     maxByteSize?: number
     imageSizes?: {
