@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useRef, useState, createContext} from 'react';
 import {
     closestCenter,
     DndContext,
@@ -38,7 +38,25 @@ import MediaDialogStack from "@/components/media-manager/MediadialogStack.tsx";
 
 interface Props {
     layout: Layout;
+    config: {
+        id: string
+        group: string
+    }
 }
+
+type MediaManagerContextType = {
+    uploadUrl: string
+    config?: Record<string, any>
+    managerId: string
+    group: string
+}
+
+export const MediaManagerContext = createContext<MediaManagerContextType>({
+    uploadUrl: '',
+    config: {},
+    managerId: '',
+    group: '',
+});
 
 const measuring: MeasuringConfiguration = {
     droppable: {
@@ -67,7 +85,7 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-export function MediaManager({layout}: Props) {
+export function MediaManager({layout, config}: Props) {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [items, setItems] = useState([1]);
     const activeIndex = activeId !== null ? items.indexOf(+activeId) : -1;
@@ -76,48 +94,57 @@ export function MediaManager({layout}: Props) {
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
+    const contextValue: MediaManagerContextType = {
+        uploadUrl: `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`,
+        managerId: config.id,
+        group: config.group,
+        config: {},
+    };
+
     const dialogRef = useRef<DialogStackHandle>(null);
 
     return (
-        <div>
-            <Button size="icon" variant="ghost" onClick={(e) => {
-                e.preventDefault()
-                dialogRef.current?.open()
-            }}>
-                <Grid2x2Plus className="size-7 text-chart-2"/>
-            </Button>
-            <DndContext
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragCancel={handleDragCancel}
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                measuring={measuring}
-            >
-                <SortableContext items={items}>
-                    <ul className={cn(styles.Pages, styles[layout])}>
-                        {items.map((id, index) => (
-                            <SortablePage
-                                id={id}
-                                index={index + 1}
-                                key={id}
-                                layout={layout}
-                                activeIndex={activeIndex}
-                                onRemove={() =>
-                                    setItems((items) => items.filter((itemId) => itemId !== id))
-                                }
-                            />
-                        ))}
-                    </ul>
-                </SortableContext>
-                <DragOverlay dropAnimation={dropAnimation}>
-                    {activeId != null ? (
-                        <PageOverlay id={activeId} layout={layout} items={items}/>
-                    ) : null}
-                </DragOverlay>
-            </DndContext>
-            <MediaDialogStack dialogRef={dialogRef}/>
-        </div>
+        <MediaManagerContext.Provider value={contextValue}>
+            <div>
+                <Button size="icon" variant="ghost" onClick={(e) => {
+                    e.preventDefault()
+                    dialogRef.current?.open()
+                }}>
+                    <Grid2x2Plus className="size-7 text-chart-2"/>
+                </Button>
+                <DndContext
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    measuring={measuring}
+                >
+                    <SortableContext items={items}>
+                        <ul className={cn(styles.Pages, styles[layout])}>
+                            {items.map((id, index) => (
+                                <SortablePage
+                                    id={id}
+                                    index={index + 1}
+                                    key={id}
+                                    layout={layout}
+                                    activeIndex={activeIndex}
+                                    onRemove={() =>
+                                        setItems((items) => items.filter((itemId) => itemId !== id))
+                                    }
+                                />
+                            ))}
+                        </ul>
+                    </SortableContext>
+                    <DragOverlay dropAnimation={dropAnimation}>
+                        {activeId != null ? (
+                            <PageOverlay id={activeId} layout={layout} items={items}/>
+                        ) : null}
+                    </DragOverlay>
+                </DndContext>
+                <MediaDialogStack dialogRef={dialogRef}/>
+            </div>
+        </MediaManagerContext.Provider>
     );
 
     function handleDragStart({active}: DragStartEvent) {

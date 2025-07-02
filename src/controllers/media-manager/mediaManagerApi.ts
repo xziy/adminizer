@@ -25,6 +25,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	if (method === 'POST') {
 		switch (req.body._method) {
 			case 'upload':
+				console.log(req.body)
+				return
 				return await manager.upload(req, res)
 			case 'addMeta':
 				return await manager.setMeta(req, res)

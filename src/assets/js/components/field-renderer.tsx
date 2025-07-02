@@ -267,7 +267,7 @@ const FieldRenderer: FC<{
         case 'mediamanager':
             // console.log(field, value)
             return (
-                <MediaManager layout={Layout.Grid} />
+                <MediaManager layout={Layout.Grid} config={{id: field.options.id, group: field.options.group}}/>
             )
         default:
             return (
