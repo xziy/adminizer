@@ -16,21 +16,21 @@ export default function bindReqFunctions(adminizer: Adminizer) {
          * Function to upload files using multer.
          * Filename can be set dynamically based on you filename using simple function
          * */
-        req.upload = (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => {
-            const storage = multer.diskStorage({
-                destination: (req, file, cb) => {
-                    const destination = options?.destination || "uploads/";
-                    cb(null, destination);
-                },
-                filename: (req, file, cb) => {
-                    const filename =
-                        options?.filename?.(file) || `${Date.now()}-${file.originalname}`;
-                    cb(null, filename);
-                },
-            });
-
-            return multer({storage});
-        };
+        // req.upload = (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => {
+        //     const storage = multer.diskStorage({
+        //         destination: (req, file, cb) => {
+        //             const destination = options?.destination || "uploads/";
+        //             cb(null, destination);
+        //         },
+        //         filename: (req, file, cb) => {
+        //             const filename =
+        //                 options?.filename?.(file) || `${Date.now()}-${file.originalname}`;
+        //             cb(null, filename);
+        //         },
+        //     });
+        //
+        //     return multer({storage});
+        // };
 
         /**
          * Add i18n

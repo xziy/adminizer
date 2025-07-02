@@ -49,14 +49,16 @@ const DropZone: FC<FileUploadProps> = ({pushData}) => {
         try {
             const form = new FormData();
             form.append("name", file.name);
-            form.append("_method", "upload");
             form.append("group", group);
             form.append("file", file);
             // const res = await ky.post(uploadUrl, { body: form }).json<{
             //     msg: string;
             //     data: any;
             // }>();
-            const res = await axios.post(uploadUrl, form)
+            const res = await axios.post(`${uploadUrl}/upload`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }})
 
             // if (res.msg === "success") {
             //     setLoading(false);
