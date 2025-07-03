@@ -1,6 +1,8 @@
 import { DefaultMediaManager } from "../lib/media-manager/DefaultMediaManager";
 import { MediaManagerHandler } from "../lib/media-manager/MediaManagerHandler";
 import {Adminizer} from "../lib/Adminizer";
+import serveStatic from "serve-static";
+import path from "path";
 
 export default function bindMediaManager(adminizer: Adminizer) {
 	adminizer.emitter.on("adminizer:loaded", async () => {
@@ -9,10 +11,12 @@ export default function bindMediaManager(adminizer: Adminizer) {
 				adminizer,
 				'default',
 				'media-manager',
-				adminizer.config.mediamanager.fileStoragePath)
+				`${process.cwd()}/${adminizer.config.mediamanager.fileStoragePath}`)
 			MediaManagerHandler.add(mediaManager)
 		} catch (e) {
 			console.log(e)
 		}
 	})
+	// Bind media manager public folder
+	adminizer.app.use(`/public`, serveStatic(path.join(import.meta.dirname, `../../${adminizer.config.mediamanager.fileStoragePath}`)));
 }

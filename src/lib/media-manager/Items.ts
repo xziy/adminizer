@@ -74,7 +74,7 @@ export class ImageItem extends File<MediaManagerItem> {
             group: group,
             tag: "origin",
             filename: origFileName,
-            url: `/${this.path}/${filename}`,
+            url: `/${this.urlPathPrefix}/${filename}`,
         })
 
         await this.createMeta(parent.id);
@@ -108,15 +108,13 @@ export class ImageItem extends File<MediaManagerItem> {
             const buffer = fs.readFileSync(file.path)
             const image = sizeOf(buffer)
 
-            if (
-                image.width < width ||
-                image.height < height
-            )
-                continue;
+            if (image.width < width || image.height < height) continue;
+
+            const output = `${this.fileStoragePath}/${this.urlPathPrefix}/${sizeName}`
 
             let newFile = await this.resizeImage(
                 file.path,
-                `${this.dir}${sizeName}`,
+                output,
                 width,
                 height,
             );
@@ -128,12 +126,12 @@ export class ImageItem extends File<MediaManagerItem> {
                 size: newFile.size,
                 filename: parent.filename,
                 group: group,
-                path: `${this.dir}${sizeName}`,
+                path: output,
                 tag: `saze:${sizeKey}`,
-                url: `/${this.path}/${sizeName}`,
+                url: `/${this.urlPathPrefix}/${sizeName}`,
             })
 
-            await this.addFileMeta(`${this.dir}${sizeName}`, newSize.id)
+            await this.addFileMeta(output, newSize.id)
 
         }
     }
@@ -218,7 +216,7 @@ export class ImageItem extends File<MediaManagerItem> {
             group: group,
             tag: localeId ? `loc:${localeId}` : `size:${width}x${height}`,
             filename: parent.filename,
-            url: `/${this.path}/${filename}`,
+            url: `/${this.urlPathPrefix}/${filename}`,
         })
 
         await this.addFileMeta(file.path, item.id)
@@ -255,7 +253,7 @@ export class TextItem extends ImageItem {
             group: group,
             filename: origFileName,
             tag: "origin",
-            url: `/${this.path}/${filename}`,
+            url: `/${this.urlPathPrefix}/${filename}`,
         })
 
         await this.createMeta(parent.id);
@@ -281,7 +279,7 @@ export class TextItem extends ImageItem {
             group: group,
             tag: localeId ? `loc:${localeId}` : `ver: ${variants.length + 1}`,
             filename: parent.filename,
-            url: `/${this.path}/${filename}`,
+            url: `/${this.urlPathPrefix}/${filename}`,
         })
 
         // TODO refactor CRUD functions for DataAccessor usage

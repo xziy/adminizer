@@ -70,7 +70,7 @@ if (ormType === "waterline") {
         });
     });
 
-    const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
+    const waterlineAdapter = new WaterlineAdapter({orm, ontology});
     adminizer = new Adminizer([waterlineAdapter]);
     await ormSharedFixtureLift(adminizer);
 
@@ -202,9 +202,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     // Main app on http
     const mainApp = http.createServer(async (req, res) => {
         const adminizerHandler = adminizer.getMiddleware();
-        if (req.url.startsWith(routePrefix)) {
-            // Delete /adminizer from url --------------------->>>>>>>>>>!!!!!!!!!!!!
-            // req.url = req.url.replace(routePrefix, '') || '/';
+        if (req.url.startsWith(routePrefix) || req.url.startsWith('/public')) {
             adminizerHandler(req, res);
         } else if (
             req.url.startsWith('/@vite') || // Requests to Vite

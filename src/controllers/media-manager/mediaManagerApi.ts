@@ -26,18 +26,18 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 		if (req.path.endsWith('/upload')) {
 			return await manager.upload(req, res);
 		}
-		switch (req.body._method) {
-			case 'addMeta':
-				return await manager.setMeta(req, res)
-			case 'getMeta':
-				return await manager.getMeta(req, res)
-			case 'variant':
-				return await manager.uploadVariant(req, res)
-			case 'getChildren':
-				return await manager.getVariants(req, res)
-			case 'search':
-				return await manager.search(req, res)
-		}
+		// switch (req.body._method) {
+		// 	case 'addMeta':
+		// 		return await manager.setMeta(req, res)
+		// 	case 'getMeta':
+		// 		return await manager.getMeta(req, res)
+		// 	case 'variant':
+		// 		return await manager.uploadVariant(req, res)
+		// 	case 'getChildren':
+		// 		return await manager.getVariants(req, res)
+		// 	case 'search':
+		// 		return await manager.search(req, res)
+		// }
 	}
 	if (method === 'DELETE') {
 		return await manager.delete(req, res)

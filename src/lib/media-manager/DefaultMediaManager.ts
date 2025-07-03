@@ -17,14 +17,13 @@ export class DefaultMediaManager extends AbstractMediaManager {
   public model: string = "mediamanagerap";
   public modelAssoc: string = "mediamanagerassociationsap";
   id: string;
-  path: string;
   protected readonly adminizer: Adminizer;
 
   constructor(adminizer: Adminizer, id: string, urlPathPrefix: string, fileStoragePath: string) {
     super(adminizer);
     this.id = id;
-    this.path = urlPathPrefix;
-    this.dir = fileStoragePath;
+    this.urlPathPrefix = urlPathPrefix;
+    this.fileStoragePath = fileStoragePath;
     this.itemTypes.push(new ImageItem(adminizer, urlPathPrefix, fileStoragePath));
     this.itemTypes.push(new TextItem(adminizer, urlPathPrefix, fileStoragePath));
     this.itemTypes.push(new ApplicationItem(adminizer, urlPathPrefix, fileStoragePath));

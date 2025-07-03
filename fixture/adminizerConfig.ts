@@ -383,23 +383,24 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
-                    config: {
-                        convert: 'image/jpeg',
-                        sizes: [//TODO what is this?
-                            {
-                                lg: {
-                                    width: 750,
-                                    height: 750
-                                }
-                            },
-                            {
-                                sm: {
-                                    width: 350,
-                                    height: 350
-                                }
-                            },
-                        ]
-                    }
+                    //TODO what is this?
+                    // config: {
+                    //     convert: 'image/jpeg',
+                    //     sizes: [
+                    //         {
+                    //             lg: {
+                    //                 width: 750,
+                    //                 height: 750
+                    //             }
+                    //         },
+                    //         {
+                    //             sm: {
+                    //                 width: 350,
+                    //                 height: 350
+                    //             }
+                    //         },
+                    //     ]
+                    // }
                 }
             },
         }
@@ -420,7 +421,7 @@ const models: AdminpanelConfig["models"] = {
 
 const config: AdminpanelConfig = {
     mediamanager: {
-        fileStoragePath: `${process.cwd()}/.tmp/public/media-manager/`,
+        fileStoragePath: `.tmp/public`,
         allowMIME: ['image/*', 'application/*', 'text/*', 'video/*'],
         maxByteSize: 1024 * 1024 * 2, // 2 Mb
         imageSizes: {
