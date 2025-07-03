@@ -1,8 +1,8 @@
 import {AbstractMediaManager, MediaManagerItem} from "../../lib/media-manager/AbstractMediaManager";
 import {randomFileName} from "../../lib/media-manager/helpers/MediaManagerHelper";
 import {MediaManagerConfig} from "../../interfaces/adminpanelConfig";
-import {Adminizer} from "../../lib/Adminizer";
 import fs from "fs";
+import multer from 'multer';
 
 export class MediaManagerAdapter {
     protected manager: AbstractMediaManager;
@@ -65,83 +65,28 @@ export class MediaManagerAdapter {
         });
     }
 
-    public async uploadVariant(req: ReqType, res: ResType): Promise<void> {
-        const item: MediaManagerItem = JSON.parse(req.body.item);
-        let filename = randomFileName(req.body.name, "", true);
-        const group = req.body.group as string;
-        const isCropped = req.body.isCropped;
-
-        if (!isCropped) {
-            const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
-
-            const uploadFile = req.file;
-            const byteCount = uploadFile.size;
-            const settings = {
-                allowedTypes: config?.allowMIME ?? [],
-                maxBytes: config?.maxByteSize ?? 2 * 1024 * 1024, // 2 MB
-            };
-
-            // Check file type
-            if (settings.allowedTypes.length && !settings.allowedTypes.includes(uploadFile.mimetype)) {
-                res.status(400).send({msg: `Wrong filetype (${uploadFile.mimetype}).`});
-                return
-            }
-
-            // Check file size
-            if (byteCount > settings.maxBytes) {
-                res.status(400).send({msg: `File size exceeds the limit of ${settings.maxBytes / 1024 / 1024} MB.`});
-                return
-            }
-        }
-
-        // Proceed with file upload after validation
-        req.upload({
-            destination: this.manager.dir,
-            filename: () => filename,
-        }).single("file")(req, res, async (err) => {
-            if (err) {
-                return res.status(500).send({error: err.message || 'Internal Server Error'});
-            }
-
-            try {
-                const result = await this.manager.uploadVariant(
-                    item,
-                    req.file,
-                    filename,
-                    group,
-                    req.body.localeId
-                );
-
-                return res.send({
-                    msg: "success",
-                    data: result,
-                });
-            } catch (e) {
-                console.error(e);
-                return res.status(500).send({error: e.message || 'Internal Server Error'});
-            }
-        });
-    }
-
-    // public async upload(req: ReqType, res: ResType): Promise<void> {
-    //     const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
-    //     const group = req.body.group as string
+    // public async uploadVariant(req: ReqType, res: ResType): Promise<void> {
+    //     const item: MediaManagerItem = JSON.parse(req.body.item);
+    //     let filename = randomFileName(req.body.name, "", true);
+    //     const group = req.body.group as string;
+    //     const isCropped = req.body.isCropped;
     //
-    //     const uploadFile = req.file;
-    //     const byteCount = uploadFile.size;
-    //     const settings = {
-    //         allowedTypes: config?.allowMIME ?? [],
-    //         maxBytes: config?.maxByteSize ?? 2 * 1024 * 1024, // 2 MB
-    //     };
+    //     if (!isCropped) {
+    //         const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
     //
-    //     let isDefault = this.manager.id === "default";
+    //         const uploadFile = req.file;
+    //         const byteCount = uploadFile.size;
+    //         const settings = {
+    //             allowedTypes: config?.allowMIME ?? [],
+    //             maxBytes: config?.maxByteSize ?? 2 * 1024 * 1024, // 2 MB
+    //         };
     //
-    //     if (isDefault) {
     //         // Check file type
     //         if (settings.allowedTypes.length && !settings.allowedTypes.includes(uploadFile.mimetype)) {
     //             res.status(400).send({msg: `Wrong filetype (${uploadFile.mimetype}).`});
     //             return
     //         }
+    //
     //         // Check file size
     //         if (byteCount > settings.maxBytes) {
     //             res.status(400).send({msg: `File size exceeds the limit of ${settings.maxBytes / 1024 / 1024} MB.`});
@@ -149,17 +94,9 @@ export class MediaManagerAdapter {
     //         }
     //     }
     //
-    //     let filename = randomFileName(req.body.name.replace(" ", "_"), "", true);
-    //     let origFileName = req.body.name.replace(/\.[^\.]+$/, "");
-    //
-    //     let dir = `${process.cwd()}/.tmp/uploads`;
-    //     if (!fs.existsSync(dir)) {
-    //         fs.mkdirSync(dir, {recursive: true});
-    //     }
-    //
-    //     // save file
+    //     // Proceed with file upload after validation
     //     req.upload({
-    //         destination: dir,
+    //         destination: this.manager.dir,
     //         filename: () => filename,
     //     }).single("file")(req, res, async (err) => {
     //         if (err) {
@@ -167,22 +104,18 @@ export class MediaManagerAdapter {
     //         }
     //
     //         try {
-    //             const item = await this.manager.upload(
+    //             const result = await this.manager.uploadVariant(
+    //                 item,
     //                 req.file,
     //                 filename,
-    //                 origFileName,
-    //                 group
+    //                 group,
+    //                 req.body.localeId
     //             );
     //
-    //             if (item) {
-    //                 return res.send({
-    //                     msg: "success",
-    //                     data: item,
-    //                 });
-    //             } else {
-    //                 return res.status(500).send({error: `The file was not processed, check manager.upload`});
-    //             }
-    //
+    //             return res.send({
+    //                 msg: "success",
+    //                 data: result,
+    //             });
     //         } catch (e) {
     //             console.error(e);
     //             return res.status(500).send({error: e.message || 'Internal Server Error'});
@@ -194,41 +127,65 @@ export class MediaManagerAdapter {
         const config = req.adminizer.config.mediamanager || null;
         const group = req.body.group as string;
 
-        if (!req.file) {
-            return res.status(400).send({ error: 'No file uploaded' });
+        const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
+
+        // Проверяем и создаем директорию, если ее нет
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
         }
 
-        // Валидация файла
-        const settings = {
-            allowedTypes: config?.allowMIME ?? [],
-            maxBytes: config?.maxByteSize ?? 2 * 1024 * 1024,
-        };
-
-        if (this.manager.id === "default") {
-            if (settings.allowedTypes.length && this.checkMIMEType(settings.allowedTypes, req.file.mimetype)) {
-                return res.status(400).send({msg: `Wrong filetype (${req.file.mimetype}).`});
+        // Создаем storage для Multer
+        const storage = multer.diskStorage({
+            destination: (req, file, cb) => {
+                cb(null, outputDir);
+            },
+            filename: (req, file, cb) => {
+                const filename = randomFileName(req.body.name.replace(" ", "_"), "", true);
+                cb(null, filename);
             }
-            if (req.file.size > settings.maxBytes) {
-                return res.status(400).send({msg: `File size exceeds limit`});
+        });
+
+        const upload = multer({
+            storage: storage,
+            limits: {
+                fileSize: config?.maxByteSize ?? 2 * 1024 * 1024
+            },
+            fileFilter: (req, file, cb) => {
+                if (this.manager.id === "default" && config?.allowMIME?.length) {
+                    const isAllowed = !this.checkMIMEType(config.allowMIME, file.mimetype);
+                    if (!isAllowed) {
+                        return cb(new Error(`Wrong filetype (${file.mimetype}).`));
+                    }
+                }
+                cb(null, true);
             }
-        }
+        }).single("file");
 
-        try {
-            const filename = randomFileName(req.body.name.replace(" ", "_"), "", true);
-            const origFileName = req.body.name.replace(/\.[^.]+$/, "");
-            console.log(req.file);
-            const item = await this.manager.upload(
-                req.file,
-                filename,
-                origFileName,
-                group
-            );
+        // Выполняем загрузку
+        upload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).send({ error: err.message });
+            }
 
-            return res.send({ msg: "success", data: item });
-        } catch (e) {
-            console.error(e);
-            return res.status(500).send({error: e.message || 'Upload failed'});
-        }
+            if (!req.file) {
+                return res.status(400).send({ error: 'No file uploaded' });
+            }
+
+            try {
+                const origFileName = req.body.name.replace(/\.[^.]+$/, "");
+                const item = await this.manager.upload(
+                    req.file,
+                    req.file.filename, // используем имя файла, которое сгенерировал Multer
+                    origFileName,
+                    group
+                );
+
+                return res.send({ msg: "success", data: item });
+            } catch (e) {
+                console.error(e);
+                return res.status(500).send({error: e.message || 'Upload failed'});
+            }
+        });
     }
 
     public async getMeta(req: ReqType, res: ResType) {

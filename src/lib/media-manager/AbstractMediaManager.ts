@@ -80,20 +80,20 @@ export type MediaFileType =
 
 export abstract class File<T extends MediaManagerItem> {
   public abstract type: MediaFileType;
-  public path: string;
-  public dir: string;
+  public urlPathPrefix: string;
+  public fileStoragePath: string;
   public model: string;
   public metaModel: string;
 
 
   /**
    *
-   * @param path
-   * @param dir
+   * @param urlPathPrefix
+   * @param fileStoragePath
    */
-  constructor(urlPathPrefix: string, fileStoragePath: string) {
-    this.path = urlPathPrefix;
-    this.dir = fileStoragePath;
+  protected constructor(urlPathPrefix: string, fileStoragePath: string) {
+    this.urlPathPrefix = urlPathPrefix;
+    this.fileStoragePath = fileStoragePath;
   }
 
   /**
@@ -101,7 +101,7 @@ export abstract class File<T extends MediaManagerItem> {
    * @param file
    * @param filename
    * @param origFileName
-   * @param imageSizes
+   * @param group
    */
   public abstract upload(file: UploaderFile, filename: string, origFileName: string, group?: string): Promise<T[]>;
 
@@ -129,7 +129,8 @@ export abstract class File<T extends MediaManagerItem> {
    * @param item
    * @param file
    * @param fileName
-   * @param config
+   * @param group
+   * @param localeId
    */
   public abstract uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem>;
 
@@ -175,7 +176,8 @@ export abstract class File<T extends MediaManagerItem> {
 export abstract class AbstractMediaManager {
   public uploadMaxBytes: number;
   public uloadAllowedTypes: string[];
-  public dir: string
+  public fileStoragePath: string
+  public urlPathPrefix: string
   /**
    
    */
@@ -213,7 +215,6 @@ export abstract class AbstractMediaManager {
    * @param file
    * @param filename
    * @param origFileName
-   * @param imageSizes
    * @param group
    */
   public upload(file: UploaderFile, filename: string, origFileName: string, group?: string) {
@@ -254,7 +255,7 @@ export abstract class AbstractMediaManager {
    * @param limit
    * @param skip
    * @param sort
-   * @param group?
+   * @param group
    */
   public getItems(type: string, limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
     data: MediaManagerItem[];
@@ -268,7 +269,7 @@ export abstract class AbstractMediaManager {
    * @param data
    * @param model model in which a mediafile connection was added
    * @param modelId Id in the model in which the mediafile was added
-   * @param modelAttribute
+   * @param widgetName
    */
   public abstract setRelations(
     data: MediaManagerWidgetData,
@@ -289,6 +290,7 @@ export abstract class AbstractMediaManager {
    * Search all items.
    * If not this.allowSearch = true then it will not come here
    * @param s
+   * @param group
    */
   public abstract searchAll(s: string, group?: string): Promise<MediaManagerItem[]>;
 
@@ -296,6 +298,7 @@ export abstract class AbstractMediaManager {
    * Search items by type.
    * @param s
    * @param type
+   * @param group
    */
   public searchItems(s: string, type: string, group?: string): Promise<MediaManagerItem[]> {
     return this.getItemType(type)?.search(s, group);
@@ -315,7 +318,8 @@ export abstract class AbstractMediaManager {
    * @param item
    * @param file
    * @param fileName
-   * @param config
+   * @param group
+   * @param localeId
    */
   public uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem> {
     const parts = item.mimeType.split("/");
