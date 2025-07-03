@@ -127,12 +127,10 @@ export class MediaManagerAdapter {
         const config = req.adminizer.config.mediamanager || null;
         const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
 
-        // Проверяем и создаем директорию, если ее нет
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
         }
 
-        // Создаем storage для Multer
         const storage = multer.diskStorage({
             destination: (req, file, cb) => {
                 cb(null, outputDir);
@@ -143,33 +141,44 @@ export class MediaManagerAdapter {
             }
         });
 
-        const upload = multer({ storage }).single("file");
+        const upload = multer({
+            storage: storage,
+            limits: {
+                fileSize: config?.maxByteSize ?? 2 * 1024 * 1024
+            },
+            fileFilter: (req: ReqType, file, cb) => {
+                if (this.manager.id === "default" && config?.allowMIME?.length) {
+                    const isAllowed = this.checkMIMEType(config.allowMIME, file.mimetype);
+                    if (!isAllowed) {
+                        req.allowedFileTypes = config.allowMIME;
+                        req.uploadedFileType = file.mimetype;
+                        return cb(null, false);
+                    }
+                }
+                cb(null, true);
+            }
+        }).single("file");
 
-        // Выполняем загрузку
         upload(req, res, async (err) => {
             try {
                 if (err) {
-                    console.log(err)
-                    return res.status(500).send({error: e.message || 'Upload failed'});
+                    let errorMessage = err.message;
+                    if (err.code === 'LIMIT_FILE_SIZE') {
+                        const maxSizeMB = (config?.maxByteSize ?? 2 * 1024 * 1024) / (1024 * 1024);
+                        errorMessage = `${req.i18n.__('The file exceeds the size limit')} ${maxSizeMB} MB`;
+                    }
+
+                    return res.status(400).json({ msg: "error", error: errorMessage });
                 }
 
                 if (!req.file) {
-                    return res.status(400).send({error: 'No file uploaded'});
-                }
-
-                // Проверка размера файла
-                if (config?.maxByteSize && req.file.size > config.maxByteSize) {
-                    fs.unlinkSync(req.file.path); // Удаляем загруженный файл
-                    return res.status(400).send({error: `File size exceeds the limit of ${config.maxByteSize} bytes`});
-                }
-
-                // Проверка MIME типа
-                if (this.manager.id === "default" && config?.allowMIME?.length) {
-                    const isAllowed = this.checkMIMEType(config.allowMIME, req.file.mimetype);
-                    if (!isAllowed) {
-                        fs.unlinkSync(req.file.path); // Удаляем загруженный файл
-                        return res.status(400).send({error: `File type ${req.file.mimetype} is not allowed`});
-                    }
+                    const allowedTypes = req.allowedFileTypes?.join(', ') || req.i18n.__('acceptable types are not specified');
+                    const fileType = req.uploadedFileType || req.i18n.__('unknown type');
+                    return res.status(400).json({
+                        msg: "error",
+                        error: `${req.i18n.__('Files with the type')} ${fileType} ${req.i18n.__('are not supported.')} ` +
+                            `${req.i18n.__('Supported types')}: ${allowedTypes}`
+                    });
                 }
 
                 const origFileName = req.body.name.replace(/\.[^.]+$/, "");
@@ -182,10 +191,6 @@ export class MediaManagerAdapter {
 
                 return res.send({msg: "success", data: item});
             } catch (e) {
-                // Удаляем файл в случае любой ошибки
-                if (req.file?.path && fs.existsSync(req.file.path)) {
-                    fs.unlinkSync(req.file.path);
-                }
                 console.error(e);
                 return res.status(500).send({error: e.message || 'Upload failed'});
             }

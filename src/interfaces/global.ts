@@ -101,7 +101,9 @@ declare global {
 		}
 		adminizer: Adminizer
 		upload: (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => multer.Multer
-		i18n: I18n
+		i18n: I18n,
+		allowedFileTypes: string[],
+		uploadedFileType: string
 	}
 
 	type ResType = Response & {
