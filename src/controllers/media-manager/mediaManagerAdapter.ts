@@ -125,13 +125,11 @@ export class MediaManagerAdapter {
 
     public async upload(req: ReqType, res: ResType) {
         const config = req.adminizer.config.mediamanager || null;
-        const group = req.body.group as string;
-
         const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
 
         // Проверяем и создаем директорию, если ее нет
         if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
+            fs.mkdirSync(outputDir, {recursive: true});
         }
 
         // Создаем storage для Multer
@@ -145,43 +143,49 @@ export class MediaManagerAdapter {
             }
         });
 
-        const upload = multer({
-            storage: storage,
-            limits: {
-                fileSize: config?.maxByteSize ?? 2 * 1024 * 1024
-            },
-            fileFilter: (req, file, cb) => {
-                if (this.manager.id === "default" && config?.allowMIME?.length) {
-                    const isAllowed = !this.checkMIMEType(config.allowMIME, file.mimetype);
-                    if (!isAllowed) {
-                        return cb(new Error(`Wrong filetype (${file.mimetype}).`));
-                    }
-                }
-                cb(null, true);
-            }
-        }).single("file");
+        const upload = multer({ storage }).single("file");
 
         // Выполняем загрузку
         upload(req, res, async (err) => {
-            if (err) {
-                return res.status(400).send({ error: err.message });
-            }
-
-            if (!req.file) {
-                return res.status(400).send({ error: 'No file uploaded' });
-            }
-
             try {
+                if (err) {
+                    console.log(err)
+                    return res.status(500).send({error: e.message || 'Upload failed'});
+                }
+
+                if (!req.file) {
+                    return res.status(400).send({error: 'No file uploaded'});
+                }
+
+                // Проверка размера файла
+                if (config?.maxByteSize && req.file.size > config.maxByteSize) {
+                    fs.unlinkSync(req.file.path); // Удаляем загруженный файл
+                    return res.status(400).send({error: `File size exceeds the limit of ${config.maxByteSize} bytes`});
+                }
+
+                // Проверка MIME типа
+                if (this.manager.id === "default" && config?.allowMIME?.length) {
+                    const isAllowed = this.checkMIMEType(config.allowMIME, req.file.mimetype);
+                    if (!isAllowed) {
+                        fs.unlinkSync(req.file.path); // Удаляем загруженный файл
+                        return res.status(400).send({error: `File type ${req.file.mimetype} is not allowed`});
+                    }
+                }
+
                 const origFileName = req.body.name.replace(/\.[^.]+$/, "");
                 const item = await this.manager.upload(
                     req.file,
-                    req.file.filename, // используем имя файла, которое сгенерировал Multer
+                    req.file.filename,
                     origFileName,
-                    group
+                    req.body.group as string
                 );
 
-                return res.send({ msg: "success", data: item });
+                return res.send({msg: "success", data: item});
             } catch (e) {
+                // Удаляем файл в случае любой ошибки
+                if (req.file?.path && fs.existsSync(req.file.path)) {
+                    fs.unlinkSync(req.file.path);
+                }
                 console.error(e);
                 return res.status(500).send({error: e.message || 'Upload failed'});
             }
@@ -203,14 +207,18 @@ export class MediaManagerAdapter {
     }
 
     /**
-     * Check file type. Return false if the type is allowed.
-     * @param allowedTypes
-     * @param type
+     * Check if the file type is allowed.
+     * @param allowedTypes - Array of allowed MIME types (e.g., ["image/*", "video/mp4"])
+     * @param type - MIME type of the uploaded file (e.g., "image/jpeg")
+     * @returns `true` if allowed, `false` if not allowed
      */
-    public checkMIMEType(allowedTypes: string[], type: string) {
-        const partsFileType = type.split("/");
-        const allowedType = `${partsFileType[0]}/*`;
-        if (allowedTypes.includes(allowedType)) return false;
-        return !allowedTypes.includes(type);
+    public checkMIMEType(allowedTypes: string[], type: string): boolean {
+        const [category] = type.split("/"); // "image/jpeg" → "image"
+        const wildcardType = `${category}/*`; // "image/*"
+
+        // Разрешено, если:
+        // 1. Точное совпадение (например, "image/jpeg" в allowedTypes)
+        // 2. Разрешена вся категория (например, "image/*" в allowedTypes)
+        return allowedTypes.includes(type) || allowedTypes.includes(wildcardType);
     }
 }

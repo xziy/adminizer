@@ -43,7 +43,7 @@ import {CatalogHandler} from "../dist/lib/v4/catalog/CatalogHandler";
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
 // Clean temp folder
-if (!process.env.NO_SEED_DATA) await cleanTempFolder();
+if (!process.env.NO_SEED_DATA || process.env.CLEAN_TMP) await cleanTempFolder();
 process.env.JWT_SECRET = "fixture-jwt-secret"
 // https://sailsjs.com/documentation/concepts/models-and-orm/standalone-waterline-usage
 

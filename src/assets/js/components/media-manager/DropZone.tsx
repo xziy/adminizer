@@ -45,32 +45,51 @@ const DropZone: FC<FileUploadProps> = ({pushData}) => {
     };
 
     const upload = async (file: File) => {
-        console.log(uploadUrl)
         try {
             const form = new FormData();
             form.append("name", file.name);
             form.append("group", group);
             form.append("file", file);
-            // const res = await ky.post(uploadUrl, { body: form }).json<{
-            //     msg: string;
-            //     data: any;
-            // }>();
+
             const res = await axios.post(`${uploadUrl}/upload`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
-                }})
+                }
+            });
 
-            // if (res.msg === "success") {
-            //     setLoading(false);
-            //     pushData(res.data);
-            // } else {
-            //     setLoading(false);
-            //     setAlert(res.msg);
-            // }
+            if (res.data.msg === "success") {
+                setLoading(false);
+                // pushData(res.data);
+                return; // Успешная загрузка
+            }
+
+            // Обработка ошибки от сервера (например, когда msg === "error")
+            setLoading(false);
+            setAlert(res.data.error || "Upload failed");
+
         } catch (error) {
-            // setLoading(false);
-            // setAlert("Произошла ошибка при загрузке файла");
-            // console.error(error);
+            setLoading(false);
+
+            if (axios.isAxiosError(error)) {
+                // Обработка ошибок Axios (включая 400 и другие HTTP ошибки)
+                if (error.response) {
+                    // Сервер ответил с кодом ошибки (4xx, 5xx)
+                    const errorMessage = error.response.data?.error ||
+                        error.response.data?.message ||
+                        error.response.statusText;
+                    setAlert(errorMessage || `Error: ${error.response.status}`);
+                } else if (error.request) {
+                    // Запрос был сделан, но ответ не получен
+                    setAlert("No response from server");
+                } else {
+                    // Ошибка при настройке запроса
+                    setAlert("Request setup error");
+                }
+            } else {
+                // Не Axios ошибка
+                setAlert("Error uploading file");
+                console.error(error);
+            }
         }
     };
 
