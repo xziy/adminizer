@@ -189,7 +189,7 @@ export class MediaManagerAdapter {
                     req.body.group as string
                 );
 
-                return res.send({msg: "success", data: item});
+                return res.json({msg: "success", data: item});
             } catch (e) {
                 console.error(e);
                 return res.status(500).send({error: e.message || 'Upload failed'});
