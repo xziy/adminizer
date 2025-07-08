@@ -215,13 +215,12 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         for (const key in criteria) {
             const value = criteria[key];
 
-            // if(value === null)
-
-            // if (
-            //     value === undefined || (typeof value === "object" && Object.keys(value).length === 0)
-            // ) {
-            //     continue;
-            // }
+            if (
+                value === undefined ||
+                (typeof value === "object" && value !== null && Object.keys(value).length === 0)
+            ) {
+                continue;
+            }
 
             // 🧠 Заменяем ключ на `via`, если это ассоциация
             const attr = this.attributes?.[key];
@@ -230,7 +229,9 @@ export class SequelizeModel<T> extends AbstractModel<T> {
                 targetKey = attr.via;
             }
 
-            if (typeof value === "object" && !Array.isArray(value)) {
+            if (value === null) {
+                result[targetKey] = { [Op.is]: null };
+            } else if (typeof value === "object" && !Array.isArray(value)) {
                 const operatorEntries = Object.entries(value)
                     .filter(([_, v]) => v !== undefined && v !== null)
                     .map(([op, val]) => {
