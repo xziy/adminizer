@@ -1,12 +1,13 @@
-import React from "react";
 import {DialogStack, DialogStackBody, DialogStackContent, DialogStackOverlay} from "@/components/ui/dialog-stack.tsx";
 import DropZone from "@/components/media-manager/DropZone.tsx";
+import {FC, RefObject} from "react";
+import Gallery from "@/components/media-manager/Gallery.tsx";
 
 interface MediaDialogStackProps {
-    dialogRef: React.RefObject<any>;
+    dialogRef: RefObject<any>;
 }
 
-const MediaDialogStack: React.FC<MediaDialogStackProps> = ({dialogRef}) => {
+const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
     return (
         <DialogStack ref={dialogRef}>
             <DialogStackOverlay/>
@@ -14,7 +15,8 @@ const MediaDialogStack: React.FC<MediaDialogStackProps> = ({dialogRef}) => {
                 <DialogStackContent>
                     <div className="relative h-full">
                         <div className="h-full overflow-y-auto mt-5">
-                            <DropZone />
+                            <DropZone/>
+                            <Gallery/>
                         </div>
                     </div>
                 </DialogStackContent>
