@@ -221,7 +221,6 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             ) {
                 continue;
             }
-
             // 🧠 Заменяем ключ на `via`, если это ассоциация
             const attr = this.attributes?.[key];
             let targetKey = key;
