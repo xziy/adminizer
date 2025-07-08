@@ -43,9 +43,8 @@ export class DefaultMediaManager extends AbstractMediaManager {
             sort: sort,
         }, {populate: [["variants", {sort: sort}], ["meta", {}]]})
 
-        console.log(data)
 
-        let next = await this.adminizer.modelHandler.model.get(this.model)["_count"]({
+        let next = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
             where: {parent: null, group: group},
             limit: limit,
             skip: skip === 0 ? limit : skip + limit,
@@ -58,7 +57,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
 
         return {
             data: data,
-            next: !!next,
+            next: !!next.length,
         };
     }
 
