@@ -5,7 +5,7 @@ import chalk from 'chalk';
 const CONFIG = {
     sourceDir: path.normalize('src'),
     targetDir: path.normalize('dist'),
-    foldersToCopy: ['migrations', 'translations'],
+    foldersToCopy: ['migrations', 'translations', 'fileicons'],
     // filesToCopy: ['*.json', '*.yaml']
 };
 

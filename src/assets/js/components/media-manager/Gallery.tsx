@@ -1,16 +1,21 @@
 import {Input} from "@/components/ui/input.tsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useState, forwardRef, useImperativeHandle,} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import axios from "axios";
 import Tile from "@/components/media-manager/Tile.tsx";
 import MediaTable from "@/components/media-manager/MediaTable.tsx";
+import {Media} from "@/types";
 
-const Gallery = () => {
+export interface GalleryRef {
+    pushMediaItem: (item: Media) => void;
+}
+
+const Gallery = forwardRef<GalleryRef, {}>((_props,ref) => {
     const [mediaType, setMediaType] = useState<string>('all');
     const { uploadUrl, group } = useContext(MediaManagerContext);
     const [count, setCount] = useState<number>(5);
-    const [mediaList, setMediaList] = useState<any>([]);
+    const [mediaList, setMediaList] = useState<Media[]>([]);
 
     useEffect( () => {
         const getData = async () => {
@@ -19,6 +24,16 @@ const Gallery = () => {
         }
         getData();
     }, []);
+
+    // Метод для добавления нового медиа
+    const pushMediaItem = (item: Media) => {
+        setMediaList(prev => [item, ...prev]);
+    };
+
+    // Предоставляем метод pushMediaItem через ref
+    useImperativeHandle(ref, () => ({
+        pushMediaItem
+    }));
 
     const handleChange = async (type: string) => {
         setMediaType(type)
@@ -38,7 +53,7 @@ const Gallery = () => {
                             className="w-[200px] p-2 border rounded order-1 xl:order-2"
                         />
                     </div>
-                    <TabsList>
+                    <TabsList className="w-full">
                         <TabsTrigger value="tile-image" onClick={() => handleChange('image')}>
                             Images
                         </TabsTrigger>
@@ -76,6 +91,6 @@ const Gallery = () => {
             </Tabs>
         </div>
     )
-}
-
+})
+Gallery.displayName = 'Gallery';
 export default Gallery

@@ -1,15 +1,15 @@
 import React, {useState, useRef, useEffect, FC, useContext} from 'react';
-import {MediaManagerItem} from "@/types";
 import {TriangleAlert, XIcon} from "lucide-react";
 import styles from '@/components/media-manager/DropZone.module.css'
 import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
+import {GalleryRef} from "@/components/media-manager/Gallery.tsx";
 
-interface FileUploadProps {
-    pushData: (data: MediaManagerItem[]) => void;
+interface DropZoneProps {
+    galleryRef: React.RefObject<GalleryRef>;
 }
 
-const DropZone: FC<FileUploadProps> = ({pushData}) => {
+const DropZone: FC<DropZoneProps> = ({galleryRef }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [alert, setAlert] = useState<string>('');
@@ -59,7 +59,8 @@ const DropZone: FC<FileUploadProps> = ({pushData}) => {
 
             if (res.data.msg === "success") {
                 setLoading(false);
-                // pushData(res.data);
+                galleryRef.current?.pushMediaItem(res.data.data[0]);
+                // console.log(res.data.data[0]);
                 return; // Успешная загрузка
             }
 
