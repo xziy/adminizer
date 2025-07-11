@@ -231,3 +231,13 @@ export interface MediaManagerItem {
     createdAt: number;
     updatedAt: number;
 }
+
+export interface Media {
+    id: number,
+    title: string,
+    mimeType: string,
+}
+
+export interface MediaProps {
+    mediaList: Media[]
+}
