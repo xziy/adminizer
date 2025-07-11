@@ -11,12 +11,16 @@ export default function bindMediaManager(adminizer: Adminizer) {
 				adminizer,
 				'default',
 				'media-manager',
-				`${process.cwd()}/${adminizer.config.mediamanager.fileStoragePath}`)
+				adminizer.config.mediamanager.fileStoragePath
+			)
 			MediaManagerHandler.add(mediaManager)
 		} catch (e) {
 			console.log(e)
 		}
 	})
 	// Bind media manager public folder
-	adminizer.app.use(`/public`, serveStatic(path.join(import.meta.dirname, `../../${adminizer.config.mediamanager.fileStoragePath}`)));
+	adminizer.app.use(`/public`, serveStatic(adminizer.config.mediamanager.fileStoragePath));
+
+	// Bind file icons
+	adminizer.app.use(`${adminizer.config.routePrefix}/fileicons`, serveStatic(path.join(import.meta.dirname, '../fileicons')));
 }
