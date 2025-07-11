@@ -9,12 +9,13 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {MediaProps} from "@/types";
+import Image from "@/components/media-manager/Image.tsx";
 
 
 const MediaTable = ({mediaList}: MediaProps) => {
     return (
         <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background shadow">
                 <TableRow>
                     <TableHead className="p-2 text-left">Файл</TableHead>
                     <TableHead className="p-2 text-left">Имя</TableHead>
@@ -29,7 +30,9 @@ const MediaTable = ({mediaList}: MediaProps) => {
             <TableBody>
                 {mediaList.map((media) => (
                     <TableRow key={media.id}>
-                        <TableCell className="font-medium">{media.id}</TableCell>
+                        <TableCell className="p-2">
+                            <Image media={media} className="max-w-[75px]" />
+                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>

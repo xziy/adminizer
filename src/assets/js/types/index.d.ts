@@ -236,6 +236,7 @@ export interface Media {
     id: number,
     title: string,
     mimeType: string,
+    url: string,
 }
 
 export interface MediaProps {

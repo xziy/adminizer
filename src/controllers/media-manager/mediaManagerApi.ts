@@ -19,6 +19,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	const _manager = MediaManagerHandler.get(id)
 	const manager = new MediaManagerAdapter(_manager)
 	if (method === 'GET') {
+		const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+		await delay(500);
 		return await manager.get(req, res)
 	}
 
