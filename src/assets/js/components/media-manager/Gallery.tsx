@@ -4,6 +4,7 @@ import {useContext, useEffect, useState} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import axios from "axios";
 import Tile from "@/components/media-manager/Tile.tsx";
+import MediaTable from "@/components/media-manager/MediaTable.tsx";
 
 const Gallery = () => {
     const [mediaType, setMediaType] = useState<string>('all');
@@ -19,6 +20,12 @@ const Gallery = () => {
         getData();
     }, []);
 
+    const handleChange = async (type: string) => {
+        setMediaType(type)
+        let data = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=${type}&group=${group}`)
+        setMediaList(data.data.data)
+    }
+
     return (
         <div className="flex justify-between mt-8 gap-4">
             <Tabs defaultValue="tile-all" className="w-full">
@@ -32,23 +39,23 @@ const Gallery = () => {
                         />
                     </div>
                     <TabsList>
-                        <TabsTrigger value="tile-image" onClick={() => setMediaType('image')}>
+                        <TabsTrigger value="tile-image" onClick={() => handleChange('image')}>
                             Images
                         </TabsTrigger>
-                        <TabsTrigger value="tile-video" onClick={() => setMediaType('video')}>
+                        <TabsTrigger value="tile-video" onClick={() => handleChange('video')}>
                             Video
                         </TabsTrigger>
-                        <TabsTrigger value="table-text" onClick={() => setMediaType('text')}>
+                        <TabsTrigger value="table-text" onClick={() => handleChange('text')}>
                             Text
                         </TabsTrigger>
                         <TabsTrigger value="table-application"
-                                     onClick={() => setMediaType('application')}>
+                                     onClick={() => handleChange('application')}>
                             Application
                         </TabsTrigger>
-                        <TabsTrigger value="table-all" onClick={() => setMediaType('all')}>
+                        <TabsTrigger value="table-all" onClick={() => handleChange('all')}>
                             Table
                         </TabsTrigger>
-                        <TabsTrigger value="tile-all" onClick={() => setMediaType('all')}>
+                        <TabsTrigger value="tile-all" onClick={() => handleChange('all')}>
                             Tile
                         </TabsTrigger>
                     </TabsList>
@@ -63,7 +70,9 @@ const Gallery = () => {
                 <TabsContent value="tile-all">
                     <Tile mediaList={mediaList}/>
                 </TabsContent>
-                <TabsContent value="table-all">Table {mediaType}</TabsContent>
+                <TabsContent value="table-all">
+                    <MediaTable mediaList={mediaList}/>
+                </TabsContent>
             </Tabs>
         </div>
     )

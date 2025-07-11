@@ -1,17 +1,8 @@
 import {useContext} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
+import {Media, MediaProps} from "@/types";
 
-interface Media {
-    id: number,
-    title: string,
-    mimeType: string,
-}
-
-interface TileProps {
-    mediaList: Media[]
-}
-
-const Tile = ({mediaList}: TileProps) => {
+const Tile = ({mediaList}: MediaProps) => {
     const {managerId} = useContext(MediaManagerContext);
 
     const imageUrl = (media: Media) => {
@@ -26,7 +17,7 @@ const Tile = ({mediaList}: TileProps) => {
         <div className="grid grid-cols-[repeat(auto-fill,_150px)] gap-2 justify-start">
             {mediaList.map((media) => (
                 <div key={media.id}>
-                    <img src={imageUrl((media))} alt=""/>
+                    <img className="w-full h-full max-w-[150px]" src={imageUrl((media))} alt=""/>
                 </div>
             ))}
         </div>
