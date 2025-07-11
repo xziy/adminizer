@@ -13,6 +13,7 @@ const SelectCatalogItem = ({items, onSelect}: ItemProps) => {
     const context = useContext(CatalogContext);
     const [selectedValue, setSelectedValue] = useState("");
 
+
     // const checkPermission = (type: string) => {
     //     console.log(type)
     //     // if (props.selectedNode.length && props.movingGroupsRootOnly) {
@@ -36,7 +37,7 @@ const SelectCatalogItem = ({items, onSelect}: ItemProps) => {
                 <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
                     <SelectValue placeholder={context.messages["Select Ids"]}/>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[1005]" >
                     {items.map((item) => (
                         <SelectItem value={item.type}
                                     key={`${item.type}-${item.name}`}>{item.name}</SelectItem>

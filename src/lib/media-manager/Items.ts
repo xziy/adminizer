@@ -35,7 +35,7 @@ export class ImageItem extends File<MediaManagerItem> {
             sort: sort,
         }, {populate: [["variants", {sort: sort}], ["meta", {}]]})
 
-        let next = await this.adminizer.modelHandler.model.get(this.model)['_count']({
+        let next = await this.adminizer.modelHandler.model.get(this.model)['_find']({
             where: {parent: null, mimeType: {contains: this.type}, group: group},
             limit: limit,
             skip: skip === 0 ? limit : skip + limit,
@@ -48,7 +48,7 @@ export class ImageItem extends File<MediaManagerItem> {
 
         return {
             data: data,
-            next: !!next,
+            next: !!next.length,
         };
     }
 

@@ -6,91 +6,172 @@ import axios from "axios";
 import Tile from "@/components/media-manager/Tile.tsx";
 import MediaTable from "@/components/media-manager/MediaTable.tsx";
 import {Media} from "@/types";
+import {Button} from "@/components/ui/button.tsx";
+import {LoaderCircle} from "lucide-react";
 
 export interface GalleryRef {
     pushMediaItem: (item: Media) => void;
 }
 
-const Gallery = forwardRef<GalleryRef, {}>((_props,ref) => {
+const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
+    const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
-    const { uploadUrl, group } = useContext(MediaManagerContext);
+    const {uploadUrl, group} = useContext(MediaManagerContext);
     const [count, setCount] = useState<number>(5);
     const [mediaList, setMediaList] = useState<Media[]>([]);
+    const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
+    const [skip, setSkip] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [pendingTab, setPendingTab] = useState<string | null>(null);
 
-    useEffect( () => {
-        const getData = async () => {
-            let data = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`)
-            setMediaList(data.data.data)
-        }
-        getData();
-    }, []);
+    // Загрузка данных при монтировании
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`);
+                setMediaList(data.data);
+                setIsLoadMore(data.next);
+            } catch (error) {
+                console.error("Ошибка загрузки медиа:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [uploadUrl, group, count]);
 
     // Метод для добавления нового медиа
     const pushMediaItem = (item: Media) => {
         setMediaList(prev => [item, ...prev]);
     };
 
-    // Предоставляем метод pushMediaItem через ref
     useImperativeHandle(ref, () => ({
         pushMediaItem
     }));
 
-    const handleChange = async (type: string) => {
-        setMediaType(type)
-        let data = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=${type}&group=${group}`)
-        setMediaList(data.data.data)
-    }
+    // Смена типа медиа
+    const handleChange = async (type: string, tabValue: string) => {
+        setPendingTab(tabValue);
+        setMediaList([]);
+        setLoading(true);
+        setSkip(0);
+        setMediaType(type);
+        try {
+            const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=${type}&group=${group}`);
+            setMediaList(data.data);
+            setIsLoadMore(data.next);
+            setActiveTab(tabValue); // Change active tab
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+            setPendingTab(null);
+        }
+    };
+
+    const loadMore = async () => {
+        setLoading(true);
+        try {
+            const newSkip = skip + count;
+            const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=${newSkip}&type=${mediaType}&group=${group}`);
+            setMediaList(prev => [...prev, ...data.data]);
+            setIsLoadMore(data.next);
+            setSkip(newSkip);
+        } catch (error) {
+            console.error("Ошибка подгрузки медиа:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Render content
+    const renderContent = (viewType: 'tile' | 'table') => {
+        if (loading && mediaList.length === 0) {
+            return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
+        }
+        return viewType === 'tile'
+            ? <Tile mediaList={mediaList}/>
+            : <MediaTable mediaList={mediaList}/>;
+    };
 
     return (
-        <div className="flex justify-between mt-8 gap-4">
-            <Tabs defaultValue="tile-all" className="w-full">
-                <div className="flex gap-4">
-                    <div>
-                        <Input
-                            type="search"
-                            autoFocus={false}
-                            placeholder='Search'
-                            className="w-[200px] p-2 border rounded order-1 xl:order-2"
-                        />
-                    </div>
+        <div className="flex justify-between mt-8 gap-4 px-2">
+            <Tabs value={activeTab} className="w-full">
+                <div className="flex gap-4 mb-4">
+                    <Input
+                        type="search"
+                        placeholder="Поиск"
+                        className="w-[200px] p-2 border rounded"
+                    />
                     <TabsList className="w-full">
-                        <TabsTrigger value="tile-image" onClick={() => handleChange('image')}>
-                            Images
+                        <TabsTrigger
+                            value="tile-image"
+                            onClick={() => handleChange('image', 'tile-image')}
+                            disabled={!!pendingTab}
+                        >
+                            Изображения
                         </TabsTrigger>
-                        <TabsTrigger value="tile-video" onClick={() => handleChange('video')}>
-                            Video
+                        <TabsTrigger
+                            value="table-video"
+                            onClick={() => handleChange('video', 'table-video')}
+                            disabled={!!pendingTab}
+                        >
+                            Видео
                         </TabsTrigger>
-                        <TabsTrigger value="table-text" onClick={() => handleChange('text')}>
-                            Text
+                        <TabsTrigger
+                            value="table-text"
+                            onClick={() => handleChange('text', 'table-text')}
+                            disabled={!!pendingTab}
+                        >
+                            Текст
                         </TabsTrigger>
-                        <TabsTrigger value="table-application"
-                                     onClick={() => handleChange('application')}>
-                            Application
+                        <TabsTrigger
+                            value="table-application"
+                            onClick={() => handleChange('application', 'table-application')}
+                            disabled={!!pendingTab}
+                        >
+                            Приложения
                         </TabsTrigger>
-                        <TabsTrigger value="table-all" onClick={() => handleChange('all')}>
-                            Table
+                        <TabsTrigger
+                            value="table-all"
+                            onClick={() => handleChange('all', 'table-all')}
+                            disabled={!!pendingTab}
+                        >
+                            Таблица
                         </TabsTrigger>
-                        <TabsTrigger value="tile-all" onClick={() => handleChange('all')}>
-                            Tile
+                        <TabsTrigger
+                            value="tile-all"
+                            onClick={() => handleChange('all', 'tile-all')}
+                            disabled={!!pendingTab}
+                        >
+                            Плитка
                         </TabsTrigger>
                     </TabsList>
                 </div>
-                <TabsContent value="tile-image">
-                    <Tile mediaList={mediaList}/>
-                </TabsContent>
-                <TabsContent value="tile-video">Tile {mediaType}</TabsContent>
-                <TabsContent value="tile-text">Tile {mediaType}</TabsContent>
-                <TabsContent value="table-text">Table {mediaType}</TabsContent>
-                <TabsContent value="table-application">Table {mediaType}</TabsContent>
-                <TabsContent value="tile-all">
-                    <Tile mediaList={mediaList}/>
-                </TabsContent>
-                <TabsContent value="table-all">
-                    <MediaTable mediaList={mediaList}/>
-                </TabsContent>
+                <TabsContent value="tile-image">{renderContent('tile')}</TabsContent>
+                <TabsContent value="table-video">{renderContent('table')}</TabsContent>
+                <TabsContent value="table-text">{renderContent('table')}</TabsContent>
+                <TabsContent value="table-application">{renderContent('table')}</TabsContent>
+                <TabsContent value="tile-all">{renderContent('tile')}</TabsContent>
+                <TabsContent value="table-all">{renderContent('table')}</TabsContent>
+                {isLoadMore && !pendingTab && (
+                    <div className="mt-4 mx-auto relative">
+                        <Button
+                            className="w-fit"
+                            onClick={loadMore}
+                            disabled={loading}
+                        >
+                            Загрузить ещё
+                        </Button>
+                        {loading &&
+                            <LoaderCircle className="size-6 animate-spin absolute -right-7 top-1/2 -translate-y-1/2"/>}
+                    </div>
+                )}
             </Tabs>
         </div>
-    )
-})
+    );
+});
+
 Gallery.displayName = 'Gallery';
-export default Gallery
+export default Gallery;
