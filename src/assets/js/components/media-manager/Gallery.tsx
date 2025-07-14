@@ -23,23 +23,41 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
     const [skip, setSkip] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingTab, setPendingTab] = useState<string | null>(null);
+    const [messages, setMessages] = useState<Record<string, string>>({})
+
 
     // Загрузка данных при монтировании
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
+            const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`);
+            setMediaList(data.data);
+            console.log(data.data);
+            setIsLoadMore(data.next);
+        };
+
+        const initLocales = async () => {
+            let res = await axios.post(`${uploadUrl}`, {
+                _method: 'getLocales'
+            });
+            console.log(res.data.data)
+            setMessages(res.data.data);
+        };
+
+        const initGallery = async () => {
             try {
-                const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`);
-                setMediaList(data.data);
-                setIsLoadMore(data.next);
+                setLoading(true);
+                await initLocales();
+                await fetchData();
             } catch (error) {
-                console.error("Ошибка загрузки медиа:", error);
+                console.error('Error initializing media:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, [uploadUrl, group, count]);
+
+        initGallery();
+
+    }, []);
 
     // Метод для добавления нового медиа
     const pushMediaItem = (item: Media) => {
@@ -91,17 +109,17 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
             return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
         }
         return viewType === 'tile'
-            ? <Tile mediaList={mediaList}/>
-            : <MediaTable mediaList={mediaList}/>;
+            ? <Tile mediaList={mediaList} messages={messages}/>
+            : <MediaTable mediaList={mediaList} messages={messages}/>;
     };
 
     return (
-        <div className="flex justify-between mt-8 gap-4 px-2">
+        <div className="flex justify-between mt-8 gap-4 px-2 pb-4">
             <Tabs value={activeTab} className="w-full">
                 <div className="flex gap-4 mb-4">
                     <Input
                         type="search"
-                        placeholder="Поиск"
+                        placeholder={messages["Search"]}
                         className="w-[200px] p-2 border rounded"
                     />
                     <TabsList className="w-full">
@@ -110,42 +128,42 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
                             onClick={() => handleChange('image', 'tile-image')}
                             disabled={!!pendingTab}
                         >
-                            Изображения
+                            {messages["Images"]}
                         </TabsTrigger>
                         <TabsTrigger
                             value="table-video"
                             onClick={() => handleChange('video', 'table-video')}
                             disabled={!!pendingTab}
                         >
-                            Видео
+                            {messages["Videos"]}
                         </TabsTrigger>
                         <TabsTrigger
                             value="table-text"
                             onClick={() => handleChange('text', 'table-text')}
                             disabled={!!pendingTab}
                         >
-                            Текст
+                            {messages["Texts"]}
                         </TabsTrigger>
                         <TabsTrigger
                             value="table-application"
                             onClick={() => handleChange('application', 'table-application')}
                             disabled={!!pendingTab}
                         >
-                            Приложения
+                            {messages["Applications"]}
                         </TabsTrigger>
                         <TabsTrigger
                             value="table-all"
                             onClick={() => handleChange('all', 'table-all')}
                             disabled={!!pendingTab}
                         >
-                            Таблица
+                            {messages["Table"]}
                         </TabsTrigger>
                         <TabsTrigger
                             value="tile-all"
                             onClick={() => handleChange('all', 'tile-all')}
                             disabled={!!pendingTab}
                         >
-                            Плитка
+                            {messages["Tile"]}
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -162,7 +180,7 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
                             onClick={loadMore}
                             disabled={loading}
                         >
-                            Загрузить ещё
+                            {messages["Load more"]}
                         </Button>
                         {loading &&
                             <LoaderCircle className="size-6 animate-spin absolute -right-7 top-1/2 -translate-y-1/2"/>}

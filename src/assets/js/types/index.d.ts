@@ -216,29 +216,32 @@ export interface CatalogActions {
     name: string
 }
 
-export interface MediaManagerItem {
-    id: string;
-    parent: string;
-    variants: MediaManagerItem[];
-    mimeType: string;
-    path: string;
-    size: number;
-    tag: string;
-    group?: string;
-    url: string;
-    filename: string;
-    meta: string[];
-    createdAt: number;
-    updatedAt: number;
-}
 
 export interface Media {
     id: number,
     title: string,
     mimeType: string,
+    variants: Media[]
     url: string,
+    filename: string
+    createdAt: string
+    size: number
+    tag: string
+    meta: MediaMeta[]
+}
+
+export interface MediaMeta {
+    id: string
+    key: string
+    value: string | Record<string, any>
+    isPublic: boolean,
+    createdAt: string
+    updatedAt: string
+    MediaManagerAPId: string
+    parentId: null | string
 }
 
 export interface MediaProps {
-    mediaList: Media[]
+    mediaList: Media[],
+    messages: Record<string, string>,
 }

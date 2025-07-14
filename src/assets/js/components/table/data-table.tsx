@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>(
                     </Button>
                 </div>
             )}
-            <Table>
+            <Table wrapperHeight="max-h-[65vh]">
                 <TableHeader className="sticky top-0 z-10 bg-background shadow">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
