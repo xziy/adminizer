@@ -47,6 +47,35 @@ export class MediaManagerAdapter {
         });
     }
 
+    public getLocales(req: ReqType) {
+        let obj: Record<string, string> = {
+            "Images": "",
+            "Videos": "",
+            "Texts": "",
+            "Applications": "",
+            "Table": "",
+            "Tile": "",
+            "Load more": "",
+            "File": "",
+            "Name": "",
+            "Date": "",
+            "Type": "",
+            "Size (orig.)": "",
+            "W x H (orig.)": "",
+            "Sizes/Ver": "",
+            "Locales": "",
+            "Search": "",
+        }
+        let messages = obj
+        let outMessages: Record<string, string> = {}
+        for (const mess of Object.keys(messages)) {
+            outMessages[mess] = req.i18n.__(mess)
+        }
+        return {
+            ...outMessages,
+        }
+    }
+
     public async search(req: ReqType, res: ResType) {
         let s = req.body.s as string;
         let type = req.body.type as string;

@@ -134,7 +134,7 @@ const CatalogTree = () => {
             }
         };
 
-        initCatalog();
+        initCatalog()
     }, []);
 
     const handleSelect = (node: NodeModel<CustomCatalogData>) => {

@@ -15,8 +15,8 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
             <DialogStackBody>
                 <DialogStackContent>
                     <div className="relative h-full">
-                        <div className="h-full overflow-y-auto mt-5">
-                            <DropZone galleryRef={galleryRef} />
+                        <div className="h-full overflow-y-auto mt-5 pr-5">
+                            <DropZone galleryRef={galleryRef as RefObject<GalleryRef>} />
                             <Gallery ref={galleryRef} />
                         </div>
                     </div>
