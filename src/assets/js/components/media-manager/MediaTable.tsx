@@ -55,7 +55,7 @@ const MediaTable = ({mediaList, messages}: MediaProps) => {
                 {mediaList.map((media) => (
                     <TableRow key={media.id}>
                         <TableCell className="p-2">
-                            <Image media={media} className="max-w-[75px]"/>
+                            <Image media={media} messages={messages} className="max-w-[75px]"/>
                         </TableCell>
                         <TableCell className="p-2">
                             {media.filename}

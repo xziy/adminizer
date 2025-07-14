@@ -33,8 +33,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 				return res.json({data: manager.getLocales(req)})
 			// case 'addMeta':
 			// 	return await manager.setMeta(req, res)
-			// case 'getMeta':
-			// 	return await manager.getMeta(req, res)
+			case 'getMeta':
+				return await manager.getMeta(req, res)
 			// case 'variant':
 			// 	return await manager.uploadVariant(req, res)
 			// case 'getChildren':

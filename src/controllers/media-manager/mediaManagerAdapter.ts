@@ -65,6 +65,11 @@ export class MediaManagerAdapter {
             "Sizes/Ver": "",
             "Locales": "",
             "Search": "",
+            "Meta data": "",
+            "View": "",
+            "Crop": "",
+            "Variants": "",
+            "Delete": "",
         }
         let messages = obj
         let outMessages: Record<string, string> = {}
