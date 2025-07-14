@@ -13,7 +13,11 @@ export interface GalleryRef {
     pushMediaItem: (item: Media) => void;
 }
 
-const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
+interface GalleryProps {
+    openMeta: (media: Media) => void;
+}
+
+const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta}, ref) => {
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
     const {uploadUrl, group} = useContext(MediaManagerContext);
@@ -31,7 +35,7 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
         const fetchData = async () => {
             const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`);
             setMediaList(data.data);
-            console.log(data.data);
+            // console.log(data.data);
             setIsLoadMore(data.next);
         };
 
@@ -39,7 +43,7 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
             let res = await axios.post(`${uploadUrl}`, {
                 _method: 'getLocales'
             });
-            console.log(res.data.data)
+            // console.log(res.data.data)
             setMessages(res.data.data);
         };
 
@@ -109,8 +113,8 @@ const Gallery = forwardRef<GalleryRef, {}>((_props, ref) => {
             return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
         }
         return viewType === 'tile'
-            ? <Tile mediaList={mediaList} messages={messages}/>
-            : <MediaTable mediaList={mediaList} messages={messages}/>;
+            ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta}/>
+            : <MediaTable mediaList={mediaList} messages={messages} openMeta={openMeta}/>;
     };
 
     return (

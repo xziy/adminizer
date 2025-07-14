@@ -218,7 +218,7 @@ export interface CatalogActions {
 
 
 export interface Media {
-    id: number,
+    id: string,
     title: string,
     mimeType: string,
     variants: Media[]
@@ -244,4 +244,5 @@ export interface MediaMeta {
 export interface MediaProps {
     mediaList: Media[],
     messages: Record<string, string>,
+    openMeta: (media: Media) => void
 }

@@ -2,6 +2,7 @@ import {useContext} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import {Media} from "@/types";
 import {cn} from "@/lib/utils.ts";
+import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu.tsx";
 
 const imagesTypes = new Set([
     "image/gif",
@@ -13,9 +14,11 @@ const imagesTypes = new Set([
 interface ImageProps {
     media: Media,
     className?: string
+    messages: Record<string, string>
+    openMeta: (media: Media) => void
 }
 
-const Image = ({media, className}: ImageProps) => {
+const Image = ({media, className, messages, openMeta}: ImageProps) => {
     const {managerId} = useContext(MediaManagerContext);
 
     const imageUrl = (media: Media) => {
@@ -28,10 +31,30 @@ const Image = ({media, className}: ImageProps) => {
             return `${window.routePrefix}/fileicons/${extension}.svg`;
         }
     }
-    return(
-        <div>
-            <img className={cn('w-full h-full', className)} src={imageUrl((media))} alt=""/>
-        </div>
+
+    return (
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <img className={cn('w-full h-full', className)} src={imageUrl((media))} alt=""/>
+            </ContextMenuTrigger>
+            <ContextMenuContent className="z-[1005]">
+                <ContextMenuItem onClick={()=> openMeta(media)}>
+                    {messages["Meta data"]}
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    {messages["View"]}
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    {messages["Crop"]}
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    {messages["Variants"]}
+                </ContextMenuItem>
+                <ContextMenuItem>
+                    {messages["Delete"]}
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     )
 }
 
