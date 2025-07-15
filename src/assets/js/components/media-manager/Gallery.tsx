@@ -15,9 +15,10 @@ export interface GalleryRef {
 
 interface GalleryProps {
     openMeta: (media: Media) => void;
+    messages: Record<string, string>;
 }
 
-const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta}, ref) => {
+const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, messages}, ref) => {
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
     const {uploadUrl, group} = useContext(MediaManagerContext);
@@ -27,7 +28,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta}, ref) => {
     const [skip, setSkip] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingTab, setPendingTab] = useState<string | null>(null);
-    const [messages, setMessages] = useState<Record<string, string>>({})
+
 
 
     // Загрузка данных при монтировании
@@ -39,18 +40,9 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta}, ref) => {
             setIsLoadMore(data.next);
         };
 
-        const initLocales = async () => {
-            let res = await axios.post(`${uploadUrl}`, {
-                _method: 'getLocales'
-            });
-            // console.log(res.data.data)
-            setMessages(res.data.data);
-        };
-
         const initGallery = async () => {
             try {
                 setLoading(true);
-                await initLocales();
                 await fetchData();
             } catch (error) {
                 console.error('Error initializing media:', error);
@@ -65,6 +57,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta}, ref) => {
 
     // Метод для добавления нового медиа
     const pushMediaItem = (item: Media) => {
+        setSkip(prev => prev + 1);
         setMediaList(prev => [item, ...prev]);
     };
 

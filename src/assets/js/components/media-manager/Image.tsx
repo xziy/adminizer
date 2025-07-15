@@ -32,16 +32,20 @@ const Image = ({media, className, messages, openMeta}: ImageProps) => {
         }
     }
 
+    const openFile = (media: Media) => {
+        window.open(`/public${media.url}`, "_blank")?.focus();
+    }
+
     return (
         <ContextMenu>
             <ContextMenuTrigger>
                 <img className={cn('w-full h-full', className)} src={imageUrl((media))} alt=""/>
             </ContextMenuTrigger>
             <ContextMenuContent className="z-[1005]">
-                <ContextMenuItem onClick={()=> openMeta(media)}>
+                <ContextMenuItem onClick={() => openMeta(media)}>
                     {messages["Meta data"]}
                 </ContextMenuItem>
-                <ContextMenuItem>
+                <ContextMenuItem onClick={() => openFile(media)}>
                     {messages["View"]}
                 </ContextMenuItem>
                 <ContextMenuItem>

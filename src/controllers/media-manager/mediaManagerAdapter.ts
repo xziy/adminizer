@@ -70,6 +70,7 @@ export class MediaManagerAdapter {
             "Crop": "",
             "Variants": "",
             "Delete": "",
+            "Click to upload or drag and drop": "",
         }
         let messages = obj
         let outMessages: Record<string, string> = {}

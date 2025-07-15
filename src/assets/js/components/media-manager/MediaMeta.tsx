@@ -5,16 +5,20 @@ import {Media, MediaMeta} from "@/types";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
+import {LoaderCircle} from "lucide-react";
 
 interface MediaMetaProps {
     media: Media
+    callback: () => void
 }
 
-const MediaMetaForm = ({media}: MediaMetaProps) => {
+const MediaMetaForm = ({media, callback}: MediaMetaProps) => {
     const {uploadUrl} = useContext(MediaManagerContext);
     const [metaItems, setMetaItems] = useState<MediaMeta[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        setMetaItems([]);
         const getMeta = async () => {
             try {
                 const res = await axios.post(uploadUrl, {
@@ -24,6 +28,9 @@ const MediaMetaForm = ({media}: MediaMetaProps) => {
                 setMetaItems(res.data.data)
             } catch (error) {
                 console.error('Error fetching meta:', error);
+            }
+            finally {
+                setIsLoading(false);
             }
         };
 
@@ -35,20 +42,24 @@ const MediaMetaForm = ({media}: MediaMetaProps) => {
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        setIsLoading(true);
         e.preventDefault();
         e.stopPropagation();
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
-        console.log(data)
-        // try {
-        //     await axios.post(uploadUrl, {
-        //         item: media,
-        //         data,
-        //         _method: 'addMeta'
-        //     });
-        // } catch (error) {
-        //     console.error('Error saving meta:', error);
-        // }
+        try {
+            let res = await axios.post(uploadUrl, {
+                item: media,
+                data,
+                _method: 'addMeta'
+            });
+            if (res.data.massage === 'ok') {
+                setIsLoading(false);
+                callback();
+            }
+        } catch (error) {
+            console.error('Error saving meta:', error);
+        }
     };
 
     return (
@@ -61,12 +72,16 @@ const MediaMetaForm = ({media}: MediaMetaProps) => {
                             id={item.key}
                             name={item.key}
                             defaultValue={item.value as string}
+                            disabled={isLoading}
                         />
                     </div>
                 ))}
-            <Button className="mt-8 w-fit" type="submit" form="form-meta">
-                Save
-            </Button>
+            <div className="flex gap-2 items-center mt-8">
+                <Button className="w-fit" type="submit" form="form-meta" disabled={isLoading}>
+                    Save
+                </Button>
+                {isLoading && <LoaderCircle className="size-5 animate-spin"/>}
+            </div>
         </form>
     )
 }
