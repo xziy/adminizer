@@ -5,6 +5,7 @@ import sharp from "sharp";
 import * as fs from 'fs';
 import * as path from 'path';
 import {Adminizer} from "../Adminizer";
+import * as process from "node:process";
 
 interface Meta {
     [key: string]: string;
@@ -207,6 +208,7 @@ export class ImageItem extends File<MediaManagerItem> {
     public async uploadVariant(parent: MediaManagerItem, file: UploaderFile, filename: string, group: string, localeId: string): Promise<MediaManagerItem> {
         const variantBuffer = fs.readFileSync(file.path)
         const {width, height} = sizeOf(variantBuffer)
+
         // TODO refactor CRUD functions for DataAccessor usage
         let item: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
             parent: parent.id,
