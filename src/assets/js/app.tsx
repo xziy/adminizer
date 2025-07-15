@@ -6,6 +6,7 @@ import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 import '@toast-ui/editor/dist/toastui-editor.css';
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
 import "leaflet/dist/leaflet.css";
+import 'cropperjs/dist/cropper.css';
 
 import * as InertiajsReact from '@inertiajs/react'
 import { createRoot } from 'react-dom/client';

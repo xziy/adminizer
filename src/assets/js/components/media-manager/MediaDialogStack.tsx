@@ -6,6 +6,7 @@ import MediaMetaForm from "@/components/media-manager/MediaMeta.tsx";
 import {Media} from "@/types";
 import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
+import ImageCropper from "@/components/media-manager/ImageCropper.tsx";
 
 interface MediaDialogStackProps {
     dialogRef: RefObject<any>;
@@ -15,10 +16,19 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
     const galleryRef = useRef<GalleryRef>(null);
     const [media, setMedia] = useState<Media | null>(null);
     const [messages, setMessages] = useState<Record<string, string>>({})
-    const {uploadUrl} = useContext(MediaManagerContext);
+    const {uploadUrl, group} = useContext(MediaManagerContext);
+    const [popupType, setPopupType] = useState<string>('');
+
 
     const openMeta = (media: Media) => {
         setMedia(media);
+        setPopupType('meta');
+        dialogRef.current?.next()
+    }
+
+    const crop = (media: Media) => {
+        setMedia(media)
+        setPopupType('crop');
         dialogRef.current?.next()
     }
 
@@ -41,17 +51,27 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                     <div className="relative h-full">
                         <div className="h-full overflow-y-auto mt-5 pr-5">
                             <DropZone galleryRef={galleryRef as RefObject<GalleryRef>} messages={messages}/>
-                            <Gallery ref={galleryRef} openMeta={openMeta} messages={messages}/>
+                            <Gallery ref={galleryRef} openMeta={openMeta} messages={messages} crop={crop}/>
                         </div>
                     </div>
                 </DialogStackContent>
                 <DialogStackContent>
                     <div className="relative h-full">
                         <div className="h-full overflow-y-auto mt-5 pr-5">
-                            {media && <MediaMetaForm media={media} callback={() => {
-                                setMedia(null);
-                                dialogRef.current?.prev()
-                            }}/>}
+                            {popupType === 'meta' &&
+                                media &&
+                                <MediaMetaForm media={media} callback={() => {
+                                    setMedia(null);
+                                    dialogRef.current?.prev()
+                                }}/>
+                            }
+                            {popupType === 'crop' &&
+                                media &&
+                                <ImageCropper item={media} callback={() => {
+                                }} uploadUrl={uploadUrl} addVariant={(original, variant) => {
+                                    console.log(original, variant)
+                                }} group={group}/>
+                            }
                         </div>
                     </div>
                 </DialogStackContent>
