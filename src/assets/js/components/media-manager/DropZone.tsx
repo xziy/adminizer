@@ -7,14 +7,15 @@ import {GalleryRef} from "@/components/media-manager/Gallery.tsx";
 
 interface DropZoneProps {
     galleryRef: React.RefObject<GalleryRef>;
+    messages: Record<string, string>
 }
 
-const DropZone: FC<DropZoneProps> = ({galleryRef }) => {
+const DropZone: FC<DropZoneProps> = ({galleryRef, messages}) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [alert, setAlert] = useState<string>('');
 
-    const { uploadUrl, group } = useContext(MediaManagerContext);
+    const {uploadUrl, group} = useContext(MediaManagerContext);
 
     const handleClose = () => {
         setAlert('')
@@ -60,11 +61,9 @@ const DropZone: FC<DropZoneProps> = ({galleryRef }) => {
             if (res.data.msg === "success") {
                 setLoading(false);
                 galleryRef.current?.pushMediaItem(res.data.data[0]);
-                // console.log(res.data.data[0]);
-                return; // Успешная загрузка
+                return;
             }
 
-            // Обработка ошибки от сервера (например, когда msg === "error")
             setLoading(false);
             setAlert(res.data.error || "Upload failed");
 
@@ -72,22 +71,17 @@ const DropZone: FC<DropZoneProps> = ({galleryRef }) => {
             setLoading(false);
 
             if (axios.isAxiosError(error)) {
-                // Обработка ошибок Axios (включая 400 и другие HTTP ошибки)
                 if (error.response) {
-                    // Сервер ответил с кодом ошибки (4xx, 5xx)
                     const errorMessage = error.response.data?.error ||
                         error.response.data?.message ||
                         error.response.statusText;
                     setAlert(errorMessage || `Error: ${error.response.status}`);
                 } else if (error.request) {
-                    // Запрос был сделан, но ответ не получен
                     setAlert("No response from server");
                 } else {
-                    // Ошибка при настройке запроса
                     setAlert("Request setup error");
                 }
             } else {
-                // Не Axios ошибка
                 setAlert("Error uploading file");
                 console.error(error);
             }
@@ -114,48 +108,56 @@ const DropZone: FC<DropZoneProps> = ({galleryRef }) => {
     }, []);
 
     return (
-        <div className="mt-8">
-            <div>
-                {alert &&
-                    <div className="bg-red-600 rounded font-medium mb-4">
-                        <div>
-                            <div className="flex gap-2 p-2 text-white justify-between">
-                                <div className="flex gap-2">
-                                    <TriangleAlert/>
-                                    <span className="alert-text">{alert}</span>
-                                </div>
-                                <div onClick={handleClose}
-                                     className="cursor-pointer hover:opacity-80 transition-opacity">
-                                    <XIcon/>
-                                </div>
-                            </div>
+        <div className="mt-2">
+            {alert &&
+                <div className="bg-red-600 rounded font-medium mb-4">
+                    <div className="flex gap-2 p-2 text-white justify-between">
+                        <div className="flex gap-2">
+                            <TriangleAlert/>
+                            <span className="alert-text">{alert}</span>
+                        </div>
+                        <div onClick={handleClose}
+                             className="cursor-pointer hover:opacity-80 transition-opacity">
+                            <XIcon/>
                         </div>
                     </div>
-                }
-            </div>
-            <div className={`h-[106px] relative transition`}>
+                </div>
+            }
+            <div className="relative">
                 <div
                     onDrop={onDrop}
                     onDragOver={(e) => e.preventDefault()}
-                    className={`${styles.DropZone} rounded-md flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors h-full ${loading ? 'opacity-30' : ''}`}
-                    onClick={() => fileInputRef.current?.click()}
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Load files"
+                    className={`flex items-center justify-center w-full ${loading ? 'opacity-30' : ''}`}
                 >
-                    <span className="text-sm text-[#C6BBBB]">dropzone</span>
+                    <label
+                        htmlFor="dropzone-file"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                      d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                            </svg>
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold">{messages["Click to upload or drag and drop"]}</span>
+                            </p>
+                        </div>
+                        <input
+                            id="dropzone-file"
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={onLoad}
+                            className="hidden"
+                            multiple
+                            accept="*"
+                        />
+                    </label>
                 </div>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={onLoad}
-                    hidden
-                    multiple
-                    accept="*"
-                />
                 {loading && (
                     <span
-                        className={`${styles.Loader} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 border-3 border-solid border-gray-200 border-t-blue-500 rounded-full animate-spin`}></span>
+                        className={`${styles.Loader} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 border-3 border-solid border-gray-200 border-t-blue-500 rounded-full animate-spin`}
+                    ></span>
                 )}
             </div>
         </div>
