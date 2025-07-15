@@ -4,21 +4,22 @@ import {Media} from "@/types";
 import {cn} from "@/lib/utils.ts";
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu.tsx";
 
-const imagesTypes = new Set([
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-]);
+// const imagesTypes = new Set([
+//     "image/gif",
+//     "image/jpeg",
+//     "image/png",
+//     "image/webp",
+// ]);
 
 interface ImageProps {
     media: Media,
     className?: string
     messages: Record<string, string>
     openMeta: (media: Media) => void
+    crop: (media: Media) => void
 }
 
-const Image = ({media, className, messages, openMeta}: ImageProps) => {
+const Image = ({media, className, messages, openMeta, crop}: ImageProps) => {
     const {managerId} = useContext(MediaManagerContext);
 
     const imageUrl = (media: Media) => {
@@ -48,7 +49,7 @@ const Image = ({media, className, messages, openMeta}: ImageProps) => {
                 <ContextMenuItem onClick={() => openFile(media)}>
                     {messages["View"]}
                 </ContextMenuItem>
-                <ContextMenuItem>
+                <ContextMenuItem onClick={() => crop(media)}>
                     {messages["Crop"]}
                 </ContextMenuItem>
                 <ContextMenuItem>
