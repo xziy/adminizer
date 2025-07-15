@@ -28,6 +28,9 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 		if (req.path.endsWith('/upload')) {
 			return await manager.upload(req, res);
 		}
+		if (req.path.endsWith('/upload-variant')) {
+			return await manager.uploadVariant(req, res)
+		}
 		switch (req.body._method) {
 			case 'getLocales':
 				return res.json({data: manager.getLocales(req)})
@@ -35,8 +38,6 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 				return await manager.setMeta(req, res)
 			case 'getMeta':
 				return await manager.getMeta(req, res)
-			// case 'variant':
-			// 	return await manager.uploadVariant(req, res)
 			// case 'getChildren':
 			// 	return await manager.getVariants(req, res)
 			// case 'search':

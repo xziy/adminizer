@@ -100,6 +100,10 @@ export default class Router {
 			`${adminizer.config.routePrefix}/media-manager-uploader/:id/upload`,
 			adminizer.policyManager.bindPolicies(policies, mediaManagerController)
 		);
+		adminizer.app.post(
+			`${adminizer.config.routePrefix}/media-manager-uploader/:id/upload-variant`,
+			adminizer.policyManager.bindPolicies(policies, mediaManagerController)
+		);
 		adminizer.app.all(
 			`${adminizer.config.routePrefix}/media-manager-uploader/:id`,
 			adminizer.policyManager.bindPolicies(policies, mediaManagerController)

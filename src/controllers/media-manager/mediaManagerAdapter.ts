@@ -100,81 +100,101 @@ export class MediaManagerAdapter {
         });
     }
 
-    // public async uploadVariant(req: ReqType, res: ResType): Promise<void> {
-    //     const item: MediaManagerItem = JSON.parse(req.body.item);
-    //     let filename = randomFileName(req.body.name, "", true);
-    //     const group = req.body.group as string;
-    //     const isCropped = req.body.isCropped;
-    //
-    //     if (!isCropped) {
-    //         const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
-    //
-    //         const uploadFile = req.file;
-    //         const byteCount = uploadFile.size;
-    //         const settings = {
-    //             allowedTypes: config?.allowMIME ?? [],
-    //             maxBytes: config?.maxByteSize ?? 2 * 1024 * 1024, // 2 MB
-    //         };
-    //
-    //         // Check file type
-    //         if (settings.allowedTypes.length && !settings.allowedTypes.includes(uploadFile.mimetype)) {
-    //             res.status(400).send({msg: `Wrong filetype (${uploadFile.mimetype}).`});
-    //             return
-    //         }
-    //
-    //         // Check file size
-    //         if (byteCount > settings.maxBytes) {
-    //             res.status(400).send({msg: `File size exceeds the limit of ${settings.maxBytes / 1024 / 1024} MB.`});
-    //             return
-    //         }
-    //     }
-    //
-    //     // Proceed with file upload after validation
-    //     req.upload({
-    //         destination: this.manager.dir,
-    //         filename: () => filename,
-    //     }).single("file")(req, res, async (err) => {
-    //         if (err) {
-    //             return res.status(500).send({error: err.message || 'Internal Server Error'});
-    //         }
-    //
-    //         try {
-    //             const result = await this.manager.uploadVariant(
-    //                 item,
-    //                 req.file,
-    //                 filename,
-    //                 group,
-    //                 req.body.localeId
-    //             );
-    //
-    //             return res.send({
-    //                 msg: "success",
-    //                 data: result,
-    //             });
-    //         } catch (e) {
-    //             console.error(e);
-    //             return res.status(500).send({error: e.message || 'Internal Server Error'});
-    //         }
-    //     });
-    // }
-
-    public async upload(req: ReqType, res: ResType) {
-        const config = req.adminizer.config.mediamanager || null;
-        const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
-
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, {recursive: true});
-        }
-
-        const storage = multer.diskStorage({
+    protected setStorage(outputDir: string, isCropped = false) {
+        return multer.diskStorage({
             destination: (req, file, cb) => {
                 cb(null, outputDir);
             },
             filename: (req, file, cb) => {
-                const filename = randomFileName(req.body.name.replace(" ", "_"), "", true);
+                const filename = !isCropped ? randomFileName(req.body.name.replace(" ", "_"), "", true) : req.body.name;
                 cb(null, filename);
             }
         });
+    }
+
+    protected checkDirectory(): string {
+        const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, {recursive: true});
+        }
+        return outputDir
+    }
+
+    public async uploadVariant(req: ReqType, res: ResType): Promise<void> {
+        const isCropped = req.query.isCropped === "true";
+
+        const config: MediaManagerConfig | null = req.adminizer.config.mediamanager || null;
+
+        const storage = this.setStorage(this.checkDirectory(), isCropped);
+
+        const upload = multer({
+            storage: storage,
+            limits: {
+                fileSize: !isCropped ? config?.maxByteSize ?? 5 * 1024 * 1024 : 5 * 1024 * 1024,
+            },
+            fileFilter: (req: ReqType, file, cb) => {
+                if (!isCropped) {
+                    if (this.manager.id === "default" && config?.allowMIME?.length) {
+                        const isAllowed = this.checkMIMEType(config.allowMIME, file.mimetype);
+                        if (!isAllowed) {
+                            req.allowedFileTypes = config.allowMIME;
+                            req.uploadedFileType = file.mimetype;
+                            return cb(null, false);
+                        }
+                    }
+                }
+                cb(null, true);
+            }
+        }).single("file");
+
+        upload(req, res, async (err) => {
+            try {
+                if (err) {
+                    let errorMessage = err.message;
+                    if (err.code === 'LIMIT_FILE_SIZE') {
+                        const maxSizeMB = (config?.maxByteSize ?? 2 * 1024 * 1024) / (1024 * 1024);
+                        errorMessage = `${req.i18n.__('The file exceeds the size limit')} ${maxSizeMB} MB`;
+                    }
+
+                    return res.status(400).json({msg: "error", error: errorMessage});
+                }
+
+                if (!req.file && !isCropped) {
+                    const allowedTypes = req.allowedFileTypes?.join(', ') || req.i18n.__('acceptable types are not specified');
+                    const fileType = req.uploadedFileType || req.i18n.__('unknown type');
+                    return res.status(400).json({
+                        msg: "error",
+                        error: `${req.i18n.__('Files with the type')} ${fileType} ${req.i18n.__('are not supported.')} ` +
+                            `${req.i18n.__('Supported types')}: ${allowedTypes}`
+                    });
+                }
+
+                const item: MediaManagerItem = JSON.parse(req.body.item);
+                const group = req.body.group as string;
+
+                const result = await this.manager.uploadVariant(
+                    item,
+                    req.file,
+                    req.file.filename,
+                    group,
+                    req.body.localeId
+                );
+
+                return res.send({
+                    msg: "success",
+                    data: result,
+                });
+            } catch (e) {
+                console.error(e);
+                return res.status(500).send({error: e.message || 'Upload failed'});
+            }
+        });
+    }
+
+    public async upload(req: ReqType, res: ResType) {
+        const config = req.adminizer.config.mediamanager || null;
+
+        const storage = this.setStorage(this.checkDirectory());
 
         const upload = multer({
             storage: storage,
@@ -203,7 +223,7 @@ export class MediaManagerAdapter {
                         errorMessage = `${req.i18n.__('The file exceeds the size limit')} ${maxSizeMB} MB`;
                     }
 
-                    return res.status(400).json({ msg: "error", error: errorMessage });
+                    return res.status(400).json({msg: "error", error: errorMessage});
                 }
 
                 if (!req.file) {

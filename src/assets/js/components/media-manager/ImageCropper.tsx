@@ -1,6 +1,20 @@
 import {useRef, useState} from "react";
 import Cropper from "react-cropper";
-import type { ReactCropperElement, ReactCropperProps } from 'react-cropper';
+import type {ReactCropperElement, ReactCropperProps} from 'react-cropper';
+import {Button} from "@/components/ui/button.tsx";
+import {ArrowDown, ArrowLeft, ArrowRight, ArrowUp} from "lucide-react";
+import {Label} from "@/components/ui/label.tsx";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog.tsx";
+import axios from "axios";
 
 interface ImageCropperProps {
     item: {
@@ -22,8 +36,6 @@ const ImageCropper = ({
                           group,
                       }: ImageCropperProps) => {
     const cropperRef = useRef<ReactCropperElement>(null);
-    const previewRef = useRef<HTMLImageElement>(null);
-    const [previewShow, setPreviewShow] = useState(false);
     const [convertWebp, setConvertWebp] = useState(false);
     const [convertJpeg, setConvertJpeg] = useState(false);
     const [coordinates, setCoordinates] = useState({
@@ -32,6 +44,8 @@ const ImageCropper = ({
         width: 0,
         height: 0,
     });
+    const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+
 
     // Аналогичные настройки Cropper.js
     const cropperOptions: ReactCropperProps = {
@@ -76,11 +90,8 @@ const ImageCropper = ({
     };
 
     const preview = () => {
-        if (cropperRef.current && previewRef.current) {
-            const canvas = cropperRef.current.cropper.getCroppedCanvas();
-            previewRef.current.src = canvas.toDataURL(item.mimeType, 1);
-            setPreviewShow(true);
-        }
+        const canvas = cropperRef.current?.cropper.getCroppedCanvas();
+        setPreviewSrc(canvas?.toDataURL(item.mimeType, 1) ?? "");
     };
 
     const save = async () => {
@@ -108,20 +119,19 @@ const ImageCropper = ({
                 form.append("group", group);
                 form.append("isCropped", "true");
                 form.append("item", JSON.stringify(item));
-                form.append("_method", "variant");
                 form.append("file", blob);
 
                 try {
-                    const response = await fetch(uploadUrl, {
-                        method: "POST",
-                        body: form,
+                    const res = await axios.post(`${uploadUrl}/upload-variant?isCropped="true"`, form, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
                     });
-                    const data = await response.json();
-
-                    if (data.msg === "success") {
-                        addVariant(item, data.data);
-                        callback();
-                    }
+                    console.log(res.data.msg)
+                    // if (data.msg === "success") {
+                    //     addVariant(item, data.data);
+                    //     callback();
+                    // }
                 } catch (error) {
                     console.error("Upload error:", error);
                 }
@@ -133,19 +143,40 @@ const ImageCropper = ({
 
     // Управление кнопками перемещения/масштабирования
     const move = (dx: number, dy: number) => {
-        cropperRef.current?.cropper.move(dx, dy);
+        if (!cropperRef.current?.cropper) return;
+
+        // Получаем текущие координаты
+        const currentData = cropperRef.current.cropper.getData();
+
+        // Вычисляем новые координаты
+        const newX = currentData.x + dx;
+        const newY = currentData.y + dy;
+
+        // Применяем изменения
+        cropperRef.current.cropper.setData({
+            ...currentData,
+            x: newX,
+            y: newY
+        });
     };
 
     const flip = (axis: "x" | "y") => {
-        if (axis === "x") cropperRef.current?.cropper.scaleX(-1);
-        else cropperRef.current?.cropper.scaleY(-1);
+        if (!cropperRef.current?.cropper) return;
+        const currentScaleX = cropperRef.current.cropper.getData().scaleX || 1;
+        const currentScaleY = cropperRef.current.cropper.getData().scaleY || 1;
+
+        if (axis === "x") {
+            cropperRef.current.cropper.scaleX(currentScaleX * -1);
+        } else {
+            cropperRef.current.cropper.scaleY(currentScaleY * -1);
+        }
     };
 
     return (
         <div>
             <Cropper
                 src={`/public${item.url}`}
-                style={{ height: 540, width: "100%" }}
+                style={{height: 540, width: "100%"}}
                 initialAspectRatio={1}
                 ref={cropperRef}
                 {...cropperOptions}
@@ -154,10 +185,9 @@ const ImageCropper = ({
             {/* Координаты */}
             <div className="grid grid-cols-4 gap-2 mt-4">
                 {Object.entries(coordinates).map(([key, value]) => (
-                    <div key={key} className="flex flex-col gap-2">
-                        <label className="admin-panel__title capitalize">{key}</label>
-                        <input
-                            className="text-input w-full h-[20px]"
+                    <div key={key} className="flex flex-col items-center gap-2">
+                        <Label className="capitalize">{key}</Label>
+                        <Input
                             type="number"
                             value={value}
                             onChange={(e) => {
@@ -175,103 +205,67 @@ const ImageCropper = ({
 
             {/* Кнопки управления */}
             <div className="grid grid-cols-4 gap-2 mt-4">
-                <button
-                    type="button"
-                    className="flex justify-center items-center text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => move(0, -20)}
-                >
-                    ↑
-                </button>
-                <button
-                    type="button"
-                    className="flex justify-center items-center text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => move(0, 20)}
-                >
-                    ↓
-                </button>
-                <button
-                    type="button"
-                    className="flex justify-center items-center text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => move(-20, 0)}
-                >
-                    ←
-                </button>
-                <button
-                    type="button"
-                    className="flex justify-center items-center text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => move(20, 0)}
-                >
-                    →
-                </button>
+                <Button variant="outline" onClick={() => move(0, -20)}>
+                    <ArrowUp/>
+                </Button>
+                <Button variant="outline" onClick={() => move(0, 20)}>
+                    <ArrowDown/>
+                </Button>
+                <Button variant="outline" onClick={() => move(-20, 0)}>
+                    <ArrowLeft/>
+                </Button>
+                <Button variant="outline" onClick={() => move(20, 0)}>
+                    <ArrowRight/>
+                </Button>
             </div>
 
             <div className="grid grid-cols-4 gap-2 mt-4">
-                <button
-                    type="button"
-                    className="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => flip("x")}
-                >
+                <Button variant="outline" onClick={() => flip("x")}>
                     Flip X
-                </button>
-                <button
-                    type="button"
-                    className="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded text-sm px-5 py-2.5"
-                    onClick={() => flip("y")}
-                >
+                </Button>
+                <Button variant="outline" onClick={() => flip("y")}>
                     Flip Y
-                </button>
-                <button
-                    className="btn btn-back btn-text"
-                    onClick={preview}
-                >
-                    Preview
-                </button>
-                <button
-                    className="btn btn-green btn-text"
-                    onClick={save}
-                >
-                    Save
-                </button>
+                </Button>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" onClick={preview}>Preview</Button>
+                    </DialogTrigger>
+                    <DialogContent className="z-[1011]">
+                        <DialogHeader>
+                            <DialogTitle>Preview</DialogTitle>
+                        </DialogHeader>
+                        <img src={previewSrc ?? ''} alt="Preview" autoFocus={true}/>
+                    </DialogContent>
+                </Dialog>
+                {/*<Button variant="outline" onClick={preview}>Preview</Button>*/}
+                <Button variant="default" onClick={save}>Save</Button>
             </div>
 
             {/* Форматы */}
             <div className="grid grid-cols-4 gap-2 mt-4">
-                <label className="checkbox flex items-center gap-2">
-                    <input
-                        type="checkbox"
+                <div className="flex gap-2 items-center">
+                    <Checkbox
+                        id="webp-conv"
                         checked={convertWebp}
-                        onChange={() => {
+                        onCheckedChange={(value) => {
                             setConvertWebp(!convertWebp);
-                            if (convertWebp) setConvertJpeg(false);
+                            if (value) setConvertJpeg(false);
                         }}
                     />
-                    Convert WebP
-                </label>
-                <label className="checkbox flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={convertJpeg}
-                        onChange={() => {
-                            setConvertJpeg(!convertJpeg);
-                            if (convertJpeg) setConvertWebp(false);
-                        }}
-                    />
-                    Convert Jpeg
-                </label>
-            </div>
-
-            {/* Превью */}
-            {previewShow && (
-                <div className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center">
-                    <button
-                        className="absolute top-4 right-4 text-white text-2xl"
-                        onClick={() => setPreviewShow(false)}
-                    >
-                        ×
-                    </button>
-                    <img ref={previewRef} alt="Preview"/>
+                    <Label className="cursor-pointer" htmlFor="webp-conv">Convert WebP</Label>
                 </div>
-            )}
+                <div className="flex gap-2 items-center">
+                    <Checkbox
+                        id="jpeg-conv"
+                        checked={convertJpeg}
+                        onCheckedChange={(value) => {
+                            setConvertJpeg(!convertJpeg);
+                            if (value) setConvertWebp(false);
+                        }}
+                    />
+                    <Label className="cursor-pointer" htmlFor="jpeg-conv">Convert Jpeg</Label>
+                </div>
+            </div>
         </div>
     );
 };

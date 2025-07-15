@@ -45,7 +45,7 @@ const DeleteModal = forwardRef<HTMLButtonElement, DeleteModalProps>((
                     {btnTitle}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] z-[1011]">
                 <DialogHeader>
                     <DialogTitle>Delete</DialogTitle>
                     <div className="mt-2 text-base">
