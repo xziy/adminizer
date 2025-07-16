@@ -17,7 +17,7 @@ const imagesTypes = new Set([
     "image/webp",
 ]);
 
-const MediaTable = ({mediaList, messages, openMeta, crop, openVariant}: MediaProps) => {
+const MediaTable = ({mediaList, messages, openMeta, crop, openVariant, destroy}: MediaProps) => {
     const getDate = (t: string) => {
         let date = new Date(t);
         return date.toLocaleDateString();
@@ -45,7 +45,7 @@ const MediaTable = ({mediaList, messages, openMeta, crop, openVariant}: MediaPro
                     <TableHead className="p-2 text-left">{messages["Type"]}</TableHead>
                     <TableHead className="p-2 text-left">{messages["Size (orig.)"]}</TableHead>
                     <TableHead className="p-2 text-left">{messages["W x H (orig.)"]}</TableHead>
-                    <TableHead className="p-2 text-left">{messages["Sizes/Ver"]}</TableHead>
+                    <TableHead className="p-2 text-left">{messages["Sizes"]}</TableHead>
                     <TableHead className="p-2 text-left">{messages["Locales"]}</TableHead>
                 </TableRow>
             </TableHeader>
@@ -53,7 +53,7 @@ const MediaTable = ({mediaList, messages, openMeta, crop, openVariant}: MediaPro
                 {mediaList.map((media) => (
                     <TableRow key={media.id}>
                         <TableCell className="p-2">
-                            <Image media={media} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} className="max-w-[75px]"/>
+                            <Image media={media} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} destroy={destroy} className="max-w-[75px]"/>
                         </TableCell>
                         <TableCell className="p-2">
                             {media.filename}

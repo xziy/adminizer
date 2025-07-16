@@ -1,7 +1,7 @@
 import {Media, MediaMeta} from "@/types";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Label} from "@/components/ui/label.tsx";
-import React, {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {Input} from "@/components/ui/input.tsx";
 import VariantDropZone from "@/components/media-manager/VariantDropZone.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";

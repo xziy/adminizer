@@ -63,7 +63,7 @@ export class MediaManagerAdapter {
             "Size (orig.)": "",
             "W x H (orig.)": "",
             "W x H": "",
-            "Sizes/Ver": "",
+            "Sizes": "",
             "Locales": "",
             "Search": "",
             "Meta data": "",
@@ -83,6 +83,8 @@ export class MediaManagerAdapter {
             "Tag": "",
             "There are no loaded variants": "",
             "Actions": "",
+            "Yes": "",
+            "No": ""
         };
 
         return Object.fromEntries(

@@ -247,4 +247,5 @@ export interface MediaProps {
     openMeta: (media: Media) => void
     crop: (media: Media) => void
     openVariant: (media: Media) => void
+    destroy: (media: Media) => void
 }
