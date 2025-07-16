@@ -246,4 +246,5 @@ export interface MediaProps {
     messages: Record<string, string>,
     openMeta: (media: Media) => void
     crop: (media: Media) => void
+    openVariant: (media: Media) => void
 }

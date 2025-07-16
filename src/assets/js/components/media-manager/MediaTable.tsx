@@ -17,7 +17,7 @@ const imagesTypes = new Set([
     "image/webp",
 ]);
 
-const MediaTable = ({mediaList, messages, openMeta, crop}: MediaProps) => {
+const MediaTable = ({mediaList, messages, openMeta, crop, openVariant}: MediaProps) => {
     const getDate = (t: string) => {
         let date = new Date(t);
         return date.toLocaleDateString();
@@ -53,7 +53,7 @@ const MediaTable = ({mediaList, messages, openMeta, crop}: MediaProps) => {
                 {mediaList.map((media) => (
                     <TableRow key={media.id}>
                         <TableCell className="p-2">
-                            <Image media={media} messages={messages} openMeta={openMeta} crop={crop} className="max-w-[75px]"/>
+                            <Image media={media} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} className="max-w-[75px]"/>
                         </TableCell>
                         <TableCell className="p-2">
                             {media.filename}

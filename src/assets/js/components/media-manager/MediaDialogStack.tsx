@@ -7,6 +7,7 @@ import {Media} from "@/types";
 import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import ImageCropper from "@/components/media-manager/ImageCropper.tsx";
+import MediaVariants from "@/components/media-manager/MediaVariants.tsx";
 
 interface MediaDialogStackProps {
     dialogRef: RefObject<any>;
@@ -32,6 +33,12 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
         dialogRef.current?.next()
     }
 
+    const openVariant = (media: Media) => {
+        setMedia(media)
+        setPopupType('variant')
+        dialogRef.current?.next()
+    }
+
     useEffect(() => {
         const initLocales = async () => {
             let res = await axios.post(`${uploadUrl}`, {
@@ -50,8 +57,20 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                 <DialogStackContent>
                     <div className="relative h-full">
                         <div className="h-full overflow-y-auto mt-5 pr-5">
-                            <DropZone galleryRef={galleryRef as RefObject<GalleryRef>} messages={messages}/>
-                            <Gallery ref={galleryRef} openMeta={openMeta} messages={messages} crop={crop}/>
+                            <DropZone
+                                key="main-dropzone"
+                                messages={messages}
+                                callback={(media) => {
+                                    galleryRef.current?.pushMediaItem(media)
+                                }}
+                            />
+                            <Gallery
+                                ref={galleryRef}
+                                openMeta={openMeta}
+                                messages={messages}
+                                crop={crop}
+                                openVariant={openVariant}
+                            />
                         </div>
                     </div>
                 </DialogStackContent>
@@ -69,11 +88,16 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                                 media &&
                                 <ImageCropper
                                     item={media}
+                                    messages={messages}
                                     callback={(media, newVariant) => {
                                         galleryRef.current?.addVariant(media, newVariant);
                                         dialogRef.current?.prev()
                                     }}
                                     uploadUrl={uploadUrl} group={group}/>
+                            }
+                            {popupType === 'variant' &&
+                                media &&
+                                <MediaVariants media={media} messages={messages}/>
                             }
                         </div>
                     </div>

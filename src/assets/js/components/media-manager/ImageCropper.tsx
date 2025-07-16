@@ -21,6 +21,7 @@ interface ImageCropperProps {
     callback: (media: Media, newVariant: Media) => void;
     uploadUrl: string;
     group: string;
+    messages: Record<string, string>
 }
 
 const ImageCropper = ({
@@ -28,6 +29,7 @@ const ImageCropper = ({
                           callback,
                           uploadUrl,
                           group,
+                          messages
                       }: ImageCropperProps) => {
     const cropperRef = useRef<ReactCropperElement>(null);
     const [convertWebp, setConvertWebp] = useState(false);
@@ -214,14 +216,14 @@ const ImageCropper = ({
 
             <div className="grid grid-cols-4 gap-2 mt-4">
                 <Button variant="outline" onClick={() => flip("x")}>
-                    Flip X
+                    {messages["Flip X"]}
                 </Button>
                 <Button variant="outline" onClick={() => flip("y")}>
-                    Flip Y
+                    {messages["Flip Y"]}
                 </Button>
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="outline" onClick={preview}>Preview</Button>
+                        <Button variant="outline" onClick={preview}>{messages["Preview"]}</Button>
                     </DialogTrigger>
                     <DialogContent className="z-[1011]">
                         <DialogHeader>
@@ -230,9 +232,8 @@ const ImageCropper = ({
                         <img src={previewSrc ?? ''} alt="Preview" autoFocus={true}/>
                     </DialogContent>
                 </Dialog>
-                {/*<Button variant="outline" onClick={preview}>Preview</Button>*/}
                 <div className="flex gap-2 items-center w-full">
-                <Button variant="default" onClick={save} disabled={isLoading} className="flex-3/4">Save</Button>
+                    <Button variant="default" onClick={save} disabled={isLoading} className="flex-3/4">{messages["Save"]}</Button>
                     {isLoading && <LoaderCircle className="size-5 animate-spin"/>}
                 </div>
             </div>
@@ -248,7 +249,7 @@ const ImageCropper = ({
                             if (value) setConvertJpeg(false);
                         }}
                     />
-                    <Label className="cursor-pointer" htmlFor="webp-conv">Convert WebP</Label>
+                    <Label className="cursor-pointer" htmlFor="webp-conv">{messages["Convert WebP"]}</Label>
                 </div>
                 <div className="flex gap-2 items-center">
                     <Checkbox
@@ -259,7 +260,7 @@ const ImageCropper = ({
                             if (value) setConvertWebp(false);
                         }}
                     />
-                    <Label className="cursor-pointer" htmlFor="jpeg-conv">Convert Jpeg</Label>
+                    <Label className="cursor-pointer" htmlFor="jpeg-conv">{messages["Convert Jpeg"]}</Label>
                 </div>
             </div>
         </div>

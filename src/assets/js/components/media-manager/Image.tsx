@@ -17,9 +17,10 @@ interface ImageProps {
     messages: Record<string, string>
     openMeta: (media: Media) => void
     crop: (media: Media) => void
+    openVariant: (media: Media) => void
 }
 
-const Image = ({media, className, messages, openMeta, crop}: ImageProps) => {
+const Image = ({media, className, messages, openMeta, crop, openVariant}: ImageProps) => {
     const {managerId} = useContext(MediaManagerContext);
 
     const imageUrl = (media: Media) => {
@@ -54,7 +55,7 @@ const Image = ({media, className, messages, openMeta, crop}: ImageProps) => {
                         {messages["Crop"]}
                     </ContextMenuItem>
                 }
-                <ContextMenuItem>
+                <ContextMenuItem onClick={() => openVariant(media)}>
                     {messages["Variants"]}
                 </ContextMenuItem>
                 <ContextMenuItem>
