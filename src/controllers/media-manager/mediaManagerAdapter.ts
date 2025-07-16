@@ -82,6 +82,7 @@ export class MediaManagerAdapter {
             "Locale": "",
             "Tag": "",
             "There are no loaded variants": "",
+            "Actions": "",
         };
 
         return Object.fromEntries(

@@ -5,6 +5,9 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	const method = req.method.toUpperCase();
 	let id = req.params.id ? req.params.id : '';
 
+	const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+	await delay(1000);
+
 	if (req.adminizer.config.auth.enable) {
 		if (!req.user) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
@@ -19,8 +22,6 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	const _manager = MediaManagerHandler.get(id)
 	const manager = new MediaManagerAdapter(_manager)
 	if (method === 'GET') {
-		// const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-		// await delay(500);
 		return await manager.get(req, res)
 	}
 
@@ -38,8 +39,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 				return await manager.setMeta(req, res)
 			case 'getMeta':
 				return await manager.getMeta(req, res)
-			// case 'getChildren':
-			// 	return await manager.getVariants(req, res)
+			case 'getChildren':
+				return await manager.getVariants(req, res)
 			// case 'search':
 			// 	return await manager.search(req, res)
 		}

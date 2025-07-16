@@ -1,5 +1,5 @@
 import {Media} from "@/types";
-import React, {useContext, useEffect, useRef, useState} from "react";
+import React, {useContext, useRef, useState} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import axios from "axios";
 import {TriangleAlert, XIcon} from "lucide-react";
@@ -46,51 +46,65 @@ const VariantDropZone = ({callback, messages, media, localeId}: VariantDropZoneP
     };
 
     const upload = async (file: File) => {
-        setLoading(false);
-        console.log(localeId, media, group)
-        // try {
-        //     const form = new FormData();
-        //     form.append("name", file.name);
-        //     form.append("group", group);
-        //     form.append("item", JSON.stringify(media));
-        //     form.append("localeId", localeId);
-        //     form.append("file", file);
-        //
-        //     const res = await axios.post(`${uploadUrl}/upload-variant`, form, {
-        //         headers: {
-        //             'Content-Type': 'multipart/form-data'
-        //         }
-        //     });
-        //
-        //     if (res.data.msg === "success") {
-        //         setLoading(false);
-        //         callback(res.data.data[0]);
-        //         return;
-        //     }
-        //
-        //     setLoading(false);
-        //     setAlert(res.data.error || "Upload failed");
-        //
-        // } catch (error) {
-        //     setLoading(false);
-        //
-        //     if (axios.isAxiosError(error)) {
-        //         if (error.response) {
-        //             const errorMessage = error.response.data?.error ||
-        //                 error.response.data?.message ||
-        //                 error.response.statusText;
-        //             setAlert(errorMessage || `Error: ${error.response.status}`);
-        //         } else if (error.request) {
-        //             setAlert("No response from server");
-        //         } else {
-        //             setAlert("Request setup error");
-        //         }
-        //     } else {
-        //         setAlert("Error uploading file");
-        //         console.error(error);
-        //     }
-        // }
+        try {
+            const form = new FormData();
+            form.append("name", file.name);
+            form.append("group", group);
+            form.append("item", JSON.stringify(media));
+            form.append("localeId", localeId);
+            form.append("file", file);
+
+            const res = await axios.post(`${uploadUrl}/upload-variant`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (res.data.msg === "success") {
+                setLoading(false);
+                callback(res.data.data);
+                return;
+            }
+
+            setLoading(false);
+            setAlert(res.data.error || "Upload failed");
+
+        } catch (error) {
+            setLoading(false);
+
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    const errorMessage = error.response.data?.error ||
+                        error.response.data?.message ||
+                        error.response.statusText;
+                    setAlert(errorMessage || `Error: ${error.response.status}`);
+                } else if (error.request) {
+                    setAlert("No response from server");
+                } else {
+                    setAlert("Request setup error");
+                }
+            } else {
+                setAlert("Error uploading file");
+                console.error(error);
+            }
+        }
     };
+
+    const getAllowedMimeTypes = () => {
+        if (!media?.mimeType) return '*';
+
+        const mainType = media.mimeType.split('/')[0];
+
+        const typeMap: Record<string, string> = {
+            'image': 'image/*',
+            'video': 'video/*',
+            'application': 'application/*',
+            'text': 'text/*',
+        };
+
+        return typeMap[mainType] || '*';
+    };
+
 
     return (
         <div className="mt-2">
@@ -136,7 +150,7 @@ const VariantDropZone = ({callback, messages, media, localeId}: VariantDropZoneP
                             onChange={onLoad}
                             className="hidden"
                             multiple
-                            accept="*"
+                            accept={getAllowedMimeTypes()}
                         />
                     </label>
                 </div>
