@@ -67,10 +67,13 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                             }
                             {popupType === 'crop' &&
                                 media &&
-                                <ImageCropper item={media} callback={() => {
-                                }} uploadUrl={uploadUrl} addVariant={(original, variant) => {
-                                    console.log(original, variant)
-                                }} group={group}/>
+                                <ImageCropper
+                                    item={media}
+                                    callback={(media, newVariant) => {
+                                        galleryRef.current?.addVariant(media, newVariant);
+                                        dialogRef.current?.prev()
+                                    }}
+                                    uploadUrl={uploadUrl} group={group}/>
                             }
                         </div>
                     </div>

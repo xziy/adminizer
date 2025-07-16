@@ -2,29 +2,24 @@ import {useRef, useState} from "react";
 import Cropper from "react-cropper";
 import type {ReactCropperElement, ReactCropperProps} from 'react-cropper';
 import {Button} from "@/components/ui/button.tsx";
-import {ArrowDown, ArrowLeft, ArrowRight, ArrowUp} from "lucide-react";
+import {ArrowDown, ArrowLeft, ArrowRight, ArrowUp, LoaderCircle} from "lucide-react";
 import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog.tsx";
 import axios from "axios";
+import {Media} from "@/types";
 
 interface ImageCropperProps {
-    item: {
-        url: string;
-        mimeType: string;
-        filename: string;
-    };
-    callback: () => void;
+    item: Media;
+    callback: (media: Media, newVariant: Media) => void;
     uploadUrl: string;
-    addVariant: (original: any, variant: any) => void;
     group: string;
 }
 
@@ -32,7 +27,6 @@ const ImageCropper = ({
                           item,
                           callback,
                           uploadUrl,
-                          addVariant,
                           group,
                       }: ImageCropperProps) => {
     const cropperRef = useRef<ReactCropperElement>(null);
@@ -45,7 +39,7 @@ const ImageCropper = ({
         height: 0,
     });
     const [previewSrc, setPreviewSrc] = useState<string | null>(null);
-
+    const [isLoading, setIsLoading] = useState(false);
 
     // Аналогичные настройки Cropper.js
     const cropperOptions: ReactCropperProps = {
@@ -96,7 +90,7 @@ const ImageCropper = ({
 
     const save = async () => {
         if (!cropperRef.current) return;
-
+        setIsLoading(true);
         const mimeType = convertWebp
             ? "image/webp"
             : convertJpeg
@@ -127,11 +121,10 @@ const ImageCropper = ({
                             "Content-Type": "multipart/form-data",
                         },
                     });
-                    console.log(res.data.msg)
-                    // if (data.msg === "success") {
-                    //     addVariant(item, data.data);
-                    //     callback();
-                    // }
+                    if (res.data.msg === "success") {
+                        setIsLoading(false);
+                        callback(item, res.data.data);
+                    }
                 } catch (error) {
                     console.error("Upload error:", error);
                 }
@@ -238,7 +231,10 @@ const ImageCropper = ({
                     </DialogContent>
                 </Dialog>
                 {/*<Button variant="outline" onClick={preview}>Preview</Button>*/}
-                <Button variant="default" onClick={save}>Save</Button>
+                <div className="flex gap-2 items-center w-full">
+                <Button variant="default" onClick={save} disabled={isLoading} className="flex-3/4">Save</Button>
+                    {isLoading && <LoaderCircle className="size-5 animate-spin"/>}
+                </div>
             </div>
 
             {/* Форматы */}

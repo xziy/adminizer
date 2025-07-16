@@ -11,6 +11,7 @@ import {LoaderCircle} from "lucide-react";
 
 export interface GalleryRef {
     pushMediaItem: (item: Media) => void;
+    addVariant: (media: Media, newVariant: Media) => void;
 }
 
 interface GalleryProps {
@@ -23,7 +24,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, messages}
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
     const {uploadUrl, group} = useContext(MediaManagerContext);
-    const [count, setCount] = useState<number>(5);
+    const [count, _setCount] = useState<number>(5);
     const [mediaList, setMediaList] = useState<Media[]>([]);
     const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
     const [skip, setSkip] = useState<number>(0);
@@ -62,8 +63,19 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, messages}
         setMediaList(prev => [item, ...prev]);
     };
 
+    const addVariant = (media: Media, newVariant: Media) => {
+        setMediaList(prevMediaList =>
+            prevMediaList.map(obj =>
+                obj.id === media.id
+                    ? {...obj, variants: [...obj.variants, newVariant]}
+                    : obj
+            )
+        );
+    }
+
     useImperativeHandle(ref, () => ({
-        pushMediaItem
+        pushMediaItem,
+        addVariant
     }));
 
     // Смена типа медиа
