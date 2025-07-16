@@ -22,21 +22,30 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
 
 
     const openMeta = (media: Media) => {
-        setMedia(media);
-        setPopupType('meta');
-        dialogRef.current?.next()
+        setMedia(null)
+        setTimeout(() => {
+            setMedia(media);
+            setPopupType('meta');
+            dialogRef.current?.next()
+        }, 0)
     }
 
     const crop = (media: Media) => {
-        setMedia(media)
-        setPopupType('crop');
-        dialogRef.current?.next()
+        setMedia(null)
+        setTimeout(() => {
+            setMedia(media)
+            setPopupType('crop');
+            dialogRef.current?.next()
+        }, 0)
     }
 
     const openVariant = (media: Media) => {
-        setMedia(media)
-        setPopupType('variant')
-        dialogRef.current?.next()
+        setMedia(null)
+        setTimeout(() => {
+            setMedia(media)
+            setPopupType('variant')
+            dialogRef.current?.next()
+        }, 0)
     }
 
     useEffect(() => {
@@ -80,7 +89,6 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                             {popupType === 'meta' &&
                                 media &&
                                 <MediaMetaForm media={media} callback={() => {
-                                    setMedia(null);
                                     dialogRef.current?.prev()
                                 }}/>
                             }
@@ -97,7 +105,7 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                             }
                             {popupType === 'variant' &&
                                 media &&
-                                <MediaVariants media={media} messages={messages}/>
+                                <MediaVariants item={media} messages={messages}/>
                             }
                         </div>
                     </div>

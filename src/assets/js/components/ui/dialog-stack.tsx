@@ -33,7 +33,7 @@ type DialogStackContextType = {
     clickable: boolean;
     shouldAnimate: boolean;
     setShouldAnimate: Dispatch<SetStateAction<boolean>>;
-    closeDialog: (index: number) => void; // Новая функция
+    closeDialog: (index: number) => void;
 };
 
 interface DialogStackProps extends HTMLAttributes<HTMLDivElement> {
@@ -315,7 +315,7 @@ export const DialogStackContent = ({
     }
 
     const handleClose = () => {
-        context.closeDialog(index); // Используем новую функцию
+        context.closeDialog(index);
     };
 
     const handleClick = (e: React.MouseEvent) => {
