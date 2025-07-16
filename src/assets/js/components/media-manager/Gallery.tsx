@@ -114,14 +114,18 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
         }
     };
 
+    const destroy = (media: Media) => {
+        setMediaList(prev => prev.filter(item => item.id !== media.id));
+    }
+
     // Render content
     const renderContent = (viewType: 'tile' | 'table') => {
         if (loading && mediaList.length === 0) {
             return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
         }
         return viewType === 'tile'
-            ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant}/>
-            : <MediaTable mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant}/>;
+            ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} destroy={destroy} />
+            : <MediaTable mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} destroy={destroy}/>;
     };
 
     return (

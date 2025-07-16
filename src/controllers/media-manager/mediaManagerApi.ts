@@ -5,8 +5,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	const method = req.method.toUpperCase();
 	let id = req.params.id ? req.params.id : '';
 
-	const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-	await delay(1000);
+	// const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+	// await delay(1000);
 
 	if (req.adminizer.config.auth.enable) {
 		if (!req.user) {
