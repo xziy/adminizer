@@ -1,25 +1,27 @@
-import React, {useState, useRef, FC, useContext} from 'react';
-import {TriangleAlert, XIcon} from "lucide-react";
-import styles from '@/components/media-manager/DropZone.module.css'
-import axios from "axios";
-import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import {Media} from "@/types";
+import React, {useContext, useEffect, useRef, useState} from "react";
+import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
+import axios from "axios";
+import {TriangleAlert, XIcon} from "lucide-react";
+import styles from "@/components/media-manager/DropZone.module.css";
 
-interface DropZoneProps {
+interface VariantDropZoneProps {
     callback: (media: Media) => void
     messages: Record<string, string>
+    media: Media
+    localeId: string
 }
 
-const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
+const VariantDropZone = ({callback, messages, media, localeId}: VariantDropZoneProps) => {
+    const fileInputRefV = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [alert, setAlert] = useState<string>('');
-
     const {uploadUrl, group} = useContext(MediaManagerContext);
 
     const handleClose = () => {
         setAlert('')
     }
+
 
     const onDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -44,46 +46,50 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
     };
 
     const upload = async (file: File) => {
-        try {
-            const form = new FormData();
-            form.append("name", file.name);
-            form.append("group", group);
-            form.append("file", file);
-
-            const res = await axios.post(`${uploadUrl}/upload`, form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (res.data.msg === "success") {
-                setLoading(false);
-                callback(res.data.data[0]);
-                return;
-            }
-
-            setLoading(false);
-            setAlert(res.data.error || "Upload failed");
-
-        } catch (error) {
-            setLoading(false);
-
-            if (axios.isAxiosError(error)) {
-                if (error.response) {
-                    const errorMessage = error.response.data?.error ||
-                        error.response.data?.message ||
-                        error.response.statusText;
-                    setAlert(errorMessage || `Error: ${error.response.status}`);
-                } else if (error.request) {
-                    setAlert("No response from server");
-                } else {
-                    setAlert("Request setup error");
-                }
-            } else {
-                setAlert("Error uploading file");
-                console.error(error);
-            }
-        }
+        setLoading(false);
+        console.log(localeId, media, group)
+        // try {
+        //     const form = new FormData();
+        //     form.append("name", file.name);
+        //     form.append("group", group);
+        //     form.append("item", JSON.stringify(media));
+        //     form.append("localeId", localeId);
+        //     form.append("file", file);
+        //
+        //     const res = await axios.post(`${uploadUrl}/upload-variant`, form, {
+        //         headers: {
+        //             'Content-Type': 'multipart/form-data'
+        //         }
+        //     });
+        //
+        //     if (res.data.msg === "success") {
+        //         setLoading(false);
+        //         callback(res.data.data[0]);
+        //         return;
+        //     }
+        //
+        //     setLoading(false);
+        //     setAlert(res.data.error || "Upload failed");
+        //
+        // } catch (error) {
+        //     setLoading(false);
+        //
+        //     if (axios.isAxiosError(error)) {
+        //         if (error.response) {
+        //             const errorMessage = error.response.data?.error ||
+        //                 error.response.data?.message ||
+        //                 error.response.statusText;
+        //             setAlert(errorMessage || `Error: ${error.response.status}`);
+        //         } else if (error.request) {
+        //             setAlert("No response from server");
+        //         } else {
+        //             setAlert("Request setup error");
+        //         }
+        //     } else {
+        //         setAlert("Error uploading file");
+        //         console.error(error);
+        //     }
+        // }
     };
 
     return (
@@ -109,7 +115,7 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
                     className={`flex items-center justify-center w-full ${loading ? 'opacity-30' : ''}`}
                 >
                     <label
-                        htmlFor="dropzone-file"
+                        htmlFor="dropzone-file-variant"
                         className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
                     >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -123,10 +129,10 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
                             </p>
                         </div>
                         <input
-                            id="dropzone-file"
-                            key="dropzone-file"
+                            id="dropzone-file-variant"
+                            key="dropzone-file-variant"
                             type="file"
-                            ref={fileInputRef}
+                            ref={fileInputRefV}
                             onChange={onLoad}
                             className="hidden"
                             multiple
@@ -143,4 +149,4 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
         </div>
     )
 }
-export default DropZone
+export default VariantDropZone

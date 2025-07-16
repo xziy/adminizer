@@ -62,6 +62,7 @@ export class MediaManagerAdapter {
             "Type": "",
             "Size (orig.)": "",
             "W x H (orig.)": "",
+            "W x H": "",
             "Sizes/Ver": "",
             "Locales": "",
             "Search": "",
@@ -71,6 +72,16 @@ export class MediaManagerAdapter {
             "Variants": "",
             "Delete": "",
             "Click to upload or drag and drop": "",
+            "Upload a locale": "",
+            "Preview": "",
+            "Flip Y": "",
+            "Flip X": "",
+            "Save": "",
+            "Convert WebP": "",
+            "Convert Jpeg": "",
+            "Locale": "",
+            "Tag": "",
+            "There are no loaded variants": "",
         };
 
         return Object.fromEntries(

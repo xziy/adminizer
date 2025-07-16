@@ -17,10 +17,11 @@ export interface GalleryRef {
 interface GalleryProps {
     openMeta: (media: Media) => void;
     crop: (media: Media) => void;
+    openVariant: (media: Media) => void
     messages: Record<string, string>;
 }
 
-const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, messages}, ref) => {
+const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVariant, messages}, ref) => {
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
     const {uploadUrl, group} = useContext(MediaManagerContext);
@@ -119,8 +120,8 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, messages}
             return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
         }
         return viewType === 'tile'
-            ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop}/>
-            : <MediaTable mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop}/>;
+            ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant}/>
+            : <MediaTable mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant}/>;
     };
 
     return (
