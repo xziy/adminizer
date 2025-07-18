@@ -5,9 +5,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table.tsx"
 import {Media, MediaMeta, MediaProps} from "@/types";
-import Image from "@/components/media-manager/Image.tsx";
+import Image from "@/components/media-manager/components/Image.tsx";
 
 
 const imagesTypes = new Set([

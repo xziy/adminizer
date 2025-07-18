@@ -3,16 +3,18 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {useContext, useEffect, useState} from "react";
 import {Input} from "@/components/ui/input.tsx";
-import VariantDropZone from "@/components/media-manager/VariantDropZone.tsx";
+import VariantDropZone from "@/components/media-manager/components/VariantDropZone.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Trash2} from "lucide-react";
 import axios from "axios";
+import {Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
 
 interface MediaVariantsProps {
     item: Media
     messages: Record<string, string>
+    destroy: (item: Media, variant: Media) => void
 }
 
 const imagesTypes = new Set([
@@ -22,12 +24,14 @@ const imagesTypes = new Set([
     "image/webp",
 ]);
 
-const MediaVariants = ({item, messages}: MediaVariantsProps) => {
+const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
     const {managerId, uploadUrl} = useContext(MediaManagerContext);
     const [isLocale, setIsLocale] = useState<boolean>(false);
     const [locale, setLocale] = useState<string>("");
     const [variants, setVariants] = useState<Media[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [delOPen, setDelOpen] = useState(false);
+    const [destroyItem, setDestroyItem] = useState<Media | null>(null);
 
     useEffect(() => {
         setVariants([])
@@ -81,11 +85,21 @@ const MediaVariants = ({item, messages}: MediaVariantsProps) => {
 
     const reversedVariants = [...variants].reverse();
 
+    const destroyVariant = async () => {
+        const res = await axios.delete(uploadUrl, {data: {item: destroyItem}});
+        if (res.data.msg === "ok") {
+            destroy(item, destroyItem as Media);
+            setVariants((prev) =>
+                prev.filter(e => e.id !== destroyItem?.id)
+            )
+        }
+    }
+
     return (
         <div>
             <div className="flex gap-4 flex-col">
                 <VariantDropZone key="variant-drop-zone" callback={addVariant} messages={messages} media={item}
-                                 localeId={locale}/>
+                                 localeId={locale} disabled={(isLocale && !locale)}/>
                 <div className="flex gap-4 h-9 items-center">
                     <div className="flex gap-2 items-center">
                         <Checkbox
@@ -147,7 +161,10 @@ const MediaVariants = ({item, messages}: MediaVariantsProps) => {
                                         <TableCell className="p-2">
                                             <div className="flex gap-2 justify-center">
                                                 <Button onClick={() => openFile(variant)}>{messages["Preview"]}</Button>
-                                                <Button variant="destructive">
+                                                <Button variant="destructive" onClick={() => {
+                                                    setDestroyItem(variant)
+                                                    setDelOpen(true)
+                                                }}>
                                                     <Trash2/>
                                                 </Button>
                                             </div>
@@ -161,6 +178,30 @@ const MediaVariants = ({item, messages}: MediaVariantsProps) => {
                     <div className="font-medium text-center mt-8">{messages["There are no loaded variants"]}</div>
                 )
             )}
+            <Dialog open={delOPen} onOpenChange={(open) => {
+                setDelOpen(open)
+                if (!open) {
+                    setTimeout(() => {
+                        document.body.removeAttribute('style')
+                    }, 300)
+                }
+            }}>
+                <DialogContent className="z-[1022]">
+                    <DialogHeader>
+                        <DialogTitle>{messages["Delete"]}</DialogTitle>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="destructive" asChild onClick={destroyVariant}>
+                                <span>{messages["Yes"]}</span>
+                            </Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">{messages["No"]}</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

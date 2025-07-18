@@ -34,7 +34,7 @@ import {cn} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Grid2x2Plus} from "lucide-react";
 import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
-import MediaDialogStack from "@/components/media-manager/MediaDialogStack.tsx";
+import MediaDialogStack from "@/components/media-manager/components/MediaDialogStack.tsx";
 
 interface Props {
     layout: Layout;

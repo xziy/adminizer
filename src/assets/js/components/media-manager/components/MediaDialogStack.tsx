@@ -1,13 +1,13 @@
 import {DialogStack, DialogStackBody, DialogStackContent, DialogStackOverlay} from "@/components/ui/dialog-stack.tsx";
-import DropZone from "@/components/media-manager/DropZone.tsx";
+import DropZone from "@/components/media-manager/components/DropZone.tsx";
 import {FC, RefObject, useContext, useEffect, useRef, useState} from "react";
-import Gallery, {GalleryRef} from "@/components/media-manager/Gallery.tsx";
-import MediaMetaForm from "@/components/media-manager/MediaMeta.tsx";
+import Gallery, {GalleryRef} from "@/components/media-manager/components/Gallery.tsx";
+import MediaMetaForm from "@/components/media-manager/components/MediaMeta.tsx";
 import {Media} from "@/types";
 import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
-import ImageCropper from "@/components/media-manager/ImageCropper.tsx";
-import MediaVariants from "@/components/media-manager/MediaVariants.tsx";
+import ImageCropper from "@/components/media-manager/components/ImageCropper.tsx";
+import MediaVariants from "@/components/media-manager/components/MediaVariants.tsx";
 
 interface MediaDialogStackProps {
     dialogRef: RefObject<any>;
@@ -105,7 +105,11 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                             }
                             {popupType === 'variant' &&
                                 media &&
-                                <MediaVariants item={media} messages={messages}/>
+                                <MediaVariants
+                                    item={media}
+                                    messages={messages}
+                                    destroy={(item, variant)=> galleryRef.current?.destroyVariant(item, variant)}
+                                />
                             }
                         </div>
                     </div>
