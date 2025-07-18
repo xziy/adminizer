@@ -1,6 +1,6 @@
 import React, {useState, useRef, FC, useContext} from 'react';
 import {TriangleAlert, XIcon} from "lucide-react";
-import styles from '@/components/media-manager/DropZone.module.css'
+import styles from '@/components/media-manager/components/DropZone.module.css'
 import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import {Media} from "@/types";

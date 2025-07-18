@@ -1,5 +1,5 @@
 import {MediaProps} from "@/types";
-import Image from "@/components/media-manager/Image.tsx";
+import Image from "@/components/media-manager/components/Image.tsx";
 
 const Tile = ({mediaList, messages, openMeta, crop, openVariant, destroy}: MediaProps) => {
 

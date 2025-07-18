@@ -1,10 +1,10 @@
 import {Input} from "@/components/ui/input.tsx";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx"
 import {useContext, useEffect, useState, forwardRef, useImperativeHandle,} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import axios from "axios";
-import Tile from "@/components/media-manager/Tile.tsx";
-import MediaTable from "@/components/media-manager/MediaTable.tsx";
+import Tile from "@/components/media-manager/components/Tile.tsx";
+import MediaTable from "@/components/media-manager/components/MediaTable.tsx";
 import {Media} from "@/types";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle} from "lucide-react";
@@ -12,6 +12,7 @@ import {LoaderCircle} from "lucide-react";
 export interface GalleryRef {
     pushMediaItem: (item: Media) => void;
     addVariant: (media: Media, newVariant: Media) => void;
+    destroyVariant: (media: Media, variant: Media) => void;
 }
 
 interface GalleryProps {
@@ -74,9 +75,20 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
         );
     }
 
+    const destroyVariant = (media: Media, variant: Media) => {
+        setMediaList(prevMediaList =>
+            prevMediaList.map(obj =>
+                obj.id === media.id
+                    ? {...obj, variants: obj.variants.filter(v => v.id !== variant.id)}
+                    : obj
+            )
+        );
+    }
+
     useImperativeHandle(ref, () => ({
         pushMediaItem,
-        addVariant
+        addVariant,
+        destroyVariant
     }));
 
     // Смена типа медиа

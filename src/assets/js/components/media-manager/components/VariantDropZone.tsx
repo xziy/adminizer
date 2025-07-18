@@ -3,16 +3,17 @@ import React, {useContext, useRef, useState} from "react";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import axios from "axios";
 import {TriangleAlert, XIcon} from "lucide-react";
-import styles from "@/components/media-manager/DropZone.module.css";
+import styles from "@/components/media-manager/components/DropZone.module.css";
 
 interface VariantDropZoneProps {
     callback: (media: Media) => void
     messages: Record<string, string>
     media: Media
     localeId: string
+    disabled: boolean
 }
 
-const VariantDropZone = ({callback, messages, media, localeId}: VariantDropZoneProps) => {
+const VariantDropZone = ({callback, messages, media, localeId, disabled}: VariantDropZoneProps) => {
     const fileInputRefV = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [alert, setAlert] = useState<string>('');
@@ -107,7 +108,7 @@ const VariantDropZone = ({callback, messages, media, localeId}: VariantDropZoneP
 
 
     return (
-        <div className="mt-2">
+        <div className={`mt-2 ${disabled ? 'pointer-events-none opacity-40' : ''}`}>
             {alert &&
                 <div className="bg-red-600 rounded font-medium mb-4">
                     <div className="flex gap-2 p-2 text-white justify-between">
