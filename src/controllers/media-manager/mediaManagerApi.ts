@@ -41,8 +41,8 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 				return await manager.getMeta(req, res)
 			case 'getChildren':
 				return await manager.getVariants(req, res)
-			// case 'search':
-			// 	return await manager.search(req, res)
+			case 'search':
+				return await manager.search(req, res)
 		}
 	}
 	if (method === 'DELETE') {

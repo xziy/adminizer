@@ -175,7 +175,7 @@ const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
                         </Table>
                     </div>
                 ) : (
-                    <div className="font-medium text-center mt-8">{messages["There are no loaded variants"]}</div>
+                    <div className="font-medium text-center mt-8">{messages["No variants found"]}</div>
                 )
             )}
             <Dialog open={delOPen} onOpenChange={(open) => {

@@ -8,6 +8,7 @@ import MediaTable from "@/components/media-manager/components/MediaTable.tsx";
 import {Media} from "@/types";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle} from "lucide-react";
+import {debounce} from "lodash-es";
 
 export interface GalleryRef {
     pushMediaItem: (item: Media) => void;
@@ -33,25 +34,22 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingTab, setPendingTab] = useState<string | null>(null);
 
-
+    const fetchData = async (type:string) => {
+        const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=${type}&group=${group}`);
+        setMediaList(data.data);
+        setLoading(false);
+        setIsLoadMore(data.next);
+    };
 
     // Загрузка данных при монтировании
     useEffect(() => {
-        const fetchData = async () => {
-            const {data} = await axios.get(`${uploadUrl}?count=${count}&skip=0&type=all&group=${group}`);
-            setMediaList(data.data);
-            // console.log(data.data);
-            setIsLoadMore(data.next);
-        };
-
         const initGallery = async () => {
             try {
                 setLoading(true);
-                await fetchData();
+                await fetchData('all');
             } catch (error) {
                 console.error('Error initializing media:', error);
             } finally {
-                setLoading(false);
             }
         };
 
@@ -130,10 +128,42 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
         setMediaList(prev => prev.filter(item => item.id !== media.id));
     }
 
+    const performSearch = async (s: string) => {
+        setLoading(true);
+        setMediaList([]);
+        if(s.length > 0) {
+            setIsLoadMore(false);
+            setSkip(0)
+            try {
+                let res = await axios.post(uploadUrl, {
+                    _method: "search",
+                    type: mediaType,
+                    group: group,
+                    s: s,
+                })
+                setMediaList(res.data.data)
+            } catch (error) {
+                console.log(error)
+            }
+            finally {
+                setLoading(false);
+            }
+        } else{
+            await fetchData(mediaType);
+        }
+
+    }
+    const handleSearch = debounce(performSearch, 500)
+
     // Render content
     const renderContent = (viewType: 'tile' | 'table') => {
         if (loading && mediaList.length === 0) {
             return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
+        }
+        if (mediaList.length === 0) {
+            return <div className="text-center font-medium mt-8">
+                {messages["No media found"]}
+            </div>;
         }
         return viewType === 'tile'
             ? <Tile mediaList={mediaList} messages={messages} openMeta={openMeta} crop={crop} openVariant={openVariant} destroy={destroy} />
@@ -147,6 +177,13 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                     <Input
                         type="search"
                         placeholder={messages["Search"]}
+                        onChange={(e) => {handleSearch(e.target.value)}}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                performSearch(e.currentTarget.value);
+                            }
+                        }}
                         className="w-[200px] p-2 border rounded"
                     />
                     <TabsList className="w-full">
