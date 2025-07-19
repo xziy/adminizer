@@ -28,7 +28,7 @@ const MediaTable = ({mediaList, messages, openMeta, crop, openVariant, destroy}:
         return parts.pop()?.toLowerCase().trim();
     }
     const imageSize = (meta: MediaMeta[]) => {
-        let size = meta.find((e) => e.key === "imageSizes") as Record<string, any>;
+        let size = meta?.find((e) => e.key === "imageSizes") as Record<string, any>;
         if (size) {
             return `${size.value.width}x${size.value.height}`;
         } else {

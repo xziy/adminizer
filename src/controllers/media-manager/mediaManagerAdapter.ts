@@ -81,7 +81,8 @@ export class MediaManagerAdapter {
             "Convert Jpeg": "",
             "Locale": "",
             "Tag": "",
-            "There are no loaded variants": "",
+            "No media found": "",
+            "No variants found": "",
             "Actions": "",
             "Yes": "",
             "No": ""
