@@ -7,11 +7,10 @@ import {Slider} from "@/components/ui/slider.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import DynamicControls from "@/components/dynamic-controls.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import {Field} from "@/types";
+import {Field, Media} from "@/types";
 import AdminCKEditor from "@/components/ckeditor/ckeditor.tsx";
 
 import MultiSelect from "@/components/multi-select.tsx";
-import {MediaManager} from "@/components/media-manager/media-manager.tsx";
 import {Layout} from '@/components/media-manager/Item.tsx';
 
 const TuiLazy = lazy(() => import('@/components/toast-editor.tsx'));
@@ -19,7 +18,7 @@ const HandsonTableLazy = lazy(() => import('@/components/handsontable.tsx'));
 const JsonEditorLazy = lazy(() => import('@/components/VanillaJSONEditor.tsx'));
 const GeoJsonEditorLazy = lazy(() => import("@/components/geo-json.tsx"));
 const MonacoLazy = lazy(() => import('@/components/monaco-editor.tsx'));
-
+const MediaLazy = lazy(() => import('@/components/media-manager/media-manager.tsx'));
 
 type FieldValue = string | boolean | number | Date | any[] | Content;
 
@@ -87,6 +86,15 @@ const FieldRenderer: FC<{
 
     const handleAssociationChange = useCallback((value: string[]) => {
         onChange(field.name, value)
+    }, [onChange, field.name])
+
+    const handleMediaChange = useCallback((mediaList: Media[]) => {
+        const transformedData = {
+            list: mediaList.map(media => ({ id: media.id })),
+            mediaManagerId: field.options.id
+        };
+        // console.log(field.name, transformedData)
+        onChange(field.name, JSON.stringify(transformedData))
     }, [onChange, field.name])
 
     const inputClassName = useMemo(() => {
@@ -265,9 +273,8 @@ const FieldRenderer: FC<{
                 )
             }
         case 'mediamanager':
-            // console.log(field, value)
             return (
-                <MediaManager layout={Layout.Grid} config={{id: field.options.id, group: field.options.group}}/>
+                <MediaLazy layout={Layout.Grid} config={{id: field.options.id, group: field.options.group}} value={value as Media[]} onChange={handleMediaChange}/>
             )
         default:
             return (
