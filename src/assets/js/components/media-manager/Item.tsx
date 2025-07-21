@@ -22,12 +22,14 @@ export interface Props extends Omit<HTMLAttributes<HTMLButtonElement>, 'id'> {
     insertPosition?: Position;
     id: UniqueIdentifier;
     index?: number;
+    url: string;
     layout: Layout;
+
     onRemove?(): void;
 }
 
 export const Item = forwardRef<HTMLLIElement, Props>(function Page(
-    {id, index, active, clone, insertPosition, layout, onRemove, style, ...props},
+    {id, index, active, clone, insertPosition, layout, onRemove, style, url, ...props},
     ref
 ) {
     return (
@@ -43,14 +45,13 @@ export const Item = forwardRef<HTMLLIElement, Props>(function Page(
             style={style}
             ref={ref}
         >
-            <button className={styles.Page} data-id={id.toString()} {...props} />
+            <button className={`${styles.Page} after:bg-black dark:after:bg-gray-300`} data-id={id.toString()} {...props}>
+                <img src={url} alt="" className="absolute top-0 left-0 w-full h-full object-cover overflow-hidden rounded-[5px]"/>
+            </button>
             {!active && onRemove ? (
                 <button className={styles.Remove} onClick={onRemove}>
                     {removeIcon}
                 </button>
-            ) : null}
-            {index != null ? (
-                <span className={styles.PageNumber}>{index}</span>
             ) : null}
         </li>
     );

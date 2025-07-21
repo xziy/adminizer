@@ -25,7 +25,7 @@ const imagesTypes = new Set([
 ]);
 
 const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
-    const {managerId, uploadUrl} = useContext(MediaManagerContext);
+    const {imageUrl, uploadUrl} = useContext(MediaManagerContext);
     const [isLocale, setIsLocale] = useState<boolean>(false);
     const [locale, setLocale] = useState<string>("");
     const [variants, setVariants] = useState<Media[]>([]);
@@ -59,16 +59,6 @@ const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
         setVariants((prev) => [...prev, media]);
     }
 
-    const imageUrl = (media: Media) => {
-        if (media.mimeType && media.mimeType.split("/")[0] === 'image') {
-            return `${window.routePrefix}/get-thumbs?id=${media.id}&managerId=${managerId}`;
-        } else {
-            const fileName = media.url.split(/[#?]/)[0];
-            const parts = fileName.split(".");
-            const extension = parts.pop()?.toLowerCase().trim();
-            return `${window.routePrefix}/fileicons/${extension}.svg`;
-        }
-    }
 
     const imageSize = (meta: MediaMeta[]) => {
         let size = meta.find((e) => e.key === "imageSizes") as Record<string, any>;

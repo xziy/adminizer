@@ -32,19 +32,9 @@ interface ImageProps {
 }
 
 const Image = ({media, className, messages, openMeta, crop, openVariant, destroy}: ImageProps) => {
-    const {managerId, uploadUrl} = useContext(MediaManagerContext);
+    const {imageUrl, uploadUrl, addMedia, removeMedia, checkMedia} = useContext(MediaManagerContext);
     const [delOPen, setDelOpen] = useState(false);
-
-    const imageUrl = () => {
-        if (media.mimeType && media.mimeType.split("/")[0] === 'image') {
-            return `${window.routePrefix}/get-thumbs?id=${media.id}&managerId=${managerId}`;
-        } else {
-            const fileName = media.url.split(/[#?]/)[0];
-            const parts = fileName.split(".");
-            const extension = parts.pop()?.toLowerCase().trim();
-            return `${window.routePrefix}/fileicons/${extension}.svg`;
-        }
-    }
+    const isSelected = checkMedia(media);
 
     const openFile = () => {
         window.open(`/public${media.url}`, "_blank")?.focus();
@@ -55,11 +45,38 @@ const Image = ({media, className, messages, openMeta, crop, openVariant, destroy
         if (res.data.msg === "ok") destroy(media);
     }
 
+    const toggleMedia = () => {
+        if (isSelected) {
+            removeMedia(media);
+        } else {
+            addMedia(media);
+        }
+    };
+
     return (
         <>
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <img className={cn('w-full h-full', className)} src={imageUrl()} alt=""/>
+                    <div className="relative cursor-pointer w-fit">
+                        {isSelected  && <div
+                            className="absolute top-0 left-0 z-10 w-[20px] h-[20px] bg-white flex items-center justify-center"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 1200 1200"
+                            >
+                                <path
+                                    fill="currentColor"
+                                    d="m1004.237 99.152l-611.44 611.441l-198.305-198.305L0 706.779l198.305 198.306l195.762 195.763L588.56 906.355L1200 294.916z"
+                                />
+                            </svg>
+                        </div>
+                        }
+                        <img className={cn('w-full h-full', className)} src={imageUrl(media)} alt=""
+                             onClick={toggleMedia}/>
+                    </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent className="z-[1005]">
                     <ContextMenuItem onClick={() => openMeta(media)}>
