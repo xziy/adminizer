@@ -86,9 +86,17 @@ export class DefaultMediaManager extends AbstractMediaManager {
             where: {modelId: modelId, model: model, widgetName: widgetName},
         });
 
+        // for (const modelAssociation of modelAssociations) {
+        //     // TODO refactor CRUD functions for DataAccessor usage
+        //     await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](modelAssociation.id)
+        // }
+
         for (const modelAssociation of modelAssociations) {
+            const q: Record<string, any> = {};
+            const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
+            q[pk] = modelAssociation.id;
             // TODO refactor CRUD functions for DataAccessor usage
-            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](modelAssociation.id)
+            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
         }
 
         for (const [key, widgetItem] of data.list.entries()) {
