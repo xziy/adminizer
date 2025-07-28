@@ -12,7 +12,7 @@ const CatalogDragPreview: React.FC<Props> = (props) => {
     const item = props.monitorProps.item;
 
     return (
-        <div className={styles.root}>
+        <div className={`${styles.root} bg-chart-1/60`}>
             <div className={styles.icon}>
                 <MaterialIcon name={item.data?.icon ?? "folder"}/>
             </div>
