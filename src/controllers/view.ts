@@ -6,8 +6,10 @@ import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
 import {FieldsHelper} from "../helpers/fieldsHelper";
-import { UserAP } from "models/UserAP";
-import { GroupAP } from "models/GroupAP";
+import {UserAP} from "models/UserAP";
+import {GroupAP} from "models/GroupAP";
+import {BaseFieldConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
+import {getRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 
 export default async function view(req: ReqType, res: ResType) {
     // Check id
@@ -94,6 +96,15 @@ export default async function view(req: ReqType, res: ResType) {
 
         default:
             fields = await FieldsHelper.loadAssociations(req, fields, "edit");
+            for (const field of Object.keys(fields)) {
+                let fieldConfigConfig = fields[field].config as BaseFieldConfig;
+                if (fieldConfigConfig.type === 'mediamanager') {
+                    record[field] = await getRelationsMediaManager({
+                        list: record[field],
+                        mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default"
+                    })
+                }
+            }
             const props = inertiaAddHelper(req, entity, fields, record, true)
             return req.Inertia.render({
                 component: 'add',

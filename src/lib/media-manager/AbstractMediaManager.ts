@@ -1,160 +1,156 @@
 import {Adminizer} from "../Adminizer";
 
 export interface MediaManagerItem {
-  id: string;
-  parent: string;
-  variants: MediaManagerItem[];
-  // TODO: create versions realization
-  // version?: null
-  mimeType: string;
-  path: string;
-  size: number;
-  /**
-   * size: lm | sm | any or locale: en | de | fr
-   */
-  tag: string;
-  group?: string;
-  url: string;
-  filename: string;
-  meta: string[];
-  createdAt: number;
-  updatedAt: number;
+    id: string;
+    parent: string;
+    variants: MediaManagerItem[];
+    // TODO: create versions realization
+    // version?: null
+    mimeType: string;
+    path: string;
+    size: number;
+    /**
+     * size: lm | sm | any or locale: en | de | fr
+     */
+    tag: string;
+    group?: string;
+    url: string;
+    filename: string;
+    meta: string[];
+    createdAt: number;
+    updatedAt: number;
 }
 
 
 type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number ? K : never;
+    [K in keyof T]: T[K] extends number ? K : never;
 }[keyof T];
 
 export type SortCriteria = `${NumericKeys<MediaManagerItem>} ${"ASC" | "DESC"}`;
 
 export interface MediaManagerWidgetItem {
-  id: string;
+    id: string;
 }
 
 /**
  * This method is for receiving data in the client
  */
 export interface MediaManagerWidgetClientItem extends MediaManagerWidgetItem {
-  /**
-   * need only mimeGroup like Imeage/xxx
-   */
-  mimeType: string;
-  variants: MediaManagerItem[];
-  url?: string;
+    /**
+     * need only mimeGroup like Imeage/xxx
+     */
+    mimeType: string;
+    variants: MediaManagerItem[];
+    url?: string;
 }
 
 
 export interface MediaManagerWidgetJSON {
-  list: MediaManagerWidgetItem[];
-  mediaManagerId: string;
+    list: MediaManagerWidgetItem[];
+    mediaManagerId: string;
 }
 
 export interface MediaManagerWidgetData {
-  list: MediaManagerWidgetItem[];
-  /**
-   * @deprecated Apparently this is not needed here since it is in the field config settings
-   */
-  mediaManagerId: string;
+    id: string;
 }
 
 export type UploaderFile = Express.Multer.File;
 
 export interface imageSizes {
-  [key: string]: {
-    width: number;
-    height: number;
-  };
+    [key: string]: {
+        width: number;
+        height: number;
+    };
 }
 
 export type MediaFileType =
-  | "application"
-  | "audio"
-  | "example"
-  | "image"
-  | "message"
-  | "model"
-  | "multipart"
-  | "text"
-  | "video";
+    | "application"
+    | "audio"
+    | "example"
+    | "image"
+    | "message"
+    | "model"
+    | "multipart"
+    | "text"
+    | "video";
 
 export abstract class File<T extends MediaManagerItem> {
-  public abstract type: MediaFileType;
-  public urlPathPrefix: string;
-  public fileStoragePath: string;
-  public model: string;
-  public metaModel: string;
+    public abstract type: MediaFileType;
+    public urlPathPrefix: string;
+    public fileStoragePath: string;
+    public model: string;
+    public metaModel: string;
 
 
-  /**
-   *
-   * @param urlPathPrefix
-   * @param fileStoragePath
-   */
-  protected constructor(urlPathPrefix: string, fileStoragePath: string) {
-    this.urlPathPrefix = urlPathPrefix;
-    this.fileStoragePath = fileStoragePath;
-  }
+    /**
+     *
+     * @param urlPathPrefix
+     * @param fileStoragePath
+     */
+    protected constructor(urlPathPrefix: string, fileStoragePath: string) {
+        this.urlPathPrefix = urlPathPrefix;
+        this.fileStoragePath = fileStoragePath;
+    }
 
-  /**
-   * Upload a file.
-   * @param file
-   * @param filename
-   * @param origFileName
-   * @param group
-   */
-  public abstract upload(file: UploaderFile, filename: string, origFileName: string, group?: string): Promise<T[]>;
+    /**
+     * Upload a file.
+     * @param file
+     * @param filename
+     * @param origFileName
+     * @param group
+     */
+    public abstract upload(file: UploaderFile, filename: string, origFileName: string, group?: string): Promise<T[]>;
 
-  /**
-   * Get metadata for an item.
-   * @param id
-   */
-  public abstract getMeta(id: string,): Promise<{ key: string; value: string }[]>;
+    /**
+     * Get metadata for an item.
+     * @param id
+     */
+    public abstract getMeta(id: string,): Promise<{ key: string; value: string }[]>;
 
-  /**
-   * Set metadata for an item.
-   * @param id
-   * @param data
-   */
-  public abstract setMeta(id: string, data: { [key: string]: string }): Promise<void>;
+    /**
+     * Set metadata for an item.
+     * @param id
+     * @param data
+     */
+    public abstract setMeta(id: string, data: { [key: string]: string }): Promise<void>;
 
-  /**
-   * Get children of an item.
-   * @param id
-   */
-  public abstract getVariants(id: string): Promise<MediaManagerItem[]>;
+    /**
+     * Get children of an item.
+     * @param id
+     */
+    public abstract getVariants(id: string): Promise<MediaManagerItem[]>;
 
-  /**
-   * Upload cropped image.
-   * @param item
-   * @param file
-   * @param fileName
-   * @param group
-   * @param localeId
-   */
-  public abstract uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem>;
+    /**
+     * Upload cropped image.
+     * @param item
+     * @param file
+     * @param fileName
+     * @param group
+     * @param localeId
+     */
+    public abstract uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem>;
 
-  /**
-   * Delete an item.
-   * @param id
-   */
-  public abstract delete(id: string): Promise<void>;
+    /**
+     * Delete an item.
+     * @param id
+     */
+    public abstract delete(id: string): Promise<void>;
 
-  /**
-   * Get all items of a type.
-   * @param limit
-   * @param skip
-   * @param sort
-   * @param group
-   */
-  public abstract getItems(limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
-    data: MediaManagerItem[];
-    next: boolean
-  }>;
+    /**
+     * Get all items of a type.
+     * @param limit
+     * @param skip
+     * @param sort
+     * @param group
+     */
+    public abstract getItems(limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
+        data: MediaManagerItem[];
+        next: boolean
+    }>;
 
-  public abstract search(s: string, group?: string): Promise<MediaManagerItem[]>;
+    public abstract search(s: string, group?: string): Promise<MediaManagerItem[]>;
 
-  public abstract getOrigin(id: string): Promise<string>;
+    public abstract getOrigin(id: string): Promise<string>;
 }
 
 /**
@@ -174,187 +170,187 @@ export abstract class File<T extends MediaManagerItem> {
  * ╚═╝░░░░░╚═╝╚══════╝╚═════╝░╚═╝╚═╝░░╚═╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝░╚═════╝░╚══════╝╚═╝░░╚═╝
  */
 export abstract class AbstractMediaManager {
-  public uploadMaxBytes: number;
-  public uloadAllowedTypes: string[];
-  public fileStoragePath: string
-  public urlPathPrefix: string
-  /**
-   
-   */
-  public allowSearch: boolean;
-  /**⚠️ above the settings that need to be implemented*/
-  ///
+    public uploadMaxBytes: number;
+    public uloadAllowedTypes: string[];
+    public fileStoragePath: string
+    public urlPathPrefix: string
+    /**
 
-  /**
-   * id for mediamanager instance
-   */
-  abstract id: string;
+     */
+    public allowSearch: boolean;
+    /**⚠️ above the settings that need to be implemented*/
+    ///
 
-  public readonly itemTypes: File<MediaManagerItem>[] = [];
+    /**
+     * id for mediamanager instance
+     */
+    abstract id: string;
 
-  /**
-   * @protected
-   */
-  protected constructor(adminizer: Adminizer) {
-    this._bindAccessRight(adminizer)
-  }
+    public readonly itemTypes: File<MediaManagerItem>[] = [];
 
-  private _bindAccessRight(adminizer: Adminizer) {
-    setTimeout(() => {
-      adminizer.accessRightsHelper.registerToken({
-        id: `mediaManager-${this.id}`,
-        name: this.id,
-        description: `Access to edit catalog for ${this.id}`,
-        department: 'catalog'
-      });
-    }, 100)
-  }
-
-  /**
-   * Upload an item.
-   * @param file
-   * @param filename
-   * @param origFileName
-   * @param group
-   */
-  public upload(file: UploaderFile, filename: string, origFileName: string, group?: string) {
-    const mimeType = file.mimetype;
-    const parts = mimeType.split("/");
-    const item = this.getItemType(parts[0]);
-    if (item) {
-      return item.upload(file, filename, origFileName, group);
-    } else {
-      throw `item not found for \`${parts[0]}\` in ${JSON.stringify(this.itemTypes.map((i) => i.type))}`
+    /**
+     * @protected
+     */
+    protected constructor(adminizer: Adminizer) {
+        this._bindAccessRight(adminizer)
     }
-  }
 
-  /**
-   * Get item type.
-   * @param type
-   * @protected
-   */
-  protected getItemType(type: string) {
-    return this.itemTypes.find((it) => it.type === type);
-  }
+    private _bindAccessRight(adminizer: Adminizer) {
+        setTimeout(() => {
+            adminizer.accessRightsHelper.registerToken({
+                id: `mediaManager-${this.id}`,
+                name: this.id,
+                description: `Access to edit catalog for ${this.id}`,
+                department: 'catalog'
+            });
+        }, 100)
+    }
 
-  /**
-   * Get all items.
-   * @param limit
-   * @param skip
-   * @param group
-   * @param sort
-   */
-  public abstract getAll(limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
-    data: MediaManagerItem[];
-    next: boolean
-  }>;
-
-  /**
-   * Get items of a type.
-   * @param type
-   * @param limit
-   * @param skip
-   * @param sort
-   * @param group
-   */
-  public getItems(type: string, limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
-    data: MediaManagerItem[];
-    next: boolean
-  }> {
-    return this.getItemType(type)?.getItems(limit, skip, sort, group);
-  }
-
-  /**
-   * Save Relations.
-   * @param data
-   * @param model model in which a mediafile connection was added
-   * @param modelId Id in the model in which the mediafile was added
-   * @param widgetName
-   */
-  public abstract setRelations(
-    data: MediaManagerWidgetData,
     /**
-     * widget model in which a mediafile connection was added
+     * Upload an item.
+     * @param file
+     * @param filename
+     * @param origFileName
+     * @param group
      */
-    model: string,
+    public upload(file: UploaderFile, filename: string, origFileName: string, group?: string) {
+        const mimeType = file.mimetype;
+        const parts = mimeType.split("/");
+        const item = this.getItemType(parts[0]);
+        if (item) {
+            return item.upload(file, filename, origFileName, group);
+        } else {
+            throw `item not found for \`${parts[0]}\` in ${JSON.stringify(this.itemTypes.map((i) => i.type))}`
+        }
+    }
+
     /**
-     * widget Id in the model in which the mediafile was added
+     * Get item type.
+     * @param type
+     * @protected
      */
-    modelId: string,
-    widgetName: string
-  ): Promise<void>;
+    protected getItemType(type: string) {
+        return this.itemTypes.find((it) => it.type === type);
+    }
 
-  public abstract getRelations(items: MediaManagerWidgetItem[],): Promise<MediaManagerWidgetClientItem[]>;
+    /**
+     * Get all items.
+     * @param limit
+     * @param skip
+     * @param group
+     * @param sort
+     */
+    public abstract getAll(limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
+        data: MediaManagerItem[];
+        next: boolean
+    }>;
 
-  /**
-   * Search all items.
-   * If not this.allowSearch = true then it will not come here
-   * @param s
-   * @param group
-   */
-  public abstract searchAll(s: string, group?: string): Promise<MediaManagerItem[]>;
+    /**
+     * Get items of a type.
+     * @param type
+     * @param limit
+     * @param skip
+     * @param sort
+     * @param group
+     */
+    public getItems(type: string, limit: number, skip: number, sort: SortCriteria, group?: string): Promise<{
+        data: MediaManagerItem[];
+        next: boolean
+    }> {
+        return this.getItemType(type)?.getItems(limit, skip, sort, group);
+    }
 
-  /**
-   * Search items by type.
-   * @param s
-   * @param type
-   * @param group
-   */
-  public searchItems(s: string, type: string, group?: string): Promise<MediaManagerItem[]> {
-    return this.getItemType(type)?.search(s, group);
-  }
+    /**
+     * Save Relations.
+     * @param data
+     * @param model model in which a mediafile connection was added
+     * @param modelId Id in the model in which the mediafile was added
+     * @param widgetName
+     */
+    public abstract setRelations(
+        data: MediaManagerWidgetData[],
+        /**
+         * widget model in which a mediafile connection was added
+         */
+        model: string,
+        /**
+         * widget Id in the model in which the mediafile was added
+         */
+        modelId: string,
+        widgetName: string
+    ): Promise<void>;
 
-  /**
-   * Get children of an item.
-   * @param item
-   */
-  public getVariants(item: MediaManagerItem): Promise<MediaManagerItem[]> {
-    const parts = item.mimeType.split("/");
-    return this.getItemType(parts[0])?.getVariants(item.id);
-  }
+    public abstract getRelations(items: MediaManagerWidgetItem[],): Promise<MediaManagerWidgetClientItem[]>;
 
-  /**
-   * Upload cropped image.
-   * @param item
-   * @param file
-   * @param fileName
-   * @param group
-   * @param localeId
-   */
-  public uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem> {
-    const parts = item.mimeType.split("/");
-    return this.getItemType(parts[0])?.uploadVariant(item, file, fileName, group, localeId);
-  }
+    /**
+     * Search all items.
+     * If not this.allowSearch = true then it will not come here
+     * @param s
+     * @param group
+     */
+    public abstract searchAll(s: string, group?: string): Promise<MediaManagerItem[]>;
 
-  /**
-   * Get metadata of an item.
-   * @param item
-   */
-  public getMeta(item: MediaManagerItem): Promise<{ key: string; value: string }[]> {
-    const parts = item.mimeType.split("/");
-    return this.getItemType(parts[0])?.getMeta(item.id);
-  }
+    /**
+     * Search items by type.
+     * @param s
+     * @param type
+     * @param group
+     */
+    public searchItems(s: string, type: string, group?: string): Promise<MediaManagerItem[]> {
+        return this.getItemType(type)?.search(s, group);
+    }
 
-  public getOrigin(id: string) {
-    return this.getItemType("image")?.getOrigin(id);
-  }
+    /**
+     * Get children of an item.
+     * @param item
+     */
+    public getVariants(item: MediaManagerItem): Promise<MediaManagerItem[]> {
+        const parts = item.mimeType.split("/");
+        return this.getItemType(parts[0])?.getVariants(item.id);
+    }
 
-  /**
-   *  Set metadata of an item.
-   * @param item
-   * @param data
-   */
-  public setMeta(item: MediaManagerItem, data: { [key: string]: string },): Promise<void> {
-    const parts = item.mimeType.split("/");
-    return this.getItemType(parts[0])?.setMeta(item.id, data);
-  }
+    /**
+     * Upload cropped image.
+     * @param item
+     * @param file
+     * @param fileName
+     * @param group
+     * @param localeId
+     */
+    public uploadVariant(item: MediaManagerItem, file: UploaderFile, fileName: string, group?: string, localeId?: string): Promise<MediaManagerItem> {
+        const parts = item.mimeType.split("/");
+        return this.getItemType(parts[0])?.uploadVariant(item, file, fileName, group, localeId);
+    }
 
-  /**
-   * Delete an item.
-   * @param item
-   */
-  public delete(item: MediaManagerItem): Promise<void> {
-    const parts = item.mimeType.split("/");
-    return this.getItemType(parts[0])?.delete(item.id);
-  }
+    /**
+     * Get metadata of an item.
+     * @param item
+     */
+    public getMeta(item: MediaManagerItem): Promise<{ key: string; value: string }[]> {
+        const parts = item.mimeType.split("/");
+        return this.getItemType(parts[0])?.getMeta(item.id);
+    }
+
+    public getOrigin(id: string) {
+        return this.getItemType("image")?.getOrigin(id);
+    }
+
+    /**
+     *  Set metadata of an item.
+     * @param item
+     * @param data
+     */
+    public setMeta(item: MediaManagerItem, data: { [key: string]: string },): Promise<void> {
+        const parts = item.mimeType.split("/");
+        return this.getItemType(parts[0])?.setMeta(item.id, data);
+    }
+
+    /**
+     * Delete an item.
+     * @param item
+     */
+    public delete(item: MediaManagerItem): Promise<void> {
+        const parts = item.mimeType.split("/");
+        return this.getItemType(parts[0])?.delete(item.id);
+    }
 }

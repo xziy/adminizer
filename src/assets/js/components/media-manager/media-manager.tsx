@@ -101,7 +101,7 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-const MediaManager = ({layout, config, onChange, value}: Props ) => {
+const MediaManager = ({layout, config, onChange, value}: Props) => {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [items, setItems] = useState<Media[]>(value || []);
     const activeIndex = activeId !== null ? items.findIndex(item => item.id === activeId) : -1;
@@ -110,7 +110,7 @@ const MediaManager = ({layout, config, onChange, value}: Props ) => {
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
-    const addMediaWithCallback  = useCallback((newMedia: Media) => {
+    const addMediaWithCallback = useCallback((newMedia: Media) => {
         setItems((prev) => {
             const newItems = [...prev, newMedia];
             if (onChange) onChange(newItems);
@@ -132,7 +132,7 @@ const MediaManager = ({layout, config, onChange, value}: Props ) => {
         managerId: config.id,
         group: config.group,
         config: {},
-        addMedia: (media) => addMediaWithCallback (media),
+        addMedia: (media) => addMediaWithCallback(media),
         removeMedia: (media) => removeMediaWithCallback(media),
         imageUrl: (media: Media) => {
             if (media.mimeType && media.mimeType.split("/")[0] === 'image') {

@@ -28,4 +28,7 @@ export class Category extends Model<
 
     @Column(DataType.JSON)
     declare mediamanager_one: object
+
+    @Column(DataType.JSON)
+    declare mediamanager_two: object
 }

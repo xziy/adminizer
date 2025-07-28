@@ -30,9 +30,10 @@ export function randomFileName(filenameOrig: string, type: string, prefix: boole
 export async function saveRelationsMediaManager(fields: Fields, reqData: PostParams, model: string, recordId: string) {
 	for (let prop in reqData) {
 		let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
+		let options = fieldConfigConfig.options as MediaManagerOptionsField;
 		if (fieldConfigConfig.type === 'mediamanager') {
-			let data = reqData[prop] as MediaManagerWidgetData;
-			let mediaManager = MediaManagerHandler.get(data.mediaManagerId)
+			let data = reqData[prop] as MediaManagerWidgetData[];
+			let mediaManager = MediaManagerHandler.get(options?.id ?? 'default')
 			await mediaManager.setRelations(data, model, recordId, prop)
 		}
 	}
@@ -44,7 +45,7 @@ export async function saveRelationsMediaManager(fields: Fields, reqData: PostPar
 */
 export async function getRelationsMediaManager(data: MediaManagerWidgetJSON) {
 	let mediaManager = MediaManagerHandler.get(data.mediaManagerId)
-	return await mediaManager.getRelations(data.list)
+	return await mediaManager.getRelations(data.list ?? [])
 }
 
 /*
@@ -59,10 +60,7 @@ export async function deleteRelationsMediaManager(adminizer: Adminizer, model: s
 		if (field && field.type === 'mediamanager') {
 			const option = field.options as MediaManagerOptionsField
 			let mediaManager = MediaManagerHandler.get(option?.id ?? 'default')
-			let emptyData: MediaManagerWidgetData = {
-				list: [],
-				mediaManagerId: ''
-			}
+			let emptyData: MediaManagerWidgetData[] = []
 			await mediaManager.setRelations(emptyData, model, record[0].id as string, key)
 		}
 	}
