@@ -383,24 +383,14 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
-                    //TODO what is this?
-                    // config: {
-                    //     convert: 'image/jpeg',
-                    //     sizes: [
-                    //         {
-                    //             lg: {
-                    //                 width: 750,
-                    //                 height: 750
-                    //             }
-                    //         },
-                    //         {
-                    //             sm: {
-                    //                 width: 350,
-                    //                 height: 350
-                    //             }
-                    //         },
-                    //     ]
-                    // }
+                }
+            },
+            mediamanager_two: {
+                title: 'Images 2',
+                type: 'mediamanager',
+                options: {
+                    id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
+                    group: 'avatars',
                 }
             },
         }

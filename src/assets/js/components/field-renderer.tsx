@@ -89,12 +89,9 @@ const FieldRenderer: FC<{
     }, [onChange, field.name])
 
     const handleMediaChange = useCallback((mediaList: Media[]) => {
-        const transformedData = {
-            list: mediaList.map(media => ({ id: media.id })),
-            mediaManagerId: field.options.id
-        };
+        const transformedData = mediaList.map(media => ({ id: media.id, url: media.url }))
         // console.log(field.name, transformedData)
-        onChange(field.name, JSON.stringify(transformedData))
+        onChange(field.name, transformedData)
     }, [onChange, field.name])
 
     const inputClassName = useMemo(() => {

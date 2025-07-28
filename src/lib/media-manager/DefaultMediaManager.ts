@@ -80,16 +80,11 @@ export class DefaultMediaManager extends AbstractMediaManager {
         return data;
     }
 
-    public async setRelations(data: MediaManagerWidgetData, model: string, modelId: string, widgetName: string,): Promise<void> {
+    public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
         // TODO refactor CRUD functions for DataAccessor usage
         let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
             where: {modelId: modelId, model: model, widgetName: widgetName},
         });
-
-        // for (const modelAssociation of modelAssociations) {
-        //     // TODO refactor CRUD functions for DataAccessor usage
-        //     await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](modelAssociation.id)
-        // }
 
         for (const modelAssociation of modelAssociations) {
             const q: Record<string, any> = {};
@@ -99,7 +94,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
         }
 
-        for (const [key, widgetItem] of data.list.entries()) {
+        for (const [key, widgetItem] of data.entries()) {
             // TODO refactor CRUD functions for DataAccessor usage
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
                 mediaManagerId: this.id,

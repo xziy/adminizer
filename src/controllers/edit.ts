@@ -167,14 +167,10 @@ export default async function edit(req: ReqType, res: ResType) {
     for (const field of Object.keys(fields)) {
         let fieldConfigConfig = fields[field].config as BaseFieldConfig;
         if (fieldConfigConfig.type === 'mediamanager') {
-            if (fields[field].model.type === 'association-many') {
-                record[field] = await getRelationsMediaManager({
-                    list: record[field],
-                    mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField).id ?? "default"
-                })
-            } else if (fields[field].model.type === "json") {
-                record[field] = await getRelationsMediaManager(record[field] as MediaManagerWidgetJSON)
-            }
+            record[field] = await getRelationsMediaManager({
+                list: record[field],
+                mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default"
+            })
         }
     }
     const props = inertiaAddHelper(req, entity, fields, record)

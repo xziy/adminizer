@@ -106,10 +106,9 @@ const AddForm: FC<{
             return () => resetFormErrors();
         }, [fields, catalog, openNewWindow]);
 
-        const handleFieldChange = useCallback(
-            (fieldName: string, value: FieldValue) => {
-                setData(fieldName, value);
-            }, []);
+        const handleFieldChange = useCallback((fieldName: string, value: FieldValue) => {
+            setData(fieldName, value);
+        }, []);
 
         const submit: FormEventHandler = async (e) => {
             e.preventDefault();
