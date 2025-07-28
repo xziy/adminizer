@@ -877,7 +877,7 @@ const CatalogTree = () => {
                                     insertDroppableFirst={false}
                                     classes={{
                                         draggingSource: styles.draggingSource,
-                                        dropTarget: styles.dropTarget,
+                                        dropTarget: `${styles.dropTarget} bg-chart-1/30`,
                                         placeholder: styles.placeholderContainer,
                                         root: 'py-4'
                                     }}
