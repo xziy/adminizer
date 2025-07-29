@@ -112,7 +112,6 @@ const CatalogTree = () => {
             setTreeData(resCatalog.nodes)
             setActionsTools(toolsActions)
             setIsNavigation(resCatalog.catalogSlug === "navigation");
-            console.log(toolsActions)
         };
 
         const initLocales = async () => {
@@ -319,7 +318,6 @@ const CatalogTree = () => {
                 _method: 'getEditTemplate'
             })
             if (res.data) {
-                // console.log(res.data.type)
                 if (res.data.type.includes('navigation')) {
                     switch (res.data.type) {
                         case 'navigation.group':
@@ -424,7 +422,6 @@ const CatalogTree = () => {
                     setPopupType('model')
                     break
                 case 'navigation.group':
-                    console.log(data.data)
                     setAddLinksGroupProps(data.data)
                     setPopupType('navigation.group')
                     break

@@ -53,7 +53,6 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
             let res = await axios.post(`${uploadUrl}`, {
                 _method: 'getLocales'
             });
-            // console.log(res.data.data)
             setMessages(res.data.data);
         };
 

@@ -116,8 +116,7 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
 
     const handleActionWidget = async (api: string) => {
         try {
-            const res = await axios.post(api);
-            console.log(res.data)
+            await axios.post(api);
         } catch (error) {
             console.error('Error performing widget action:', error);
         }

@@ -118,7 +118,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
             setIsLoadMore(data.next);
             setSkip(newSkip);
         } catch (error) {
-            console.error("Ошибка подгрузки медиа:", error);
+            console.error("Error media load:", error);
         } finally {
             setLoading(false);
         }

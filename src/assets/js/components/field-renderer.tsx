@@ -90,7 +90,6 @@ const FieldRenderer: FC<{
 
     const handleMediaChange = useCallback((mediaList: Media[]) => {
         const transformedData = mediaList.map(media => ({ id: media.id, url: media.url }))
-        // console.log(field.name, transformedData)
         onChange(field.name, transformedData)
     }, [onChange, field.name])
 
