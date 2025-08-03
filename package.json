@@ -137,7 +137,6 @@
 		"react-simple-wysiwyg": "^3.2.2",
 		"sails-disk": "^2.1.2",
 		"sails-postgresql": "^5.0.1",
-		"sequelize": "^6.37.5",
 		"sequelize-typescript": "^2.1.6",
 		"shelljs": "^0.9.2",
 		"sonner": "^2.0.3",
