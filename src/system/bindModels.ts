@@ -8,8 +8,10 @@ export default async function bindModels(adminizer: Adminizer) {
   let defaultOrmAdapter = adminizer.config.system?.defaultORM;
   if (!defaultOrmAdapter && adminizer.ormAdapters.length === 1) {
     defaultOrmAdapter = adminizer.ormAdapters[0].ormType;
-  } else {
-    throw new Error("Default ORM adapter was not provided")
+  } 
+
+  if (!defaultOrmAdapter) {
+    throw new Error("Default ORM adapter was not provided");
   }
 
   const systemModelsDir = path.resolve(import.meta.dirname, "../models");
