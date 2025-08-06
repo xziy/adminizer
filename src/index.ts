@@ -1,6 +1,14 @@
 export * from "./helpers/configHelper";
 export * from "./helpers/accessRightsHelper";
+export * from "./lib/v4/widgets/abstractAction"
+export * from "./lib/v4/widgets/abstractInfo"
+export * from "./lib/v4/widgets/abstractCustom"
+export * from "./lib/v4/widgets/abstractLink"
+export * from "./lib/v4/widgets/abstractWidgetBase"
+export * from "./lib/v4/widgets/abstractSwitch"
 export * from "./lib/v4/widgets/widgetHandler";
+export * from  "./lib/v4/catalog/AbstractCatalog"
+export * from "./lib/v4/catalog/Navigation"
 export * from "./lib/v4/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
 export * from "./interfaces/adminpanelConfig";
@@ -11,7 +19,7 @@ export * from "./lib/v4/model/adapter/sequelize"
 export * from "./lib/Adminizer";
 export * from "./models/GroupAP"
 export * from "./models/UserAP"
-// export * from "./models/MediaManagerAP"
-// export * from "./models/MediaManagerAssociationsAP"
-// export * from "./models/MediaManagerMetaAP"
+export * from "./models/MediaManagerAP"
+export * from "./models/MediaManagerAssociationsAP"
+export * from "./models/MediaManagerMetaAP"
 export * from "./models/NavigationAP"
