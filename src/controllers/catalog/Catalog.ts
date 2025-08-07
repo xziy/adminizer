@@ -19,7 +19,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 		return res.sendStatus(404)
 	}
 
-	const _catalog = CatalogHandler.getCatalog(slug)
+	const _catalog = req.adminizer.catalogHandler.getCatalog(slug)
 	if (_catalog === undefined) return res.sendStatus(404);
 
 	const idList = await _catalog.getIdList();
