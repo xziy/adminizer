@@ -1,4 +1,4 @@
-import InfoBase from "../../lib/v4/widgets/abstractInfo";
+import {InfoBase} from "../../lib/v4/widgets/abstractInfo";
 
 export async function widgetInfoController(req: ReqType, res: ResType) {
 	let widgetId = req.params.widgetId;

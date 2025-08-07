@@ -1,15 +1,15 @@
-import SwitcherBase from "./abstractSwitch";
-import InfoBase from "./abstractInfo";
-import ActionBase from "./abstractAction";
-import LinkBase from "./abstractLink";
-import CustomBase from "./abstractCustom";
+import {SwitchBase} from "./abstractSwitch";
+import {InfoBase} from "./abstractInfo";
+import {ActionBase} from "./abstractAction";
+import {LinkBase} from "./abstractLink";
+import {CustomBase} from "./abstractCustom";
 import {AdminpanelIcon} from "../../../interfaces/adminpanelConfig";
 import {Adminizer} from "../../Adminizer";
 import {UserAP} from "models/UserAP";
 import * as process from "node:process";
 import {I18n} from "../I18n";
 
-export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
+export type WidgetType = (SwitchBase | InfoBase | ActionBase | LinkBase | CustomBase);
 
 export interface WidgetConfig {
     id: string;
@@ -86,7 +86,7 @@ export class WidgetHandler {
         if (this.widgets.length) {
             let id_key = 0
             for (const widget of this.widgets) {
-                if (widget instanceof SwitcherBase) {
+                if (widget instanceof SwitchBase) {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         widgets.push({
                             id: `${widget.id}__${id_key}`,

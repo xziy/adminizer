@@ -1,6 +1,6 @@
-import BaseWidget from "./abstractWidgetBase";
+import {BaseWidget} from "./abstractWidgetBase";
 
-export default abstract class ActionBase extends BaseWidget {
+export abstract class ActionBase extends BaseWidget {
 
 	public readonly widgetType = "action"
 

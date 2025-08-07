@@ -38,7 +38,7 @@ import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
 import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
 import {TestCatalog} from "./virtual-catalog/virtualCatalog";
-import {CatalogHandler} from "../dist/lib/v4/catalog/CatalogHandler";
+import {CatalogHandler} from "../dist";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
