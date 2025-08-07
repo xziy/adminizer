@@ -408,7 +408,7 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 }
 
 export interface MediaManagerOptionsField {
-    id: string
+    id: 'default' | string
     group: string
     config?: Record<string, any>
 }

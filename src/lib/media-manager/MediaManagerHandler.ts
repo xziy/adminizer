@@ -17,7 +17,6 @@ export class MediaManagerHandler {
             instance = this.managers[0]
         }
         if (!instance) {
-            Adminizer.log.debug(`MediaManager list ${JSON.stringify(this.managers, null, 2)}`)
             Adminizer.log.debug(`MediaManager with id ${id} not found`)
         }
         Adminizer.log.debug(`ins`, instance)

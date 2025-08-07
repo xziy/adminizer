@@ -170,7 +170,10 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         }
 
         if (type === 'mediamanager') {
-            let mediaManager = MediaManagerHandler.get('default')
+            const mConfig = field.config as BaseFieldConfig
+            const mOptions = mConfig?.options as MediaManagerOptionsField
+
+            const mediaManager = MediaManagerHandler.get(mOptions.id || 'default')
             if (!mediaManager) {
                 options = {}
             } else {
