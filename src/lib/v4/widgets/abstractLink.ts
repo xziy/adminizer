@@ -1,4 +1,4 @@
-import BaseWidget from "./abstractWidgetBase";
+import {BaseWidget} from "./abstractWidgetBase";
 import {MaterialIcon} from "../../../interfaces/MaaterialIcons";
 
 export interface Links {
@@ -10,7 +10,7 @@ export interface Links {
 	backgroundCSS: string | null
 }
 
-export default abstract class LinkBase extends BaseWidget {
+export abstract class LinkBase extends BaseWidget {
 
 	public readonly widgetType = "link"
 

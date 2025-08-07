@@ -4,10 +4,10 @@ import {
     AbstractItem,
     ActionHandler,
     Item
-} from "../../dist/lib/v4/catalog/AbstractCatalog";
+} from "../../dist";
 import {Adminizer} from "../../dist";
 import {v4 as uuid} from "uuid";
-import {NavItem, StorageServices} from "../../dist/lib/v4/catalog/Navigation";
+import {NavItem} from "../../dist";
 
 interface TestItem extends Item {
     modelId?: string
