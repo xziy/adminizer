@@ -62,7 +62,7 @@ export class AccessRightsHelper {
 
 	public hasPermission(tokenId: string, user: UserAP): boolean {
 		if(!tokenId) {
-			Adminizer.log.error(
+			Adminizer.log.warn(
 				`AccessRightsHelper > hasPermission no tokenId: ${tokenId}`
 			)
 			return false

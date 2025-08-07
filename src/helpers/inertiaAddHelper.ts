@@ -10,10 +10,29 @@ import {
 import {AbstractControls, ControlType} from "../lib/v4/controls/AbstractControls";
 import chalk from "chalk";
 import {ModelAnyField} from "../lib/v4/model/AbstractModel";
-import { isObject } from "./JsUtils";
+import {isObject} from "./JsUtils";
+import {MediaManagerHandler} from "../lib/media-manager/MediaManagerHandler";
 
 export type PropsFieldType =
-   'text' | 'number' | 'range' | 'week' | 'month' | 'email' | 'color' | 'time' | 'date' | 'datetime-local' | 'password' | 'select' | 'select-many' | 'association-many' | 'association' | 'textarea' | 'mediamanager' | 'checkbox' | ControlType
+    'text'
+    | 'number'
+    | 'range'
+    | 'week'
+    | 'month'
+    | 'email'
+    | 'color'
+    | 'time'
+    | 'date'
+    | 'datetime-local'
+    | 'password'
+    | 'select'
+    | 'select-many'
+    | 'association-many'
+    | 'association'
+    | 'textarea'
+    | 'mediamanager'
+    | 'checkbox'
+    | ControlType
 
 interface FieldProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
@@ -58,7 +77,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
         let fieldConfig = field.config
-        if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
+        if (!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
         if (!!fieldConfig.visible === false) continue
 
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
@@ -150,9 +169,14 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'leaflet')
         }
 
-        if(type === 'mediamanager'){
-            fieldType = 'mediamanager'
-            options = (field.config as BaseFieldConfig).options
+        if (type === 'mediamanager') {
+            let mediaManager = MediaManagerHandler.get('default')
+            if (!mediaManager) {
+                options = {}
+            } else {
+                fieldType = 'mediamanager'
+                options = (field.config as BaseFieldConfig).options
+            }
         }
 
         props.fields.push({
@@ -172,7 +196,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 }
 
 export function getControlsOptions(fieldConfig: Field["config"], req: ReqType, type: ControlType, defaultControlName: string) {
-    if(!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
+    if (!isObject(fieldConfig)) throw `Type error: fieldConfig is object`
     const fieldOptions = fieldConfig?.options as WysiwygOptions | TuiEditorOptions | HandsontableOptions;
 
     let control = getControl(req, type, fieldOptions?.name, defaultControlName);
@@ -257,9 +281,9 @@ export function getControl(req: ReqType, type: ControlType, name: string | undef
 function setAssociationValues(field: Field, value: string[]) {
     let options = []
     let initValue: string[] = []
-    const config = field.config 
-    if(!isObject(config)) throw `Type error: config is object`
-        
+    const config = field.config
+    if (!isObject(config)) throw `Type error: config is object`
+
     const isOptionSelected = (option: string | number | boolean, value: string | number | boolean | (string | number | boolean)[]): boolean => {
         if (Array.isArray(value)) {
             return value.includes(option);
@@ -305,7 +329,7 @@ function setAssociationValues(field: Field, value: string[]) {
             value: optAny[config.identifierField],
         });
 
-        if(!isObject(config)) throw `Type error: config is object`
+        if (!isObject(config)) throw `Type error: config is object`
         if (config.identifierField && isOptionSelected(opt[config.identifierField], getAssociationValue(value, field))) {
             initValue.push(opt[config.identifierField])
         }

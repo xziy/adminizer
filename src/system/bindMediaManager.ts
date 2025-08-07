@@ -5,6 +5,7 @@ import serveStatic from "serve-static";
 import path from "path";
 
 export default function bindMediaManager(adminizer: Adminizer) {
+    if(!adminizer.config.mediamanager) return
 	adminizer.emitter.on("adminizer:loaded", async () => {
 		try {
 			let mediaManager = new DefaultMediaManager(
