@@ -145,7 +145,7 @@ export default async function edit(req: ReqType, res: ResType) {
                 // update navigation tree after model updated
                 if (req.adminizer.config.navigation) {
                     for (const section of req.adminizer.config.navigation.sections) {
-                        let navigation = CatalogHandler.getCatalog('navigation')
+                        let navigation = req.adminizer.catalogHandler.getCatalog('navigation')
                         navigation.setId(section)
                         let navItem = navigation.itemTypes.find(item => item.type === entity.name.toLowerCase())
                         if (navItem) {
