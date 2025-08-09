@@ -165,8 +165,6 @@ export class Adminizer {
             }
         };
 
-
-
         this.modelHandler = new ModelHandler();
 
         // TODO: 'hot reload' unbind models & unbind forms
