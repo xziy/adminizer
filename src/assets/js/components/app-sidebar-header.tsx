@@ -3,6 +3,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import {NavUser} from "@/components/nav-user.tsx";
 import ThemeSwitcher from '@/components/theme-switcher';
+import {NotificationCenter} from "@/components/notifications/NotificationCenter.tsx";
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     return (
@@ -11,6 +12,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1"/>
                     <Breadcrumbs breadcrumbs={breadcrumbs}/>
+                </div>
+                <div className="flex items-center gap-2">
+                    <NotificationCenter/>
                 </div>
                 <div className="flex gap-4 items-center">
                     <ThemeSwitcher />

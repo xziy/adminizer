@@ -34,6 +34,8 @@ import {bindControls} from "../system/bindControls";
 import {ControlsHandler} from "./v4/controls/ControlsHandler";
 import {CatalogHandler} from "./v4/catalog/CatalogHandler";
 import {v4 as uuid} from "uuid";
+import {NotificationService} from "./v4/notifications/NotificationService";
+import {INotification} from "../interfaces/types";
 
 export class Adminizer {
     // Preconfigures
@@ -52,6 +54,7 @@ export class Adminizer {
     accessRightsHelper: AccessRightsHelper
     configHelper: ConfigHelper
     menuHelper: MenuHelper
+    notificationService!: NotificationService;
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
     vite: ViteDevServer
@@ -224,6 +227,10 @@ export class Adminizer {
         bindInertia(this);
 
         await bindAuthorization(this);
+
+        // Bind notification service
+        this.notificationService = new NotificationService(this);
+
         await Router.bind(this); // must be after binding policies and req/res functions
 
         /**
@@ -231,6 +238,11 @@ export class Adminizer {
          * This call is used so that other apps can know that the admin panel is present in the panel and has been loaded, and can activate their logic.
          */
         this._emitter.emit('adminizer:loaded');
+    }
+
+    // Хелпер для отправки уведомлений из других частей системы
+    public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read'>): Promise<string> {
+        return this.notificationService.dispatchNotification(notification);
     }
 
     public get emitter(): EventEmitter {
