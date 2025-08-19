@@ -19,6 +19,7 @@ import { mediaManagerController } from "../controllers/media-manager/mediaManage
 import { thumbController } from "../controllers/media-manager/ThumbController";
 import {Adminizer} from "../lib/Adminizer";
 import timezones from "../controllers/timezones";
+import {getNotificationsStream, sendNotification, getNotifications, markAsRead} from "../controllers/notifications/NotificationController";
 
 export default class Router {
 
@@ -110,7 +111,35 @@ export default class Router {
 		);
 		adminizer.app.all(`${adminizer.config.routePrefix}/get-thumbs`, adminizer.policyManager.bindPolicies(policies, thumbController));
 
-		/**
+        /**
+         * Notifications
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/api/notifications/stream`,
+            adminizer.policyManager.bindPolicies(policies, getNotificationsStream)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/api/notifications`,
+            adminizer.policyManager.bindPolicies(policies, getNotifications)
+        );
+
+        adminizer.app.put(
+            `${adminizer.config.routePrefix}/api/notifications/:id/read`,
+            adminizer.policyManager.bindPolicies(policies, markAsRead)
+        );
+
+        // adminizer.app.post(
+        //     `${adminizer.config.routePrefix}/api/notifications/send`,
+        //     adminizer.policyManager.bindPolicies(
+        //         [...policies, 'isAdmin'], // Только для админов
+        //         (req: ReqType, res: ResType) => NotificationController.sendNotification(req, res)
+        //     )
+        // );
+
+
+
+        /**
 		 * List of records
 		 */
 		adminizer.app.all(baseRoute, adminizer.policyManager.bindPolicies(policies, _list));

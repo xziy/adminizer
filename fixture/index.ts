@@ -39,6 +39,7 @@ import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
 import {TestCatalog} from "./virtual-catalog/virtualCatalog";
 import {CatalogHandler} from "../dist";
+import {INotification} from "../src/interfaces/types";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -172,11 +173,6 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
-
-    // adminizer.emitter.on("adminizer:loaded", async () => {
-    //     CatalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
-    // })
-
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
@@ -196,6 +192,23 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Test Catalog */
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
+
+
+        /** Test notifications */
+        async function sendNotificationsWithDelay() {
+            const notifications: Omit<INotification, 'id' | 'createdAt' | 'read'>[] = [
+                {message: "Первое уведомление", title: "Тест 1", type: "info", priority: "low"},
+                {message: "Второе уведомление", title: "Тест 2", type: "warning", priority: "medium"},
+                {message: "Третье уведомление", title: "Тест 3", type: "success", priority: "high"}
+            ];
+
+            for (const notification of notifications) {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем 2 секунды
+                await adminizer.sendNotification(notification);
+            }
+        }
+
+        setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
 
     } catch (e) {
         console.log(e)

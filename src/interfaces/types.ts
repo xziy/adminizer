@@ -33,3 +33,23 @@ export interface PropsField {
     isIn?: string[] | number[] | boolean[];
     options?: Record<string, unknown> | Record<string, unknown>[]
 }
+
+export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
+export type NotificationType = 'info' | 'warning' | 'error' | 'success';
+
+export interface INotification {
+    id: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+    priority: NotificationPriority;
+    createdAt: Date;
+    read: boolean;
+    userId?: string; // Для привязки к пользователю
+    metadata?: Record<string, any>;
+}
+
+export interface INotificationEvent {
+    type: 'notification' | 'heartbeat' | 'connected' | 'error';
+    data: INotification | string | any;
+}
