@@ -3,7 +3,6 @@ import cookieParser from 'cookie-parser'
 import * as path from "path";
 import winston from "winston";
 import EventEmitter from 'events';
-import chalk from 'chalk';
 
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import PolicyManager from "./v4/PolicyManager";
@@ -34,7 +33,10 @@ import {bindControls} from "../system/bindControls";
 import {ControlsHandler} from "./v4/controls/ControlsHandler";
 import {CatalogHandler} from "./v4/catalog/CatalogHandler";
 import {v4 as uuid} from "uuid";
-import {NotificationService} from "./v4/notifications/NotificationService";
+import { NotificationHandler } from './v4/notifications/NotificationHandler';
+import { GeneralNotificationService } from './v4/notifications/GeneralNotificationService';
+import { SystemNotificationService } from './v4/notifications/SystemNotificationService';
+import {bindNotifications} from "../system/bindNotifications";
 import {INotification} from "../interfaces/types";
 
 export class Adminizer {
@@ -54,7 +56,7 @@ export class Adminizer {
     accessRightsHelper: AccessRightsHelper
     configHelper: ConfigHelper
     menuHelper: MenuHelper
-    notificationService!: NotificationService;
+    notificationHandler!: NotificationHandler;
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
     vite: ViteDevServer
@@ -228,8 +230,8 @@ export class Adminizer {
 
         await bindAuthorization(this);
 
-        // Bind notification service
-        this.notificationService = new NotificationService(this);
+        // Bind notifications
+        await bindNotifications(this);
 
         await Router.bind(this); // must be after binding policies and req/res functions
 
@@ -240,9 +242,16 @@ export class Adminizer {
         this._emitter.emit('adminizer:loaded');
     }
 
-    // Хелпер для отправки уведомлений из других частей системы
-    public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read'>): Promise<string> {
-        return this.notificationService.dispatchNotification(notification);
+    // Хелпер для отправки уведомлений
+    public async sendNotification(notification: INotification): Promise<string> {
+        const notificationClass = notification.notificationClass || 'general';
+        return this.notificationHandler.dispatchNotification(notificationClass, notification);
+    }
+
+    // Хелпер для системных событий
+    public async logSystemEvent(action: string, details: string, metadata?: any): Promise<string> {
+        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
+        return systemNotificationService.logSystemEvent(action, details, metadata);
     }
 
     public get emitter(): EventEmitter {
