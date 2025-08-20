@@ -196,15 +196,67 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Test notifications */
         async function sendNotificationsWithDelay() {
-            const notifications: Omit<INotification, 'id' | 'createdAt' | 'read'>[] = [
-                {message: "Первое уведомление", title: "Тест 1", type: "info", priority: "low"},
-                {message: "Второе уведомление", title: "Тест 2", type: "warning", priority: "medium"},
-                {message: "Третье уведомление", title: "Тест 3", type: "success", priority: "high"}
+            const notifications: INotification[] = [
+                {
+                    message: "Первое уведомление", title: "Тест 1", type: "info", priority: "low",
+                    id: "1",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                },
+                {
+                    id: '1a',
+                    title: 'Admin system notification',
+                    message: 'This is a test system notification',
+                    userId: 1,
+                    createdAt: new Date(),
+                    read: false,
+                    notificationClass: 'system',
+                    type: "info",
+                    priority: "low"
+                },
+                {
+                    message: "Второе уведомление", title: "Тест 2", type: "warning", priority: "medium",
+                    id: "2",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                },
+                {
+                    id: '1a',
+                    title: 'Admin system notification',
+                    message: 'This is a test system notification',
+                    userId: 1,
+                    createdAt: new Date(),
+                    read: false,
+                    notificationClass:'system',
+                    type: "info",
+                    priority: "low"
+                },
+                {
+                    message: "Третье уведомление", title: "Тест 3", type: "success", priority: "high",
+                    id: "3",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                }
             ];
 
             for (const notification of notifications) {
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем 2 секунды
-                await adminizer.sendNotification(notification);
+                switch (notification.notificationClass) {
+                    case "general": {
+                        await adminizer.sendNotification(notification);
+                        break;
+                    }
+                    case 'system': {
+                        await adminizer.logSystemEvent(notification.title, notification.message, undefined)
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
             }
         }
 

@@ -34,6 +34,7 @@ export interface PropsField {
     options?: Record<string, unknown> | Record<string, unknown>[]
 }
 
+// src/types/notifications.ts
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
 export type NotificationType = 'info' | 'warning' | 'error' | 'success';
 
@@ -45,11 +46,21 @@ export interface INotification {
     priority: NotificationPriority;
     createdAt: Date;
     read: boolean;
-    userId?: string; // Для привязки к пользователю
+    userId?: number;
+    notificationClass: string; // Класс нотификации: 'general', 'system', etc.
     metadata?: Record<string, any>;
 }
 
 export interface INotificationEvent {
     type: 'notification' | 'heartbeat' | 'connected' | 'error';
     data: INotification | string | any;
+    notificationClass?: string; // Для фильтрации
+}
+
+export interface INotificationService {
+    readonly notificationClass: string;
+    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<string>;
+    getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
+    markAsRead(id: string): Promise<void>;
+    getClientCount(): number;
 }
