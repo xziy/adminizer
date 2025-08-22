@@ -5,7 +5,7 @@ import { SystemNotificationService } from '../lib/v4/notifications/SystemNotific
 
 export async function bindNotifications(adminizer: Adminizer): Promise<void> {
     // Создаем хендлер
-    adminizer.notificationHandler = new NotificationHandler(adminizer);
+    adminizer.notificationHandler = new NotificationHandler();
 
     // Регистрируем сервисы
     const generalService = new GeneralNotificationService(adminizer);

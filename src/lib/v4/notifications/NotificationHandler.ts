@@ -5,11 +5,9 @@ import {UserAP} from "../../../models/UserAP";
 
 export class NotificationHandler extends EventEmitter {
     private services: Map<string, INotificationService> = new Map();
-    private adminizer: Adminizer;
 
-    constructor(adminizer: Adminizer) {
+    constructor() {
         super();
-        this.adminizer = adminizer;
     }
 
     // Регистрация сервиса

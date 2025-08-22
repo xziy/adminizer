@@ -196,7 +196,7 @@ export class NotificationController {
 
             const notificationId = await req.adminizer.notificationHandler.dispatchNotification(
                 notificationClass,
-                { title, message, type, priority, userId }
+                { title, message, userId }
             );
 
             res.json({ success: true, id: notificationId });

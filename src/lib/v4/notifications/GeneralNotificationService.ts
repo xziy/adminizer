@@ -60,8 +60,6 @@ export class GeneralNotificationService extends AbstractNotificationService {
                     createdAt: new Date(),
                     read: false,
                     notificationClass: this.notificationClass,
-                    type: "info",
-                    priority: "low"
                 }
             ]
 

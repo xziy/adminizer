@@ -1,19 +1,21 @@
-// components/NotificationCenter.tsx
-import { useState, useEffect } from 'react';
-
-interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    type: string;
-    priority: string;
-    createdAt: string;
-    read: boolean;
-}
+import {useState, useEffect} from 'react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+    DropdownMenuGroup,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {Bell, Info} from "lucide-react";
+import {INotification} from "../../../../interfaces/types.ts"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
+import { useInitials } from '@/hooks/use-initials';
 
 export function NotificationCenter() {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<INotification[]>([]);
     const [isConnected, setIsConnected] = useState(false);
+    const getInitials = useInitials();
 
     useEffect(() => {
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
@@ -50,26 +52,55 @@ export function NotificationCenter() {
             method: 'PUT'
         });
         setNotifications(prev => prev.map(n =>
-            n.id === id ? { ...n, read: true } : n
+            n.id === id ? {...n, read: true} : n
         ));
     };
 
     return (
-        <div className="notification-center relative">
-            <div className="notification-header">
-                <h3>Уведомления {isConnected ? '🟢' : '🔴'}</h3>
-            </div>
-            <div className="notification-list flex flex-col gap-2 absolute w-[250px] bg-white z-[1111] p-3 shadow">
-                {notifications.map(notification => (
-                    <div key={notification.id} className={`notification ${notification.type} ${notification.read ? 'read' : 'unread'} border-b-2 last:border-none`}>
-                        <div className="notification-title">{notification.title}</div>
-                        <div className="notification-message">{notification.message}</div>
-                        <button onClick={() => markAsRead(notification.id)}>
-                            {notification.read ? '✓ Прочитано' : 'Пометить прочитанным'}
-                        </button>
-                    </div>
-                ))}
-            </div>
-        </div>
+        // <div className="notification-center relative">
+        //     <div className="notification-header">
+        //         <h3>Уведомления {isConnected ? '🟢' : '🔴'}</h3>
+        //     </div>
+        //     <div className="notification-list flex flex-col gap-2 absolute w-[250px] bg-white z-[1111] p-3 shadow">
+        //         {notifications.map(notification => (
+        //             <div key={notification.id} className={`notification ${notification.type} ${notification.read ? 'read' : 'unread'} border-b-2 last:border-none`}>
+        //                 <div className="notification-title">{notification.title}</div>
+        //                 <div className="notification-message">{notification.message}</div>
+        //                 <button onClick={() => markAsRead(notification.id)}>
+        //                     {notification.read ? '✓ Прочитано' : 'Пометить прочитанным'}
+        //                 </button>
+        //             </div>
+        //         ))}
+        //     </div>
+        // </div>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild className="cursor-pointer focus-visible:ring-0 data-[state=open]:bg-sidebar-accent">
+                    <Button variant="ghost">
+                        <Bell/>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuGroup>
+                        {notifications.map(notification => (
+                            <DropdownMenuItem key={notification.id}>
+                                <div className="grid grid-cols-2 grid-rows-2 items-center gap-2">
+                                    {notification.notificationClass === 'general' ? (
+                                        <Info className="size-8 text-chart-1"/>
+                                    ) : (
+                                        <Avatar className="h-8 w-8 overflow-hidden rounded-full">
+                                            <AvatarImage src={notification.user.avatar} alt={notification.user.login} />
+                                            <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                                {getInitials(notification.user.login)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     );
 }
