@@ -13,11 +13,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     <SidebarTrigger className="-ml-1"/>
                     <Breadcrumbs breadcrumbs={breadcrumbs}/>
                 </div>
-                <div className="flex items-center gap-2">
-                    <NotificationCenter/>
-                </div>
                 <div className="flex gap-4 items-center">
                     <ThemeSwitcher />
+                    <NotificationCenter/>
                     <NavUser />
                 </div>
             </div>

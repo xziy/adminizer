@@ -51,7 +51,7 @@ export class SystemNotificationService extends AbstractNotificationService {
             //     limit
             // });
 
-            const notifications: INotification[] = [
+            const notificationsDB: INotification[] = [
                 {
                     id: '1a',
                     title: 'Admin system notification',
@@ -60,10 +60,20 @@ export class SystemNotificationService extends AbstractNotificationService {
                     createdAt: new Date(),
                     read: false,
                     notificationClass: this.notificationClass,
-                    type: "info",
-                    priority: "low"
                 }
             ]
+
+            let notifications: INotification[] = [];
+            for (const notification of notificationsDB) {
+                const userDB = await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ id: notification.userId });
+                notifications.push({
+                    ...notification,
+                    user: {
+                        avatar: userDB.avatar,
+                        login: userDB.login
+                    }
+                });
+            }
 
             return notifications;
         } catch (error) {
@@ -87,8 +97,6 @@ export class SystemNotificationService extends AbstractNotificationService {
         return this.dispatchNotification({
             title: `Системное событие: ${action}`,
             message: details,
-            type: 'info',
-            priority: 'medium',
             metadata: {
                 ...metadata,
                 actionType: action,

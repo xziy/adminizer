@@ -35,18 +35,18 @@ export interface PropsField {
 }
 
 // src/types/notifications.ts
-export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
-export type NotificationType = 'info' | 'warning' | 'error' | 'success';
 
 export interface INotification {
     id: string;
     title: string;
     message: string;
-    type: NotificationType;
-    priority: NotificationPriority;
     createdAt: Date;
     read: boolean;
     userId?: number;
+    user?: {
+        avatar: string;
+        login: string;
+    }
     notificationClass: string; // Класс нотификации: 'general', 'system', etc.
     metadata?: Record<string, any>;
 }
