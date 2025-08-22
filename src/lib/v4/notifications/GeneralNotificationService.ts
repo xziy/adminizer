@@ -56,7 +56,6 @@ export class GeneralNotificationService extends AbstractNotificationService {
                     id: '1',
                     title: 'New notification',
                     message: 'This is a test notification',
-                    userId: 1,
                     createdAt: new Date(),
                     read: false,
                     notificationClass: this.notificationClass,

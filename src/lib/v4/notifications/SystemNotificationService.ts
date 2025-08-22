@@ -55,7 +55,7 @@ export class SystemNotificationService extends AbstractNotificationService {
                 {
                     id: '1a',
                     title: 'Admin system notification',
-                    message: 'This is a test system notification',
+                    message: 'This is a test system notification. This is a test system notification',
                     userId: 1,
                     createdAt: new Date(),
                     read: false,
