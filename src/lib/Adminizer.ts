@@ -95,7 +95,7 @@ export class Adminizer {
                 const normalizedPrefix = prefix.replace(/\/+/g, '/').replace(/\/+$/g, '');
                 if (normalizedPrefix) {
                     const url = req.url || req.originalUrl || '';
-                    if (!(url === normalizedPrefix || url.startsWith(normalizedPrefix + '/'))) {
+                    if (!(url === normalizedPrefix || url.startsWith(normalizedPrefix + '/') || url.startsWith('/public'))) {
                         // Not an admin route — pass to next middleware
                         return typeof next === 'function' ? next() : undefined;
                     }
