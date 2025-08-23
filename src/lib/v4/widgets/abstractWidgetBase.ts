@@ -1,6 +1,6 @@
 import {MaterialIcon} from "../../../interfaces/MaaterialIcons";
 
-export default abstract class BaseWidget {
+export abstract class BaseWidget {
 
 	/** Widget unique id */
 	public abstract readonly id: string;

@@ -1,18 +1,18 @@
 import { AbstractCatalog } from "./AbstractCatalog";
 
 export class CatalogHandler {
-	private static catalog: AbstractCatalog[] = [];
+	private catalog: AbstractCatalog[] = [];
 
-	public static add(catalog: AbstractCatalog) {
+    public add(catalog: AbstractCatalog) {
 		this.catalog.push(catalog)
 		return catalog
 	}
 
-	public static getAll() {
+	public getAll() {
 		return this.catalog;
 	}
 
-	public static getCatalog(slug: string) {
+	public getCatalog(slug: string) {
 		return this.catalog.find((catalog) => catalog.slug === slug)
 	}
 }

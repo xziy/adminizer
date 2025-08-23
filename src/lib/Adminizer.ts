@@ -32,6 +32,7 @@ import {bindInertia} from "../system/bindInertia";
 import {MenuHelper} from "../helpers/menuHelper";
 import {bindControls} from "../system/bindControls";
 import {ControlsHandler} from "./v4/controls/ControlsHandler";
+import {CatalogHandler} from "./v4/catalog/CatalogHandler";
 import {v4 as uuid} from "uuid";
 
 export class Adminizer {
@@ -55,6 +56,7 @@ export class Adminizer {
     widgetHandler: WidgetHandler
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
+    catalogHandler!: CatalogHandler
 
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
@@ -185,8 +187,6 @@ export class Adminizer {
             }
         };
 
-
-
         this.modelHandler = new ModelHandler();
 
         // TODO: 'hot reload' unbind models & unbind forms
@@ -207,6 +207,8 @@ export class Adminizer {
         this.menuHelper = new MenuHelper(this.config)
 
         this.widgetHandler = new WidgetHandler(this);
+
+        this.catalogHandler = new CatalogHandler();
 
         bindExpressUtils(this.app);
         bindReqFunctions(this);

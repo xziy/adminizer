@@ -8,7 +8,7 @@ export default function bindNavigation(adminizer: Adminizer) {
 			try {
 				adminizer.config.navigation.model = adminizer.config.navigation.model ? adminizer.config.navigation.model : 'NavigationAP'
 				let navigation = new Navigation(adminizer, adminizer.config.navigation)
-				CatalogHandler.add(navigation)
+                adminizer.catalogHandler.add(navigation)
 				adminizer.config.models[adminizer.config.navigation.model.toLowerCase()] = {
 					add: false,
 					edit: {

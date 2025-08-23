@@ -1,4 +1,4 @@
-import LinkBase, {Links} from "../../dist/lib/v4/widgets/abstractLink";
+import {LinkBase, Links} from "../../dist";
 
 export class SiteLinks extends LinkBase {
     icon?: string;

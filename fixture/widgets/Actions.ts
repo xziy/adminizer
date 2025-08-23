@@ -1,4 +1,4 @@
-import ActionBase from "../../dist/lib/v4/widgets/abstractAction";
+import {ActionBase} from "../../dist";
 
 export class ActionOne extends  ActionBase{
     icon?: string;

@@ -1,5 +1,4 @@
-import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
-import Example from "./models/Example";
+import {AdminpanelConfig} from "../dist";
 
 const routePrefix = "/adminizer";
 
@@ -381,7 +380,7 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Images 1',
                 type: 'mediamanager',
                 options: {
-                    id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
+                    id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
                 }
             },

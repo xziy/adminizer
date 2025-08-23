@@ -1,15 +1,15 @@
-import SwitcherBase from "./abstractSwitch";
-import InfoBase from "./abstractInfo";
-import ActionBase from "./abstractAction";
-import LinkBase from "./abstractLink";
-import CustomBase from "./abstractCustom";
+import {SwitchBase} from "./abstractSwitch";
+import {InfoBase} from "./abstractInfo";
+import {ActionBase} from "./abstractAction";
+import {LinkBase} from "./abstractLink";
+import {CustomBase} from "./abstractCustom";
 import {AdminpanelIcon} from "../../../interfaces/adminpanelConfig";
 import {Adminizer} from "../../Adminizer";
 import {UserAP} from "models/UserAP";
 import * as process from "node:process";
 import {I18n} from "../I18n";
 
-export type WidgetType = (SwitcherBase | InfoBase | ActionBase | LinkBase | CustomBase);
+export type WidgetType = (SwitchBase | InfoBase | ActionBase | LinkBase | CustomBase);
 
 export interface WidgetConfig {
     id: string;
@@ -86,7 +86,7 @@ export class WidgetHandler {
         if (this.widgets.length) {
             let id_key = 0
             for (const widget of this.widgets) {
-                if (widget instanceof SwitcherBase) {
+                if (widget.widgetType === 'switcher') {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         widgets.push({
                             id: `${widget.id}__${id_key}`,
@@ -99,7 +99,7 @@ export class WidgetHandler {
                             size: widget.size ?? null
                         })
                     }
-                } else if (widget instanceof InfoBase) {
+                } else if (widget.widgetType === 'info') {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         widgets.push({
                             id: `${widget.id}__${id_key}`,
@@ -112,7 +112,7 @@ export class WidgetHandler {
                             size: widget.size ?? null
                         })
                     }
-                } else if (widget instanceof ActionBase) {
+                } else if (widget.widgetType === 'action') {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         widgets.push({
                             id: `${widget.id}__${id_key}`,
@@ -125,7 +125,7 @@ export class WidgetHandler {
                             size: widget.size ?? null
                         })
                     }
-                } else if (widget instanceof LinkBase) {
+                } else if (widget.widgetType === 'link') {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         let links_id_key = 0
                         for (const link of widget.links) {
@@ -142,7 +142,7 @@ export class WidgetHandler {
                             links_id_key++;
                         }
                     }
-                } else if (widget instanceof CustomBase) {
+                } else if (widget.widgetType === 'custom') {
                     if (this.adminizer.accessRightsHelper.hasPermission(`widget-${widget.id}`, user)) {
                         widgets.push({
                             id: `${widget.id}_${id_key}`,

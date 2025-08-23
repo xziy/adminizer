@@ -38,7 +38,7 @@ import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
 import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
 import {TestCatalog} from "./virtual-catalog/virtualCatalog";
-import {CatalogHandler} from "../dist/lib/v4/catalog/CatalogHandler";
+import {CatalogHandler} from "../dist";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -172,10 +172,10 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
-    /** Test Catalog */
-    adminizer.emitter.on("adminizer:loaded", async () => {
-        CatalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
-    })
+
+    // adminizer.emitter.on("adminizer:loaded", async () => {
+    //     CatalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
+    // })
 
     try {
 
@@ -193,6 +193,9 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Custom widget */
         adminizer.widgetHandler.add(new CustomOne(adminizer.config.routePrefix));
+
+        /** Test Catalog */
+        adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
     } catch (e) {
         console.log(e)
