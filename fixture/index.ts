@@ -38,8 +38,8 @@ import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
 import {CustomOne} from "./widgets/Custom";
 import {ActionOne, ActionTwo} from "./widgets/Actions";
 import {TestCatalog} from "./virtual-catalog/virtualCatalog";
-import {CatalogHandler} from "../dist";
-import {INotification} from "../src/interfaces/types";
+import express from "express";
+import cookieParser from "cookie-parser";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -173,6 +173,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
+
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
@@ -193,110 +194,65 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         /** Test Catalog */
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
-
-        /** Test notifications */
-        async function sendNotificationsWithDelay() {
-            const notifications: INotification[] = [
-                {
-                    message: "Первое уведомление", title: "Тест 1", type: "info", priority: "low",
-                    id: "1",
-                    createdAt: undefined,
-                    read: false,
-                    notificationClass: "general"
-                },
-                {
-                    id: '1a',
-                    title: 'Admin system notification',
-                    message: 'This is a test system notification',
-                    userId: 1,
-                    createdAt: new Date(),
-                    read: false,
-                    notificationClass: 'system',
-                    type: "info",
-                    priority: "low"
-                },
-                {
-                    message: "Второе уведомление", title: "Тест 2", type: "warning", priority: "medium",
-                    id: "2",
-                    createdAt: undefined,
-                    read: false,
-                    notificationClass: "general"
-                },
-                {
-                    id: '1a',
-                    title: 'Admin system notification',
-                    message: 'This is a test system notification',
-                    userId: 1,
-                    createdAt: new Date(),
-                    read: false,
-                    notificationClass:'system',
-                    type: "info",
-                    priority: "low"
-                },
-                {
-                    message: "Третье уведомление", title: "Тест 3", type: "success", priority: "high",
-                    id: "3",
-                    createdAt: undefined,
-                    read: false,
-                    notificationClass: "general"
-                }
-            ];
-
-            for (const notification of notifications) {
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем 2 секунды
-                switch (notification.notificationClass) {
-                    case "general": {
-                        await adminizer.sendNotification(notification);
-                        break;
-                    }
-                    case 'system': {
-                        await adminizer.logSystemEvent(notification.title, notification.message, undefined)
-                        break;
-                    }
-                    default: {
-                        break;
-                    }
-                }
-            }
-        }
-
-        setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
-
     } catch (e) {
         console.log(e)
     }
 
+    // Start server
+    const mainApp = express();
 
-    // Main app on http
-    const mainApp = http.createServer(async (req, res) => {
-        const adminizerHandler = adminizer.getMiddleware();
-        if (req.url.startsWith(routePrefix) || req.url.startsWith('/public')) {
-            adminizerHandler(req, res);
-        } else if (
-            req.url.startsWith('/@vite') || // Requests to Vite
-            req.url.startsWith('/@id') || // Requests to Vite
-            req.url.startsWith('/src/assets') ||   // Requests to source files
-            req.url.startsWith('/@react-refresh') ||   // Requests to source files
+    // Add cookie parser
+    mainApp.use(cookieParser());
+
+    // Middleware for Vite
+    mainApp.use((req, res, next) => {
+        if (
+            req.url.startsWith('/@vite') ||
+            req.url.startsWith('/@id') ||
+            req.url.startsWith('/src/assets') ||
+            req.url.startsWith('/@react-refresh') ||
             req.url.startsWith('/node_modules') ||
             req.url.startsWith('/@fs') ||
             req.url.startsWith('/modules')
         ) {
-            adminizer.vite.middlewares(req, res);
+            adminizer.vite.middlewares(req, res, next);
         } else {
-            if (req.url.startsWith('/nav')) {
-                let header = await adminizer.modelHandler.model.get('navigationap')["_findOne"]({label: 'header'});
-                res.writeHead(200, {'Content-Type': 'application/json'});
-                res.end(JSON.stringify({header: header}));
-            } else {
-                res.writeHead(200, {'Content-Type': 'text/html'});
-                res.end('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
-            }
+            next();
         }
     });
 
-    mainApp.listen(3000, () => {
-        const isViteDev = process.env.VITE_ENV === "dev";
-        if (!isViteDev) console.log('MainApp listening on http://localhost:3000');
+    // Middleware for Adminizer
+    mainApp.use(adminizer.getMiddleware());
+
+    // Custom route
+    mainApp.get('/nav', async (req, res) => {
+        try {
+            let header = await adminizer.modelHandler.model.get('navigationap')["_findOne"]({label: 'header'});
+            res.json({header: header});
+        } catch (error) {
+            res.status(500).json({error: 'Internal server error'});
+        }
+    });
+
+    // Route for the main page
+    mainApp.get('/', (req, res) => {
+        res.send('<h1>Welcome to Adminizer</h1><p>Go to <a href="/adminizer">Adminizer</a></p>');
+    });
+
+    // Error handling
+    mainApp.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    });
+
+    // 404 handler
+    mainApp.use((req, res) => {
+        res.status(404).send('Not Found');
+    });
+
+    const server = http.createServer(mainApp);
+    server.listen(3000, () => {
+        console.log('MainApp listening on http://localhost:3000');
     });
 }
 
