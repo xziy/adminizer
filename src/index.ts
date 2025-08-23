@@ -12,6 +12,8 @@ export * from "./lib/v4/catalog/Navigation"
 export * from "./lib/v4/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
 export * from "./interfaces/adminpanelConfig";
+export * from "./interfaces/types";
+export * from "./interfaces/MaaterialIcons"
 export * from "./lib/v4/model/AbstractModel";
 export * from "./lib/v4/model/adapter/waterline";
 export * from "./lib/v4/model/adapter/typeorm";

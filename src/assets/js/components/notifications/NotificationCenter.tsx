@@ -120,11 +120,11 @@ export function NotificationCenter() {
                         <Bell/>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
+                <DropdownMenuContent className="z-[1002]" align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                     <DropdownMenuGroup>
                         {notifications.map(notification => (
-                            <>
-                                <DropdownMenuItem key={notification.id} asChild className="cursor-pointer"
+                            <div key={notification.id}>
+                                <DropdownMenuItem asChild className="cursor-pointer"
                                                   onSelect={(e) => e.preventDefault()}>
                                     <div
                                         className="grid grid-cols-[32px_300px] grid-rows-2 items-center gap-x-4 gap-y-1">
@@ -168,7 +168,7 @@ export function NotificationCenter() {
                                     </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator/>
-                            </>
+                            </div>
                         ))}
                     </DropdownMenuGroup>
                     <Button variant="secondary" className="w-full">View All</Button>
