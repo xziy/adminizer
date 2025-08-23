@@ -81,14 +81,36 @@ export class Adminizer {
     }
 
     getMiddleware() {
-        return (req: any, res: any) => {
-            this.app(req, res, (err: any) => {
+        return (req: express.Request, res: express.Response, next: () => void ) => {
+            // If a routePrefix is configured, only handle requests that match it.
+            try {
+                const prefix = (this.config && this.config.routePrefix) ? String(this.config.routePrefix) : '';
+                const normalizedPrefix = prefix.replace(/\/+/g, '/').replace(/\/+$/g, '');
+                if (normalizedPrefix) {
+                    const url = req.url || req.originalUrl || '';
+                    if (!(url === normalizedPrefix || url.startsWith(normalizedPrefix + '/'))) {
+                        // Not an admin route — pass to next middleware
+                        return typeof next === 'function' ? next() : undefined;
+                    }
+                }
+            }
+            catch (e) {
+                // If anything goes wrong while checking, fall back to handling the request
+            }
+
+            this.app(req, res, (err) => {
                 if (err) {
+                    // eslint-disable-next-line no-console
                     console.error("Error in Adminizer", err);
-                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Internal Server Error');
-                } else {
-                    res.writeHead(404, {'Content-Type': 'text/plain'});
+                }
+                else {
+                    // If Adminizer didn't handle the route, let the rest of the stack try
+                    if (typeof next === 'function') {
+                        return next();
+                    }
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
                     res.end('Route Not Found in Adminizer');
                 }
             });
