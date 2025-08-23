@@ -1,4 +1,4 @@
-import {Adminizer} from "../dist/lib/Adminizer";
+import {Adminizer, INotification} from "../dist";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
 import Waterline from "waterline";
@@ -193,6 +193,70 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Test Catalog */
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
+
+        /** Test notifications */
+        async function sendNotificationsWithDelay() {
+            const notifications: INotification[] = [
+                {
+                    message: "Первое уведомление", title: "Тест 1",
+                    id: "11",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                },
+                {
+                    id: '1a1',
+                    title: 'Admin system notification',
+                    message: 'This is a test system notification',
+                    userId: 1,
+                    createdAt: new Date(),
+                    read: false,
+                    notificationClass: 'system',
+                },
+                {
+                    message: "Второе уведомление", title: "Тест 2",
+                    id: "21",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                },
+                {
+                    id: '1a2',
+                    title: 'Admin system notification',
+                    message: 'This is a test system notification',
+                    userId: 1,
+                    createdAt: new Date(),
+                    read: false,
+                    notificationClass:'system',
+                },
+                {
+                    message: "Третье уведомление", title: "Тест 3",
+                    id: "313",
+                    createdAt: undefined,
+                    read: false,
+                    notificationClass: "general"
+                }
+            ];
+
+            for (const notification of notifications) {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем 2 секунды
+                switch (notification.notificationClass) {
+                    case "general": {
+                        await adminizer.sendNotification(notification);
+                        break;
+                    }
+                    case 'system': {
+                        await adminizer.logSystemEvent(notification.title, notification.message, undefined)
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+        }
+
+        setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
 
     } catch (e) {
         console.log(e)
