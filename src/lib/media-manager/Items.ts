@@ -234,7 +234,7 @@ export class ImageItem extends File<MediaManagerItem> {
 
         await beforeDestroy(this.adminizer, criteria);
         // TODO refactor CRUD functions for DataAccessor usage
-        await this.adminizer.modelHandler.model.get(this.model)["_destroy"](criteria);
+        await this.adminizer.modelHandler.model.get(this.model)["_destroy"]({id: id});
 
         await deleteFile(record.path);
         // Delete all variants

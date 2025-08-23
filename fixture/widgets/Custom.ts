@@ -1,4 +1,4 @@
-import CustomBase from '../../dist/lib/v4/widgets/abstractCustom';
+import {CustomBase} from '../../dist';
 
 export class CustomOne extends CustomBase {
     jsPath: { dev: string; production: string; } = {

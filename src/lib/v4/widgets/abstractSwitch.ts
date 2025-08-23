@@ -1,6 +1,6 @@
-import BaseWidget from "./abstractWidgetBase";
+import {BaseWidget} from "./abstractWidgetBase";
 
-export default abstract class SwitchBase extends BaseWidget {
+export abstract class SwitchBase extends BaseWidget {
 
   public readonly widgetType = "switcher"
 

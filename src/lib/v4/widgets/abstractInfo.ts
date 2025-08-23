@@ -1,5 +1,5 @@
-import BaseWidget from "./abstractWidgetBase";
-export default abstract class InfoBase extends BaseWidget {
+import {BaseWidget} from "./abstractWidgetBase";
+export abstract class InfoBase extends BaseWidget {
 
 	public readonly widgetType = "info"
 

@@ -21,15 +21,12 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
         },
         postLink: postLink
     }
-
     for (const key of Object.keys(formData)) {
         let field = formData[key];
 
-        if (!!field.visible === false) continue
-
         const type = (field.type || field.type).toLowerCase()
-        const isIn = field.isIn as string[] ?? []
 
+        const isIn = field.isIn as string[] ?? []
         let label = field.title ?? ''
         let tooltip = field.tooltip ?? ''
         let name = key
@@ -37,8 +34,8 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
         let disabled = false
         let required = field.required ?? false
         let options: Record<string, unknown> | Record<string, unknown>[] = {}
-        let value = field.value ?? undefined
 
+        let value = field.value ?? undefined
         if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'email', 'month', 'week', 'range'].includes(type)) {
             fieldType = inputText(type, isIn)
             if (type === 'range') {
@@ -102,6 +99,7 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
             fieldType = 'geoJson';
             options = getControlsOptions(field, req, fieldType as ControlType, 'leaflet')
         }
+
         props.fields.push({
             label: label,
             tooltip: tooltip,
