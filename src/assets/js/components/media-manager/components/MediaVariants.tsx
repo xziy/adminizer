@@ -70,7 +70,8 @@ const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
     }
 
     const openFile = (media: Media) => {
-        window.open(`/public${media.url}`, "_blank")?.focus();
+        const url = window.isSails ? media.url : `/public${media.url}`;
+        window.open(url, "_blank")?.focus();
     }
 
     const reversedVariants = [...variants].reverse();
