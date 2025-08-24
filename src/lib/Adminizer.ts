@@ -194,6 +194,8 @@ export class Adminizer {
             }
         };
 
+        console.log(this.config)
+
         this.modelHandler = new ModelHandler();
 
         // TODO: 'hot reload' unbind models & unbind forms

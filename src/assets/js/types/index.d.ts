@@ -92,7 +92,7 @@ export interface WidgetLayoutItem {
 declare global {
     interface Window {
         routePrefix: string;
-        isSails: boolean;
+        bindPublic: boolean;
     }
 }
 

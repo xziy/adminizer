@@ -37,7 +37,7 @@ const Image = ({media, className, messages, openMeta, crop, openVariant, destroy
     const isSelected = checkMedia(media);
 
     const openFile = () => {
-        const url = window.isSails ? media.url : `/public${media.url}`;
+        const url = window.bindPublic ? `/public${media.url}` : media.url;
         window.open(url, "_blank")?.focus();
     }
 
@@ -59,7 +59,7 @@ const Image = ({media, className, messages, openMeta, crop, openVariant, destroy
             <ContextMenu>
                 <ContextMenuTrigger>
                     <div className="relative cursor-pointer w-fit">
-                        {isSelected  && <div
+                        {isSelected && <div
                             className="absolute top-0 left-0 z-10 w-[20px] h-[20px] bg-white flex items-center justify-center"
                         >
                             <svg

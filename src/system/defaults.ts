@@ -49,7 +49,7 @@ let adminpanelConfig: AdminpanelConfig = {
             edit: {
                 controller: "../controllers/editUser"
             },
-            fields:{
+            fields: {
                 login: {
                     title: 'User login',
                 },
@@ -62,7 +62,7 @@ let adminpanelConfig: AdminpanelConfig = {
                 isAdministrator: {
                     title: 'is administrator'
                 },
-                isConfirme:{
+                isConfirme: {
                     title: 'is confirme'
                 }
             },
@@ -147,6 +147,9 @@ let adminpanelConfig: AdminpanelConfig = {
     auth: {
         enable: false,
         captcha: true
+    },
+    bind: {
+        public: true
     }
 }
 
