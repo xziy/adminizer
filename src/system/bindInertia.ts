@@ -20,7 +20,7 @@ export function bindInertia(adminizer: Adminizer) {
                     <script type="module" src="/@vite/client"></script>
                     <script type="module" src="/src/assets/js/app.tsx"></script>
                     <script>window.routePrefix = "${adminizer.config.routePrefix}"</script>
-                    <script>window.isSails = ${process.env.IS_SAILS ? 'true' : 'false'};</script>
+                    <script>window.bindPublic = ${adminizer.config.bind?.public}</script>
                     `
         } else {
             const manifestPath = path.resolve(import.meta.dirname, '../assets/manifest.json');
@@ -70,13 +70,13 @@ export function bindInertia(adminizer: Adminizer) {
             const routePrefixScript = `<script>window.routePrefix = "${adminizer.config.routePrefix}";</script>`;
 
             // For Sails JS
-            const isSails = `<script>window.isSails = ${process.env.IS_SAILS ? 'true' : 'false'};</script>`;
+            const bindPublic = `<script>window.bindPublic = ${adminizer.config.bind?.public}</script>`;
             return `
                 ${preloadLinks.join('\n')}
                 ${stylesheets.join('\n')}
                 ${scripts.join('\n')}
                 ${routePrefixScript}
-                ${isSails}
+                ${bindPublic}
         `;
         }
     };
