@@ -37,7 +37,8 @@ const Image = ({media, className, messages, openMeta, crop, openVariant, destroy
     const isSelected = checkMedia(media);
 
     const openFile = () => {
-        window.open(`/public${media.url}`, "_blank")?.focus();
+        const url = window.isSails ? media.url : `/public${media.url}`;
+        window.open(url, "_blank")?.focus();
     }
 
     const destroyItem = async () => {

@@ -17,6 +17,7 @@ export default defineConfig({
     define: {
         '__APP_VERSION__': JSON.stringify(packageJson.version),
     },
+    publicDir: false,
     base: './',
     build: {
         outDir: path.resolve(import.meta.dirname, 'dist/assets'), // Output directory for the build

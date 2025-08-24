@@ -84,31 +84,38 @@ export class Adminizer {
 
     getMiddleware() {
         return (req: express.Request, res: express.Response, next: () => void ) => {
-            // If a routePrefix is configured, only handle requests that match it.
             try {
                 const prefix = (this.config && this.config.routePrefix) ? String(this.config.routePrefix) : '';
                 const normalizedPrefix = prefix.replace(/\/+/g, '/').replace(/\/+$/g, '');
+
                 if (normalizedPrefix) {
                     const url = req.url || req.originalUrl || '';
-                    if (!(url === normalizedPrefix || url.startsWith(normalizedPrefix + '/') || url.startsWith('/public'))) {
-                        // Not an admin route — pass to next middleware
+
+                    const conditions = [
+                        url === normalizedPrefix,
+                        url.startsWith(normalizedPrefix + '/')
+                    ];
+
+                    if (process.env.IS_SAILS === undefined) {
+                        conditions.push(url.startsWith('/public'));
+                    }
+
+                    if (!conditions.some(condition => condition)) {
                         return typeof next === 'function' ? next() : undefined;
                     }
                 }
             }
             catch (e) {
-                // If anything goes wrong while checking, fall back to handling the request
+                // fall back to handling the request
             }
 
             this.app(req, res, (err) => {
                 if (err) {
-                    // eslint-disable-next-line no-console
                     console.error("Error in Adminizer", err);
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Internal Server Error');
                 }
                 else {
-                    // If Adminizer didn't handle the route, let the rest of the stack try
                     if (typeof next === 'function') {
                         return next();
                     }
