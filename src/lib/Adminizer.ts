@@ -194,7 +194,6 @@ export class Adminizer {
             }
         };
 
-        console.log(this.config)
 
         this.modelHandler = new ModelHandler();
 
