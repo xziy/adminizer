@@ -234,6 +234,10 @@ export interface AdminpanelConfig {
         /** Default ORM adapter for system models */
         defaultORM: string
     }
+
+    bind?: {
+        public: boolean
+    }
 }
 
 export interface ModelConfig {
