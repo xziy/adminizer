@@ -70,7 +70,7 @@ const MediaVariants = ({item, messages, destroy}: MediaVariantsProps) => {
     }
 
     const openFile = (media: Media) => {
-        const url = window.isSails ? media.url : `/public${media.url}`;
+        const url = window.bindPublic ? `/public${media.url}` : media.url;
         window.open(url, "_blank")?.focus();
     }
 
