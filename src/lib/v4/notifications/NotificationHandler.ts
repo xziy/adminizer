@@ -16,6 +16,8 @@ export class NotificationHandler extends EventEmitter {
         Adminizer.log.info(`Notification service registered: ${service.notificationClass}`);
     }
 
+    // TODO - Добавить метод для удаления сервиса
+
     // Получение сервиса по классу
     getService(notificationClass: string): INotificationService | undefined {
         return this.services.get(notificationClass);

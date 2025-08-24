@@ -173,7 +173,6 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
 
-
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
