@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { Adminizer } from '../../Adminizer';
-import { INotification, INotificationService } from '../../../interfaces/types';
+import {EventEmitter} from 'events';
+import {Adminizer} from '../../Adminizer';
+import {INotification, INotificationService} from '../../../interfaces/types';
 import {UserAP} from "../../../models/UserAP";
 
 export class NotificationHandler extends EventEmitter {
@@ -10,25 +10,46 @@ export class NotificationHandler extends EventEmitter {
         super();
     }
 
-    // Регистрация сервиса
+    /**
+     * Register a new notification service
+     * @param service
+     */
     registerService(service: INotificationService): void {
         this.services.set(service.notificationClass, service);
         Adminizer.log.info(`Notification service registered: ${service.notificationClass}`);
     }
 
-    // TODO - Добавить метод для удаления сервиса
+    /**
+     * Remove a notification service
+     * @param notificationClass
+     */
+    removeService(notificationClass: string): void {
+        if (this.services.has(notificationClass)) {
+            this.services.delete(notificationClass);
+            Adminizer.log.info(`Notification service removed: ${notificationClass}`);
+        }
+    }
 
-    // Получение сервиса по классу
+    /**
+     * Get a notification service by class
+     * @param notificationClass
+     */
     getService(notificationClass: string): INotificationService | undefined {
         return this.services.get(notificationClass);
     }
 
-    // Получение всех сервисов
+    /**
+     * Get all registered services
+     */
     getAllServices(): INotificationService[] {
         return Array.from(this.services.values());
     }
 
-    // Отправка уведомления в конкретный сервис
+    /**
+     * Dispatch a notification to a service
+     * @param notificationClass
+     * @param notification
+     */
     async dispatchNotification(
         notificationClass: string,
         notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>
@@ -40,7 +61,13 @@ export class NotificationHandler extends EventEmitter {
         return service.dispatchNotification(notification);
     }
 
-    // Получение уведомлений из конкретного сервиса
+    /**
+     * Get notifications by class
+     * @param notificationClass
+     * @param userId
+     * @param limit
+     * @param unreadOnly
+     */
     async getNotifications(
         notificationClass: string,
         userId?: number,
@@ -54,7 +81,12 @@ export class NotificationHandler extends EventEmitter {
         return service.getNotifications(userId, limit, unreadOnly);
     }
 
-    // Получение всех уведомлений пользователя (с учетом прав доступа)
+    /**
+     * Get all notifications for a user
+     * @param user
+     * @param limit
+     * @param unreadOnly
+     */
     async getUserNotifications(user: any, limit: number = 50, unreadOnly: boolean = false): Promise<INotification[]> {
         const allNotifications: INotification[] = [];
 
@@ -78,7 +110,11 @@ export class NotificationHandler extends EventEmitter {
         ).slice(0, limit);
     }
 
-    // Пометить как прочитанное
+    /**
+     * Mark a notification as read
+     * @param notificationClass
+     * @param id
+     */
     async markAsRead(notificationClass: string, id: string): Promise<void> {
         const service = this.getService(notificationClass);
         if (!service) {
@@ -87,19 +123,28 @@ export class NotificationHandler extends EventEmitter {
         return service.markAsRead(id);
     }
 
-    // Проверка прав администратора
+    /**
+     * Check if user is admin
+     * @param user
+     * @private
+     */
     private isAdmin(user: UserAP): boolean {
         if (!user) return false;
         return user.isAdministrator === true;
     }
 
-    // Получение количества клиентов по сервису
+    /**
+     * Get client count for a notification class
+     * @param notificationClass
+     */
     getClientCount(notificationClass: string): number {
         const service = this.getService(notificationClass);
         return service ? service.getClientCount() : 0;
     }
 
-    // Получение общего количества клиентов
+    /**
+     * Get total client count
+     */
     getTotalClientCount(): number {
         return this.getAllServices().reduce((total, service) =>
             total + service.getClientCount(), 0
