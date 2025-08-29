@@ -195,44 +195,30 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Test notifications */
         async function sendNotificationsWithDelay() {
-            const notifications: INotification[] = [
+            const notifications: Omit<INotification, 'id' | 'createdAt' | 'read'>[] = [
                 {
-                    message: "Первое уведомление", title: "Тест 1",
-                    id: "11",
-                    createdAt: undefined,
-                    read: false,
+                    message: "Первое уведомление",
+                    title: "Тест 1",
                     notificationClass: "general"
                 },
                 {
-                    id: '1a1',
                     title: 'Admin system notification',
                     message: 'This is a test system notification',
-                    userId: 1,
-                    createdAt: new Date(),
-                    read: false,
                     notificationClass: 'system',
                 },
                 {
-                    message: "Второе уведомление", title: "Тест 2",
-                    id: "21",
-                    createdAt: undefined,
-                    read: false,
+                    message: "Второе уведомление",
+                    title: "Тест 2",
                     notificationClass: "general"
                 },
                 {
-                    id: '1a2',
                     title: 'Admin system notification',
                     message: 'This is a test system notification',
-                    userId: 1,
-                    createdAt: new Date(),
-                    read: false,
                     notificationClass:'system',
                 },
                 {
-                    message: "Третье уведомление", title: "Тест 3",
-                    id: "313",
-                    createdAt: undefined,
-                    read: false,
+                    message: "Третье уведомление",
+                    title: "Тест 3",
                     notificationClass: "general"
                 }
             ];
@@ -255,7 +241,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
             }
         }
 
-        setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
+         setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
 
     } catch (e) {
         console.log(e)

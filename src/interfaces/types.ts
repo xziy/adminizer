@@ -34,7 +34,6 @@ export interface PropsField {
     options?: Record<string, unknown> | Record<string, unknown>[]
 }
 
-// src/types/notifications.ts
 
 export interface INotification {
     id: string;
@@ -59,7 +58,7 @@ export interface INotificationEvent {
 
 export interface INotificationService {
     readonly notificationClass: string;
-    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<string>;
+    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean>;
     getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
     markAsRead(id: string): Promise<void>;
     getClientCount(): number;

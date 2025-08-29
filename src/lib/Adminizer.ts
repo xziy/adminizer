@@ -273,13 +273,13 @@ export class Adminizer {
     }
 
     // Хелпер для отправки уведомлений
-    public async sendNotification(notification: INotification): Promise<string> {
+    public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read'>): Promise<boolean> {
         const notificationClass = notification.notificationClass || 'general';
         return this.notificationHandler.dispatchNotification(notificationClass, notification);
     }
 
     // Хелпер для системных событий
-    public async logSystemEvent(action: string, details: string, metadata?: any): Promise<string> {
+    public async logSystemEvent(action: string, details: string, metadata?: any): Promise<boolean> {
         const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
         return systemNotificationService.logSystemEvent(action, details, metadata);
     }
