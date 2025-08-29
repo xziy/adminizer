@@ -1,68 +1,66 @@
-import { AbstractNotificationService } from './AbstractNotificationService';
-import { INotification, INotificationEvent } from '../../../interfaces/types';
-import { Adminizer } from '../../Adminizer';
+import {AbstractNotificationService} from './AbstractNotificationService';
+import {INotification, INotificationEvent} from '../../../interfaces/types';
+import {Adminizer} from '../../Adminizer';
 
 export class GeneralNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'general';
 
-    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<string> {
-        const fullNotification: INotification = {
+    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean> {
+        const fullNotification: Omit<INotification, 'id' | 'createdAt'> = {
             ...notification,
-            id: this.generateId(),
-            createdAt: new Date(),
             read: false,
             notificationClass: this.notificationClass
         };
 
+        let notificationDB: INotification;
         // Сохраняем в базу
-        // if (this.adminizer.modelHandler.hasModel('notification')) {
-        //     try {
-        //         await this.adminizer.modelHandler.model.get('notification').create(fullNotification);
-        //     } catch (error) {
-        //         Adminizer.log.error('Error saving notification to database:', error);
-        //     }
-        // }
+        if (this.adminizer.modelHandler.model.has('notificationap')) {
+            try {
+               notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
+                const event: INotificationEvent = {
+                    type: 'notification',
+                    data: notificationDB,
+                    notificationClass: this.notificationClass
+                };
 
-        const event: INotificationEvent = {
-            type: 'notification',
-            data: fullNotification,
-            notificationClass: this.notificationClass
-        };
+                this.broadcast(event);
+                Adminizer.log.info(`[General] Notification dispatched: ${fullNotification.title}`);
+                return true;
 
-        this.broadcast(event);
-        Adminizer.log.info(`[General] Notification dispatched: ${fullNotification.title}`);
+            } catch (error) {
+                Adminizer.log.error('Error saving notification to database:', error);
+            }
+        }
 
-        return fullNotification.id;
+        return false;
     }
 
     async getNotifications(userId?: number, limit: number = 50, unreadOnly: boolean = false): Promise<INotification[]> {
-        // if (!this.adminizer.modelHandler.hasModel('notification')) {
-        //     return [];
-        // }
+        if (!this.adminizer.modelHandler.model.has('notificationap')) {
+            return [];
+        }
 
         try {
             const query: any = { notificationClass: this.notificationClass };
-            if (userId) query.userId = userId;
             if (unreadOnly) query.read = false;
 
-            // const notifications = await this.adminizer.modelHandler.model.get('notification').find({
-            //     where: query,
-            //     sort: 'createdAt DESC',
-            //     limit
-            // });
+            // const notifications: INotification[] = [
+            //     {
+            //         id: '1',
+            //         title: 'New notification',
+            //         message: 'This is a test notification',
+            //         createdAt: new Date(),
+            //         read: false,
+            //         notificationClass: this.notificationClass,
+            //     }
+            // ]
 
-            const notifications: INotification[] = [
-                {
-                    id: '1',
-                    title: 'New notification',
-                    message: 'This is a test notification',
-                    createdAt: new Date(),
-                    read: false,
-                    notificationClass: this.notificationClass,
-                }
-            ]
+            return await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
+                where: query,
+                sort: 'createdAt DESC',
+                limit
+            }) as INotification[];
 
-            return notifications;
         } catch (error) {
             Adminizer.log.error('Error fetching notifications:', error);
             return [];

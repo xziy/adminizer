@@ -53,7 +53,7 @@ export class NotificationHandler extends EventEmitter {
     async dispatchNotification(
         notificationClass: string,
         notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>
-    ): Promise<string> {
+    ): Promise<boolean> {
         const service = this.getService(notificationClass);
         if (!service) {
             throw new Error(`Notification service not found: ${notificationClass}`);

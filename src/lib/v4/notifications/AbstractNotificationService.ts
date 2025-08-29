@@ -25,7 +25,7 @@ export abstract class AbstractNotificationService extends EventEmitter implement
     }
 
     // Абстрактные методы
-    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<string>;
+    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean>;
     abstract getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
     abstract markAsRead(id: string): Promise<void>;
 
