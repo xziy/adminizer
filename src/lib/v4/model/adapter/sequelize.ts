@@ -229,7 +229,10 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             }
 
             if (value === null) {
-                result[targetKey] = { [Op.is]: null };
+                result[targetKey] = {[Op.is]: null};
+            } else if (Array.isArray(value)) {
+                // ✅ Обработка массивов - используем оператор IN
+                result[targetKey] = {[Op.in]: value};
             } else if (typeof value === "object" && !Array.isArray(value)) {
                 const operatorEntries = Object.entries(value)
                     .filter(([_, v]) => v !== undefined && v !== null)

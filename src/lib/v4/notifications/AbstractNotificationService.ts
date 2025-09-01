@@ -64,4 +64,34 @@ export abstract class AbstractNotificationService extends EventEmitter implement
     getClientCount(): number {
         return this.clients.size;
     }
+
+    // Метод для создания записи в UserNotificationAP
+    protected async createUserNotification(notificationId: string, userId?: number): Promise<void> {
+        if (this.adminizer.modelHandler.model.has('usernotificationap') && userId) {
+            try {
+                await this.adminizer.modelHandler.model.get('usernotificationap')["_create"]({
+                    userId: userId,
+                    notificationId: notificationId,
+                    read: false
+                });
+            } catch (error) {
+                Adminizer.log.error(`Error creating user notification record:`, error);
+            }
+        }
+    }
+
+    // Метод для получения UserNotificationAP по ID уведомления и пользователя
+    protected async getUserNotification(notificationId: string, userId: number): Promise<any> {
+        if (this.adminizer.modelHandler.model.has('usernotificationap')) {
+            try {
+                return await this.adminizer.modelHandler.model.get('usernotificationap')["_findOne"]({
+                    where: { notificationId: notificationId, userId: userId }
+                });
+            } catch (error) {
+                Adminizer.log.error(`Error getting user notification:`, error);
+                return null;
+            }
+        }
+        return null;
+    }
 }

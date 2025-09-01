@@ -89,12 +89,11 @@ export class NotificationHandler extends EventEmitter {
      */
     async getUserNotifications(user: any, limit: number = 50, unreadOnly: boolean = false): Promise<INotification[]> {
         const allNotifications: INotification[] = [];
-
         for (const service of this.getAllServices()) {
             // Для системных уведомлений проверяем права админа
             if (service.notificationClass === 'system') {
                 if (this.isAdmin(user)) {
-                    const notifications = await service.getNotifications(undefined, limit, unreadOnly);
+                    const notifications = await service.getNotifications(user.id, limit, unreadOnly);
                     allNotifications.push(...notifications);
                 }
             } else {

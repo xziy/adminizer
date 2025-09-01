@@ -2,6 +2,7 @@
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {FileStorageHelper} from "../helpers/fileStorageHelper";
 import timezones from "../lib/timezones";
+import {NavigationAP} from "../models/NavigationAP";
 
 /**
  * Default admin config
@@ -101,6 +102,13 @@ let adminpanelConfig: AdminpanelConfig = {
                     id: false,
                 }
             }
+        },
+        NavigationAP: {
+            navbar: {
+                visible: false
+            },
+            title: "NavigationAP",
+            model: "navigationap"
         }
     },
 

@@ -19,16 +19,32 @@ export class GeneralNotificationService extends AbstractNotificationService {
         if (this.adminizer.modelHandler.model.has('notificationap')) {
             try {
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
+
+                if (notification.userId) {
+                    await this.createUserNotification(notificationDB.id, notification.userId);
+                } else{
+                    const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({});
+                    for (const user of users) {
+                        try {
+                            await this.createUserNotification(notificationDB.id, user.id);
+                        } catch (error) {
+                            Adminizer.log.error('Error creating UserNotificationAP:', error);
+                        }
+                    }
+                }
+
                 const event: INotificationEvent = {
                     type: 'notification',
                     data: {
                         ...notificationDB.toJSON(),
+                        read: false,
                         icon: {
                             icon: this.icon,
                             iconColor: this.iconColor
                         },
                     } as INotification,
-                    notificationClass: this.notificationClass
+                    notificationClass: this.notificationClass,
+                    userId: notification.userId ?? null
                 };
                 this.broadcast(event);
                 Adminizer.log.info(`[General] Notification dispatched: ${fullNotification.title}`);
@@ -48,9 +64,32 @@ export class GeneralNotificationService extends AbstractNotificationService {
         }
 
         try {
-            const query: any = {notificationClass: this.notificationClass};
+            let query: any = {notificationClass: this.notificationClass};
 
-            let notificationsDB: NotificationAPModel[]
+           // Если запрашиваются уведомления для конкретного пользователя
+            if (userId) {
+                if (this.adminizer.modelHandler.model.has('usernotificationap')) {
+                    // Получаем ID уведомлений пользователя
+                    const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
+                        where: {
+                            userId: userId
+                        },
+                        include: ['notificationap']
+                    });
+
+                    const notificationIds = userNotifications.map((un: any) => un.notificationId.id);
+
+                    if (unreadOnly) {
+                        // Только непрочитанные
+                        query.id = userNotifications
+                            .filter((un: any) => !un.read)
+                            .map((un: any) => un.notificationId.id);
+                    } else {
+                        query.id = notificationIds;
+                    }
+                }
+            }
+            let notificationsDB: NotificationAPModel[];
 
             notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
@@ -58,10 +97,21 @@ export class GeneralNotificationService extends AbstractNotificationService {
                 limit
             });
 
+
             let notifications: INotification[] = [];
+
             for (const notification of notificationsDB) {
+                let readStatus = false;
+
+                // Получаем статус прочтения из UserNotificationAP
+                if (userId && this.adminizer.modelHandler.model.has('usernotificationap')) {
+                    const userNotification = await this.getUserNotification(notification.id, userId);
+                    readStatus = userNotification ? userNotification.read : false;
+                }
+
                 notifications.push({
                     ...notification,
+                    read: readStatus,
                     icon: {
                         icon: this.icon,
                         iconColor: this.iconColor
@@ -78,12 +128,25 @@ export class GeneralNotificationService extends AbstractNotificationService {
     }
 
     async markAsRead(id: string): Promise<void> {
-        // if (this.adminizer.modelHandler.hasModel('notification')) {
-        //     try {
-        //         await this.adminizer.modelHandler.model.get('notification').update({ id }, { read: true });
-        //     } catch (error) {
-        //         Adminizer.log.error('Error marking notification as read:', error);
-        //     }
-        // }
+        if (this.adminizer.modelHandler.model.has('usernotificationap')) {
+            try {
+                // Находим уведомление чтобы получить userId
+                const notification = await this.adminizer.modelHandler.model.get('notificationap')["_findOne"]({
+                    where: {id}
+                });
+
+                if (notification && notification.userId) {
+                    // Обновляем запись в UserNotificationAP
+                    const userNotification = await this.getUserNotification(id, notification.userId);
+                    if (userNotification) {
+                        await this.adminizer.modelHandler.model.get('usernotificationap')["_update"]({
+                            id: userNotification.id
+                        }, {read: true});
+                    }
+                }
+            } catch (error) {
+                Adminizer.log.error('Error marking notification as read:', error);
+            }
+        }
     }
 }
