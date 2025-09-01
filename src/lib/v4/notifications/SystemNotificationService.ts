@@ -1,18 +1,20 @@
 import { AbstractNotificationService } from './AbstractNotificationService';
 import { INotification, INotificationEvent } from '../../../interfaces/types';
 import { Adminizer } from '../../Adminizer';
+import {NotificationAPModel} from "../../../models/NotificationAP";
 
 export class SystemNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'system';
+    public readonly icon: string = 'settings'
+    public readonly iconColor: string = '#1eb707';
 
-    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean> {
-        const fullNotification: Omit<INotification, 'id' | 'createdAt'> = {
+    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean> {
+        const fullNotification: Omit<INotification, 'id' | 'createdAt' | 'icon'> = {
             ...notification,
-            read: false,
             notificationClass: this.notificationClass
         };
 
-        let notificationDB: INotification;
+        let notificationDB: NotificationAPModel;
 
         // Сохраняем в базу
         if (this.adminizer.modelHandler.model.has('notificationap')) {
@@ -20,7 +22,13 @@ export class SystemNotificationService extends AbstractNotificationService {
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
                 const event: INotificationEvent = {
                     type: 'notification',
-                    data: notificationDB,
+                    data: {
+                        ...notificationDB.toJSON(),
+                        icon: {
+                            icon: this.icon,
+                            iconColor: this.iconColor
+                        },
+                    } as INotification,
                     notificationClass: this.notificationClass
                 };
 
@@ -43,38 +51,23 @@ export class SystemNotificationService extends AbstractNotificationService {
 
         try {
             const query: any = { notificationClass: this.notificationClass };
-            // Системные уведомления не фильтруются по пользователю
-            if (unreadOnly) query.read = false;
 
-            const notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
+            let notificationsDB: NotificationAPModel[]
+
+            notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
                 sort: 'createdAt DESC',
                 limit
-            });
-
-            // console.log(notificationsDB);
-
-            // const notificationsDB: INotification[] = [
-            //     {
-            //         id: '1a',
-            //         title: 'Admin system notification',
-            //         message: 'This is a test system notification. This is a test system notification',
-            //         userId: 1,
-            //         createdAt: new Date(),
-            //         read: false,
-            //         notificationClass: this.notificationClass,
-            //     }
-            // ]
+            })
 
             let notifications: INotification[] = [];
             for (const notification of notificationsDB) {
-                const userDB = await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ id: notification.userId });
                 notifications.push({
                     ...notification,
-                    user: {
-                        avatar: userDB.avatar,
-                        login: userDB.login
-                    }
+                    icon: {
+                        icon: this.icon,
+                        iconColor: this.iconColor
+                    },
                 });
             }
 

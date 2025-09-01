@@ -1,28 +1,35 @@
 import {AbstractNotificationService} from './AbstractNotificationService';
 import {INotification, INotificationEvent} from '../../../interfaces/types';
 import {Adminizer} from '../../Adminizer';
+import {NotificationAPModel} from "../../../models/NotificationAP";
 
 export class GeneralNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'general';
+    public readonly icon: string = 'info'
+    public readonly iconColor: string = '#5987de';
 
-    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean> {
-        const fullNotification: Omit<INotification, 'id' | 'createdAt'> = {
+    async dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean> {
+        const fullNotification: Omit<INotification, 'id' | 'createdAt' | 'icon'> = {
             ...notification,
-            read: false,
             notificationClass: this.notificationClass
         };
 
-        let notificationDB: INotification;
+        let notificationDB: NotificationAPModel;
         // Сохраняем в базу
         if (this.adminizer.modelHandler.model.has('notificationap')) {
             try {
-               notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
+                notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
                 const event: INotificationEvent = {
                     type: 'notification',
-                    data: notificationDB,
+                    data: {
+                        ...notificationDB.toJSON(),
+                        icon: {
+                            icon: this.icon,
+                            iconColor: this.iconColor
+                        },
+                    } as INotification,
                     notificationClass: this.notificationClass
                 };
-
                 this.broadcast(event);
                 Adminizer.log.info(`[General] Notification dispatched: ${fullNotification.title}`);
                 return true;
@@ -41,25 +48,28 @@ export class GeneralNotificationService extends AbstractNotificationService {
         }
 
         try {
-            const query: any = { notificationClass: this.notificationClass };
-            if (unreadOnly) query.read = false;
+            const query: any = {notificationClass: this.notificationClass};
 
-            // const notifications: INotification[] = [
-            //     {
-            //         id: '1',
-            //         title: 'New notification',
-            //         message: 'This is a test notification',
-            //         createdAt: new Date(),
-            //         read: false,
-            //         notificationClass: this.notificationClass,
-            //     }
-            // ]
+            let notificationsDB: NotificationAPModel[]
 
-            return await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
+            notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
                 sort: 'createdAt DESC',
                 limit
-            }) as INotification[];
+            });
+
+            let notifications: INotification[] = [];
+            for (const notification of notificationsDB) {
+                notifications.push({
+                    ...notification,
+                    icon: {
+                        icon: this.icon,
+                        iconColor: this.iconColor
+                    },
+                });
+            }
+
+            return notifications;
 
         } catch (error) {
             Adminizer.log.error('Error fetching notifications:', error);
