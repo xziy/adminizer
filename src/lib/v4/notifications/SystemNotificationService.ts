@@ -20,6 +20,11 @@ export class SystemNotificationService extends AbstractNotificationService {
         if (this.adminizer.modelHandler.model.has('notificationap')) {
             try {
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
+
+                if (notification.userId) {
+                    await this.createUserNotification(notificationDB.id, notification.userId);
+                }
+
                 const event: INotificationEvent = {
                     type: 'notification',
                     data: {
@@ -29,7 +34,8 @@ export class SystemNotificationService extends AbstractNotificationService {
                             iconColor: this.iconColor
                         },
                     } as INotification,
-                    notificationClass: this.notificationClass
+                    notificationClass: this.notificationClass,
+                    userId: notification.userId ?? null
                 };
 
                 this.broadcast(event);
@@ -52,18 +58,28 @@ export class SystemNotificationService extends AbstractNotificationService {
         try {
             const query: any = { notificationClass: this.notificationClass };
 
-            let notificationsDB: NotificationAPModel[]
+            let notificationsDB: NotificationAPModel[];
 
             notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
                 sort: 'createdAt DESC',
                 limit
-            })
+            });
 
             let notifications: INotification[] = [];
+
             for (const notification of notificationsDB) {
+                let readStatus = false;
+
+                // Для системных уведомлений проверяем статус прочтения
+                if (userId && this.adminizer.modelHandler.model.has('usernotificationap')) {
+                    const userNotification = await this.getUserNotification(notification.id, userId);
+                    readStatus = userNotification ? userNotification.read : false;
+                }
+
                 notifications.push({
                     ...notification,
+                    read: readStatus,
                     icon: {
                         icon: this.icon,
                         iconColor: this.iconColor

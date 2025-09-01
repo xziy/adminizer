@@ -1,4 +1,4 @@
-import { Adminizer } from '../../lib/Adminizer';
+import {Adminizer} from '../../lib/Adminizer';
 import {UserAP} from "../../models/UserAP";
 
 export class NotificationController {
@@ -6,13 +6,13 @@ export class NotificationController {
     // Единый SSE endpoint для всех уведомлений
     static async getNotificationsStream(req: ReqType, res: ResType): Promise<void> {
         if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({ error: 'Notification system not initialized' });
+            res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
 
         // Проверяем аутентификацию
         if (req.adminizer.config.auth.enable && !req.user) {
-            res.status(401).json({ error: 'Unauthorized' });
+            res.status(401).json({error: 'Unauthorized'});
             return;
         }
 
@@ -28,9 +28,14 @@ export class NotificationController {
         // Функция для отправки событий клиенту
         const sendEvent = (event: any) => {
             // Фильтруем уведомления по правам пользователя
-            if (event.type === 'notification' && event.notificationClass === 'system') {
-                // Системные уведомления только для админов
-                if (!NotificationController.isAdmin(req.user)) {
+            if (event.type === 'notification') {
+                if (event.notificationClass === 'system') {
+                    // Системные уведомления только для админов
+                    if (!NotificationController.isAdmin(req.user)) {
+                        return;
+                    }
+                }
+                if(event.userId !== null && event.userId !== req.user.id){
                     return;
                 }
             }
@@ -60,11 +65,12 @@ export class NotificationController {
                 20,
                 true
             );
-
             notifications.forEach(notification => {
                 sendEvent({
                     type: 'notification',
                     data: notification,
+                    notificationClass: notification.notificationClass,
+                    userId: notification.userId ?? null
                 });
             });
         } catch (error) {
@@ -99,17 +105,17 @@ export class NotificationController {
     // API для получения уведомлений по классу
     static async getNotificationsByClass(req: ReqType, res: ResType): Promise<void> {
         if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({ error: 'Notification system not initialized' });
+            res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
 
         try {
-            const { notificationClass } = req.params;
-            const { limit = 50, unreadOnly = false } = req.query;
+            const {notificationClass} = req.params;
+            const {limit = 50, unreadOnly = false} = req.query;
 
             // Проверяем права доступа для системных уведомлений
             if (notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
-                res.status(403).json({ error: 'Forbidden: Admin access required' });
+                res.status(403).json({error: 'Forbidden: Admin access required'});
                 return;
             }
 
@@ -123,19 +129,19 @@ export class NotificationController {
             res.json(notifications);
         } catch (error) {
             Adminizer.log.error('Error getting notifications:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({error: 'Internal server error'});
         }
     }
 
     // API для получения всех уведомлений пользователя
     static async getUserNotifications(req: ReqType, res: ResType): Promise<void> {
         if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({ error: 'Notification system not initialized' });
+            res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
 
         try {
-            const { limit = 50, unreadOnly = false } = req.query;
+            const {limit = 50, unreadOnly = false} = req.query;
 
             const notifications = await req.adminizer.notificationHandler.getUserNotifications(
                 req.user,
@@ -146,59 +152,59 @@ export class NotificationController {
             res.json(notifications);
         } catch (error) {
             Adminizer.log.error('Error getting user notifications:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({error: 'Internal server error'});
         }
     }
 
     // API для пометки как прочитанного
     static async markAsRead(req: ReqType, res: ResType): Promise<void> {
         if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({ error: 'Notification system not initialized' });
+            res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
 
         try {
-            const { notificationClass, id } = req.params;
+            const {notificationClass, id} = req.params;
 
             // Проверяем права доступа для системных уведомлений
             if (notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
-                res.status(403).json({ error: 'Forbidden: Admin access required' });
+                res.status(403).json({error: 'Forbidden: Admin access required'});
                 return;
             }
 
             await req.adminizer.notificationHandler.markAsRead(notificationClass, id);
-            res.json({ success: true });
+            res.json({success: true});
         } catch (error) {
             Adminizer.log.error('Error marking notification as read:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({error: 'Internal server error'});
         }
     }
 
     // API для отправки уведомления
     static async sendNotification(req: ReqType, res: ResType): Promise<void> {
         if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({ error: 'Notification system not initialized' });
+            res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
 
         // Проверяем права админа
         if (!NotificationController.isAdmin(req.user)) {
-            res.status(403).json({ error: 'Forbidden: Admin access required' });
+            res.status(403).json({error: 'Forbidden: Admin access required'});
             return;
         }
 
         try {
-            const { title, message, type, priority, userId, notificationClass = 'general' } = req.body;
+            const {title, message, type, priority, userId, notificationClass = 'general'} = req.body;
 
             const notificationId = await req.adminizer.notificationHandler.dispatchNotification(
                 notificationClass,
-                { title, message, userId }
+                {title, message, userId}
             );
 
-            res.json({ success: true, id: notificationId });
+            res.json({success: true, id: notificationId});
         } catch (error) {
             Adminizer.log.error('Error sending notification:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({error: 'Internal server error'});
         }
     }
 

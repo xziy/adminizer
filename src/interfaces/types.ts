@@ -41,6 +41,7 @@ export interface INotification {
     message: string;
     createdAt: Date;
     userId?: number;
+    read?: boolean;
     icon: {
         icon: string;
         iconColor: string;
@@ -52,7 +53,8 @@ export interface INotification {
 export interface INotificationEvent {
     type: 'notification' | 'heartbeat' | 'connected' | 'error';
     data: INotification | string;
-    notificationClass?: string; // Для фильтрации
+    notificationClass?: string;
+    userId?: number;
 }
 
 export interface INotificationService {

@@ -198,7 +198,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
             const notifications: Omit<INotification, 'id' | 'createdAt' | 'read' | 'icon'>[] = [
                 {
                     message: "Первое уведомление",
-                    title: "Тест 1",
+                    title: "Всем",
                     notificationClass: "general"
                 },
                 {
@@ -208,7 +208,8 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                 },
                 {
                     message: "Второе уведомление",
-                    title: "Тест 2",
+                    title: "To user test (id 2)",
+                    userId: 2,
                     notificationClass: "general"
                 },
                 {
@@ -218,7 +219,8 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                 },
                 {
                     message: "Третье уведомление",
-                    title: "Тест 3",
+                    title: "To user admin (id 1)",
+                    userId: 1,
                     notificationClass: "general"
                 }
             ];
@@ -241,7 +243,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
             }
         }
 
-         setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
+         //setTimeout(sendNotificationsWithDelay, 10000); // Начальная задержка 15 секунд
 
     } catch (e) {
         console.log(e)

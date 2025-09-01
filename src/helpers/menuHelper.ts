@@ -178,11 +178,10 @@ export class MenuHelper {
 
                 const hide =
                 typeof val.navbar?.visible === 'boolean'
-                    ? !val.navbar.visible
+                    ? val.navbar.visible
                     : val.navbar?.groupsAccessRights
                     ? !GroupsAccessRightsHelper.hasAccess(user, val.navbar.groupsAccessRights)
                     : false;
-
                 if (!hide) {
                     if (val.tools && val.tools.length > 0 && val.tools[0].id !== "overview") {
                         val.tools.unshift({
