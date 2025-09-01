@@ -273,7 +273,7 @@ export class Adminizer {
     }
 
     // Хелпер для отправки уведомлений
-    public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read'>): Promise<boolean> {
+    public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'icon'>): Promise<boolean> {
         const notificationClass = notification.notificationClass || 'general';
         return this.notificationHandler.dispatchNotification(notificationClass, notification);
     }

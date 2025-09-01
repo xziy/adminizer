@@ -52,7 +52,7 @@ export class NotificationHandler extends EventEmitter {
      */
     async dispatchNotification(
         notificationClass: string,
-        notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>
+        notification: Omit<INotification, 'id' | 'createdAt'  | 'notificationClass' | 'icon'>
     ): Promise<boolean> {
         const service = this.getService(notificationClass);
         if (!service) {

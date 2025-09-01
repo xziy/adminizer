@@ -40,11 +40,10 @@ export interface INotification {
     title: string;
     message: string;
     createdAt: Date;
-    read: boolean;
     userId?: number;
-    user?: {
-        avatar: string;
-        login: string;
+    icon: {
+        icon: string;
+        iconColor: string;
     }
     notificationClass: string; // Класс нотификации: 'general', 'system', etc.
     metadata?: Record<string, any>;
@@ -52,13 +51,13 @@ export interface INotification {
 
 export interface INotificationEvent {
     type: 'notification' | 'heartbeat' | 'connected' | 'error';
-    data: INotification | string | any;
+    data: INotification | string;
     notificationClass?: string; // Для фильтрации
 }
 
 export interface INotificationService {
     readonly notificationClass: string;
-    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean>;
+    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
     getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
     markAsRead(id: string): Promise<void>;
     getClientCount(): number;

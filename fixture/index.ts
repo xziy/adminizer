@@ -195,7 +195,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         /** Test notifications */
         async function sendNotificationsWithDelay() {
-            const notifications: Omit<INotification, 'id' | 'createdAt' | 'read'>[] = [
+            const notifications: Omit<INotification, 'id' | 'createdAt' | 'read' | 'icon'>[] = [
                 {
                     message: "Первое уведомление",
                     title: "Тест 1",

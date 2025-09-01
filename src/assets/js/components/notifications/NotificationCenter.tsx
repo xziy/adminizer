@@ -13,6 +13,7 @@ import {INotification} from "../../../../interfaces/types.ts"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {useInitials} from '@/hooks/use-initials';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import MaterialIcon from "@/components/material-icon.tsx";
 
 export function NotificationCenter() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -115,18 +116,11 @@ export function NotificationCenter() {
                                     <DropdownMenuItem asChild className="cursor-pointer"
                                                       onSelect={e => e.preventDefault()}>
                                         <div
-                                            className="grid grid-cols-[32px_300px] grid-rows-2 items-center gap-x-4 gap-y-1">
-                                            {notification.notificationClass === 'general' ? (
-                                                <Info className="size-8 text-chart-1"/>
+                                            className="grid grid-cols-[32px_250px] grid-rows-[auto_1fr] items-start gap-x-4 gap-y-2">
+                                            {notification.icon  ? (
+                                                <MaterialIcon name={notification.icon.icon} style={{color: notification.icon.iconColor}} className="!text-[32px]"/>
                                             ) : (
-                                                <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                                                    <AvatarImage src={notification.user?.avatar}
-                                                                 alt={notification.user?.login}/>
-                                                    <AvatarFallback
-                                                        className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                        {notification.user ? getInitials(notification.user.login) : '?'}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                <div></div>
                                             )}
                                             <div className="flex flex-col">
                                                 <span className="font-medium">{notification.title}</span>
@@ -148,7 +142,7 @@ export function NotificationCenter() {
                                                             <Eye/>
                                                         </Button>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="left">
+                                                    <TooltipContent side="left" className="z-[1003]">
                                                         <p>Make read</p>
                                                     </TooltipContent>
                                                 </Tooltip>

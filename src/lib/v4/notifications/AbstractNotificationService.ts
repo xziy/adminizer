@@ -6,6 +6,8 @@ export abstract class AbstractNotificationService extends EventEmitter implement
     protected clients: Map<string, (event: INotificationEvent) => void> = new Map();
     protected adminizer: Adminizer;
     public abstract readonly notificationClass: string;
+    public abstract readonly icon: string;
+    public abstract readonly iconColor: string;
 
     constructor(adminizer: Adminizer) {
         super();
@@ -25,7 +27,7 @@ export abstract class AbstractNotificationService extends EventEmitter implement
     }
 
     // Абстрактные методы
-    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'read' | 'notificationClass'>): Promise<boolean>;
+    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
     abstract getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
     abstract markAsRead(id: string): Promise<void>;
 

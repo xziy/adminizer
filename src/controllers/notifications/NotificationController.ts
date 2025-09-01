@@ -50,9 +50,6 @@ export class NotificationController {
             type: 'connected',
             data: {
                 message: 'Connected to unified notification stream',
-                clientId,
-                userId: req.user?.id,
-                userIsAdmin: NotificationController.isAdmin(req.user)
             }
         });
 
@@ -68,7 +65,6 @@ export class NotificationController {
                 sendEvent({
                     type: 'notification',
                     data: notification,
-                    notificationClass: notification.notificationClass
                 });
             });
         } catch (error) {
