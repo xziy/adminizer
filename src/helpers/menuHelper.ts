@@ -178,7 +178,7 @@ export class MenuHelper {
 
                 const hide =
                 typeof val.navbar?.visible === 'boolean'
-                    ? val.navbar.visible
+                    ? !val.navbar.visible
                     : val.navbar?.groupsAccessRights
                     ? !GroupsAccessRightsHelper.hasAccess(user, val.navbar.groupsAccessRights)
                     : false;

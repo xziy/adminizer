@@ -238,6 +238,10 @@ export interface AdminpanelConfig {
     bind?: {
         public: boolean
     }
+
+    notification?: {
+        enabled: boolean
+    }
 }
 
 export interface ModelConfig {

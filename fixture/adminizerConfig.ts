@@ -424,6 +424,9 @@ const config: AdminpanelConfig = {
             }
         },
     },
+    notification: {
+        enabled: true
+    },
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     auth: {

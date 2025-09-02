@@ -56,11 +56,3 @@ export interface INotificationEvent {
     notificationClass?: string;
     userId?: number;
 }
-
-export interface INotificationService {
-    readonly notificationClass: string;
-    dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
-    getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
-    markAsRead(id: string): Promise<void>;
-    getClientCount(): number;
-}

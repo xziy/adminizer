@@ -114,33 +114,34 @@ export default class Router {
         /**
          * Notifications
          */
-        adminizer.app.get(
-            `${adminizer.config.routePrefix}/api/notifications/stream`,
-            adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsStream)
-        );
+        if (adminizer.config.notification.enabled) {
+            adminizer.app.get(
+                `${adminizer.config.routePrefix}/api/notifications/stream`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsStream)
+            );
 
-        adminizer.app.get(
-            `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
-            adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
-        );
-        adminizer.app.get(
-            `${adminizer.config.routePrefix}/api/notifications`,
-            adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
-        );
+            adminizer.app.get(
+                `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
+            );
+            adminizer.app.get(
+                `${adminizer.config.routePrefix}/api/notifications`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
+            );
 
-        adminizer.app.put(
-            `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
-            adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
-        );
+            adminizer.app.put(
+                `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
+            );
 
-        // adminizer.app.post(
-        //     `${adminizer.config.routePrefix}/api/notifications/send`,
-        //     adminizer.policyManager.bindPolicies([...policies, 'isAdmin'],
-        //         (req: ReqType, res: ResType) => NotificationController.sendNotification(req, res)
-        //     )
-        // );
+            // adminizer.app.post(
+            //     `${adminizer.config.routePrefix}/api/notifications/send`,
+            //     adminizer.policyManager.bindPolicies([...policies, 'isAdmin'],
+            //         (req: ReqType, res: ResType) => NotificationController.sendNotification(req, res)
+            //     )
+            // );
 
-
+        }
         /**
          * List of records
          */

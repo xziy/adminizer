@@ -102,13 +102,6 @@ let adminpanelConfig: AdminpanelConfig = {
                     id: false,
                 }
             }
-        },
-        NavigationAP: {
-            navbar: {
-                visible: false
-            },
-            title: "NavigationAP",
-            model: "navigationap"
         }
     },
 
@@ -158,6 +151,9 @@ let adminpanelConfig: AdminpanelConfig = {
     },
     bind: {
         public: true
+    },
+    notification: {
+        enabled: false
     }
 }
 

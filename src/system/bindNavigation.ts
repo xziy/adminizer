@@ -19,7 +19,7 @@ export default function bindNavigation(adminizer: Adminizer) {
 						updatedAt: false
 					},
 					navbar: {
-						visible: true
+						visible: false
 					},
 					icon: 'storage',
 					identifierField: "",
@@ -32,8 +32,7 @@ export default function bindNavigation(adminizer: Adminizer) {
 					model: adminizer.config.navigation.model.toLowerCase(),
 					remove: false,
 					title: adminizer.config.navigation.model,
-					tools: [],
-					view: false
+					tools: []
 				}
 			} catch (e) {
 				console.log('bindNavigation Error: ', e)

@@ -1,10 +1,11 @@
 import {EventEmitter} from 'events';
 import {Adminizer} from '../../Adminizer';
-import {INotification, INotificationService} from '../../../interfaces/types';
+import {AbstractNotificationService} from "./AbstractNotificationService";
+import {INotification} from '../../../interfaces/types';
 import {UserAP} from "../../../models/UserAP";
 
 export class NotificationHandler extends EventEmitter {
-    private services: Map<string, INotificationService> = new Map();
+    private services: Map<string, AbstractNotificationService> = new Map();
 
     constructor() {
         super();
@@ -14,7 +15,7 @@ export class NotificationHandler extends EventEmitter {
      * Register a new notification service
      * @param service
      */
-    registerService(service: INotificationService): void {
+    registerService(service: AbstractNotificationService): void {
         this.services.set(service.notificationClass, service);
         Adminizer.log.info(`Notification service registered: ${service.notificationClass}`);
     }
@@ -34,14 +35,14 @@ export class NotificationHandler extends EventEmitter {
      * Get a notification service by class
      * @param notificationClass
      */
-    getService(notificationClass: string): INotificationService | undefined {
+    getService(notificationClass: string): AbstractNotificationService | undefined {
         return this.services.get(notificationClass);
     }
 
     /**
      * Get all registered services
      */
-    getAllServices(): INotificationService[] {
+    getAllServices(): AbstractNotificationService[] {
         return Array.from(this.services.values());
     }
 
@@ -98,7 +99,7 @@ export class NotificationHandler extends EventEmitter {
                 }
             } else {
                 // Для остальных уведомлений получаем по пользователю
-                const notifications = await service.getNotifications(user?.id, limit, unreadOnly);
+                const notifications = await service.getNotifications(user.id, limit, unreadOnly);
                 allNotifications.push(...notifications);
             }
         }
@@ -113,13 +114,14 @@ export class NotificationHandler extends EventEmitter {
      * Mark a notification as read
      * @param notificationClass
      * @param id
+     * @param userId
      */
-    async markAsRead(notificationClass: string, id: string): Promise<void> {
+    async markAsRead(notificationClass: string, id: string, userId: number): Promise<void> {
         const service = this.getService(notificationClass);
         if (!service) {
             throw new Error(`Notification service not found: ${notificationClass}`);
         }
-        return service.markAsRead(id);
+        return service.markAsRead(userId, id);
     }
 
     /**
