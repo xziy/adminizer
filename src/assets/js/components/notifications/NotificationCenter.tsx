@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Bell, Eye} from "lucide-react";
+import {Bell, Eye, LoaderCircle} from "lucide-react";
 import {INotification} from "../../../../interfaces/types.ts"
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
@@ -16,7 +16,7 @@ import axios from "axios";
 
 export function NotificationCenter() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
-    const [isConnected, setIsConnected] = useState(false);
+    const [Rloading, setRLoading] = useState(false);
 
     useEffect(() => {
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
@@ -25,7 +25,6 @@ export function NotificationCenter() {
         eventSource.addEventListener('connected', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
             console.log('Connected event:', data);
-            setIsConnected(true);
         });
 
         // Обработчик для события 'notification'
@@ -42,15 +41,15 @@ export function NotificationCenter() {
 
         eventSource.onerror = () => {
             console.error('SSE connection error');
-            setIsConnected(false);
         };
 
         return () => eventSource.close();
     }, []);
 
     const markAsRead = async (notificationClass: string, id: string) => {
+        setRLoading(true);
         const res = await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {})
-        console.log(res.data)
+        if(res.data) setRLoading(false)
         setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
@@ -132,6 +131,9 @@ export function NotificationCenter() {
                                                     <span>&#9679;</span>
                                                     <div>{getRelativeTime(notification.createdAt)}</div>
                                                 </div>
+                                                {Rloading ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin"/>
+                                                ) : (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <Button variant="ghost" size="icon" className="size-4"
@@ -146,6 +148,7 @@ export function NotificationCenter() {
                                                         <p>Make read</p>
                                                     </TooltipContent>
                                                 </Tooltip>
+                                    )}
                                             </div>
                                         </div>
                                     </DropdownMenuItem>

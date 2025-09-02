@@ -202,7 +202,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                     notificationClass: "general"
                 },
                 {
-                    title: 'Admin system notification',
+                    title: 'Admin system notification 1',
                     message: 'This is a test system notification',
                     notificationClass: 'system',
                 },
@@ -213,7 +213,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                     notificationClass: "general"
                 },
                 {
-                    title: 'Admin system notification',
+                    title: 'Admin system notification 2',
                     message: 'This is a test system notification',
                     notificationClass:'system',
                 },

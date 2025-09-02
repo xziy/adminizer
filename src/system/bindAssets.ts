@@ -4,4 +4,5 @@ import {Express} from "express";
 
 export default function bindAssets(app: Express, routePrefix: string) {
   app.use(`${routePrefix}/assets`, serveStatic(path.join(import.meta.dirname, '../assets')));
+  app.use(`${routePrefix}/files`, serveStatic(path.join(import.meta.dirname, '../files')));
 }

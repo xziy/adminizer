@@ -56,16 +56,11 @@ export class SystemNotificationService extends AbstractNotificationService {
     }
 
     // Специальный метод для системных событий
-    async logSystemEvent(action: string, details: string, metadata?: any): Promise<boolean> {
+    async logSystemEvent(title: string, message: string, metadata?: Record<string | number, any>): Promise<boolean> {
         return this.dispatchNotification({
-            title: `Системное событие: ${action}`,
-            message: details,
-            metadata: {
-                ...metadata,
-                actionType: action,
-                isSystemEvent: true,
-                timestamp: new Date().toISOString()
-            }
+            title: title,
+            message: message,
+            metadata: metadata
         });
     }
 }

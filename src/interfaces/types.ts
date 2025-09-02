@@ -47,7 +47,7 @@ export interface INotification {
         iconColor: string;
     }
     notificationClass: string; // Класс нотификации: 'general', 'system', etc.
-    metadata?: Record<string, any>;
+    metadata?: Record<string | number, any>;
 }
 
 export interface INotificationEvent {

@@ -87,6 +87,7 @@ export function bindInertia(adminizer: Adminizer) {
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <meta charset="utf-8"><title inertia></title>
+            <link rel="icon" type="image/png" href="${adminizer.config.routePrefix}/files/favicon.png">
             ${viteRender()}
             </head>
         <body>

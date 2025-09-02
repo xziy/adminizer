@@ -11,7 +11,7 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
 	if (req.adminizer.config.auth.enable) {
 		if (!req.user) {
 			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-		} else if (!req.adminizer.accessRightsHelper.hasPermission(`catalog-${id}`, req.user)) {
+		} else if (!req.adminizer.accessRightsHelper.hasPermission(`mediaManager-${id}`, req.user)) {
 			return res.sendStatus(403);
 		}
 	}

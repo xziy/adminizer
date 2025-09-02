@@ -279,9 +279,9 @@ export class Adminizer {
     }
 
     // Хелпер для системных событий
-    public async logSystemEvent(action: string, details: string, metadata?: any): Promise<boolean> {
+    public async logSystemEvent(title: string, message: string, metadata?: any): Promise<boolean> {
         const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logSystemEvent(action, details, metadata);
+        return systemNotificationService.logSystemEvent(title, message, metadata);
     }
 
     public get emitter(): EventEmitter {
