@@ -72,7 +72,6 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     props.actions = inertiaActionsHelper(actionType, entity, req)
 
     const config = req.adminizer.configHelper.getConfig();
-
     for (const key of Object.keys(fields)) {
         if ((!config.showORMtime) && (key === 'createdAt' || key === 'updatedAt')) continue
         let field = fields[key] as Field
@@ -194,7 +193,6 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             options: options
         })
     }
-
     return props
 }
 

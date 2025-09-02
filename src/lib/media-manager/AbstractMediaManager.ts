@@ -200,8 +200,8 @@ export abstract class AbstractMediaManager {
             adminizer.accessRightsHelper.registerToken({
                 id: `mediaManager-${this.id}`,
                 name: this.id,
-                description: `Access to edit catalog for ${this.id}`,
-                department: 'catalog'
+                description: `Access to edit media-manager for ${this.id}`,
+                department: 'media-manager',
             });
         }, 100)
     }
