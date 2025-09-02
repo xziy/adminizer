@@ -1,6 +1,6 @@
-import { AbstractNotificationService } from './AbstractNotificationService';
-import { INotification, INotificationEvent } from '../../../interfaces/types';
-import { Adminizer } from '../../Adminizer';
+import {AbstractNotificationService} from './AbstractNotificationService';
+import {INotification, INotificationEvent} from '../../../interfaces/types';
+import {Adminizer} from '../../Adminizer';
 import {NotificationAPModel} from "../../../models/NotificationAP";
 
 export class SystemNotificationService extends AbstractNotificationService {
@@ -21,8 +21,13 @@ export class SystemNotificationService extends AbstractNotificationService {
             try {
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
 
-                if (notification.userId) {
-                    await this.createUserNotification(notificationDB.id, notification.userId);
+                const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({isAdministrator: 1});
+                for (const user of users) {
+                    try {
+                        await this.createUserNotification(notificationDB.id, user.id);
+                    } catch (error) {
+                        Adminizer.log.error('Error creating UserNotificationAP:', error);
+                    }
                 }
 
                 const event: INotificationEvent = {
@@ -48,60 +53,6 @@ export class SystemNotificationService extends AbstractNotificationService {
         }
 
         return false;
-    }
-
-    async getNotifications(userId?: number, limit: number = 100, unreadOnly: boolean = false): Promise<INotification[]> {
-        if (!this.adminizer.modelHandler.model.has('notificationap')) {
-            return [];
-        }
-
-        try {
-            const query: any = { notificationClass: this.notificationClass };
-
-            let notificationsDB: NotificationAPModel[];
-
-            notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
-                where: query,
-                sort: 'createdAt DESC',
-                limit
-            });
-
-            let notifications: INotification[] = [];
-
-            for (const notification of notificationsDB) {
-                let readStatus = false;
-
-                // Для системных уведомлений проверяем статус прочтения
-                if (userId && this.adminizer.modelHandler.model.has('usernotificationap')) {
-                    const userNotification = await this.getUserNotification(notification.id, userId);
-                    readStatus = userNotification ? userNotification.read : false;
-                }
-
-                notifications.push({
-                    ...notification,
-                    read: readStatus,
-                    icon: {
-                        icon: this.icon,
-                        iconColor: this.iconColor
-                    },
-                });
-            }
-
-            return notifications;
-        } catch (error) {
-            Adminizer.log.error('Error fetching system notifications:', error);
-            return [];
-        }
-    }
-
-    async markAsRead(id: string): Promise<void> {
-        // if (this.adminizer.modelHandler.hasModel('notification')) {
-        //     try {
-        //         await this.adminizer.modelHandler.model.get('notification').update({ id }, { read: true });
-        //     } catch (error) {
-        //         Adminizer.log.error('Error marking system notification as read:', error);
-        //     }
-        // }
     }
 
     // Специальный метод для системных событий

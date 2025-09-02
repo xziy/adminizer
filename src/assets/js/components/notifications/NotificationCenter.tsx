@@ -8,17 +8,15 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Bell, Info, Eye} from "lucide-react";
+import {Bell, Eye} from "lucide-react";
 import {INotification} from "../../../../interfaces/types.ts"
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
-import {useInitials} from '@/hooks/use-initials';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
+import axios from "axios";
 
 export function NotificationCenter() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [isConnected, setIsConnected] = useState(false);
-    const getInitials = useInitials();
 
     useEffect(() => {
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
@@ -50,13 +48,10 @@ export function NotificationCenter() {
         return () => eventSource.close();
     }, []);
 
-    const markAsRead = async (id: string) => {
-        await fetch(`/adminizer/api/notifications/${id}/read`, {
-            method: 'PUT'
-        });
-        setNotifications(prev => prev.map(n =>
-            n.id === id ? {...n, read: true} : n
-        ));
+    const markAsRead = async (notificationClass: string, id: string) => {
+        const res = await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {})
+        console.log(res.data)
+        setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
     const getRelativeTime = (date: string | Date): string => {
@@ -100,8 +95,9 @@ export function NotificationCenter() {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild className="cursor-pointer data-[state=open]:bg-sidebar-accent">
-                    <Button variant="ghost">
+                    <Button variant="ghost" className="relative">
                         <Bell/>
+                        {notifications.length > 0 && <div className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive"></div>}
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="z-[1002] p-2" align="end" onCloseAutoFocus={e => e.preventDefault()}>
@@ -138,7 +134,11 @@ export function NotificationCenter() {
                                                 </div>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="size-4">
+                                                        <Button variant="ghost" size="icon" className="size-4"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    markAsRead(notification.notificationClass, notification.id)
+                                                                }}>
                                                             <Eye/>
                                                         </Button>
                                                     </TooltipTrigger>

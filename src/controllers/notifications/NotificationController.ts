@@ -5,16 +5,7 @@ export class NotificationController {
 
     // Единый SSE endpoint для всех уведомлений
     static async getNotificationsStream(req: ReqType, res: ResType): Promise<void> {
-        if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({error: 'Notification system not initialized'});
-            return;
-        }
-
-        // Проверяем аутентификацию
-        if (req.adminizer.config.auth.enable && !req.user) {
-            res.status(401).json({error: 'Unauthorized'});
-            return;
-        }
+        NotificationController.checkPermission(req, res)
 
         // Устанавливаем заголовки для SSE
         res.setHeader('Content-Type', 'text/event-stream');
@@ -29,13 +20,11 @@ export class NotificationController {
         const sendEvent = (event: any) => {
             // Фильтруем уведомления по правам пользователя
             if (event.type === 'notification') {
-                if (event.notificationClass === 'system') {
-                    // Системные уведомления только для админов
-                    if (!NotificationController.isAdmin(req.user)) {
-                        return;
-                    }
+                // Системные уведомления только для админов
+                if (event.notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
+                    return;
                 }
-                if(event.userId !== null && event.userId !== req.user.id){
+                if (event.userId !== null && event.userId !== req.user.id) {
                     return;
                 }
             }
@@ -62,7 +51,7 @@ export class NotificationController {
         try {
             const notifications = await req.adminizer.notificationHandler.getUserNotifications(
                 req.user,
-                20,
+                4,
                 true
             );
             notifications.forEach(notification => {
@@ -104,10 +93,7 @@ export class NotificationController {
 
     // API для получения уведомлений по классу
     static async getNotificationsByClass(req: ReqType, res: ResType): Promise<void> {
-        if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({error: 'Notification system not initialized'});
-            return;
-        }
+        NotificationController.checkPermission(req, res)
 
         try {
             const {notificationClass} = req.params;
@@ -135,10 +121,7 @@ export class NotificationController {
 
     // API для получения всех уведомлений пользователя
     static async getUserNotifications(req: ReqType, res: ResType): Promise<void> {
-        if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({error: 'Notification system not initialized'});
-            return;
-        }
+        NotificationController.checkPermission(req, res)
 
         try {
             const {limit = 50, unreadOnly = false} = req.query;
@@ -158,10 +141,7 @@ export class NotificationController {
 
     // API для пометки как прочитанного
     static async markAsRead(req: ReqType, res: ResType): Promise<void> {
-        if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({error: 'Notification system not initialized'});
-            return;
-        }
+        NotificationController.checkPermission(req, res)
 
         try {
             const {notificationClass, id} = req.params;
@@ -172,7 +152,7 @@ export class NotificationController {
                 return;
             }
 
-            await req.adminizer.notificationHandler.markAsRead(notificationClass, id);
+            await req.adminizer.notificationHandler.markAsRead(notificationClass, id, req.user.id);
             res.json({success: true});
         } catch (error) {
             Adminizer.log.error('Error marking notification as read:', error);
@@ -182,10 +162,7 @@ export class NotificationController {
 
     // API для отправки уведомления
     static async sendNotification(req: ReqType, res: ResType): Promise<void> {
-        if (!req.adminizer?.notificationHandler) {
-            res.status(500).json({error: 'Notification system not initialized'});
-            return;
-        }
+        NotificationController.checkPermission(req, res)
 
         // Проверяем права админа
         if (!NotificationController.isAdmin(req.user)) {
@@ -212,5 +189,18 @@ export class NotificationController {
     private static isAdmin(user: UserAP): boolean {
         if (!user) return false;
         return user.isAdministrator === true;
+    }
+
+    private static checkPermission(req: ReqType, res: ResType): void {
+        if (!req.adminizer?.notificationHandler) {
+            res.status(500).json({error: 'Notification system not initialized'});
+            return;
+        }
+
+        // Проверяем аутентификацию
+        if (req.adminizer.config.auth.enable && !req.user) {
+            res.status(401).json({error: 'Unauthorized'});
+            return;
+        }
     }
 }
