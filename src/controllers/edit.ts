@@ -137,6 +137,13 @@ export default async function edit(req: ReqType, res: ResType) {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
+            // log system event notification
+            await req.adminizer.logSystemUpdatedEvent(
+                req.i18n.__('Updated'),
+                `user ${req.user.login} ${req.i18n.__('update')} ${entity.name} ${record.id}`,
+                {test: 'test'}
+            );
+
             Adminizer.log.debug(`Record was updated: `, newRecord);
             if (req.body.jsonPopupCatalog) {
                 return res.json({record: newRecord})

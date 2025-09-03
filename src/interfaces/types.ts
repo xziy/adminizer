@@ -47,6 +47,7 @@ export interface INotification {
         iconColor: string;
     }
     notificationClass: string; // Класс нотификации: 'general', 'system', etc.
+    channel: string;
     metadata?: Record<string | number, any>;
 }
 
@@ -54,5 +55,6 @@ export interface INotificationEvent {
     type: 'notification' | 'heartbeat' | 'connected' | 'error';
     data: INotification | string;
     notificationClass?: string;
+    channel?: string
     userId?: number;
 }

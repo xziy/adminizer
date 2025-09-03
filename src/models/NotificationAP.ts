@@ -15,6 +15,9 @@ export default {
     notificationClass: {
         type: "string",
     },
+    channel: {
+        type: "string",
+    },
     metadata: {
         type: 'json'
     }
@@ -24,6 +27,7 @@ export interface NotificationAP {
     id: string;
     title: string;
     message: string;
+    channel: string;
     notificationClass: string;
     metadata?: Record<string, unknown>;
     createdAt: Date;

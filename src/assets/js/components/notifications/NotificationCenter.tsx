@@ -18,7 +18,22 @@ export function NotificationCenter() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [Rloading, setRLoading] = useState(false);
 
+    const fetchUnreadNotifications = async () => {
+        try {
+            const res = await axios.get(`${window.routePrefix}/api/notifications`, {
+                params: {unreadOnly: true, limit: 4}
+            });
+            // console.log(res.data)
+            setNotifications(res.data.slice(0, 4));
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        } finally {
+        }
+    };
+
     useEffect(() => {
+        fetchUnreadNotifications();
+
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
 
         // Обработчик для события 'connected'
@@ -30,14 +45,14 @@ export function NotificationCenter() {
         // Обработчик для события 'notification'
         eventSource.addEventListener('notification', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
-            console.log('Notification event:', data);
-            setNotifications(prev => [data, ...prev.slice(0, 49)]);
+            // console.log('Notification event:', data);
+            setNotifications(prev => [data, ...prev].slice(0, 4));
         });
 
         // Обработчик для общих сообщений (если нужно)
-        eventSource.onmessage = (event) => {
-            console.log('Generic message:', event.data);
-        };
+        // eventSource.onmessage = (event) => {
+        // console.log('Generic message:', event.data);
+        //};
 
         eventSource.onerror = () => {
             console.error('SSE connection error');
@@ -48,9 +63,16 @@ export function NotificationCenter() {
 
     const markAsRead = async (notificationClass: string, id: string) => {
         setRLoading(true);
-        const res = await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {})
-        if(res.data) setRLoading(false)
-        setNotifications(prev => prev.filter(n => n.id !== id));
+        try {
+            await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {});
+
+            // После успешной отметки как прочитано, загружаем свежий список непрочитанных
+            await fetchUnreadNotifications();
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        } finally {
+            setRLoading(false);
+        }
     };
 
     const getRelativeTime = (date: string | Date): string => {
@@ -96,11 +118,12 @@ export function NotificationCenter() {
                 <DropdownMenuTrigger asChild className="cursor-pointer data-[state=open]:bg-sidebar-accent">
                     <Button variant="ghost" className="relative">
                         <Bell/>
-                        {notifications.length > 0 && <div className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive"></div>}
+                        {notifications.length > 0 &&
+                            <div className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive"></div>}
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="z-[1002] p-2" align="end" onCloseAutoFocus={e => e.preventDefault()}>
-                    <DropdownMenuGroup>
+                <DropdownMenuContent className={`z-[1002] p-2`} align="end" onCloseAutoFocus={e => e.preventDefault()}>
+                    <DropdownMenuGroup className={`${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
                         {notifications.length === 0 ? (
                             <div className="p-4 text-center text-muted-foreground">
                                 No notifications
@@ -112,8 +135,10 @@ export function NotificationCenter() {
                                                       onSelect={e => e.preventDefault()}>
                                         <div
                                             className="grid grid-cols-[32px_250px] grid-rows-[auto_1fr] items-start gap-x-4 gap-y-2">
-                                            {notification.icon  ? (
-                                                <MaterialIcon name={notification.icon.icon} style={{color: notification.icon.iconColor}} className="!text-[32px]"/>
+                                            {notification.icon ? (
+                                                <MaterialIcon name={notification.icon.icon}
+                                                              style={{color: notification.icon.iconColor}}
+                                                              className="!text-[32px]"/>
                                             ) : (
                                                 <div></div>
                                             )}
@@ -131,9 +156,6 @@ export function NotificationCenter() {
                                                     <span>&#9679;</span>
                                                     <div>{getRelativeTime(notification.createdAt)}</div>
                                                 </div>
-                                                {Rloading ? (
-                                                    <LoaderCircle className="h-4 w-4 animate-spin"/>
-                                                ) : (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <Button variant="ghost" size="icon" className="size-4"
@@ -148,7 +170,6 @@ export function NotificationCenter() {
                                                         <p>Make read</p>
                                                     </TooltipContent>
                                                 </Tooltip>
-                                    )}
                                             </div>
                                         </div>
                                     </DropdownMenuItem>
@@ -157,7 +178,12 @@ export function NotificationCenter() {
                             ))
                         )}
                     </DropdownMenuGroup>
-                    <Button variant="secondary" className="w-full">View All</Button>
+                    <Button variant="secondary"
+                            className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        View All
+                        {Rloading &&
+                            <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    </Button>
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

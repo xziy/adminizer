@@ -36,7 +36,16 @@ export class NotificationController {
         // Подключаем клиента ко всем сервисам
         const services = req.adminizer.notificationHandler.getAllServices();
         services.forEach(service => {
-            (service as any).addClient(clientId, sendEvent);
+            service.addClient(clientId, sendEvent);
+
+            // Для системного сервиса добавляем клиента в CRUD каналы
+            if (service.notificationClass === 'system' && NotificationController.isAdmin(req.user)) {
+                const systemService = service as any;
+                // Добавляем клиента в основные CRUD каналы
+                ['created', 'updated', 'deleted', 'system'].forEach(channel => {
+                    systemService.addClientToChannel(clientId, channel);
+                });
+            }
         });
 
         // Отправляем приветственное сообщение
@@ -44,33 +53,42 @@ export class NotificationController {
             type: 'connected',
             data: {
                 message: 'Connected to unified notification stream',
+                clientId: clientId
             }
         });
 
         // Отправляем историю уведомлений (с учетом прав доступа)
-        try {
-            const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-                req.user,
-                4,
-                true
-            );
-            notifications.forEach(notification => {
-                sendEvent({
-                    type: 'notification',
-                    data: notification,
-                    notificationClass: notification.notificationClass,
-                    userId: notification.userId ?? null
-                });
-            });
-        } catch (error) {
-            Adminizer.log.error('Error sending notification history:', error);
-        }
+        // try {
+        //     const notifications = await req.adminizer.notificationHandler.getUserNotifications(
+        //         req.user,
+        //         4,
+        //         true
+        //     );
+        //     notifications.forEach(notification => {
+        //         sendEvent({
+        //             type: 'notification',
+        //             data: notification,
+        //             notificationClass: notification.notificationClass,
+        //             userId: notification.userId ?? null
+        //         });
+        //     });
+        // } catch (error) {
+        //     Adminizer.log.error('Error sending notification history:', error);
+        // }
 
         // Обработка закрытия соединения
         req.on('close', () => {
             // Отключаем клиента от всех сервисов
             services.forEach(service => {
-                (service as any).removeClient(clientId);
+                service.removeClient(clientId);
+
+                // Для системного сервиса удаляем из всех каналов
+                if (service.notificationClass === 'system') {
+                    const systemService = service as any;
+                    if (systemService.removeClientFromAllChannels) {
+                        systemService.removeClientFromAllChannels(clientId);
+                    }
+                }
             });
             res.end();
         });
@@ -79,7 +97,7 @@ export class NotificationController {
         const heartbeatInterval = setInterval(() => {
             if (!res.writableEnded) {
                 services.forEach(service => {
-                    (service as any).sendHeartbeat(clientId);
+                    service.sendHeartbeat(clientId);
                 });
             } else {
                 clearInterval(heartbeatInterval);
@@ -124,13 +142,11 @@ export class NotificationController {
         NotificationController.checkPermission(req, res)
 
         try {
-            const {limit = 50, unreadOnly = false} = req.query;
-
             const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-                req.user,
-                Number(limit),
-                unreadOnly === 'true'
-            );
+                        req.user,
+                        4,
+                        true
+                    );
 
             res.json(notifications);
         } catch (error) {
@@ -171,11 +187,11 @@ export class NotificationController {
         }
 
         try {
-            const {title, message, type, priority, userId, notificationClass = 'general'} = req.body;
+            const {title, message, type, priority, userId, channel, notificationClass = 'general'} = req.body;
 
             const notificationId = await req.adminizer.notificationHandler.dispatchNotification(
                 notificationClass,
-                {title, message, userId}
+                {title, message, userId, channel}
             );
 
             res.json({success: true, id: notificationId});
