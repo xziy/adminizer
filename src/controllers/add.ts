@@ -105,9 +105,10 @@ export default async function add(req: ReqType, res: ResType) {
             let record = await entity.model.create(reqData, dataAccessor);
 
             // log system event notification
-            await req.adminizer.logSystemEvent(
-                req.i18n.__('System event'),
-                `user ${req.user.login} ${req.i18n.__('created')} ${entity.name} ${record.id}`
+            await req.adminizer.logSystemCreatedEvent(
+                req.i18n.__('Created'),
+                `user ${req.user.login} ${req.i18n.__('create')} ${entity.name} ${record.id}`,
+                {test: 'test'}
             );
 
             // save associations media to json

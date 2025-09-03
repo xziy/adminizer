@@ -74,6 +74,12 @@ export default async function remove(req: ReqType, res: ResType) {
     }
 
     if (destroyedRecord) {
+        // log system event notification
+        await req.adminizer.logSystemDeletedEvent(
+            req.i18n.__('Deleted'),
+            `user ${req.user.login} ${req.i18n.__('delete')} ${entity.name} ${destroyedRecord[0].id}`,
+            {test: 'test'}
+        )
         req.flash.setFlashMessage('success', req.i18n.__('Record was removed successfully !'));
 
     } else {
