@@ -28,6 +28,7 @@ import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
 import {Test as TestSequelize} from "./models/sequelize/Test";
 import {Category as CategorySequelize} from "./models/sequelize/Category";
 import {TestCatalog as TestCatalogSequelize} from "./models/sequelize/TestCatalog";
+import {User as UserSequelize} from "./models/sequelize/User";
 import {SequelizeAdapter} from "../dist/lib/v4/model/adapter/sequelize";
 import {seedDatabase} from "./helpers/seedDatabase";
 
@@ -94,7 +95,7 @@ if (ormType === "waterline") {
     });
     await orm.authenticate();
     await SequelizeAdapter.registerSystemModels(orm);
-    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, CategorySequelize, TestCatalogSequelize]);
+    orm.addModels([ExampleSequelize, TestSequelize, JsonSchemaSequelize, CategorySequelize, TestCatalogSequelize, UserSequelize]);
     TestSequelize.associate(orm);
     ExampleSequelize.associate(orm);
 
@@ -177,6 +178,39 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        // Example external auth handler: authenticates against fixture User model
+        // and grants permissions via an in-memory group with all tokens.
+        adminizer.setAuthHandler(async (req, login, password) => {
+            try {
+                const extModel = req.adminizer.modelHandler.model.get('User');
+                if (!extModel) return null;
+                // TODO refactor CRUD functions for DataAccessor usage
+                const extUser = await extModel["_findOne"]({ login });
+                if (!extUser) return null;
+                // Delegate password verification to the external source:
+                // If the external user has `passwordHashed`, verify with the project salt.
+                // Otherwise, assume the external source has already verified credentials
+                // (e.g., SSO, LDAP, OAuth) and proceed without local verification.
+                if (extUser.passwordHashed) {
+                    const passwordHash = (await import('password-hash')).default;
+                    if (!passwordHash.verify(login + password + process.env.AP_PASSWORD_SALT, extUser.passwordHashed)) return null;
+                }
+
+                const tokens = req.adminizer.accessRightsHelper.getTokens().map(t => t.id);
+                return {
+                    id: extUser.id,
+                    login: extUser.login,
+                    fullName: extUser.fullName ?? extUser.login,
+                    isActive: true,
+                    isAdministrator: false,
+                    groups: [{ id: -1, name: 'external', tokens }]
+                } as any;
+            } catch (e) {
+                Adminizer.log.error('Fixture auth handler error', e);
+                return null;
+            }
+        });
 
         adminizer.widgetHandler.add(new SwitcherOne());
         adminizer.widgetHandler.add(new SwitcherTwo());
