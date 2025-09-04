@@ -13,6 +13,7 @@ import {INotification} from "../../../../interfaces/types.ts"
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
 import axios from "axios";
+import {Link} from "@inertiajs/react";
 
 export function NotificationCenter() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -178,11 +179,13 @@ export function NotificationCenter() {
                             ))
                         )}
                     </DropdownMenuGroup>
-                    <Button variant="secondary"
-                            className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        View All
-                        {Rloading &&
-                            <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    <Button variant="secondary" asChild>
+                        <Link href={`${window.routePrefix}/notifications`}
+                              className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            View All
+                            {Rloading &&
+                                <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                        </Link>
                     </Button>
                 </DropdownMenuContent>
             </DropdownMenu>

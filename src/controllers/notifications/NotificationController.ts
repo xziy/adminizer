@@ -3,6 +3,19 @@ import {UserAP} from "../../models/UserAP";
 
 export class NotificationController {
 
+    static async viewAll(req: ReqType, res: ResType) {
+        if (!req.user) {
+            return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+        }
+
+        return req.Inertia.render({
+            component: 'notification',
+            props: {
+                title: req.i18n.__('Notifications'),
+            }
+        });
+    }
+
     // Единый SSE endpoint для всех уведомлений
     static async getNotificationsStream(req: ReqType, res: ResType): Promise<void> {
         NotificationController.checkPermission(req, res)
@@ -148,6 +161,21 @@ export class NotificationController {
                         true
                     );
 
+            res.json(notifications);
+        } catch (error) {
+            Adminizer.log.error('Error getting user notifications:', error);
+            res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
+    static async getAllUserNotifications(req: ReqType, res: ResType): Promise<void> {
+        NotificationController.checkPermission(req, res)
+        try {
+            const notifications = await req.adminizer.notificationHandler.getUserNotifications(
+                req.user,
+                50,
+                false
+            );
             res.json(notifications);
         } catch (error) {
             Adminizer.log.error('Error getting user notifications:', error);
