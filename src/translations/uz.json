@@ -5,6 +5,7 @@
   "Are you sure?": "Ishonasizmi?",
   "Back": "Orqaga qaytish",
   "Back to Login": "Kirish uchun qaytish",
+  "Additional login page": "Qo'shimcha kirish sahifasi",
   "Clean": "Tozalamoq",
   "Confirm Password": "Parolni tasdiqlang",
   "Confirm Password*": "Parolni tasdiqlang*",
@@ -69,4 +70,4 @@
   "You don't have any widgets selected yet. You can add them by clicking on the plus sign at the top right.": "Sizda hali tanlangan hech qanday vidjet yo'q. Siz ularni yuqori o'ng tomonda plyus belgisini bosish orqali qo'shishingiz mumkin.",
   "create": "yaratmoq",
   "create new": "Yangi yarating"
-}
+}

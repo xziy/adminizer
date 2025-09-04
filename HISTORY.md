@@ -25,3 +25,8 @@
 - Added fixture Sequelize model `fixture/models/sequelize/User.ts` and wired it into the fixture app.
 - Implemented example auth handler in `fixture/index.ts` that authenticates against the external `User` model and grants permissions via an in‑memory group.
 - Docs: new guide `docs/authentication-external.md`.
+
+## 4.3.0
+- Login: added optional bottom link via `auth.addishinalLoginPage` (config-driven).
+- i18n: added `"Additional login page"` to all bundled locales.
+- Docs: `docs/login-additional-link.md` explains configuration and behavior.
