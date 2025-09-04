@@ -18,10 +18,10 @@ export function inertiaLoginHelper(req: ReqType) {
         let link = raw;
         if (/^https?:\/\//i.test(raw)) {
             link = raw; // absolute URL
-        } else if (raw.startsWith('/')) {
-            link = `${req.adminizer.config.routePrefix}${raw}`; // relative to routePrefix
+        } else if (raw.startsWith(`/${req.adminizer.config.routePrefix}`)) {
+            link = `${raw}`;
         } else {
-            link = `${req.adminizer.config.routePrefix}/${raw}`; // relative path
+            link = `${req.adminizer.config.routePrefix}/${raw}`;
         }
         props.addishinalLoginPage = {
             title: req.i18n.__(addPage.textKey || 'Additional login page'),
