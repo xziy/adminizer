@@ -11,6 +11,23 @@ export function inertiaLoginHelper(req: ReqType) {
             link: `${req.adminizer.config.routePrefix}/model/userap/register`
         };
     }
+    // Optional additional link at the bottom of login page
+    const addPage = req.adminizer.config.auth?.addishinalLoginPage;
+    if (addPage && typeof addPage.link === 'string' && addPage.link.length > 0) {
+        const raw = addPage.link;
+        let link = raw;
+        if (/^https?:\/\//i.test(raw)) {
+            link = raw; // absolute URL
+        } else if (raw.startsWith('/')) {
+            link = `${req.adminizer.config.routePrefix}${raw}`; // relative to routePrefix
+        } else {
+            link = `${req.adminizer.config.routePrefix}/${raw}`; // relative path
+        }
+        props.addishinalLoginPage = {
+            title: req.i18n.__(addPage.textKey || 'Additional login page'),
+            link,
+        };
+    }
     return props
 }
 

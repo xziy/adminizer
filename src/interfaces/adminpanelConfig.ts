@@ -91,7 +91,19 @@ export interface AdminpanelConfig {
         /** Enable crypto-puzzle CAPTCHA (default: true) */
         captcha?: boolean,
         /** Description displayed on login page */
-        description?: string
+        description?: string,
+        /**
+         * Optional additional link at the bottom of the login page
+         * Example:
+         *  addishinalLoginPage: { link: '/model/userap/register', textKey: 'Additional login page' }
+         *  link can be relative to routePrefix (e.g. 'model/help' or '/model/help') or absolute (https://...)
+         */
+        addishinalLoginPage?: {
+            /** Target URL; relative to routePrefix unless absolute */
+            link: string,
+            /** Optional i18n key for label; defaults to 'Additional login page' */
+            textKey?: string
+        }
     }
     /**
      * @alpha
