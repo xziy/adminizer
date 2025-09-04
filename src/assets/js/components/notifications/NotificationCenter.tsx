@@ -50,11 +50,6 @@ export function NotificationCenter() {
             setNotifications(prev => [data, ...prev].slice(0, 4));
         });
 
-        // Обработчик для общих сообщений (если нужно)
-        // eventSource.onmessage = (event) => {
-        // console.log('Generic message:', event.data);
-        //};
-
         eventSource.onerror = () => {
             console.error('SSE connection error');
         };

@@ -6,6 +6,7 @@ import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManag
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
+import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 
 export default async function add(req: ReqType, res: ResType) {
     let entity = ControllerHelper.findEntityObject(req);
@@ -104,11 +105,18 @@ export default async function add(req: ReqType, res: ResType) {
         try {
             let record = await entity.model.create(reqData, dataAccessor);
 
-            // log system event notification
+            // Create diff
+            const cleanNewRecord = sanitizeForDiff(reqData);
+            const formattedChanges = formatChanges({}, {}, cleanNewRecord, 'add');
+
+            // log system event notification с diff
             await req.adminizer.logSystemCreatedEvent(
                 req.i18n.__('Created'),
                 `user ${req.user.login} ${req.i18n.__('create')} ${entity.name} ${record.id}`,
-                {test: 'test'}
+                {
+                    changes: formattedChanges,
+                    summary: `${req.i18n.__('Created')} ${formattedChanges.length} ${req.i18n.__('fields')}`
+                }
             );
 
             // save associations media to json
