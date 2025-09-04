@@ -56,24 +56,6 @@ declare global {
 			label: string
 			tree: any
 		}
-
-		// UserAP: {
-		// 	id: number
-		// 	login: string
-		// 	fullName: string
-		// 	email?: string
-		// 	passwordHashed?: string
-		// 	password?: string
-		// 	timezone?: string
-		// 	expires?: string
-		// 	locale?: string
-		// 	isDeleted?: boolean
-		// 	isActive?: boolean
-		// 	isAdministrator?: boolean
-		// 	groups?: GroupAP[]
-		// 	widgets?: any
-		// 	isConfirmed?: boolean
-		// }
 	}
     type reqSession = {
         flashMessages: Record<string, string[]>;
