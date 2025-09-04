@@ -2,15 +2,15 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
-import {CatalogHandler} from "../lib/v4/catalog/CatalogHandler";
+import { diff } from 'deep-object-diff';
 import {
     getRelationsMediaManager,
     saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
-import {MediaManagerWidgetJSON} from "../lib/media-manager/AbstractMediaManager";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
+import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 
 export default async function edit(req: ReqType, res: ResType) {
     //Check id
@@ -137,11 +137,24 @@ export default async function edit(req: ReqType, res: ResType) {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
+            // Создаем clean объекты для сравнения (исключаем системные поля)
+            const cleanOldRecord = sanitizeForDiff(record);
+            const cleanNewRecord = sanitizeForDiff(newRecord[0]);
+
+            // Получаем diff
+            const changesDiff = diff(cleanOldRecord, cleanNewRecord);
+
+            // Форматируем для лога
+            const formattedChanges = formatChanges(changesDiff, cleanOldRecord, cleanNewRecord);
+
             // log system event notification
             await req.adminizer.logSystemUpdatedEvent(
                 req.i18n.__('Updated'),
                 `user ${req.user.login} ${req.i18n.__('update')} ${entity.name} ${record.id}`,
-                {test: 'test'}
+                {
+                    changes: formattedChanges,
+                    summary: `${req.i18n.__('Changes')} ${Object.keys(formattedChanges).length} ${req.i18n.__('fields')}`
+                }
             );
 
             Adminizer.log.debug(`Record was updated: `, newRecord);
