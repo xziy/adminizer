@@ -45,14 +45,14 @@ export class SystemNotificationService extends AbstractNotificationService {
                     } as INotification,
                     notificationClass: this.notificationClass,
                     userId: notification.userId ?? null,
-                    channel: notification.channel // Добавляем информацию о канале
+                    channel: notification.channel ?? 'system' // Добавляем информацию о канале
                 };
 
                 // Отправляем на все каналы или на конкретный канал
                 if (notification.channel) {
                     this.broadcastToChannel(notification.channel, event);
                 } else {
-                    this.broadcast(event);
+                    this.broadcastToChannel('system', event);
                 }
 
                 Adminizer.log.info(`[System] Notification dispatched: ${fullNotification.title}`);

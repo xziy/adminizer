@@ -43,6 +43,7 @@ const ViewAll = () => {
     const handleChange = async (tab: string) => {
         setActiveTab(tab);
         setPendingTab(tab);
+        setNotifications([]);
         setLoading(true);
         try {
             const res = await axios.get(`${window.routePrefix}/api/notifications/${tab}`)
@@ -58,33 +59,33 @@ const ViewAll = () => {
     // Render content
     const renderContent = (viewType: 'general' | 'system') => {
         if (loading && notifications.length === 0) {
-            return <LoaderCircle className="mx-auto mt-14 size-12 animate-spin"/>;
+            return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
         }
         if (notifications.length === 0) {
             return <div className="text-center font-medium mt-8">
                 {/*{messages["No media found"]}*/}
-                No media found
+                No notifications found
             </div>;
         }
         return viewType === 'general'
-            ? <General notifications={notifications} />
-            : <System notifications={notifications} />;
+            ? <General notifications={notifications}/>
+            : <System notifications={notifications}/>;
     };
 
     return (
         <div
-            className="h-full p-4">
-            <div className="flex flex-col gap-4">
-                <h1 className="font-bold text-xl">{page.props.title}</h1>
-                <Tabs value={activeTab} className="w-full">
-                    <TabsList className="w-full">
-                        <TabsTrigger
-                            value="general"
-                            onClick={() => handleChange('general')}
-                            disabled={!!pendingTab}
-                        >
-                            General
-                        </TabsTrigger>
+            className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
+            <h1 className="font-bold text-xl">{page.props.title}</h1>
+            <Tabs value={activeTab} className="w-full">
+                <TabsList className="w-full mb-4">
+                    <TabsTrigger
+                        value="general"
+                        onClick={() => handleChange('general')}
+                        disabled={!!pendingTab}
+                    >
+                        General
+                    </TabsTrigger>
+                    {page.props.auth.user.isAdministrator &&
                         <TabsTrigger
                             value="system"
                             onClick={() => handleChange('system')}
@@ -92,11 +93,13 @@ const ViewAll = () => {
                         >
                             System
                         </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="general">{renderContent('general')}</TabsContent>
+                    }
+                </TabsList>
+                <TabsContent value="general">{renderContent('general')}</TabsContent>
+                {page.props.auth.user.isAdministrator &&
                     <TabsContent value="system">{renderContent('system')}</TabsContent>
-                </Tabs>
-            </div>
+                }
+            </Tabs>
         </div>
     )
 }

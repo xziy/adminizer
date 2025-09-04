@@ -137,14 +137,14 @@ export default async function edit(req: ReqType, res: ResType) {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
-            // Создаем clean объекты для сравнения (исключаем системные поля)
+            // Create diff
             const cleanOldRecord = sanitizeForDiff(record);
             const cleanNewRecord = sanitizeForDiff(newRecord[0]);
 
-            // Получаем diff
+            // Get diff
             const changesDiff = diff(cleanOldRecord, cleanNewRecord);
 
-            // Форматируем для лога
+            // Format changes
             const formattedChanges = formatChanges(changesDiff, cleanOldRecord, cleanNewRecord);
 
             // log system event notification
