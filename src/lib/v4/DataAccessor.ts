@@ -17,7 +17,7 @@ import { UserAP } from "models/UserAP";
 import { isObject } from "../../helpers/JsUtils";
 
 export class DataAccessor {
-    private readonly adminizer: Adminizer;
+    public readonly adminizer: Adminizer;
     user: UserAP;
     entity: Entity;
     action: ActionType
