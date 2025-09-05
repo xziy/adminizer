@@ -5,13 +5,22 @@ import {Button} from "@/components/ui/button.tsx";
 import {Eye} from "lucide-react";
 
 interface GeneralProps {
-    notifications: INotification[]
+    notifications: INotification[];
+    onMarkAsRead: (notificationClass: string, id: string) => Promise<void>;
 }
 
-const General = ({notifications}: GeneralProps) => {
+const General = ({notifications, onMarkAsRead}: GeneralProps) => {
+    const handleMarkAsRead = async (notificationClass: string, id: string) => {
+        try {
+            await onMarkAsRead(notificationClass, id);
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    };
+
     return (
         <Table wrapperHeight="max-h-[75vh]">
-            <TableHeader className="sticky top-0 bg-background shadow">
+            <TableHeader className="sticky top-0 bg-background shadow z-1">
                 <TableRow>
                     <TableHead className="p-2 text-left"></TableHead>
                     <TableHead className="p-2 text-left">Title</TableHead>
@@ -21,15 +30,13 @@ const General = ({notifications}: GeneralProps) => {
             </TableHeader>
             <TableBody>
                 {notifications.map((notification) => (
-                    <TableRow key={notification.id} className={`${!notification.read ? 'bg-muted/50' : ''}`}>
+                    <TableRow key={notification.id} className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
                         <TableCell className="p-2 align-top pt-2.5">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="size-4"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}>
-                                        <Eye/>
+                                    <Button variant="ghost" size="icon" className={`size-4 ${notification.read ? 'opacity-50 pointer-events-none' : ''}`}
+                                            onClick={() => handleMarkAsRead(notification.notificationClass, notification.id)}>
+                                        <Eye className="text-primary"/>
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="z-[1003]">
@@ -42,7 +49,7 @@ const General = ({notifications}: GeneralProps) => {
                         </TableCell>
                         <TableCell className="p-2 whitespace-break-spaces">
                             <div className="max-w-[500px] whitespace-break-spaces">
-                            {notification.message}
+                                {notification.message}
                             </div>
                         </TableCell>
                         <TableCell className="p-2 align-top">
@@ -52,6 +59,6 @@ const General = ({notifications}: GeneralProps) => {
                 ))}
             </TableBody>
         </Table>
-    )
+    );
 }
-export default General
+export default General;

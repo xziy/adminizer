@@ -2,23 +2,32 @@ import {INotification, DiffChanges} from "../../../../interfaces/types.ts";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Eye, Trash2} from "lucide-react";
+import {Braces, Eye} from "lucide-react";
 import {useState} from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
 import {DiffViewer} from "@/components/notifications/DiffViewer.tsx";
 
 interface SystemProps {
-    notifications: INotification[]
+    notifications: INotification[];
+    onMarkAsRead: (notificationClass: string, id: string) => Promise<void>;
 }
 
-const System = ({notifications}: SystemProps) => {
-    const [delOPen, setDelOpen] = useState(false);
+const System = ({notifications, onMarkAsRead}: SystemProps) => {
+    const [delOpen, setDelOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<INotification['metadata'] | null>(null);
+
+    const handleMarkAsRead = async (notificationClass: string, id: string) => {
+        try {
+            await onMarkAsRead(notificationClass, id);
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    };
 
     return (
         <div>
             <Table wrapperHeight="max-h-[75vh]">
-                <TableHeader className="sticky top-0 bg-background shadow">
+                <TableHeader className="sticky top-0 bg-background shadow z-1">
                     <TableRow>
                         <TableHead className="p-2 text-left"></TableHead>
                         <TableHead className="p-2 text-left">Title</TableHead>
@@ -29,15 +38,13 @@ const System = ({notifications}: SystemProps) => {
                 </TableHeader>
                 <TableBody>
                     {notifications.map((notification) => (
-                        <TableRow key={notification.id} className={`${!notification.read ? 'bg-muted/50' : ''}`}>
-                            <TableCell className="p-2 align-top pt-2.5">
+                        <TableRow key={notification.id} className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
+                            <TableCell className="p-2 pt-2.5">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="size-4"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                }}>
-                                            <Eye/>
+                                        <Button variant="ghost" size="icon" className={`size-4 ${notification.read ? 'opacity-50 pointer-events-none' : ''}`}
+                                                onClick={() => handleMarkAsRead(notification.notificationClass, notification.id)}>
+                                            <Eye className="text-primary"/>
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="right" className="z-[1003]">
@@ -45,7 +52,7 @@ const System = ({notifications}: SystemProps) => {
                                     </TooltipContent>
                                 </Tooltip>
                             </TableCell>
-                            <TableCell className="p-2 align-top font-medium">
+                            <TableCell className="p-2 font-medium">
                                 {notification.title}
                             </TableCell>
                             <TableCell className="p-2 whitespace-break-spaces">
@@ -53,16 +60,16 @@ const System = ({notifications}: SystemProps) => {
                                     {notification.message}
                                 </div>
                             </TableCell>
-                            <TableCell className="p-2 align-top">
+                            <TableCell className="p-2">
                                 {new Date(notification.createdAt).toLocaleString()}
                             </TableCell>
-                            <TableCell className="p-2 align-top">
+                            <TableCell className="p-2">
                                 {notification.metadata?.changes &&
-                                    <Button variant="destructive" onClick={() => {
+                                    <Button variant="green" size="sm" onClick={() => {
                                         setDiffItem(notification.metadata?.changes)
                                         setDelOpen(true)
                                     }}>
-                                        <Trash2/>
+                                        <Braces/>
                                     </Button>
                                 }
                             </TableCell>
@@ -70,7 +77,7 @@ const System = ({notifications}: SystemProps) => {
                     ))}
                 </TableBody>
             </Table>
-            <Dialog open={delOPen} onOpenChange={(open) => {
+            <Dialog open={delOpen} onOpenChange={(open) => {
                 setDelOpen(open)
                 if (!open) {
                     setTimeout(() => {
@@ -86,6 +93,6 @@ const System = ({notifications}: SystemProps) => {
                 </DialogContent>
             </Dialog>
         </div>
-    )
+    );
 }
-export default System
+export default System;

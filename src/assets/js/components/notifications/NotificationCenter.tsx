@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,61 +9,23 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Bell, Eye, LoaderCircle} from "lucide-react";
-import {INotification} from "../../../../interfaces/types.ts"
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
-import axios from "axios";
 import {Link} from "@inertiajs/react";
+import {useNotifications} from '@/contexts/NotificationContext';
+import {router} from '@inertiajs/react'
 
 export function NotificationCenter() {
-    const [notifications, setNotifications] = useState<INotification[]>([]);
+
+    const {bellNotifications, markAsRead, unreadCount, refreshBellNotifications} = useNotifications();
     const [Rloading, setRLoading] = useState(false);
 
-    const fetchUnreadNotifications = async () => {
-        try {
-            const res = await axios.get(`${window.routePrefix}/api/notifications`, {
-                params: {unreadOnly: true, limit: 4}
-            });
-            // console.log(res.data)
-            setNotifications(res.data.slice(0, 4));
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        } finally {
-        }
-    };
-
-    useEffect(() => {
-        fetchUnreadNotifications();
-
-        const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
-
-        // Обработчик для события 'connected'
-        eventSource.addEventListener('connected', (event) => {
-            const data = JSON.parse((event as MessageEvent).data);
-            console.log('Connected event:', data);
-        });
-
-        // Обработчик для события 'notification'
-        eventSource.addEventListener('notification', (event) => {
-            const data = JSON.parse((event as MessageEvent).data);
-            // console.log('Notification event:', data);
-            setNotifications(prev => [data, ...prev].slice(0, 4));
-        });
-
-        eventSource.onerror = () => {
-            console.error('SSE connection error');
-        };
-
-        return () => eventSource.close();
-    }, []);
-
-    const markAsRead = async (notificationClass: string, id: string) => {
+    const handleMarkAsRead = async (notificationClass: string, id: string) => {
         setRLoading(true);
         try {
-            await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {});
-
-            // После успешной отметки как прочитано, загружаем свежий список непрочитанных
-            await fetchUnreadNotifications();
+            await markAsRead(notificationClass, id);
+            // После успешной пометки, обновляем колокольчик
+            await refreshBellNotifications();
         } catch (error) {
             console.error('Error marking as read:', error);
         } finally {
@@ -109,81 +71,82 @@ export function NotificationCenter() {
     };
 
     return (
-        <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild className="cursor-pointer data-[state=open]:bg-sidebar-accent">
-                    <Button variant="ghost" className="relative">
-                        <Bell/>
-                        {notifications.length > 0 &&
-                            <div className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive"></div>}
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className={`z-[1002] p-2`} align="end" onCloseAutoFocus={e => e.preventDefault()}>
-                    <DropdownMenuGroup className={`${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {notifications.length === 0 ? (
-                            <div className="p-4 text-center text-muted-foreground">
-                                No notifications
-                            </div>
-                        ) : (
-                            notifications.map(notification => (
-                                <div key={notification.id}>
-                                    <DropdownMenuItem asChild className="cursor-pointer"
-                                                      onSelect={e => e.preventDefault()}>
-                                        <div
-                                            className="grid grid-cols-[32px_250px] grid-rows-[auto_1fr] items-start gap-x-4 gap-y-2">
-                                            {notification.icon ? (
-                                                <MaterialIcon name={notification.icon.icon}
-                                                              style={{color: notification.icon.iconColor}}
-                                                              className="!text-[32px]"/>
-                                            ) : (
-                                                <div></div>
-                                            )}
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{notification.title}</span>
-                                                <span className="truncate">{notification.message}</span>
-                                            </div>
-                                            <div className="col-start-2 flex justify-between flex-nowrap items-center">
-                                                <div className="flex flex-nowrap gap-2 items-center">
-                                                    {notification.notificationClass === 'general' ? (
-                                                        <div className="font-medium">Info</div>
-                                                    ) : (
-                                                        <div className="font-medium">Activity</div>
-                                                    )}
-                                                    <span>&#9679;</span>
-                                                    <div>{getRelativeTime(notification.createdAt)}</div>
-                                                </div>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="size-4"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    markAsRead(notification.notificationClass, notification.id)
-                                                                }}>
-                                                            <Eye/>
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="left" className="z-[1003]">
-                                                        <p>Make read</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild className="cursor-pointer data-[state=open]:bg-sidebar-accent">
+                <Button variant="ghost" className="relative">
+                    <Bell/>
+                    {unreadCount > 0 &&
+                        <div className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive"></div>}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className={`z-[1002] p-2`} align="end" onCloseAutoFocus={e => e.preventDefault()}>
+                <DropdownMenuGroup className={`${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {bellNotifications.length === 0 ? (
+                        <div className="p-4 text-center text-muted-foreground">
+                            No notifications
+                        </div>
+                    ) : (
+                        bellNotifications.map(notification => (
+                            <div key={notification.id}>
+                                <DropdownMenuItem asChild className="cursor-pointer"
+                                                  onSelect={e => {
+                                                      e.preventDefault()
+                                                      router.visit(`${window.routePrefix}/notifications?type=${notification.notificationClass}`)
+                                                  }}>
+                                    <div
+                                        className="grid grid-cols-[32px_250px] grid-rows-[auto_1fr] items-start gap-x-4 gap-y-2">
+                                        {notification.icon ? (
+                                            <MaterialIcon name={notification.icon.icon}
+                                                          style={{color: notification.icon.iconColor}}
+                                                          className="!text-[32px]"/>
+                                        ) : (
+                                            <div></div>
+                                        )}
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{notification.title}</span>
+                                            <span className="truncate">{notification.message}</span>
                                         </div>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator/>
-                                </div>
-                            ))
-                        )}
-                    </DropdownMenuGroup>
-                    <Button variant="secondary" asChild>
-                        <Link href={`${window.routePrefix}/notifications`}
-                              className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
-                            View All
-                            {Rloading &&
-                                <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                        </Link>
-                    </Button>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </>
+                                        <div className="col-start-2 flex justify-between flex-nowrap items-center">
+                                            <div className="flex flex-nowrap gap-2 items-center">
+                                                {notification.notificationClass === 'general' ? (
+                                                    <div className="font-medium">Info</div>
+                                                ) : (
+                                                    <div className="font-medium">Activity</div>
+                                                )}
+                                                <span>&#9679;</span>
+                                                <div>{getRelativeTime(notification.createdAt)}</div>
+                                            </div>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="size-4"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleMarkAsRead(notification.notificationClass, notification.id)
+                                                            }}>
+                                                        <Eye className="text-primary"/>
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="left" className="z-[1003]">
+                                                    <p>Make read</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator/>
+                            </div>
+                        ))
+                    )}
+                </DropdownMenuGroup>
+                <Button variant="secondary" asChild>
+                    <Link href={`${window.routePrefix}/notifications?type=general`}
+                          className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        View All
+                        {Rloading &&
+                            <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                    </Link>
+                </Button>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

@@ -1,12 +1,12 @@
-import {SharedData} from "@/types";
-import {usePage} from "@inertiajs/react";
-import {useEffect, useState} from "react";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {LoaderCircle} from "lucide-react";
+import { SharedData } from "@/types";
+import { usePage, router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { LoaderCircle } from "lucide-react";
 import General from "@/components/notifications/General.tsx";
 import System from "@/components/notifications/System.tsx";
-import axios from "axios";
-import {INotification} from "../../../../interfaces/types.ts";
+import { useNotifications } from '@/contexts/NotificationContext';
+import { INotification } from '../../../../interfaces/types';
 
 interface NotificationProps extends SharedData {
     title: string
@@ -18,78 +18,119 @@ interface NotificationProps extends SharedData {
 }
 
 const ViewAll = () => {
-    const page = usePage<NotificationProps>()
-    const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState<string>('general');
-    const [pendingTab, setPendingTab] = useState<string | null>(null);
-    const [notifications, setNotifications] = useState<INotification[]>([])
+    const page = usePage<NotificationProps & { url: string }>();
+    const { allNotifications, markAsRead, fetchAllNotifications, loading: contextLoading, refreshBellNotifications } = useNotifications();
+    const [localLoading, setLocalLoading] = useState(true);
+    const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
 
+    // Получаем активную табу из query параметров
+    const getInitialTab = () => {
+        const url = new URL(page.url, window.location.origin);
+        const typeParam = url.searchParams.get('type');
+        // Проверяем, что тип валидный и пользователь имеет доступ
+        if (typeParam === 'system' && page.props.auth.user.isAdministrator) {
+            return 'system';
+        }
+        if (typeParam === 'general') {
+            return 'general';
+        }
+        return 'general'; // значение по умолчанию
+    };
+
+    const [activeTab, setActiveTab] = useState<string>(getInitialTab());
+
+    // Обновляем активную табу при изменении URL
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axios.get(`${window.routePrefix}/api/notifications/general`)
-                setNotifications(res.data)
-            } catch (error) {
-                if (error instanceof Error) {
-                    console.error('Error fetching data:', error.message);
-                }
+        const url = new URL(page.url, window.location.origin);
+        const typeParam = url.searchParams.get('type');
+
+        if (typeParam && typeParam !== activeTab) {
+            // Проверяем доступ для системных уведомлений
+            if (typeParam === 'system' && !page.props.auth.user.isAdministrator) {
+                setActiveTab('general');
+                return;
             }
+            setActiveTab(typeParam);
         }
-        fetchData().finally(() => {
-            setLoading(false)
-        })
-    }, []);
+    }, [page.url, activeTab, page.props.auth.user.isAdministrator]);
 
-    const handleChange = async (tab: string) => {
+    // Загрузка данных при изменении активной табы
+    useEffect(() => {
+        const loadData = async () => {
+            setLocalLoading(true);
+            await fetchAllNotifications(activeTab);
+            setLocalLoading(false);
+        };
+        loadData();
+    }, [activeTab]);
+
+    // Фильтрация уведомлений
+    useEffect(() => {
+        const filtered = allNotifications.filter(notif =>
+            notif.notificationClass === activeTab
+        );
+        setFilteredNotifications(filtered);
+    }, [allNotifications, activeTab]);
+
+    const handleTabChange = async (tab: string) => {
+        // Проверяем доступ для системных уведомлений
+        if (tab === 'system' && !page.props.auth.user.isAdministrator) {
+            return;
+        }
+
         setActiveTab(tab);
-        setPendingTab(tab);
-        setNotifications([]);
-        setLoading(true);
-        try {
-            const res = await axios.get(`${window.routePrefix}/api/notifications/${tab}`)
-            setNotifications(res.data)
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setPendingTab(null);
-            setLoading(false);
-        }
-    }
+        setLocalLoading(true);
 
-    // Render content
+        // Обновляем URL с query параметром
+        router.get(page.url, { type: tab }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+
+        await fetchAllNotifications(tab);
+        setLocalLoading(false);
+    };
+
+    const handleMarkAsRead = async (notificationClass: string, id: string) => {
+        try {
+            await markAsRead(notificationClass, id);
+            // После пометки как прочитанное, обновляем колокольчик
+            await refreshBellNotifications();
+        } catch (error) {
+            console.error('Error marking as read:', error);
+            throw error;
+        }
+    };
+
     const renderContent = (viewType: 'general' | 'system') => {
-        if (loading && notifications.length === 0) {
+        if (localLoading || contextLoading) {
             return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
         }
-        if (notifications.length === 0) {
-            return <div className="text-center font-medium mt-8">
-                {/*{messages["No media found"]}*/}
-                No notifications found
-            </div>;
+        if (filteredNotifications.length === 0) {
+            return <div className="text-center font-medium mt-8">No notifications found</div>;
         }
+
         return viewType === 'general'
-            ? <General notifications={notifications}/>
-            : <System notifications={notifications}/>;
+            ? <General notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>
+            : <System notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>;
     };
 
     return (
-        <div
-            className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
+        <div className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
             <h1 className="font-bold text-xl">{page.props.title}</h1>
-            <Tabs value={activeTab} className="w-full">
+            <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="w-full mb-4">
                     <TabsTrigger
                         value="general"
-                        onClick={() => handleChange('general')}
-                        disabled={!!pendingTab}
+                        disabled={localLoading}
                     >
                         General
                     </TabsTrigger>
                     {page.props.auth.user.isAdministrator &&
                         <TabsTrigger
                             value="system"
-                            onClick={() => handleChange('system')}
-                            disabled={!!pendingTab}
+                            disabled={localLoading}
                         >
                             System
                         </TabsTrigger>
@@ -101,7 +142,7 @@ const ViewAll = () => {
                 }
             </Tabs>
         </div>
-    )
+    );
 }
 
-export default ViewAll
+export default ViewAll;
