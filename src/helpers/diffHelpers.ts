@@ -8,6 +8,7 @@ export function sanitizeForDiff(data: any): any {
     systemFields.forEach(field => delete result[field]);
 
     // Очищаем чувствительные данные
+    // TODO: Вынести в переменные окружения или в конфиг
     const sensitiveFields = ['password', 'token', 'secret', 'apiKey', 'creditCard'];
     sensitiveFields.forEach(field => {
         if (result[field] !== undefined) {

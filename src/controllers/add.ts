@@ -105,19 +105,6 @@ export default async function add(req: ReqType, res: ResType) {
         try {
             let record = await entity.model.create(reqData, dataAccessor);
 
-            // Create diff
-            const cleanNewRecord = sanitizeForDiff(reqData);
-            const formattedChanges = formatChanges({}, {}, cleanNewRecord, 'add');
-
-            // log system event notification с diff
-            await req.adminizer.logSystemCreatedEvent(
-                req.i18n.__('Created'),
-                `user ${req.user.login} ${req.i18n.__('create')} ${entity.name} ${record.id}`,
-                {
-                    changes: formattedChanges,
-                    summary: `${req.i18n.__('Created')} ${formattedChanges.length} ${req.i18n.__('fields')}`
-                }
-            );
 
             // save associations media to json
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, record.id)

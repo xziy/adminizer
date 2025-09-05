@@ -16,7 +16,6 @@ export * from "./interfaces/types";
 export * from "./interfaces/MaaterialIcons"
 export * from "./lib/v4/model/AbstractModel";
 export * from "./lib/v4/model/adapter/waterline";
-export * from "./lib/v4/model/adapter/typeorm";
 export * from "./lib/v4/model/adapter/sequelize"
 export * from "./lib/Adminizer";
 export * from "./models/GroupAP"
