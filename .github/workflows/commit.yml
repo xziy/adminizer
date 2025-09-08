@@ -2,7 +2,7 @@ name: Publish Package to npmjs
 on:
   push:
     branches:
-      - react
+      - commit
 jobs:
   build:
     runs-on: ubuntu-latest
