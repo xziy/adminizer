@@ -415,10 +415,10 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         await instance.reload({include: Object.values(this.model.associations)});
 
         const pk = this.primaryKey;
-        const fresh = await this.model.findByPk(
+        const fresh = (await this.model.findByPk(
             instance.get(pk),
             {include: assocNames.map(a => ({association: a}))}
-        );
+        )).toJSON();
 
         // console.debug(">> Результат после reload:", fresh?.toJSON());
         return fresh as any;

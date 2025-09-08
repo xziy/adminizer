@@ -16,6 +16,7 @@ export abstract class AbstractNotificationService extends EventEmitter {
     }
 
     // Добавление клиента
+    // TODO - Проверить, что клиент имеет права на получение уведомлений
     addClient(clientId: string, sendFn: (event: INotificationEvent) => void): void {
         this.clients.set(clientId, sendFn);
         Adminizer.log.info(`[${this.notificationClass}] Client ${clientId} connected. Total: ${this.clients.size}`);
@@ -28,6 +29,7 @@ export abstract class AbstractNotificationService extends EventEmitter {
     }
 
     // Абстрактные методы
+    // TODO - Проверить, что клиент имеет права на получение уведомлений группе
     abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
 
     // abstract getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;

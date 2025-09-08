@@ -1,12 +1,13 @@
-import { AbstractModel } from "../lib/v4/model/AbstractModel";
+import {AbstractModel} from "../lib/v4/model/AbstractModel";
 import {ModelConfig} from "./adminpanelConfig";
-import { Inertia } from '../lib/v4/inertia/inertiaAdapter';
-import { Flash } from '../lib/v4/inertia/flash';
+import {Inertia} from '../lib/v4/inertia/inertiaAdapter';
+import {Flash} from '../lib/v4/inertia/flash';
 import {Adminizer} from "../lib/Adminizer";
 import multer from "multer";
 import {I18n} from "../lib/v4/I18n";
 
 export type EntityType = "form" | "model";
+
 export interface Entity {
     name: string
     config?: ModelConfig
@@ -34,6 +35,17 @@ export interface PropsField {
     options?: Record<string, unknown> | Record<string, unknown>[]
 }
 
+export interface DiffChanges {
+    field: string;
+    oldValue: any;
+    newValue: any;
+    type: string;
+}
+
+export interface Diff {
+    changes: DiffChanges[]
+    summary: string
+}
 
 export interface INotification {
     id: string;
@@ -47,8 +59,8 @@ export interface INotification {
         iconColor: string;
     }
     notificationClass: string; // Класс нотификации: 'general', 'system', etc.
-    channel: string;
-    metadata?: Record<string | number, any>;
+    channel: string | 'created' | 'updated' | 'deleted' | 'system';
+    metadata?: Record<string | number, any> | Diff;
 }
 
 export interface INotificationEvent {
