@@ -38,9 +38,6 @@ import { GeneralNotificationService } from './v4/notifications/GeneralNotificati
 import { SystemNotificationService } from './v4/notifications/SystemNotificationService';
 import {bindNotifications} from "../system/bindNotifications";
 import {INotification} from "../interfaces/types";
-import { UserAP } from "models/UserAP";
-
-export type AuthHandler = (req: ReqType, login: string, password: string) => Promise<Partial<UserAP> | null>;
 
 export class Adminizer {
     // Preconfigures
@@ -69,9 +66,6 @@ export class Adminizer {
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
 
-    // External auth handler
-    public authHandler?: AuthHandler
-
     static logger = winston.createLogger({
         level: process.env.LOG_LEVEL ?? "debug",
         format: winston.format.combine(
@@ -91,14 +85,6 @@ export class Adminizer {
         this.app = express();
         this._emitter = new EventEmitter();
         this.ormAdapters = ormAdapters;
-    }
-
-    /**
-     * Registers an external authentication handler. If a user is not found in UserAP
-     * during login, this handler will be invoked to authenticate against an external source.
-     */
-    public setAuthHandler(handler: AuthHandler) {
-        this.authHandler = handler;
     }
 
     getMiddleware() {
