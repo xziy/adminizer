@@ -3,6 +3,8 @@ import {deleteRelationsMediaManager} from "../lib/media-manager/helpers/MediaMan
 import {ModelAnyField, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
 import {DataAccessor} from "../lib/v4/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
+import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
+import {diff} from "deep-object-diff";
 
 export default async function remove(req: ReqType, res: ResType) {
     // Checking id of the record
@@ -66,7 +68,7 @@ export default async function remove(req: ReqType, res: ResType) {
         const q: Record<string, ModelAnyField> = {}
         q[fieldId] = record[fieldId]
         destroyedRecord = await entity.model.destroy(q, dataAccessor)
-
+        console.log(destroyedRecord[0])
         // delete relations media manager
         await deleteRelationsMediaManager(req.adminizer, entity.name, destroyedRecord)
     } catch (e) {
@@ -74,12 +76,20 @@ export default async function remove(req: ReqType, res: ResType) {
     }
 
     if (destroyedRecord) {
-        // log system event notification
+        const cleanRecordBeforeDelete = sanitizeForDiff(destroyedRecord[0]);
+        const changesDiff = diff(cleanRecordBeforeDelete, {});
+        const formattedChanges = formatChanges(changesDiff, cleanRecordBeforeDelete, {});
+
+        // log system event notification с diff
         await req.adminizer.logSystemDeletedEvent(
             req.i18n.__('Deleted'),
             `user ${req.user.login} ${req.i18n.__('delete')} ${entity.name} ${destroyedRecord[0].id}`,
-            {test: 'test'}
-        )
+            {
+                changes: formattedChanges,
+                summary: `${req.i18n.__('Deleted')} ${formattedChanges.length} ${req.i18n.__('fields')}`
+            }
+        );
+
         req.flash.setFlashMessage('success', req.i18n.__('Record was removed successfully !'));
 
     } else {

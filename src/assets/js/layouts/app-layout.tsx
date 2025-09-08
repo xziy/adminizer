@@ -1,6 +1,7 @@
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import {type BreadcrumbItem} from '@/types';
 import {memo, type ReactNode} from 'react';
+import {NotificationProvider} from '@/contexts/NotificationContext';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -10,9 +11,11 @@ interface AppLayoutProps {
 
 const AppLayout = memo(({children, className, breadcrumbs, ...props}: AppLayoutProps) => {
     return (
-        <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
-            {children}
-        </AppLayoutTemplate>
+        <NotificationProvider>
+            <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
+                {children}
+            </AppLayoutTemplate>
+        </NotificationProvider>
     )
 });
 

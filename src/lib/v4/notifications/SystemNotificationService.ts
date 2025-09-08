@@ -23,6 +23,7 @@ export class SystemNotificationService extends AbstractNotificationService {
         // Сохраняем в базу
         if (this.adminizer.modelHandler.model.has('notificationap')) {
             try {
+                // Idia how to keep in DB notification raw data ['user %s created %s in model %s', user, instance.name, modelName] as print_f()
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
 
                 const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({isAdministrator: 1});
@@ -37,7 +38,7 @@ export class SystemNotificationService extends AbstractNotificationService {
                 const event: INotificationEvent = {
                     type: 'notification',
                     data: {
-                        ...notificationDB.toJSON(),
+                        ...notificationDB,
                         icon: {
                             icon: this.icon,
                             iconColor: this.iconColor
@@ -45,14 +46,14 @@ export class SystemNotificationService extends AbstractNotificationService {
                     } as INotification,
                     notificationClass: this.notificationClass,
                     userId: notification.userId ?? null,
-                    channel: notification.channel // Добавляем информацию о канале
+                    channel: notification.channel ?? 'system' // Добавляем информацию о канале
                 };
 
                 // Отправляем на все каналы или на конкретный канал
                 if (notification.channel) {
                     this.broadcastToChannel(notification.channel, event);
                 } else {
-                    this.broadcast(event);
+                    this.broadcastToChannel('system', event);
                 }
 
                 Adminizer.log.info(`[System] Notification dispatched: ${fullNotification.title}`);

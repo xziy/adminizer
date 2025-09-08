@@ -38,7 +38,7 @@ export class GeneralNotificationService extends AbstractNotificationService {
                 const event: INotificationEvent = {
                     type: 'notification',
                     data: {
-                        ...notificationDB.toJSON(),
+                        ...notificationDB,
                         read: false,
                         icon: {
                             icon: this.icon,

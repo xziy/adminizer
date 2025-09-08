@@ -1,96 +1,141 @@
-import {INotification, Adminizer} from "../../dist";
+import { INotification, Adminizer } from "../../dist";
+import { faker } from '@faker-js/faker';
 
-export async function sendNotificationsWithDelay(adminizer: Adminizer) {
-    const notifications: Omit<INotification, 'id' | 'createdAt' | 'icon'>[] = [
-        {
-            message: "Первое уведомление",
-            title: "Всем",
-            notificationClass: "general",
-            channel: ""
-        },
-        {
-            title: 'System notification - Created',
-            message: 'Новый пользователь создан',
-            notificationClass: 'system',
-            channel: 'created',
-            metadata: { entity: 'user', action: 'create' }
-        },
-        {
-            message: "Второе уведомление",
-            title: "To user test (id 2)",
-            userId: 2,
-            notificationClass: "general",
-            channel: ""
-        },
-        {
-            title: 'System notification - Updated',
-            message: 'Товар обновлен',
-            notificationClass: 'system',
-            channel: 'updated',
-            metadata: { entity: 'product', action: 'update' }
-        },
-        {
-            message: "Третье уведомление",
-            title: "To user admin (id 1)",
-            userId: 1,
-            notificationClass: "general",
-            channel: ""
-        },
-        {
-            title: 'System notification - Deleted',
-            message: 'Заказ удален',
-            notificationClass: 'system',
-            channel: 'deleted',
-            metadata: { entity: 'order', action: 'delete' }
-        },
-        {
-            title: 'System notification - General',
-            message: 'Системное событие',
-            notificationClass: 'system',
-            channel: 'system',
-            metadata: { type: 'maintenance' }
-        }
-    ];
+export interface SendNotificationsOptions {
+    count?: number;
+    delayMs?: number;
+    generalRatio?: number; // Вероятность general уведомлений (0-1)
+}
 
-    for (const notification of notifications) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Ждем 2 секунды
+export async function sendNotificationsWithDelay(
+    adminizer: Adminizer,
+    options: SendNotificationsOptions = {}
+) {
+    const {
+        count = 10,
+        delayMs = 2000,
+        generalRatio = 0.7 // 70% general, 30% system по умолчанию
+    } = options;
 
-        if (notification.notificationClass === "general") {
-            await adminizer.sendNotification(notification);
-        }
-        else if (notification.notificationClass === 'system') {
-            // Используем специальные методы для CRUD событий
-            switch (notification.channel) {
-                case 'created':
-                    await adminizer.logSystemCreatedEvent(
-                        notification.title,
-                        notification.message,
-                        notification.metadata
-                    );
-                    break;
-                case 'updated':
-                    await adminizer.logSystemUpdatedEvent(
-                        notification.title,
-                        notification.message,
-                        notification.metadata
-                    );
-                    break;
-                case 'deleted':
-                    await adminizer.logSystemDeletedEvent(
-                        notification.title,
-                        notification.message,
-                        notification.metadata
-                    );
-                    break;
-                case 'system':
-                default:
-                    await adminizer.logSystemEvent(
-                        notification.title,
-                        notification.message,
-                        notification.metadata
-                    );
-                    break;
+    const systemChannels = ['created', 'updated', 'deleted', 'system'] as const;
+    const entities = ['user', 'product', 'order', 'category', 'payment'] as const;
+    const actions = ['create', 'update', 'delete', 'approve', 'reject'] as const;
+
+    const generateRandomNotification = (): Omit<INotification, 'id' | 'createdAt' | 'icon'> => {
+        // Определяем тип уведомления с учетом вероятности
+        const isGeneral = faker.number.float({ min: 0, max: 1 }) < generalRatio;
+
+        if (!isGeneral) {
+            // System notification
+            const channel = faker.helpers.arrayElement(systemChannels);
+            const entity = faker.helpers.arrayElement(entities);
+            const action = faker.helpers.arrayElement(actions);
+
+            return {
+                title: `System notification - ${faker.helpers.arrayElement(['Created', 'Updated', 'Deleted', 'Event'])}`,
+                message: faker.helpers.arrayElement([
+                    `${faker.helpers.arrayElement(['New', 'Updated', 'Deleted'])} ${entity} ${faker.helpers.arrayElement(['has been created', 'was updated', 'has been deleted'])}`,
+                    `System event: ${faker.lorem.words(3)}`,
+                    `Automatic notification about ${faker.lorem.word()}`,
+                    `${faker.company.name()} system update completed`,
+                    `Maintenance scheduled for ${faker.date.future().toLocaleDateString()}`
+                ]),
+                notificationClass: 'system',
+                channel: channel,
+                metadata: {
+                    entity,
+                    action,
+                    timestamp: new Date().toISOString(),
+                    details: faker.lorem.sentence(),
+                    referenceId: faker.string.uuid(),
+                    severity: faker.helpers.arrayElement(['low', 'medium', 'high', 'critical'])
+                }
+            };
+        } else {
+            // General notification
+            const userIdOption = faker.helpers.arrayElement([
+                undefined, // для всех пользователей
+                1,         // пользователь с ID 1
+                2          // пользователь с ID 2
+            ]);
+
+            const hasUserId = userIdOption !== undefined;
+            const hasLongMessage = faker.datatype.boolean();
+
+            const notification: Omit<INotification, 'id' | 'createdAt' | 'icon'> = {
+                title: faker.helpers.arrayElement([
+                    'Important Notification',
+                    'New Message',
+                    'System Update',
+                    'Information Message',
+                    'Alert',
+                    'Reminder',
+                    'News Update',
+                    'Security Notice'
+                ]),
+                message: hasLongMessage
+                    ? faker.lorem.paragraphs(faker.number.int({ min: 2, max: 5 }))
+                    : faker.lorem.sentence(),
+                notificationClass: 'general',
+                channel: '',
+            };
+
+            // Добавляем userId только если он указан
+            if (hasUserId) {
+                return {
+                    ...notification,
+                    userId: userIdOption
+                };
             }
+
+            return notification;
+        }
+    };
+
+    for (let i = 0; i < count; i++) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+
+        const notification = generateRandomNotification();
+
+        try {
+            if (notification.notificationClass === "general") {
+                await adminizer.sendNotification(notification);
+
+            } else if (notification.notificationClass === 'system') {
+                switch (notification.channel) {
+                    case 'created':
+                        await adminizer.logSystemCreatedEvent(
+                            notification.title,
+                            notification.message,
+                            notification.metadata
+                        );
+                        break;
+                    case 'updated':
+                        await adminizer.logSystemUpdatedEvent(
+                            notification.title,
+                            notification.message,
+                            notification.metadata
+                        );
+                        break;
+                    case 'deleted':
+                        await adminizer.logSystemDeletedEvent(
+                            notification.title,
+                            notification.message,
+                            notification.metadata
+                        );
+                        break;
+                    case 'system':
+                    default:
+                        await adminizer.logSystemEvent(
+                            notification.title,
+                            notification.message,
+                            notification.metadata
+                        );
+                        break;
+                }
+            }
+        } catch (error) {
+            console.error(`✗ Failed to send notification ${i + 1}/${count}:`, error);
         }
     }
 }
