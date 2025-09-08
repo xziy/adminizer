@@ -116,9 +116,8 @@ export abstract class AbstractModel<T> {
         dataAccessor: DataAccessor,
         eventType: 'Created' | 'Updated' | 'Deleted',
         message: string,
-        oldRecord: any,
-        newRecord: any,
-        record: any
+        oldRecord: Partial<T>,
+        newRecord: Partial<T>
     ): Promise<void> {
         let formattedChanges: any[] = [];
         let summary = '';
@@ -131,13 +130,13 @@ export abstract class AbstractModel<T> {
                 break;
 
             case 'Updated':
-                const { formattedChanges: updateChanges } = this.generateDiff(oldRecord, newRecord);
+                const {formattedChanges: updateChanges} = this.generateDiff(oldRecord, newRecord);
                 formattedChanges = updateChanges;
                 summary = `Changes ${formattedChanges.length} fields`;
                 break;
 
             case 'Deleted':
-                const { formattedChanges: deleteChanges } = this.generateDeleteDiff(oldRecord);
+                const {formattedChanges: deleteChanges} = this.generateDeleteDiff(oldRecord);
                 formattedChanges = deleteChanges;
                 summary = `Deleted ${formattedChanges.length} fields`;
                 break;
@@ -165,8 +164,7 @@ export abstract class AbstractModel<T> {
             // @ts-ignore
             `user ${dataAccessor.user.login} create ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
             {},
-            _data,
-            record
+            _data
         );
 
         return dataAccessor.process(record);
@@ -209,7 +207,6 @@ export abstract class AbstractModel<T> {
             // @ts-ignore
             `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
             oldRecord,
-            record,
             record
         );
 
@@ -236,7 +233,6 @@ export abstract class AbstractModel<T> {
                     // @ts-ignore
                     `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
                     oldRecord,
-                    record,
                     record
                 );
             }
@@ -267,8 +263,7 @@ export abstract class AbstractModel<T> {
             //@ts-ignore
             `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
             oldRecord,
-            {},
-            record
+            {}
         );
 
         return dataAccessor.process(record);
@@ -293,8 +288,7 @@ export abstract class AbstractModel<T> {
                     //@ts-ignore
                     `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
                     oldRecord,
-                    {},
-                    record
+                    {}
                 );
             }
         }

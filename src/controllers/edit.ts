@@ -134,7 +134,7 @@ export default async function edit(req: ReqType, res: ResType) {
         }
 
         try {
-            let newRecord = await entity.model.update(params, reqData, dataAccessor, record);
+            let newRecord = await entity.model.update(params, reqData, dataAccessor);
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
 
