@@ -2,8 +2,8 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
-import { diff } from 'deep-object-diff';
-import {
+
+ import {
     getRelationsMediaManager,
     saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
@@ -134,28 +134,9 @@ export default async function edit(req: ReqType, res: ResType) {
         }
 
         try {
-            let newRecord = await entity.model.update(params, reqData, dataAccessor);
+            let newRecord = await entity.model.update(params, reqData, dataAccessor, record);
             await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
-            // Create diff
-            const cleanOldRecord = sanitizeForDiff(record);
-            const cleanNewRecord = sanitizeForDiff(newRecord[0]);
-
-            // Get diff
-            const changesDiff = diff(cleanOldRecord, cleanNewRecord);
-
-            // Format changes
-            const formattedChanges = formatChanges(changesDiff, cleanOldRecord, cleanNewRecord);
-
-            // log system event notification
-            await req.adminizer.logSystemUpdatedEvent(
-                req.i18n.__('Updated'),
-                `user ${req.user.login} ${req.i18n.__('update')} ${entity.name} ${record.id}`,
-                {
-                    changes: formattedChanges,
-                    summary: `${req.i18n.__('Changes')} ${Object.keys(formattedChanges).length} ${req.i18n.__('fields')}`
-                }
-            );
 
             Adminizer.log.debug(`Record was updated: `, newRecord);
             if (req.body.jsonPopupCatalog) {
