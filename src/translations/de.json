@@ -5,6 +5,7 @@
   "Are you sure?": "Bist du sicher?",
   "Back": "Zurück",
   "Back to Login": "Zurück zum Anmeldung",
+  "Additional login page": "Zusätzliche Anmeldeseite",
   "Clean": "Sauber",
   "Confirm Password": "Passwort bestätigen",
   "Confirm Password*": "Passwort bestätigen*",
@@ -69,4 +70,4 @@
   "You don't have any widgets selected yet. You can add them by clicking on the plus sign at the top right.": "Sie haben noch keine Widgets ausgewählt. Sie können sie hinzufügen, indem Sie oben rechts auf das Pluszeichen klicken.",
   "create": "erstellen",
   "create new": "neu erstellen"
-}
+}

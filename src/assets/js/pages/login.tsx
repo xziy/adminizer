@@ -23,6 +23,10 @@ interface LoginProps extends SharedData {
         title: string
         link: string
     },
+    addishinalLoginPage?: {
+        title: string
+        link: string
+    },
     captchaTask: number[]
 }
 
@@ -200,6 +204,18 @@ export default function Login() {
                     </div>
                     )}
                 </form>
+                {page.props.addishinalLoginPage && (
+                    <div className="mt-6 text-center">
+                        <Link 
+                            href={page.props.addishinalLoginPage.link} 
+                            className="text-sm underline"
+                            target={page.props.addishinalLoginPage.link.startsWith('http://') || page.props.addishinalLoginPage.link.startsWith('https://') ? '_blank' : undefined}
+                            rel={page.props.addishinalLoginPage.link.startsWith('http://') || page.props.addishinalLoginPage.link.startsWith('https://') ? 'noopener noreferrer' : undefined}
+                        >
+                            {page.props.addishinalLoginPage.title}
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );
