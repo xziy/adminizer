@@ -5,11 +5,12 @@ import tailwindcss from "@tailwindcss/vite";
 import packageJson from './package.json';
 
 const ReactConfig = {
-    babel: {
-        plugins: [
-            ['babel-plugin-react-compiler'],
-        ]
-    }
+    // Disable React compiler to reduce memory usage
+    // babel: {
+    //     plugins: [
+    //         ['babel-plugin-react-compiler'],
+    //     ]
+    // }
 };
 
 
@@ -24,6 +25,7 @@ export default defineConfig({
         assetsDir: '',
         emptyOutDir: true, // Clear the output directory before building
         manifest: 'manifest.json', // Generate manifest.json
+        sourcemap: false, // Disable sourcemaps to reduce memory usage
         rollupOptions: {
             input: {
                 app: path.resolve(import.meta.dirname, 'src/assets/js/app.tsx'),
@@ -31,6 +33,12 @@ export default defineConfig({
             output: {
                 entryFileNames: '[name].js',
                 assetFileNames: '[name]-[hash][extname]',
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    monaco: ['@monaco-editor/react'],
+                    handsontable: ['@handsontable/react', 'handsontable'],
+                    jsoneditor: ['vanilla-jsoneditor']
+                }
             },
         },
     },

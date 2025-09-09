@@ -6,8 +6,8 @@ import {
     JSONSchema, OnChangeStatus, ContentValidationErrors
 } from 'vanilla-jsoneditor';
 import {useEffect, useRef, useState} from 'react';
-import {useAppearance} from "@/hooks/use-appearance.tsx";
-import {setFieldError} from "@/hooks/form-state.ts";
+import {useAppearance} from "@/hooks/use-appearance";
+import {setFieldError} from "@/hooks/form-state";
 
 export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Record<string, any>) {
     const refContainer = useRef<HTMLDivElement | null>(null);
