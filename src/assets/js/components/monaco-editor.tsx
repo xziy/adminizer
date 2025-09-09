@@ -1,7 +1,7 @@
 import Editor from '@monaco-editor/react';
 import {FC, useEffect, useRef, useState} from "react";
-import {useAppearance} from "@/hooks/use-appearance.tsx";
-import useWindowSize from "@/hooks/use-window-size.ts";
+import {useAppearance} from "@/hooks/use-appearance";
+import useWindowSize from "@/hooks/use-window-size";
 
 interface MonacoEditorProps {
     onChange: (value: string) => void;

@@ -8,5 +8,10 @@
     "jsx": "react-jsx",
     "allowImportingTsExtensions": false
   },
-  "include": ["src/assets/js/components/ui/**/*"]
+  "include": [
+    "src/assets/js/components/ui/**/*", 
+    "src/assets/js/components/VanillaJSONEditor.tsx",
+    "src/assets/js/components/monaco-editor.tsx",
+    "src/assets/js/components/handsontable.tsx"
+  ]
 }

@@ -4,7 +4,7 @@ import {registerAllModules} from 'handsontable/registry';
 import {ColumnSettings, GridSettings} from "handsontable/settings";
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {RowObject} from "handsontable/common";
-import {useAppearance} from "@/hooks/use-appearance.tsx";
+import {useAppearance} from "@/hooks/use-appearance";
 import {
     registerLanguageDictionary,
     deDE,
