@@ -128,8 +128,7 @@ export class NotificationController {
 
         try {
             const {notificationClass} = req.params;
-            const {limit = 50, unreadOnly = false} = req.query;
-
+            const {limit = 20, skip = 0, unreadOnly = false} = req.query;
             // Проверяем права доступа для системных уведомлений
             if (notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
                 res.status(403).json({error: 'Forbidden: Admin access required'});
@@ -140,6 +139,7 @@ export class NotificationController {
                 notificationClass,
                 req.user?.id,
                 Number(limit),
+                Number(skip),
                 unreadOnly === 'true'
             );
 
@@ -153,35 +153,38 @@ export class NotificationController {
     // API для получения всех уведомлений пользователя
     static async getUserNotifications(req: ReqType, res: ResType): Promise<void> {
         NotificationController.checkPermission(req, res)
+        const {limit = 4, skip = 0, unreadOnly = false} = req.query;
 
-        try {
-            const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-                        req.user,
-                        4,
-                        true
-                    );
-
-            res.json(notifications);
-        } catch (error) {
-            Adminizer.log.error('Error getting user notifications:', error);
-            res.status(500).json({error: 'Internal server error'});
-        }
-    }
-
-    static async getAllUserNotifications(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
         try {
             const notifications = await req.adminizer.notificationHandler.getUserNotifications(
                 req.user,
-                50,
-                false
+                Number(limit),
+                Number(skip),
+                unreadOnly === 'true'
             );
+
             res.json(notifications);
         } catch (error) {
             Adminizer.log.error('Error getting user notifications:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
+
+    // static async getAllUserNotifications(req: ReqType, res: ResType): Promise<void> {
+    //     NotificationController.checkPermission(req, res)
+    //     try {
+    //         const notifications = await req.adminizer.notificationHandler.getUserNotifications(
+    //             req.user,
+    //             20,
+    //             0,
+    //             false
+    //         );
+    //         res.json(notifications);
+    //     } catch (error) {
+    //         Adminizer.log.error('Error getting user notifications:', error);
+    //         res.status(500).json({error: 'Internal server error'});
+    //     }
+    // }
 
     // API для пометки как прочитанного
     static async markAsRead(req: ReqType, res: ResType): Promise<void> {

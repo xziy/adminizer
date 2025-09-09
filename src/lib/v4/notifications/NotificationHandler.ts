@@ -67,39 +67,42 @@ export class NotificationHandler extends EventEmitter {
      * @param notificationClass
      * @param userId
      * @param limit
+     * @param skip
      * @param unreadOnly
      */
     async getNotifications(
         notificationClass: string,
         userId?: number,
         limit?: number,
+        skip?: number,
         unreadOnly?: boolean
     ): Promise<INotification[]> {
         const service = this.getService(notificationClass);
         if (!service) {
             throw new Error(`Notification service not found: ${notificationClass}`);
         }
-        return service.getNotifications(userId, limit, unreadOnly);
+        return service.getNotifications(userId, limit, skip, unreadOnly);
     }
 
     /**
      * Get all notifications for a user
      * @param user
      * @param limit
+     * @param skip
      * @param unreadOnly
      */
-    async getUserNotifications(user: any, limit: number = 50, unreadOnly: boolean = false): Promise<INotification[]> {
+    async getUserNotifications(user: any, limit: number = 20, skip: number = 0, unreadOnly: boolean = false): Promise<INotification[]> {
         const allNotifications: INotification[] = [];
         for (const service of this.getAllServices()) {
             // Для системных уведомлений проверяем права админа
             if (service.notificationClass === 'system') {
                 if (this.isAdmin(user)) {
-                    const notifications = await service.getNotifications(user.id, limit, unreadOnly);
+                    const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
                     allNotifications.push(...notifications);
                 }
             } else {
                 // Для остальных уведомлений получаем по пользователю
-                const notifications = await service.getNotifications(user.id, limit, unreadOnly);
+                const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
                 allNotifications.push(...notifications);
             }
         }

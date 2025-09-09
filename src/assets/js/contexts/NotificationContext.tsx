@@ -7,7 +7,8 @@ interface NotificationContextType {
     allNotifications: INotification[];
     unreadCount: number;
     markAsRead: (notificationClass: string, id: string) => Promise<void>;
-    fetchAllNotifications: (type?: string) => Promise<INotification[]>;
+    fetchAllNotifications: (type: string) => Promise<INotification[]>;
+    paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -16,8 +17,11 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [bellNotifications, setBellNotifications] = useState<INotification[]>([]);
-    const [allNotifications, setAllNotifications] = useState<INotification[]>([]);
+    const [sseNotifications, setSseNotifications] = useState<INotification[]>([]);
+    const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const allNotifications = [...sseNotifications, ...loadedNotifications];
 
     const fetchBellNotifications = async () => {
         try {
@@ -34,15 +38,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         await fetchBellNotifications();
     };
 
-    const fetchAllNotifications = async (type?: string) => {
+    const fetchAllNotifications = async (type: string) => {
         setLoading(true);
         try {
-            const url = type
-                ? `${window.routePrefix}/api/notifications/${type}`
-                : `${window.routePrefix}/api/notifications`;
+            const url = `${window.routePrefix}/api/notifications/${type}`
+            const res = await axios.get(url, {params: {limit: 20, skip: 0, unreadOnly: false}});
 
-            const res = await axios.get(url);
-            setAllNotifications(res.data);
+            // Очищаем SSE уведомления при загрузке новой табы
+            setSseNotifications([]);
+            setLoadedNotifications(res.data);
             return res.data;
         } catch (error) {
             console.error('Error fetching all notifications:', error);
@@ -51,6 +55,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             setLoading(false);
         }
     };
+
+    const paginateNotifications = async (type: string, skip: number) => {
+        try {
+            const url = `${window.routePrefix}/api/notifications/${type}`
+            const res = await axios.get(url, {params: {limit: 20, skip, unreadOnly: false}});
+
+            setLoadedNotifications(prev => [...prev, ...res.data]);
+            return res.data;
+        } catch (error) {
+            console.error('Error paginating notifications:', error);
+            return [];
+        }
+    }
 
     useEffect(() => {
         fetchBellNotifications();
@@ -64,10 +81,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         eventSource.addEventListener('notification', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
-
-            // Добавляем новое уведомление в оба списка
-            setBellNotifications(prev => [data, ...prev.filter(n => n.id !== data.id)].slice(0, 4));
-            setAllNotifications(prev => [data, ...prev.filter(n => n.id !== data.id)]);
+            setSseNotifications(prev => [data, ...prev]);
+            setBellNotifications(prev => [data, ...prev].slice(0, 4));
         });
 
         eventSource.onerror = () => {
@@ -81,14 +96,25 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         try {
             await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {});
 
-            // Обновляем только allNotifications
-            setAllNotifications(prev =>
+            // Обновляем все списки уведомлений
+            setSseNotifications(prev =>
                 prev.map(notif =>
                     notif.id === id ? { ...notif, read: true } : notif
                 )
             );
 
-            // После пометки как прочитанное, загружаем свежие непрочитанные для колокольчика
+            setLoadedNotifications(prev =>
+                prev.map(notif =>
+                    notif.id === id ? { ...notif, read: true } : notif
+                )
+            );
+
+            setBellNotifications(prev =>
+                prev.map(notif =>
+                    notif.id === id ? { ...notif, read: true } : notif
+                )
+            );
+
             await fetchBellNotifications();
         } catch (error) {
             console.error('Error marking as read:', error);
@@ -105,6 +131,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             unreadCount,
             markAsRead,
             fetchAllNotifications,
+            paginateNotifications,
             loading,
             refreshBellNotifications
         }}>

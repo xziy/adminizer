@@ -1,12 +1,12 @@
-import { SharedData } from "@/types";
-import { usePage, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { LoaderCircle } from "lucide-react";
+import {SharedData} from "@/types";
+import {usePage, router} from "@inertiajs/react";
+import {useEffect, useState} from "react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import {LoaderCircle} from "lucide-react";
 import General from "@/components/notifications/General.tsx";
 import System from "@/components/notifications/System.tsx";
-import { useNotifications } from '@/contexts/NotificationContext';
-import { INotification } from '../../../../interfaces/types';
+import {useNotifications} from '@/contexts/NotificationContext';
+import {INotification} from '../../../../interfaces/types';
 
 interface NotificationProps extends SharedData {
     title: string
@@ -19,9 +19,18 @@ interface NotificationProps extends SharedData {
 
 const ViewAll = () => {
     const page = usePage<NotificationProps & { url: string }>();
-    const { allNotifications, markAsRead, fetchAllNotifications, loading: contextLoading, refreshBellNotifications } = useNotifications();
+    const {
+        allNotifications,
+        markAsRead,
+        fetchAllNotifications,
+        paginateNotifications,
+        loading: contextLoading,
+        refreshBellNotifications
+    } = useNotifications();
     const [localLoading, setLocalLoading] = useState(true);
     const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
+    const [currentSkip, setCurrentSkip] = useState(20); // Добавляем состояние для skip
+    const [hasMore, setHasMore] = useState(true);
 
     // Получаем активную табу из query параметров
     const getInitialTab = () => {
@@ -58,6 +67,8 @@ const ViewAll = () => {
     useEffect(() => {
         const loadData = async () => {
             setLocalLoading(true);
+            setCurrentSkip(20); // Сбрасываем skip при смене таба
+            setHasMore(true);
             await fetchAllNotifications(activeTab);
             setLocalLoading(false);
         };
@@ -82,7 +93,7 @@ const ViewAll = () => {
         setLocalLoading(true);
 
         // Обновляем URL с query параметром
-        router.get(page.url, { type: tab }, {
+        router.get(page.url, {type: tab}, {
             preserveState: true,
             preserveScroll: true,
             replace: true
@@ -103,6 +114,20 @@ const ViewAll = () => {
         }
     };
 
+    const handleLoadMore = async () => {
+        if (!hasMore || localLoading) return;
+
+        const newNotifications = await paginateNotifications(activeTab, currentSkip);
+
+        // Если пришло меньше 20 уведомлений, значит это последняя страница
+        if (newNotifications.length < 20) {
+            setHasMore(false);
+        }
+
+        // Увеличиваем skip на 20 для следующей загрузки
+        setCurrentSkip(prev => prev + 20);
+    };
+
     const renderContent = (viewType: 'general' | 'system') => {
         if (localLoading || contextLoading) {
             return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
@@ -112,7 +137,11 @@ const ViewAll = () => {
         }
 
         return viewType === 'general'
-            ? <General notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>
+            ? <General notifications={filteredNotifications}
+                       onMarkAsRead={handleMarkAsRead}
+                       onLoadMore={handleLoadMore}
+                       hasMore={hasMore}
+            />
             : <System notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>;
     };
 
