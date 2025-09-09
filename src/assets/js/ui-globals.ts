@@ -206,6 +206,9 @@ import {
     TooltipProvider,
 } from '@/components/ui/tooltip.tsx';
 import VanillaJSONEditor from '@/components/VanillaJSONEditor';
+import HandsonTable from '@/components/handsontable';
+import MonacoEditor from '@/components/monaco-editor';
+import MultiSelect from '@/components/multi-select';
 export function registerUIComponents(): void {
 
     //@ts-ignore
@@ -393,7 +396,10 @@ export function registerUIComponents(): void {
 
     //@ts-ignore
     Object.assign(window.UIComponents, {
-        VanillaJSONEditor
+        VanillaJSONEditor,
+        HandsonTable,
+        MonacoEditor,
+        MultiSelect
     });
 }
 
