@@ -395,7 +395,7 @@ export function registerUIComponents(): void {
     });
 
     //@ts-ignore
-    Object.assign(window.UIComponents, {
+    Object.assign(window.JSComponents, {
         VanillaJSONEditor,
         HandsonTable,
         MonacoEditor,
