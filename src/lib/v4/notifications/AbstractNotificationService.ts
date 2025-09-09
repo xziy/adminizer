@@ -98,7 +98,7 @@ export abstract class AbstractNotificationService extends EventEmitter {
         return null;
     }
 
-    async getNotifications(userId: number, limit: number = 50, unreadOnly: boolean = false): Promise<INotification[]> {
+    async getNotifications(userId: number, limit: number = 20, skip: number = 0, unreadOnly: boolean = false): Promise<INotification[]> {
         if (!this.adminizer.modelHandler.model.has('notificationap')) {
             return [];
         }
@@ -132,7 +132,8 @@ export abstract class AbstractNotificationService extends EventEmitter {
             notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
                 sort: 'createdAt DESC',
-                limit: limit
+                limit: limit,
+                skip: skip
             });
 
             let notifications: INotification[] = [];

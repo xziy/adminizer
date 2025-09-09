@@ -3,13 +3,48 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Eye} from "lucide-react";
+import {useEffect, useRef} from "react";
 
 interface GeneralProps {
     notifications: INotification[];
     onMarkAsRead: (notificationClass: string, id: string) => Promise<void>;
+    onLoadMore: () => void;
+    hasMore: boolean;
 }
 
-const General = ({notifications, onMarkAsRead}: GeneralProps) => {
+const General = ({notifications, onMarkAsRead, onLoadMore, hasMore}: GeneralProps) => {
+    const tableContent = useRef<HTMLTableElement>(null);
+    const loadingRef = useRef(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            // Если уже загружаем или больше нечего загружать - выходим
+            if (loadingRef.current || !hasMore) return;
+
+            const scrollContainer = tableContent.current;
+            if (!scrollContainer) return;
+
+            const {scrollTop, scrollHeight, clientHeight} = scrollContainer;
+
+            // Проверяем, достигли ли мы нижней части таблицы
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                loadingRef.current = true;
+                onLoadMore();
+            }
+        };
+
+        const scrollContainer = tableContent.current;
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', handleScroll);
+            return () => scrollContainer.removeEventListener('scroll', handleScroll);
+        }
+    }, [hasMore, onLoadMore]);
+
+    // Сбрасываем флаг загрузки после завершения загрузки новых данных
+    useEffect(() => {
+        loadingRef.current = false;
+    }, [notifications]);
+
     const handleMarkAsRead = async (notificationClass: string, id: string) => {
         try {
             await onMarkAsRead(notificationClass, id);
@@ -19,7 +54,7 @@ const General = ({notifications, onMarkAsRead}: GeneralProps) => {
     };
 
     return (
-        <Table wrapperHeight="max-h-[75vh]">
+        <Table wrapperHeight="max-h-[75vh]" ref={tableContent}>
             <TableHeader className="sticky top-0 bg-background shadow z-1">
                 <TableRow>
                     <TableHead className="p-2 text-left"></TableHead>
@@ -30,11 +65,13 @@ const General = ({notifications, onMarkAsRead}: GeneralProps) => {
             </TableHeader>
             <TableBody>
                 {notifications.map((notification) => (
-                    <TableRow key={notification.id} className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
+                    <TableRow key={notification.id}
+                              className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
                         <TableCell className="p-2 align-top pt-2.5">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className={`size-4 ${notification.read ? 'opacity-50 pointer-events-none' : ''}`}
+                                    <Button variant="ghost" size="icon"
+                                            className={`size-4 ${notification.read ? 'opacity-50 pointer-events-none' : ''}`}
                                             onClick={() => handleMarkAsRead(notification.notificationClass, notification.id)}>
                                         <Eye className="text-primary"/>
                                     </Button>
