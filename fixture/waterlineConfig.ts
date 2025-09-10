@@ -12,7 +12,7 @@ const config: Config = {
     default: {
       adapter: "disk",
       // @ts-ignore
-      inMemoryOnly: true,
+      inMemoryOnly: false,
       // adapter: "postgres",
       // // @ts-ignore
       // url: "postgresql://user:password@localhost:5432/mydatabase",
