@@ -1,6 +1,6 @@
 import {SharedData} from "@/types";
-import {usePage, router} from "@inertiajs/react";
-import {useEffect, useState} from "react";
+import {router, usePage} from "@inertiajs/react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {LoaderCircle} from "lucide-react";
 import General from "@/components/notifications/General.tsx";
@@ -24,26 +24,26 @@ const ViewAll = () => {
         markAsRead,
         fetchAllNotifications,
         paginateNotifications,
-        loading: contextLoading,
         refreshBellNotifications
     } = useNotifications();
     const [localLoading, setLocalLoading] = useState(true);
     const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
-    const [currentSkip, setCurrentSkip] = useState(20); // Добавляем состояние для skip
     const [hasMore, setHasMore] = useState(true);
+
+    // Используем ref для хранения текущего skip
+    const currentSkipRef = useRef(20);
 
     // Получаем активную табу из query параметров
     const getInitialTab = () => {
         const url = new URL(page.url, window.location.origin);
         const typeParam = url.searchParams.get('type');
-        // Проверяем, что тип валидный и пользователь имеет доступ
         if (typeParam === 'system' && page.props.auth.user.isAdministrator) {
             return 'system';
         }
         if (typeParam === 'general') {
             return 'general';
         }
-        return 'general'; // значение по умолчанию
+        return 'general';
     };
 
     const [activeTab, setActiveTab] = useState<string>(getInitialTab());
@@ -54,7 +54,6 @@ const ViewAll = () => {
         const typeParam = url.searchParams.get('type');
 
         if (typeParam && typeParam !== activeTab) {
-            // Проверяем доступ для системных уведомлений
             if (typeParam === 'system' && !page.props.auth.user.isAdministrator) {
                 setActiveTab('general');
                 return;
@@ -67,10 +66,12 @@ const ViewAll = () => {
     useEffect(() => {
         const loadData = async () => {
             setLocalLoading(true);
-            setCurrentSkip(20); // Сбрасываем skip при смене таба
+            currentSkipRef.current = 20; // Сбрасываем ref
             setHasMore(true);
             await fetchAllNotifications(activeTab);
-            setLocalLoading(false);
+            setTimeout(() => {
+                setLocalLoading(false);
+            }, 0)
         };
         loadData();
     }, [activeTab]);
@@ -84,29 +85,21 @@ const ViewAll = () => {
     }, [allNotifications, activeTab]);
 
     const handleTabChange = async (tab: string) => {
-        // Проверяем доступ для системных уведомлений
         if (tab === 'system' && !page.props.auth.user.isAdministrator) {
             return;
         }
 
-        setActiveTab(tab);
-        setLocalLoading(true);
-
-        // Обновляем URL с query параметром
         router.get(page.url, {type: tab}, {
             preserveState: true,
             preserveScroll: true,
             replace: true
         });
 
-        await fetchAllNotifications(tab);
-        setLocalLoading(false);
     };
 
     const handleMarkAsRead = async (notificationClass: string, id: string) => {
         try {
             await markAsRead(notificationClass, id);
-            // После пометки как прочитанное, обновляем колокольчик
             await refreshBellNotifications();
         } catch (error) {
             console.error('Error marking as read:', error);
@@ -114,35 +107,39 @@ const ViewAll = () => {
         }
     };
 
-    const handleLoadMore = async () => {
+    // Используем useCallback для стабильной ссылки на функцию
+    const handleLoadMore = useCallback(async () => {
         if (!hasMore || localLoading) return;
 
-        const newNotifications = await paginateNotifications(activeTab, currentSkip);
+        const newNotifications = await paginateNotifications(activeTab, currentSkipRef.current);
 
-        // Если пришло меньше 20 уведомлений, значит это последняя страница
         if (newNotifications.length < 20) {
             setHasMore(false);
         }
 
-        // Увеличиваем skip на 20 для следующей загрузки
-        setCurrentSkip(prev => prev + 20);
-    };
+        // Обновляем оба значения
+        currentSkipRef.current = currentSkipRef.current + 20;
+    }, [hasMore, localLoading, activeTab, paginateNotifications]);
 
     const renderContent = (viewType: 'general' | 'system') => {
-        if (localLoading || contextLoading) {
+        if (localLoading) {
             return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
         }
-        if (filteredNotifications.length === 0) {
+        if (!localLoading && allNotifications.length > 0) {
+            return viewType === 'general'
+                ? <General notifications={filteredNotifications}
+                           onMarkAsRead={handleMarkAsRead}
+                           onLoadMore={handleLoadMore}
+                           hasMore={hasMore}
+                />
+                : <System notifications={filteredNotifications}
+                          onMarkAsRead={handleMarkAsRead}
+                          onLoadMore={handleLoadMore}
+                          hasMore={hasMore}
+                />;
+        } else {
             return <div className="text-center font-medium mt-8">No notifications found</div>;
         }
-
-        return viewType === 'general'
-            ? <General notifications={filteredNotifications}
-                       onMarkAsRead={handleMarkAsRead}
-                       onLoadMore={handleLoadMore}
-                       hasMore={hasMore}
-            />
-            : <System notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>;
     };
 
     return (

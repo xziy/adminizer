@@ -1,5 +1,6 @@
 import {MenuItem} from "../../../helpers/menuHelper"
 import {PropsFieldType} from "../../../helpers/inertiaAddHelper.ts"
+import {INotification} from "../../../interfaces/types.ts";
 
 export interface Auth {
     user: User;
@@ -247,4 +248,11 @@ export interface MediaProps {
     crop: (media: Media) => void
     openVariant: (media: Media) => void
     destroy: (media: Media) => void
+}
+
+export interface NotificationProps {
+    notifications: INotification[];
+    onMarkAsRead: (notificationClass: string, id: string) => Promise<void>;
+    onLoadMore: () => void;
+    hasMore: boolean;
 }

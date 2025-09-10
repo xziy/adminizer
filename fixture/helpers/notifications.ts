@@ -5,7 +5,7 @@ export interface SendNotificationsOptions {
     count?: number;
     delayMs?: number;
     userId?: number;
-    general?: boolean;
+    onlyGeneral?: boolean;
     generalRatio?: number; // Вероятность general уведомлений (0-1)
 }
 
@@ -25,7 +25,7 @@ export async function sendNotificationsWithDelay(
 
     const generateRandomNotification = (): Omit<INotification, 'id' | 'createdAt' | 'icon'> => {
         // Определяем тип уведомления с учетом вероятности
-        const isGeneral = !options.general ? true : faker.number.float({ min: 0, max: 1 }) < generalRatio;
+        const isGeneral = options.onlyGeneral ? true : faker.number.float({ min: 0, max: 1 }) < generalRatio;
 
         if (!isGeneral) {
             // System notification
