@@ -53,7 +53,7 @@ export class NotificationHandler extends EventEmitter {
      */
     async dispatchNotification(
         notificationClass: string,
-        notification: Omit<INotification, 'id' | 'createdAt'  | 'notificationClass' | 'icon'>
+        notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>
     ): Promise<boolean> {
         const service = this.getService(notificationClass);
         if (!service) {
@@ -125,6 +125,13 @@ export class NotificationHandler extends EventEmitter {
             throw new Error(`Notification service not found: ${notificationClass}`);
         }
         return service.markAsRead(userId, id);
+    }
+
+    async markAllAsRead(userId: number): Promise<void> {
+        const services = this.getAllServices();
+        services.forEach(service => {
+            return service.markAllAsRead(userId);
+        })
     }
 
     /**

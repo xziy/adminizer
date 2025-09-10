@@ -110,7 +110,7 @@ export const NotificationTable = (
                     {uniqueNotifications.map((notification) => (
                         <TableRow key={notification.id}
                                   className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
-                            <TableCell className="p-2 align-top pt-2.5">
+                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} pt-2.5`}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon"
@@ -124,15 +124,16 @@ export const NotificationTable = (
                                     </TooltipContent>
                                 </Tooltip>
                             </TableCell>
-                            <TableCell className="p-2 align-top font-medium">
+                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} font-medium`}>
                                 {notification.title}
                             </TableCell>
-                            <TableCell className="p-2 whitespace-break-spaces">
+                            <TableCell
+                                className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} whitespace-break-spaces`}>
                                 <div className="max-w-[500px] whitespace-break-spaces">
                                     {notification.message}
                                 </div>
                             </TableCell>
-                            <TableCell className="p-2 align-top">
+                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'}`}>
                                 {new Date(notification.createdAt).toLocaleString()}
                             </TableCell>
                             {showDiff && notification.metadata?.changes && (

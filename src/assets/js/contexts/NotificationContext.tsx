@@ -7,6 +7,7 @@ interface NotificationContextType {
     allNotifications: INotification[];
     unreadCount: number;
     markAsRead: (notificationClass: string, id: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     fetchAllNotifications: (type: string) => Promise<INotification[]>;
     paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
     loading: boolean;
@@ -115,12 +116,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 )
             );
 
-            await fetchBellNotifications();
         } catch (error) {
             console.error('Error marking as read:', error);
-            throw error;
         }
     };
+
+    const markAllAsRead = async () => {
+        try {
+            await axios.put(`${window.routePrefix}/api/notifications/read-all`);
+            setSseNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+            setLoadedNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+            await fetchBellNotifications();
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    }
 
     const unreadCount = bellNotifications.filter(n => !n.read).length;
 
@@ -130,6 +140,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             allNotifications,
             unreadCount,
             markAsRead,
+            markAllAsRead,
             fetchAllNotifications,
             paginateNotifications,
             loading,

@@ -168,4 +168,19 @@ export abstract class AbstractNotificationService extends EventEmitter {
             Adminizer.log.error('Error marking notification as read:', error);
         }
     }
+
+    async markAllAsRead(userId: number): Promise<void> {
+        try {
+            const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
+                where: {userId: userId}
+            });
+            for (const userNotification of userNotifications) {
+                await this.adminizer.modelHandler.model.get('usernotificationap')["_update"]({
+                    where: {id: userNotification.id},
+                }, {read: true});
+            }
+        } catch (error) {
+            Adminizer.log.error('Error marking all notifications as read:', error);
+        }
+    }
 }

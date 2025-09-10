@@ -7,6 +7,7 @@ import General from "@/components/notifications/General.tsx";
 import System from "@/components/notifications/System.tsx";
 import {useNotifications} from '@/contexts/NotificationContext';
 import {INotification} from '../../../../interfaces/types';
+import {Button} from "@/components/ui/button.tsx";
 
 interface NotificationProps extends SharedData {
     title: string
@@ -22,6 +23,7 @@ const ViewAll = () => {
     const {
         allNotifications,
         markAsRead,
+        markAllAsRead,
         fetchAllNotifications,
         paginateNotifications,
         refreshBellNotifications
@@ -108,6 +110,15 @@ const ViewAll = () => {
     };
 
     // Используем useCallback для стабильной ссылки на функцию
+    const markAllRead = async () => {
+        try {
+            await markAllAsRead();
+            await refreshBellNotifications();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const handleLoadMore = useCallback(async () => {
         if (!hasMore || localLoading) return;
 
@@ -144,7 +155,11 @@ const ViewAll = () => {
 
     return (
         <div className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
-            <h1 className="font-bold text-xl">{page.props.title}</h1>
+            <div className="flex items-center gap-2">
+                <h1 className="font-bold text-xl">{page.props.title}</h1>
+                <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+            </div>
+
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="w-full mb-4">
                     <TabsTrigger
