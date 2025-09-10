@@ -139,6 +139,11 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
             );
 
+            adminizer.app.put(
+                `${adminizer.config.routePrefix}/api/notifications/read-all`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.markAllAsRead)
+            );
+
             // adminizer.app.get(
             //     `${adminizer.config.routePrefix}/api/notifications-all`,
             //     adminizer.policyManager.bindPolicies(policies, NotificationController.getAllUserNotifications)

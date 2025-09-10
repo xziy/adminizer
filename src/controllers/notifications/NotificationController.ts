@@ -207,6 +207,16 @@ export class NotificationController {
         }
     }
 
+    static async markAllAsRead(req: ReqType, res: ResType): Promise<void> {
+        try {
+            await req.adminizer.notificationHandler.markAllAsRead(req.user.id);
+            res.json({success: true});
+        } catch (error) {
+            Adminizer.log.error('Error marking all notifications as read:', error);
+            res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
     // API для отправки уведомления
     static async sendNotification(req: ReqType, res: ResType): Promise<void> {
         NotificationController.checkPermission(req, res)
