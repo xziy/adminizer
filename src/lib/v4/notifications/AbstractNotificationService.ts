@@ -58,11 +58,6 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
-    // Генерация ID
-    protected generateId(): string {
-        return `${this.notificationClass}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    }
-
     // Получение количества подключенных клиентов
     getClientCount(): number {
         return this.clients.size;
@@ -106,14 +101,12 @@ export abstract class AbstractNotificationService extends EventEmitter {
         try {
             let query: any = {notificationClass: this.notificationClass};
 
-            // Если запрашиваются уведомления для конкретного пользователя
-            // Получаем ID уведомлений пользователя
+            // Если запрашиваются уведомления для конкретного пользователя получаем ID уведомлений пользователя
             const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
                 where: {
                     userId: userId
-                },
-                include: ['notificationap']
-            });
+                }
+            }, {populate: [['notificationId', {}]]});
 
             const notificationIds = userNotifications.map((un: any) => un.notificationId.id);
 
@@ -127,7 +120,7 @@ export abstract class AbstractNotificationService extends EventEmitter {
             }
             let notificationsDB: NotificationAPModel[];
 
-            if(query.id.length === 0) return []
+            if (query.id.length === 0) return []
 
             notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
