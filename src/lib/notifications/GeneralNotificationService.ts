@@ -28,7 +28,9 @@ export class GeneralNotificationService extends AbstractNotificationService {
                     const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({});
                     for (const user of users) {
                         try {
-                            await this.createUserNotification(notificationDB.id, user.id);
+                            if (this.adminizer.accessRightsHelper.hasPermission(`notification-${this.notificationClass}`, user)) {
+                                await this.createUserNotification(notificationDB.id, user.id);
+                            }
                         } catch (error) {
                             Adminizer.log.error('Error creating UserNotificationAP:', error);
                         }

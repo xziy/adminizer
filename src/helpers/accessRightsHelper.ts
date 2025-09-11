@@ -86,7 +86,6 @@ export class AccessRightsHelper {
 			Adminizer.log.error('User has no groups')
 			return false
 		}
-
 		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
 	}
 }

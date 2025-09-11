@@ -189,7 +189,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
         /** Test notifications */
-        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 25, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 10000); // Начальная задержка 10 секунд
+        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 10, onlyGeneral: true, generalRatio: 0.5, delayMs: 300}), 10000); // Начальная задержка 10 секунд
 
     } catch (e) {
         console.log(e)

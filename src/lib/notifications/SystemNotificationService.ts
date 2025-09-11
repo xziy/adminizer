@@ -2,6 +2,7 @@ import {AbstractNotificationService} from './AbstractNotificationService';
 import {INotification, INotificationEvent} from '../../interfaces/types';
 import {Adminizer} from '../Adminizer';
 import {NotificationAPModel} from "../../models/NotificationAP";
+import {UserAP} from "../../models/UserAP";
 
 export class SystemNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'system';
@@ -25,10 +26,12 @@ export class SystemNotificationService extends AbstractNotificationService {
             try {
                 notificationDB = await this.adminizer.modelHandler.model.get('notificationap')["_create"](fullNotification);
 
-                const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({isAdministrator: 1});
+                const users = await this.adminizer.modelHandler.model.get('userap')["_find"]({}) as UserAP[];
                 for (const user of users) {
                     try {
-                        await this.createUserNotification(notificationDB.id, user.id);
+                        if (this.adminizer.accessRightsHelper.hasPermission(`notification-${this.notificationClass}`, user)) {
+                            await this.createUserNotification(notificationDB.id, user.id);
+                        }
                     } catch (error) {
                         Adminizer.log.error('Error creating UserNotificationAP:', error);
                     }
