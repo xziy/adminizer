@@ -1,36 +1,16 @@
 import {Adminizer} from "../lib/Adminizer";
-import multer from "multer";
 import {I18n} from "../lib/I18n";
-import { parse } from "cookie";
-import { verifyUser } from "../lib/helper/jwt";
+import {parse} from "cookie";
+import {verifyUser} from "../lib/helper/jwt";
 
 export default function bindReqFunctions(adminizer: Adminizer) {
 
-    let bindReqFunctions = function (req: ReqType, res: ResType, next: () => void) {
+    let bindReqFunctionsF = async function (req: ReqType, res: ResType, next: () => void) {
         /**
          * Add adminizer to use in controllers
          * */
         req.adminizer = adminizer;
 
-        /**
-         * Function to upload files using multer.
-         * Filename can be set dynamically based on you filename using simple function
-         * */
-        // req.upload = (options?: { destination?: string; filename?: (file: Express.Multer.File) => string }) => {
-        //     const storage = multer.diskStorage({
-        //         destination: (req, file, cb) => {
-        //             const destination = options?.destination || "uploads/";
-        //             cb(null, destination);
-        //         },
-        //         filename: (req, file, cb) => {
-        //             const filename =
-        //                 options?.filename?.(file) || `${Date.now()}-${file.originalname}`;
-        //             cb(null, filename);
-        //         },
-        //     });
-        //
-        //     return multer({storage});
-        // };
 
         /**
          * Add i18n
@@ -44,23 +24,27 @@ export default function bindReqFunctions(adminizer: Adminizer) {
         // JWT token
         const cookies = parse(req.headers.cookie || '');
         const token = cookies.adminizer_jwt;
-      
+
         if (token) {
-          const user = verifyUser(token, req.adminizer.jwtSecret);
-          if (user) {
-            req.user = user;
-          }
+            const user = verifyUser(token, req.adminizer.jwtSecret);
+            if (user) {
+                const userDB = await req.adminizer.modelHandler.model.get('userap')['_findOne']({id: user.id})
+                req.user = userDB;
+                // req.user = user;
+            }
         }
-        
-        if(req.session.userPretended) {
+
+        if (req.session.userPretended) {
             req.user = req.session.userPretended;
         }
 
         next();
     };
 
-    adminizer.app.use('/', bindReqFunctions);
-    adminizer.app.use('/*', bindReqFunctions);
+    // adminizer.app.use('/', bindReqFunctionsF);
+    // adminizer.app.use('/*', bindReqFunctionsF);
+
+    adminizer.app.use(bindReqFunctionsF);
 
     Adminizer.log.info("Adminizer upload loaded");
 }

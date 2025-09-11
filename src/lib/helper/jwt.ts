@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 
 export function signUser(user: JwtPayload, JWT_SECRET: string): string {
-  return jwt.sign(user, JWT_SECRET, {
-    expiresIn: '15d',
-  });
+    return jwt.sign(user, JWT_SECRET, {
+        expiresIn: '15d',
+    });
 }
 
 
@@ -13,16 +13,16 @@ interface JwtPayload {
     isAdministrator?: boolean;
     iat?: number;
     exp?: number;
-  }
-  
-  export function verifyUser(token: string, JWT_SECRET: string): JwtPayload | null {
+}
+
+export function verifyUser(token: string, JWT_SECRET: string): JwtPayload | null {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      if (typeof decoded === 'object' && decoded !== null && 'id' in decoded && 'login' in decoded) {
-        return decoded as JwtPayload;
-      }
-      return null;
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (typeof decoded === 'object' && decoded !== null && 'id' in decoded && 'login' in decoded) {
+            return decoded as JwtPayload;
+        }
+        return null;
     } catch {
-      return null;
+        return null;
     }
-  }
+}
