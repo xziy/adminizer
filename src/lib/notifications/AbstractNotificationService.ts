@@ -30,10 +30,6 @@ export abstract class AbstractNotificationService extends EventEmitter {
 
     // Добавление клиента
     addClient(clientId: string, sendFn: (event: INotificationEvent) => void, user: UserAP): void {
-        // if (!this.adminizer.accessRightsHelper.hasPermission(`notification-${this.notificationClass}`, user)) {
-        //     return
-        // }
-
         const userId = user.id;
 
         // Если у пользователя еще нет Map клиентов - создаем
@@ -92,7 +88,6 @@ export abstract class AbstractNotificationService extends EventEmitter {
 
 
     // Абстрактные методы
-    // TODO - Проверить, что клиент имеет права на получение уведомлений группе
     abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
 
     // Рассылка события всем клиентам
@@ -110,7 +105,6 @@ export abstract class AbstractNotificationService extends EventEmitter {
     }
 
     // Отправка heartbeat
-
     sendHeartbeat(clientId: string): void {
         for (const userClients of this.clients.values()) {
             const sendFn = userClients.get(clientId);
