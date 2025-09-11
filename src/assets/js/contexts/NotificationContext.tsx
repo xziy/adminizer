@@ -11,6 +11,7 @@ interface NotificationContextType {
     fetchAllNotifications: (type: string) => Promise<INotification[]>;
     paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
     getTabs: () => Promise<void>;
+    tabs: string[];
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [sseNotifications, setSseNotifications] = useState<INotification[]>([]);
     const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
+    const [tabs, setTabs] = useState<string[]>([]);
 
     const allNotifications = [...sseNotifications, ...loadedNotifications];
 
@@ -43,7 +45,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const getTabs = async () => {
         try {
             const res = await axios.put(`${window.routePrefix}/api/notifications/get-classes`);
-            console.log(res.data)
+            setTabs(res.data);
         } catch (error) {
             console.error('Error fetching tabs:', error);
         }
@@ -147,6 +149,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             allNotifications,
             unreadCount,
             getTabs,
+            tabs,
             markAsRead,
             markAllAsRead,
             fetchAllNotifications,
