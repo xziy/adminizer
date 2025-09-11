@@ -54,10 +54,6 @@ const ViewAll = () => {
         const typeParam = url.searchParams.get('type');
 
         if (typeParam && typeParam !== activeTab) {
-            if (typeParam === 'system' && !page.props.auth.user.isAdministrator) {
-                setActiveTab('general');
-                return;
-            }
             setActiveTab(typeParam);
         }
     }, [page.url, activeTab, page.props.auth.user.isAdministrator]);
@@ -85,10 +81,7 @@ const ViewAll = () => {
     }, [allNotifications, activeTab]);
 
     const handleTabChange = async (tab: string) => {
-        if (tab === 'system' && !page.props.auth.user.isAdministrator) {
-            return;
-        }
-
+        console.log(tab)
         router.get(page.url, {type: tab}, {
             preserveState: true,
             preserveScroll: true,
