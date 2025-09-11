@@ -7,7 +7,7 @@ import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../
     getRelationsMediaManager,
     saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
 import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";

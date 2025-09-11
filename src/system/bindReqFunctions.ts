@@ -1,8 +1,8 @@
 import {Adminizer} from "../lib/Adminizer";
 import multer from "multer";
-import {I18n} from "../lib/v4/I18n";
+import {I18n} from "../lib/I18n";
 import { parse } from "cookie";
-import { verifyUser } from "../lib/v4/helper/jwt";
+import { verifyUser } from "../lib/helper/jwt";
 
 export default function bindReqFunctions(adminizer: Adminizer) {
 

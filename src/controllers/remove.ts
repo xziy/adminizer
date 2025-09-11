@@ -1,7 +1,7 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
 import {deleteRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
-import {ModelAnyField, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {ModelAnyField, ModelAnyInstance} from "../lib/model/AbstractModel";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 import {diff} from "deep-object-diff";

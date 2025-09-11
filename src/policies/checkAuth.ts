@@ -1,5 +1,5 @@
 import { parse } from "cookie";
-import { verifyUser } from "../lib/v4/helper/jwt";
+import { verifyUser } from "../lib/helper/jwt";
 
 export default async function checkAuth(req: ReqType, res: ResType, proceed: () => void) {
     let locale: string = ""

@@ -1,6 +1,6 @@
 import {Entity, EntityType} from "../interfaces/types";
 import {ActionType, CreateUpdateConfig, ModelConfig} from "../interfaces/adminpanelConfig";
-import {AbstractModel} from "../lib/v4/model/AbstractModel";
+import {AbstractModel} from "../lib/model/AbstractModel";
 import {Adminizer} from "../lib/Adminizer";
 
 /**

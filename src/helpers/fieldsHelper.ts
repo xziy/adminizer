@@ -1,7 +1,7 @@
 import {ActionType, BaseFieldConfig, FieldsTypes, ModelConfig} from "../interfaces/adminpanelConfig";
 import {Entity} from "../interfaces/types";
-import {Attribute, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {Attribute, ModelAnyInstance} from "../lib/model/AbstractModel";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import { isObject } from "./JsUtils";
 export type Field = {
