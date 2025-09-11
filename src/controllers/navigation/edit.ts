@@ -1,5 +1,5 @@
 import {ControllerHelper} from "../../helpers/controllerHelper";
-import {DataAccessor} from "../../lib/v4/DataAccessor";
+import {DataAccessor} from "../../lib/DataAccessor";
 
 export default async function edit(req: ReqType, res: ResType) {
 	if (req.adminizer.config.auth.enable) {

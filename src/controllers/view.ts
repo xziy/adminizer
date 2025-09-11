@@ -1,5 +1,5 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";

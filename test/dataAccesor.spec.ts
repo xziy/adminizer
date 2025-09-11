@@ -1,7 +1,7 @@
 
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { UserAP } from '../src/models/UserAP';
-import { DataAccessor } from '../src/lib/v4/DataAccessor';
+import { DataAccessor } from '../src/lib/DataAccessor.ts';
 
 import { Config } from "waterline";
 

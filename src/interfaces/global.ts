@@ -1,9 +1,9 @@
 import { Adminizer } from "../lib/Adminizer";
 import {NextFunction, Request, Response} from "express";
 import multer from "multer";
-import {I18n} from "../lib/v4/I18n";
-import {Inertia} from "../lib/v4/inertia/inertiaAdapter";
-import {Flash} from "../lib/v4/inertia/flash";
+import {I18n} from "../lib/I18n";
+import {Inertia} from "../lib/inertia/inertiaAdapter";
+import {Flash} from "../lib/inertia/flash";
 import { UserAP } from "models/UserAP";
 import { GroupAP } from "models/GroupAP";
 

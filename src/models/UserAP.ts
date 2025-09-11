@@ -1,4 +1,4 @@
-import {WidgetConfig, WidgetsLayouts} from "lib/v4/widgets/widgetHandler";
+import {WidgetConfig, WidgetsLayouts} from "lib/widgets/widgetHandler";
 import { GroupAP } from "./GroupAP";
 export default {
   id: {

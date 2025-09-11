@@ -1,5 +1,5 @@
-import flash from "../lib/v4/inertia/flash";
-import inertia, {Page} from "../lib/v4/inertia/inertiaAdapter";
+import flash from "../lib/inertia/flash";
+import inertia, {Page} from "../lib/inertia/inertiaAdapter";
 import fs from "fs";
 import path from "node:path";
 import {Adminizer} from "../lib/Adminizer";

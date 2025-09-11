@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import {Adminizer} from "../lib/Adminizer";
-import {I18n} from "../lib/v4/I18n";
+import {I18n} from "../lib/I18n";
 
 export class TranslationHelper {
   public static loadTranslations(adminizer: Adminizer, translationsPath: string): void {
