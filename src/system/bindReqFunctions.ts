@@ -28,8 +28,7 @@ export default function bindReqFunctions(adminizer: Adminizer) {
         if (token) {
             const user = verifyUser(token, req.adminizer.jwtSecret);
             if (user) {
-                const userDB = await req.adminizer.modelHandler.model.get('userap')['_findOne']({id: user.id})
-                req.user = userDB;
+                req.user = await req.adminizer.modelHandler.model.get('userap')['_findOne']({id: user.id});
                 // req.user = user;
             }
         }
