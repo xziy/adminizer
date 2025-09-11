@@ -46,6 +46,8 @@ export class NotificationHandler extends EventEmitter {
         return Array.from(this.services.values());
     }
 
+
+
     /**
      * Dispatch a notification to a service
      * @param notificationClass
@@ -84,34 +86,34 @@ export class NotificationHandler extends EventEmitter {
         return service.getNotifications(userId, limit, skip, unreadOnly);
     }
 
-    /**
-     * Get all notifications for a user
-     * @param user
-     * @param limit
-     * @param skip
-     * @param unreadOnly
-     */
-    async getUserNotifications(user: any, limit: number = 20, skip: number = 0, unreadOnly: boolean = false): Promise<INotification[]> {
-        const allNotifications: INotification[] = [];
-        for (const service of this.getAllServices()) {
-            // Для системных уведомлений проверяем права админа
-            if (service.notificationClass === 'system') {
-                if (this.isAdmin(user)) {
-                    const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
-                    allNotifications.push(...notifications);
-                }
-            } else {
-                // Для остальных уведомлений получаем по пользователю
-                const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
-                allNotifications.push(...notifications);
-            }
-        }
-
-        // Сортируем по дате создания
-        return allNotifications.sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ).slice(0, limit);
-    }
+    // /**
+    //  * Get all notifications for a user
+    //  * @param user
+    //  * @param limit
+    //  * @param skip
+    //  * @param unreadOnly
+    //  */
+    // async getUserNotifications(user: any, limit: number = 20, skip: number = 0, unreadOnly: boolean = false): Promise<INotification[]> {
+    //     const allNotifications: INotification[] = [];
+    //     for (const service of this.getAllServices()) {
+    //         // Для системных уведомлений проверяем права админа
+    //         if (service.notificationClass === 'system') {
+    //             if (this.isAdmin(user)) {
+    //                 const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
+    //                 allNotifications.push(...notifications);
+    //             }
+    //         } else {
+    //             // Для остальных уведомлений получаем по пользователю
+    //             const notifications = await service.getNotifications(user.id, limit, skip, unreadOnly);
+    //             allNotifications.push(...notifications);
+    //         }
+    //     }
+    //
+    //     // Сортируем по дате создания
+    //     return allNotifications.sort((a, b) =>
+    //         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    //     ).slice(0, limit);
+    // }
 
     /**
      * Mark a notification as read

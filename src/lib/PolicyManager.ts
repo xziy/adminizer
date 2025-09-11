@@ -12,7 +12,7 @@ class PolicyManager {
 
     async loadPolicies() {
         try {
-            const policiesDirPath = path.join(import.meta.dirname, "../../policies");
+            const policiesDirPath = path.join(import.meta.dirname, "../policies");
             const policiesDir = fs.readdirSync(policiesDirPath);
             for (const policyFile of policiesDir) {
                 if (path.extname(policyFile).toLowerCase() === ".js") {

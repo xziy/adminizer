@@ -10,6 +10,7 @@ interface NotificationContextType {
     markAllAsRead: () => Promise<void>;
     fetchAllNotifications: (type: string) => Promise<INotification[]>;
     paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
+    getTabs: () => Promise<void>;
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -38,6 +39,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const refreshBellNotifications = async () => {
         await fetchBellNotifications();
     };
+
+    const getTabs = async () => {
+        try {
+            const res = await axios.put(`${window.routePrefix}/api/notifications/get-classes`);
+            console.log(res.data)
+        } catch (error) {
+            console.error('Error fetching tabs:', error);
+        }
+    }
 
     const fetchAllNotifications = async (type: string) => {
         setLoading(true);
@@ -78,6 +88,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         eventSource.addEventListener('connected', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
             console.log('Connected event:', data);
+            getTabs()
         });
 
         eventSource.addEventListener('notification', (event) => {
@@ -110,11 +121,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 )
             );
 
-            setBellNotifications(prev =>
-                prev.map(notif =>
-                    notif.id === id ? { ...notif, read: true } : notif
-                )
-            );
+            setBellNotifications([]);
 
         } catch (error) {
             console.error('Error marking as read:', error);
@@ -139,6 +146,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             bellNotifications,
             allNotifications,
             unreadCount,
+            getTabs,
             markAsRead,
             markAllAsRead,
             fetchAllNotifications,

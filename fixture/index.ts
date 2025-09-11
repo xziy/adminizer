@@ -1,6 +1,6 @@
 import {Adminizer} from "../dist";
 import http from 'http';
-import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
+import {WaterlineAdapter, WaterlineModel} from "../dist/lib/model/adapter/waterline";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import ExampleWaterline from "./models/Example";
@@ -25,7 +25,7 @@ import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
 import {Test as TestSequelize} from "./models/sequelize/Test";
 import {Category as CategorySequelize} from "./models/sequelize/Category";
 import {TestCatalog as TestCatalogSequelize} from "./models/sequelize/TestCatalog";
-import {SequelizeAdapter} from "../dist/lib/v4/model/adapter/sequelize";
+import {SequelizeAdapter} from "../dist/lib/model/adapter/sequelize";
 import {seedDatabase} from "./helpers/seedDatabase";
 
 
@@ -189,7 +189,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
         /** Test notifications */
-        setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 45, onlyGeneral: false, generalRatio: 0.5, delayMs: 300, userId: 1}), 10000); // Начальная задержка 10 секунд
+        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 25, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 10000); // Начальная задержка 10 секунд
 
     } catch (e) {
         console.log(e)
