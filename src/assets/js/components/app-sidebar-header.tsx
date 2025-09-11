@@ -6,6 +6,7 @@ import ThemeSwitcher from '@/components/theme-switcher';
 import {NotificationCenter} from "@/components/notifications/NotificationCenter.tsx";
 import {useNotifications} from "@/contexts/NotificationContext.tsx";
 import {useEffect} from "react";
+import {LoaderCircle} from "lucide-react";
 
 export function AppSidebarHeader({breadcrumbs = []}: { breadcrumbs?: BreadcrumbItemType[] }) {
     const {tabs} = useNotifications();
@@ -22,7 +23,7 @@ export function AppSidebarHeader({breadcrumbs = []}: { breadcrumbs?: BreadcrumbI
                 </div>
                 <div className="flex gap-4 items-center">
                     <ThemeSwitcher/>
-                    {tabs.length > 0 && <NotificationCenter/>}
+                    {tabs.length > 0 ? <NotificationCenter/> : <div className="w-[40px] flex-none flex justify-center"><LoaderCircle className="size-4 animate-spin"/></div>}
                     <NavUser/>
                 </div>
             </div>
