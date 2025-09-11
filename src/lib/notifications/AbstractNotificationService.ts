@@ -2,9 +2,10 @@ import {EventEmitter} from 'events';
 import {Adminizer} from '../Adminizer';
 import {INotification, INotificationEvent} from '../../interfaces/types';
 import {NotificationAPModel} from "../../models/NotificationAP";
+import {UserAP} from "../../models/UserAP";
 
 export abstract class AbstractNotificationService extends EventEmitter {
-    protected clients: Map<string, (event: INotificationEvent) => void> = new Map();
+    protected clients: Map<number, Map<string, (event: INotificationEvent) => void>> = new Map();
     protected adminizer: Adminizer;
     public abstract readonly notificationClass: string;
     public abstract readonly icon: string;
@@ -13,54 +14,115 @@ export abstract class AbstractNotificationService extends EventEmitter {
     constructor(adminizer: Adminizer) {
         super();
         this.adminizer = adminizer;
+        this._bindAccessRight()
+    }
+
+    private _bindAccessRight() {
+        setTimeout(() => {
+            this.adminizer.accessRightsHelper.registerToken({
+                id: `notification-${this.notificationClass}`,
+                name: this.notificationClass,
+                description: `Access to notification ${this.notificationClass}`,
+                department: 'notification',
+            });
+        }, 100)
     }
 
     // Добавление клиента
-    // TODO - Проверить, что клиент имеет права на получение уведомлений
-    addClient(clientId: string, sendFn: (event: INotificationEvent) => void): void {
-        this.clients.set(clientId, sendFn);
-        Adminizer.log.info(`[${this.notificationClass}] Client ${clientId} connected. Total: ${this.clients.size}`);
+    addClient(clientId: string, sendFn: (event: INotificationEvent) => void, user: UserAP): void {
+        // if (!this.adminizer.accessRightsHelper.hasPermission(`notification-${this.notificationClass}`, user)) {
+        //     return
+        // }
+
+        const userId = user.id;
+
+        // Если у пользователя еще нет Map клиентов - создаем
+        if (!this.clients.has(userId)) {
+            this.clients.set(userId, new Map());
+        }
+
+        // Получаем Map клиентов пользователя и добавляем нового клиента
+        const userClients = this.clients.get(userId)!;
+        userClients.set(clientId, sendFn);
+
+        Adminizer.log.info(`[${this.notificationClass}] Client ${clientId} connected for user ${userId}. Total users: ${this.clients.size}, user clients: ${userClients.size}`);
     }
+
 
     // Удаление клиента
     removeClient(clientId: string): void {
-        this.clients.delete(clientId);
-        Adminizer.log.info(`[${this.notificationClass}] Client ${clientId} disconnected. Total: ${this.clients.size}`);
-    }
+        // Ищем клиента во всех пользовательских Map
+        for (const [userId, userClients] of this.clients.entries()) {
+            if (userClients.has(clientId)) {
+                userClients.delete(clientId);
 
-    // Абстрактные методы
-    // TODO - Проверить, что клиент имеет права на получение уведомлений группе
-    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
+                // Если у пользователя больше нет клиентов - удаляем его Map
+                if (userClients.size === 0) {
+                    this.clients.delete(userId);
+                }
 
-    // abstract getNotifications(userId?: number, limit?: number, unreadOnly?: boolean): Promise<INotification[]>;
-
-    // Рассылка события всем клиентам
-    protected broadcast(event: INotificationEvent): void {
-        this.clients.forEach((sendFn, clientId) => {
-            try {
-                sendFn(event);
-            } catch (error) {
-                Adminizer.log.error(`[${this.notificationClass}] Error sending to client ${clientId}:`, error);
-                this.removeClient(clientId);
+                Adminizer.log.info(`[${this.notificationClass}] Client ${clientId} disconnected from user ${userId}. Total users: ${this.clients.size}`);
+                return;
             }
-        });
+        }
+
+        Adminizer.log.warn(`[${this.notificationClass}] Client ${clientId} not found for removal`);
     }
 
-    // Отправка heartbeat
-    sendHeartbeat(clientId: string): void {
-        const sendFn = this.clients.get(clientId);
-        if (sendFn) {
-            const heartbeatEvent: INotificationEvent = {
-                type: 'heartbeat',
-                data: 'ping'
-            };
-            sendFn(heartbeatEvent);
-        }
+    // Получение клиентов конкретного пользователя
+    getUserClients(userId: number): Map<string, (event: INotificationEvent) => void> {
+        return this.clients.get(userId) || new Map();
     }
 
     // Получение количества подключенных клиентов
     getClientCount(): number {
         return this.clients.size;
+    }
+
+    // Получение всех клиентов (для обратной совместимости)
+    getAllClients(): Map<string, (event: INotificationEvent) => void> {
+        const allClients = new Map();
+        for (const userClients of this.clients.values()) {
+            for (const [clientId, sendFn] of userClients.entries()) {
+                allClients.set(clientId, sendFn);
+            }
+        }
+        return allClients;
+    }
+
+
+    // Абстрактные методы
+    // TODO - Проверить, что клиент имеет права на получение уведомлений группе
+    abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
+
+    // Рассылка события всем клиентам
+    protected broadcast(event: INotificationEvent): void {
+        for (const userClients of this.clients.values()) {
+            userClients.forEach((sendFn, clientId) => {
+                try {
+                    sendFn(event);
+                } catch (error) {
+                    Adminizer.log.error(`[${this.notificationClass}] Error sending to client ${clientId}:`, error);
+                    this.removeClient(clientId);
+                }
+            });
+        }
+    }
+
+    // Отправка heartbeat
+
+    sendHeartbeat(clientId: string): void {
+        for (const userClients of this.clients.values()) {
+            const sendFn = userClients.get(clientId);
+            if (sendFn) {
+                const heartbeatEvent: INotificationEvent = {
+                    type: 'heartbeat',
+                    data: 'ping'
+                };
+                sendFn(heartbeatEvent);
+                return;
+            }
+        }
     }
 
     // Метод для создания записи в UserNotificationAP

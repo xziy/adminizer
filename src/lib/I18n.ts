@@ -39,7 +39,7 @@ export class I18n {
     this.devMode = process.env.NODE_ENV !== "production";
 
     this.defaultLocale = options.defaultLocale || "en";
-    this.directory = options.directory || path.join(import.meta.filename, '../../../translations');
+    this.directory = options.directory || path.join(import.meta.filename, '../../translations');
     this.extension = options.extension || ".json";
     this.cookieName = options.cookieName || "lang";
     this.sessionVarName = options.sessionVarName || "locale";

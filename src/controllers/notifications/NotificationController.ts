@@ -1,5 +1,7 @@
 import {Adminizer} from '../../lib/Adminizer';
 import {UserAP} from "../../models/UserAP";
+import {SystemNotificationService} from "../../lib/notifications/SystemNotificationService";
+import {INotification} from "../../interfaces/types";
 
 export class NotificationController {
 
@@ -16,9 +18,27 @@ export class NotificationController {
         });
     }
 
+    static async getNotificationClasses(req: ReqType, res: ResType) {
+        const services = req.adminizer.notificationHandler.getAllServices()
+        let activeServices = []
+
+        for (let service of services) {
+            // Получаем только клиентов текущего пользователя
+            const userClients = service.getUserClients(req.user.id);
+
+            if (userClients.size > 0) {
+                activeServices.push(service.notificationClass);
+            }
+        }
+
+        return res.json({
+            activeServices: activeServices,
+        })
+    }
+
     // Единый SSE endpoint для всех уведомлений
     static async getNotificationsStream(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
+        NotificationController.checkNotifPermission(req, res)
 
         // Устанавливаем заголовки для SSE
         res.setHeader('Content-Type', 'text/event-stream');
@@ -33,10 +53,19 @@ export class NotificationController {
         const sendEvent = (event: any) => {
             // Фильтруем уведомления по правам пользователя
             if (event.type === 'notification') {
-                // Системные уведомления только для админов
-                if (event.notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
-                    return;
+                const notificationClass = event.notificationClass;
+
+                // ЕДИНАЯ проверка прав через AccessRightsHelper
+                const hasPermission = req.adminizer.accessRightsHelper.hasPermission(
+                    `notification-${notificationClass}`,
+                    req.user
+                );
+
+                if (!hasPermission) {
+                    return; // Пользователь не имеет прав на этот класс уведомлений
                 }
+
+                // Проверка персональных уведомлений (только для целевого пользователя)
                 if (event.userId !== null && event.userId !== req.user.id) {
                     return;
                 }
@@ -48,15 +77,21 @@ export class NotificationController {
 
         // Подключаем клиента ко всем сервисам
         const services = req.adminizer.notificationHandler.getAllServices();
-        services.forEach(service => {
-            service.addClient(clientId, sendEvent);
+        const allowedServices = services.filter(service =>
+            req.adminizer.accessRightsHelper.hasPermission(
+                `notification-${service.notificationClass}`,
+                req.user
+            )
+        );
+        allowedServices.forEach(service => {
+            service.addClient(clientId, sendEvent, req.user);
 
             // Для системного сервиса добавляем клиента в CRUD каналы
-            if (service.notificationClass === 'system' && NotificationController.isAdmin(req.user)) {
-                const systemService = service as any;
-                // Добавляем клиента в основные CRUD каналы
+            if (service.notificationClass === 'system') {
+                const systemService = service as SystemNotificationService;
+                // Добавляем клиента в основные CRUD каналы с указанием userId
                 ['created', 'updated', 'deleted', 'system'].forEach(channel => {
-                    systemService.addClientToChannel(clientId, channel);
+                    systemService.addClientToChannel(clientId, channel, req.user.id);
                 });
             }
         });
@@ -70,25 +105,6 @@ export class NotificationController {
             }
         });
 
-        // Отправляем историю уведомлений (с учетом прав доступа)
-        // try {
-        //     const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-        //         req.user,
-        //         4,
-        //         true
-        //     );
-        //     notifications.forEach(notification => {
-        //         sendEvent({
-        //             type: 'notification',
-        //             data: notification,
-        //             notificationClass: notification.notificationClass,
-        //             userId: notification.userId ?? null
-        //         });
-        //     });
-        // } catch (error) {
-        //     Adminizer.log.error('Error sending notification history:', error);
-        // }
-
         // Обработка закрытия соединения
         req.on('close', () => {
             // Отключаем клиента от всех сервисов
@@ -97,9 +113,9 @@ export class NotificationController {
 
                 // Для системного сервиса удаляем из всех каналов
                 if (service.notificationClass === 'system') {
-                    const systemService = service as any;
+                    const systemService = service as SystemNotificationService;
                     if (systemService.removeClientFromAllChannels) {
-                        systemService.removeClientFromAllChannels(clientId);
+                        systemService.removeClientFromAllChannels(clientId, req.user.id);
                     }
                 }
             });
@@ -124,14 +140,20 @@ export class NotificationController {
 
     // API для получения уведомлений по классу
     static async getNotificationsByClass(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
+        NotificationController.checkNotifPermission(req, res)
 
         try {
             const {notificationClass} = req.params;
             const {limit = 20, skip = 0, unreadOnly = false} = req.query;
-            // Проверяем права доступа для системных уведомлений
-            if (notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
-                res.status(403).json({error: 'Forbidden: Admin access required'});
+
+            // Проверяем права доступа
+            const hasPermission = req.adminizer.accessRightsHelper.hasPermission(
+                `notification-${notificationClass}`,
+                req.user
+            );
+
+            if (!hasPermission) {
+                res.status(403).json({error: 'Forbidden'});
                 return;
             }
 
@@ -152,43 +174,47 @@ export class NotificationController {
 
     // API для получения всех уведомлений пользователя
     static async getUserNotifications(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
+        NotificationController.checkNotifPermission(req, res);
         const {limit = 4, skip = 0, unreadOnly = false} = req.query;
 
         try {
-            const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-                req.user,
-                Number(limit),
-                Number(skip),
-                unreadOnly === 'true'
+            // Фильтруем сервисы по правам доступа
+            const services = req.adminizer.notificationHandler.getAllServices();
+            const allowedServices = services.filter(service =>
+                req.adminizer.accessRightsHelper.hasPermission(
+                    `notification-${service.notificationClass}`,
+                    req.user
+                )
             );
 
-            res.json(notifications);
+            const allNotifications: INotification[] = [];
+
+            for (const service of allowedServices) {
+                const notifications = await service.getNotifications(
+                    req.user.id,
+                    Number(limit),
+                    Number(skip),
+                    unreadOnly === 'true'
+                );
+                allNotifications.push(...notifications);
+            }
+
+            // Сортируем по дате создания
+            const sortedNotifications = allNotifications.sort((a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            ).slice(0, Number(limit));
+
+            res.json(sortedNotifications);
+
         } catch (error) {
             Adminizer.log.error('Error getting user notifications:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
 
-    // static async getAllUserNotifications(req: ReqType, res: ResType): Promise<void> {
-    //     NotificationController.checkPermission(req, res)
-    //     try {
-    //         const notifications = await req.adminizer.notificationHandler.getUserNotifications(
-    //             req.user,
-    //             20,
-    //             0,
-    //             false
-    //         );
-    //         res.json(notifications);
-    //     } catch (error) {
-    //         Adminizer.log.error('Error getting user notifications:', error);
-    //         res.status(500).json({error: 'Internal server error'});
-    //     }
-    // }
-
     // API для пометки как прочитанного
     static async markAsRead(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
+        NotificationController.checkNotifPermission(req, res)
 
         try {
             const {notificationClass, id} = req.params;
@@ -219,7 +245,7 @@ export class NotificationController {
 
     // API для отправки уведомления
     static async sendNotification(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkPermission(req, res)
+        NotificationController.checkNotifPermission(req, res)
 
         // Проверяем права админа
         if (!NotificationController.isAdmin(req.user)) {
@@ -248,13 +274,12 @@ export class NotificationController {
         return user.isAdministrator === true;
     }
 
-    private static checkPermission(req: ReqType, res: ResType): void {
+    private static checkNotifPermission(req: ReqType, res: ResType): void {
         if (!req.adminizer?.notificationHandler) {
             res.status(500).json({error: 'Notification system not initialized'});
             return;
         }
-
-        // Проверяем аутентификацию
+        // // Проверяем аутентификацию
         if (req.adminizer.config.auth.enable && !req.user) {
             res.status(401).json({error: 'Unauthorized'});
             return;
