@@ -44,9 +44,6 @@ const ViewAll = () => {
 
     const [activeTab, setActiveTab] = useState<string>(getInitialTab());
 
-    useEffect(() => {
-        console.log(tabs)
-    }, [tabs]);
 
     // Обновляем активную табу при изменении URL
     useEffect(() => {
@@ -81,7 +78,6 @@ const ViewAll = () => {
     }, [allNotifications, activeTab]);
 
     const handleTabChange = async (tab: string) => {
-        console.log(tab)
         router.get(page.url, {type: tab}, {
             preserveState: true,
             preserveScroll: true,
@@ -146,7 +142,7 @@ const ViewAll = () => {
 
     return (
         <div className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-end justify-between">
                 <h1 className="font-bold text-xl">{page.props.title}</h1>
                 <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
             </div>

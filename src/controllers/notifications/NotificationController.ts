@@ -6,9 +6,7 @@ import {INotification} from "../../interfaces/types";
 export class NotificationController {
 
     static async viewAll(req: ReqType, res: ResType) {
-        if (!req.user) {
-            return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-        }
+        NotificationController.checkNotifPermission(req, res)
 
         return req.Inertia.render({
             component: 'notification',
@@ -19,10 +17,13 @@ export class NotificationController {
     }
 
     static async getNotificationClasses(req: ReqType, res: ResType) {
-        const services = req.adminizer.notificationHandler.getAllServices()
+        NotificationController.checkNotifPermission(req, res)
+
+        console.log(req.user)
+        const services = req.adminizer.notificationHandler.getAllServices();
         let activeServices = []
 
-        for (let service of services) {
+        for (const service of services) {
             // Получаем только клиентов текущего пользователя
             const userClients = service.getUserClients(req.user.id);
 
@@ -154,9 +155,8 @@ export class NotificationController {
                 res.status(403).json({error: 'Forbidden'});
                 return;
             }
-
-            const notifications = await req.adminizer.notificationHandler.getNotifications(
-                notificationClass,
+            const service = req.adminizer.notificationHandler.getService(notificationClass);
+            const notifications = await service.getNotifications(
                 req.user?.id,
                 Number(limit),
                 Number(skip),
@@ -173,6 +173,7 @@ export class NotificationController {
     // API для получения всех уведомлений пользователя
     static async getUserNotifications(req: ReqType, res: ResType): Promise<void> {
         NotificationController.checkNotifPermission(req, res);
+
         const {limit = 4, skip = 0, unreadOnly = false} = req.query;
 
         try {
@@ -217,13 +218,9 @@ export class NotificationController {
         try {
             const {notificationClass, id} = req.params;
 
-            // Проверяем права доступа для системных уведомлений
-            if (notificationClass === 'system' && !NotificationController.isAdmin(req.user)) {
-                res.status(403).json({error: 'Forbidden: Admin access required'});
-                return;
-            }
+            const service = req.adminizer.notificationHandler.getService(notificationClass);
+            await service.markAsRead(req.user.id, id);
 
-            await req.adminizer.notificationHandler.markAsRead(notificationClass, id, req.user.id);
             res.json({success: true});
         } catch (error) {
             Adminizer.log.error('Error marking notification as read:', error);
@@ -232,36 +229,17 @@ export class NotificationController {
     }
 
     static async markAllAsRead(req: ReqType, res: ResType): Promise<void> {
+        NotificationController.checkNotifPermission(req, res)
+
         try {
-            await req.adminizer.notificationHandler.markAllAsRead(req.user.id);
+            const services = req.adminizer.notificationHandler.getAllServices();
+
+            for (const service of services) {
+                await service.markAllAsRead(req.user.id);
+            }
             res.json({success: true});
         } catch (error) {
             Adminizer.log.error('Error marking all notifications as read:', error);
-            res.status(500).json({error: 'Internal server error'});
-        }
-    }
-
-    // API для отправки уведомления
-    static async sendNotification(req: ReqType, res: ResType): Promise<void> {
-        NotificationController.checkNotifPermission(req, res)
-
-        // Проверяем права админа
-        if (!NotificationController.isAdmin(req.user)) {
-            res.status(403).json({error: 'Forbidden: Admin access required'});
-            return;
-        }
-
-        try {
-            const {title, message, type, priority, userId, channel, notificationClass = 'general'} = req.body;
-
-            const notificationId = await req.adminizer.notificationHandler.dispatchNotification(
-                notificationClass,
-                {title, message, userId, channel}
-            );
-
-            res.json({success: true, id: notificationId});
-        } catch (error) {
-            Adminizer.log.error('Error sending notification:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
