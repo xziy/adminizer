@@ -31,9 +31,7 @@ export class NotificationController {
             }
         }
 
-        return res.json({
-            activeServices: activeServices,
-        })
+        return res.json(activeServices)
     }
 
     // Единый SSE endpoint для всех уведомлений

@@ -24,6 +24,7 @@ const ViewAll = () => {
         allNotifications,
         markAsRead,
         markAllAsRead,
+        tabs,
         fetchAllNotifications,
         paginateNotifications,
         refreshBellNotifications
@@ -38,17 +39,14 @@ const ViewAll = () => {
     // Получаем активную табу из query параметров
     const getInitialTab = () => {
         const url = new URL(page.url, window.location.origin);
-        const typeParam = url.searchParams.get('type');
-        if (typeParam === 'system' && page.props.auth.user.isAdministrator) {
-            return 'system';
-        }
-        if (typeParam === 'general') {
-            return 'general';
-        }
-        return 'general';
+        return url.searchParams.get('type') ?? 'general';
     };
 
     const [activeTab, setActiveTab] = useState<string>(getInitialTab());
+
+    useEffect(() => {
+        console.log(tabs)
+    }, [tabs]);
 
     // Обновляем активную табу при изменении URL
     useEffect(() => {
@@ -132,21 +130,21 @@ const ViewAll = () => {
         currentSkipRef.current = currentSkipRef.current + 20;
     }, [hasMore, localLoading, activeTab, paginateNotifications]);
 
-    const renderContent = (viewType: 'general' | 'system') => {
+    const renderContent = (viewType: string) => {
         if (localLoading) {
             return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
         }
-        if (!localLoading && allNotifications.length > 0) {
-            return viewType === 'general'
-                ? <General notifications={filteredNotifications}
-                           onMarkAsRead={handleMarkAsRead}
-                           onLoadMore={handleLoadMore}
-                           hasMore={hasMore}
-                />
-                : <System notifications={filteredNotifications}
+        if (!localLoading && filteredNotifications.length > 0) {
+            return viewType === 'system'
+                ? <System notifications={filteredNotifications}
                           onMarkAsRead={handleMarkAsRead}
                           onLoadMore={handleLoadMore}
                           hasMore={hasMore}
+                />
+                : <General notifications={filteredNotifications}
+                           onMarkAsRead={handleMarkAsRead}
+                           onLoadMore={handleLoadMore}
+                           hasMore={hasMore}
                 />;
         } else {
             return <div className="text-center font-medium mt-8">No notifications found</div>;
@@ -162,25 +160,20 @@ const ViewAll = () => {
 
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="w-full mb-4">
-                    <TabsTrigger
-                        value="general"
-                        disabled={localLoading}
-                    >
-                        General
-                    </TabsTrigger>
-                    {page.props.auth.user.isAdministrator &&
+                    {tabs.map(tab => (
                         <TabsTrigger
-                            value="system"
+                            key={tab}
+                            value={tab}
                             disabled={localLoading}
+                            className="capitalize"
                         >
-                            System
+                            {tab}
                         </TabsTrigger>
-                    }
+                    ))}
                 </TabsList>
-                <TabsContent value="general">{renderContent('general')}</TabsContent>
-                {page.props.auth.user.isAdministrator &&
-                    <TabsContent value="system">{renderContent('system')}</TabsContent>
-                }
+                {tabs.map(tab => (
+                    <TabsContent key={tab} value={tab}>{renderContent(tab)}</TabsContent>
+                ))}
             </Tabs>
         </div>
     );
