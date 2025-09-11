@@ -244,12 +244,6 @@ export class NotificationController {
         }
     }
 
-    // Проверка прав администратора
-    private static isAdmin(user: UserAP): boolean {
-        if (!user) return false;
-        return user.isAdministrator === true;
-    }
-
     private static checkNotifPermission(req: ReqType, res: ResType): void {
         if (!req.adminizer?.notificationHandler) {
             res.status(500).json({error: 'Notification system not initialized'});
