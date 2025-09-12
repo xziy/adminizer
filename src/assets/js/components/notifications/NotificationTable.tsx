@@ -96,7 +96,7 @@ export const NotificationTable = (
 
     return (
         <div>
-            <Table wrapperHeight="max-h-[75vh]" ref={tableContent}>
+            <Table wrapperHeight="max-h-[70vh]" ref={tableContent}>
                 <TableHeader className="sticky top-0 bg-background shadow z-1">
                     <TableRow>
                         <TableHead className="p-2 text-left"></TableHead>

@@ -4,6 +4,26 @@ import {SystemNotificationService} from "../../lib/notifications/SystemNotificat
 import {INotification} from "../../interfaces/types";
 
 export class NotificationController {
+    static async search(req: ReqType, res: ResType) {
+        NotificationController.checkNotifPermission(req, res)
+
+        if(req.method.toUpperCase() === 'POST') {
+            const {s, notificationClass} = req.body;
+            const hasPermission = req.adminizer.accessRightsHelper.hasPermission(
+                `notification-${notificationClass}`,
+                req.user
+            );
+
+            if (!hasPermission) {
+                res.status(403).json({error: 'Forbidden'});
+                return;
+            }
+
+            const service = req.adminizer.notificationHandler.getService(notificationClass);
+
+            res.json(await service.search(s, req.user.id));
+        }
+    }
 
     static async viewAll(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)

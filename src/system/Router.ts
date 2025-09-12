@@ -149,18 +149,10 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAllAsRead)
             );
 
-            // adminizer.app.get(
-            //     `${adminizer.config.routePrefix}/api/notifications-all`,
-            //     adminizer.policyManager.bindPolicies(policies, NotificationController.getAllUserNotifications)
-            // );
-
-            // adminizer.app.post(
-            //     `${adminizer.config.routePrefix}/api/notifications/send`,
-            //     adminizer.policyManager.bindPolicies([...policies, 'isAdmin'],
-            //         (req: ReqType, res: ResType) => NotificationController.sendNotification(req, res)
-            //     )
-            // );
-
+            adminizer.app.post(
+                `${adminizer.config.routePrefix}/api/notifications/search`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.search)
+            );
         }
         /**
          * List of records

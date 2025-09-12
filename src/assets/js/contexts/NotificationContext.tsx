@@ -12,6 +12,7 @@ interface NotificationContextType {
     markAllAsRead: () => Promise<void>;
     fetchAllNotifications: (type: string) => Promise<INotification[]>;
     paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
+    search: (s: string, type: string) => Promise<void>;
     getTabs: () => Promise<void>;
     tabs: string[];
     loading: boolean;
@@ -51,6 +52,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             setTabs(res.data);
         } catch (error) {
             console.error('Error fetching tabs:', error);
+        }
+    }
+
+    const search = async (s: string, type: string) => {
+        try {
+            if (!s) {
+                await fetchAllNotifications(type);
+                return;
+            }
+
+            const res = await axios.post(`${window.routePrefix}/api/notifications/search`, {
+                s: s,
+                notificationClass: type
+            });
+            setLoadedNotifications(res.data);
+        } catch (error) {
+            console.error('Error searching notifications:', error);
         }
     }
 
@@ -155,6 +173,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             unreadCount,
             getTabs,
             tabs,
+            search,
             markAsRead,
             markAllAsRead,
             fetchAllNotifications,
