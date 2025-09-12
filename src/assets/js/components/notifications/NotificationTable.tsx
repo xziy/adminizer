@@ -98,7 +98,8 @@ export const NotificationTable = (
         <div>
             <Table wrapperHeight="max-h-[70vh]" ref={tableContent}>
                 <TableHeader className="sticky top-0 bg-background shadow z-1">
-                    <TableRow>
+                    <TableRow
+                        className={`grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
                         <TableHead className="p-2 text-left"></TableHead>
                         <TableHead className="p-2 text-left">Title</TableHead>
                         <TableHead className="p-2 text-left">Message</TableHead>
@@ -109,7 +110,7 @@ export const NotificationTable = (
                 <TableBody>
                     {uniqueNotifications.map((notification) => (
                         <TableRow key={notification.id}
-                                  className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''}`}>
+                                  className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''} grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
                             <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} pt-2.5`}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
