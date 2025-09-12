@@ -35,6 +35,8 @@ const ViewAll = () => {
     const [localLoading, setLocalLoading] = useState(true);
     const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
     const [hasMore, setHasMore] = useState(true);
+    const [readLoading, setReadLoading] = useState(false);
+
 
     // Используем ref для хранения текущего skip
     const currentSkipRef = useRef(20);
@@ -102,8 +104,10 @@ const ViewAll = () => {
     // Используем useCallback для стабильной ссылки на функцию
     const markAllRead = async () => {
         try {
+            setReadLoading(true);
             await markAllAsRead();
             await refreshBellNotifications();
+            setReadLoading(false)
         } catch (error) {
             console.log(error);
         }
@@ -146,7 +150,9 @@ const ViewAll = () => {
     const performSearch = async (s: string) => {
         setLocalLoading(true);
         await search(s, activeTab)
-        setTimeout(() => {setLocalLoading(false)}, 0)
+        setTimeout(() => {
+            setLocalLoading(false)
+        }, 0)
     }
 
     const handleSearch = debounce(performSearch, 500)
@@ -159,7 +165,9 @@ const ViewAll = () => {
                     <Input
                         type="search"
                         placeholder="Search"
-                        onChange={(e) => {handleSearch(e.target.value)}}
+                        onChange={(e) => {
+                            handleSearch(e.target.value)
+                        }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
@@ -168,7 +176,10 @@ const ViewAll = () => {
                         }}
                         className="w-[200px] p-2 border rounded"
                     />
-                    <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                    <div className="flex items-center gap-2">
+                        {readLoading && <LoaderCircle className="size-6 animate-spin"/>}
+                        <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                    </div>
                 </div>
             </div>
 
