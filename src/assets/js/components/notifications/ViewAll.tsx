@@ -8,6 +8,8 @@ import System from "@/components/notifications/System.tsx";
 import {useNotifications} from '@/contexts/NotificationContext';
 import {INotification} from '../../../../interfaces/types';
 import {Button} from "@/components/ui/button.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {debounce} from "lodash-es";
 
 interface NotificationProps extends SharedData {
     title: string
@@ -25,6 +27,7 @@ const ViewAll = () => {
         markAsRead,
         markAllAsRead,
         tabs,
+        search,
         fetchAllNotifications,
         paginateNotifications,
         refreshBellNotifications
@@ -140,11 +143,33 @@ const ViewAll = () => {
         }
     };
 
+    const performSearch = async (s: string) => {
+        setLocalLoading(true);
+        await search(s, activeTab)
+        setTimeout(() => {setLocalLoading(false)}, 0)
+    }
+
+    const handleSearch = debounce(performSearch, 500)
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
-            <div className="flex items-end justify-between">
+            <div className="flex flex-col gap-4">
                 <h1 className="font-bold text-xl">{page.props.title}</h1>
-                <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                <div className="flex justify-between items-center">
+                    <Input
+                        type="search"
+                        placeholder="Search"
+                        onChange={(e) => {handleSearch(e.target.value)}}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                performSearch(e.currentTarget.value);
+                            }
+                        }}
+                        className="w-[200px] p-2 border rounded"
+                    />
+                    <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                </div>
             </div>
 
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>

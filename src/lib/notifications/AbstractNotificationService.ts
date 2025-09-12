@@ -174,40 +174,71 @@ export abstract class AbstractNotificationService extends EventEmitter {
             } else {
                 query.id = notificationIds;
             }
-            let notificationsDB: NotificationAPModel[];
 
             if (query.id.length === 0) return []
 
-            notificationsDB = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
+            const notificationsDB: NotificationAPModel[] = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
                 where: query,
                 sort: 'createdAt DESC',
                 limit: limit,
                 skip: skip
             });
 
-            let notifications: INotification[] = [];
-
-            for (const notification of notificationsDB) {
-                let readStatus = false;
-
-                // Получаем статус прочтения из UserNotificationAP
-                const userNotification = await this.getUserNotification(notification.id, userId);
-                readStatus = userNotification ? userNotification.read : false;
-
-                notifications.push({
-                    ...notification,
-                    read: readStatus,
-                    icon: {
-                        icon: this.icon,
-                        iconColor: this.iconColor
-                    },
-                });
-            }
-
-            return notifications;
+            return await this.prepareNotification(notificationsDB, userId);
 
         } catch (error) {
             Adminizer.log.error('Error fetching notifications:', error);
+            return [];
+        }
+    }
+
+    protected async prepareNotification(notificationsDB: NotificationAPModel[], userId: number): Promise<INotification[]> {
+        let notifications: INotification[] = [];
+
+        for (const notification of notificationsDB) {
+            let readStatus = false;
+
+            // Получаем статус прочтения из UserNotificationAP
+            const userNotification = await this.getUserNotification(notification.id, userId);
+            readStatus = userNotification ? userNotification.read : false;
+
+            notifications.push({
+                ...notification,
+                read: readStatus,
+                icon: {
+                    icon: this.icon,
+                    iconColor: this.iconColor
+                },
+            });
+        }
+
+        return notifications;
+    }
+
+    async search(s: string, userId: number): Promise<INotification[]> {
+        try {
+            const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
+                where: {
+                    userId: userId
+                }
+            }, {populate: [['notificationId', {}]]});
+
+            const notificationIds = userNotifications.map((un: any) => un.notificationId.id);
+
+            if (notificationIds.length === 0) return []
+
+            const notificationsDB: NotificationAPModel[] = await this.adminizer.modelHandler.model.get('notificationap')["_find"]({
+                where: {
+                    message: {contains: s},
+                    id: notificationIds,
+                    notificationClass: this.notificationClass
+                },
+                sort: "createdAt DESC"
+            });
+
+            return await this.prepareNotification(notificationsDB, userId);
+        } catch (error) {
+            Adminizer.log.error('Error searching notifications:', error);
             return [];
         }
     }
@@ -239,4 +270,6 @@ export abstract class AbstractNotificationService extends EventEmitter {
             Adminizer.log.error('Error marking all notifications as read:', error);
         }
     }
+
+
 }
