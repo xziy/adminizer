@@ -261,7 +261,7 @@ export class Adminizer {
         await bindAuthorization(this);
 
         // Bind notifications
-        if (this.config.notification.enabled) await bindNotifications(this);
+        if (this.config.notifications.enabled) await bindNotifications(this);
 
         await Router.bind(this); // must be after binding policies and req/res functions
 

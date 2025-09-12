@@ -19,7 +19,8 @@ export class NotificationController {
     static async getNotificationClasses(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)
 
-        // console.dir(req.user, {depth: null});
+        if(req.adminizer.config.notifications.enabled === false) return res.json([])
+
         const services = req.adminizer.notificationHandler.getAllServices();
         let activeServices = []
 
