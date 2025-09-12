@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INotification } from '../../../interfaces/types';
 import axios from 'axios';
+import {usePage} from "@inertiajs/react";
+import {SharedData} from "@/types";
 
 interface NotificationContextType {
     bellNotifications: INotification[];
@@ -24,6 +26,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
     const [tabs, setTabs] = useState<string[]>([]);
+    const page = usePage<SharedData>()
 
     const allNotifications = [...sseNotifications, ...loadedNotifications];
 
@@ -83,6 +86,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
 
     useEffect(() => {
+        if(!page.props.notifications) return
+
         fetchBellNotifications();
 
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);

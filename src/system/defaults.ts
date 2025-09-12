@@ -152,7 +152,7 @@ let adminpanelConfig: AdminpanelConfig = {
     bind: {
         public: true
     },
-    notification: {
+    notifications: {
         enabled: false
     }
 }

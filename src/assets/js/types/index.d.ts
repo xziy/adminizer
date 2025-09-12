@@ -41,7 +41,7 @@ export interface SharedData {
     logoutBtn: string
     flash: Record<FlashMessages, string>;
     auth: Auth;
-
+    notifications: boolean;
     [key: string]: unknown;
 }
 

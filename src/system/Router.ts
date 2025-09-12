@@ -114,7 +114,7 @@ export default class Router {
         /**
          * Notifications
          */
-        if (adminizer.config.notification.enabled) {
+        if (adminizer.config.notifications.enabled) {
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.viewAll)

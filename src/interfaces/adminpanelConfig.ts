@@ -251,7 +251,7 @@ export interface AdminpanelConfig {
         public: boolean
     }
 
-    notification?: {
+    notifications?: {
         enabled: boolean
     }
 }
