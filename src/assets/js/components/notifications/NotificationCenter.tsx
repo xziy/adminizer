@@ -17,7 +17,7 @@ import {router} from '@inertiajs/react'
 
 export function NotificationCenter() {
 
-    const {bellNotifications, markAsRead, unreadCount, refreshBellNotifications} = useNotifications();
+    const {bellNotifications, markAsRead, unreadCount, refreshBellNotifications, messages} = useNotifications();
     const [Rloading, setRLoading] = useState(false);
 
     const handleMarkAsRead = async (notificationClass: string, id: string) => {
@@ -108,12 +108,6 @@ export function NotificationCenter() {
                                         </div>
                                         <div className="col-start-2 flex justify-between flex-nowrap items-center">
                                             <div className="flex flex-nowrap gap-2 items-center">
-                                                {notification.notificationClass === 'general' ? (
-                                                    <div className="font-medium">Info</div>
-                                                ) : (
-                                                    <div className="font-medium">Activity</div>
-                                                )}
-                                                <span>&#9679;</span>
                                                 <div>{getRelativeTime(notification.createdAt)}</div>
                                             </div>
                                             <Tooltip>
@@ -127,7 +121,7 @@ export function NotificationCenter() {
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent side="left" className="z-[1003]">
-                                                    <p>Make read</p>
+                                                    <p>{messages["Make read"]}</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </div>
@@ -141,7 +135,7 @@ export function NotificationCenter() {
                 <Button variant="secondary" asChild>
                     <Link href={`${window.routePrefix}/notifications?type=general`}
                           className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        View All
+                        {messages["View All"]}
                         {Rloading &&
                             <LoaderCircle className="h-4 w-4 animate-spin"/>}
                     </Link>

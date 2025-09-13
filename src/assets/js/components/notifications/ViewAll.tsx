@@ -30,13 +30,14 @@ const ViewAll = () => {
         search,
         fetchAllNotifications,
         paginateNotifications,
-        refreshBellNotifications
+        refreshBellNotifications,
+        messages
     } = useNotifications();
     const [localLoading, setLocalLoading] = useState(true);
     const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
     const [hasMore, setHasMore] = useState(true);
     const [readLoading, setReadLoading] = useState(false);
-
+    const [loadingMore, setLoadingMore] = useState(false);
 
     // Используем ref для хранения текущего skip
     const currentSkipRef = useRef(20);
@@ -115,7 +116,7 @@ const ViewAll = () => {
 
     const handleLoadMore = useCallback(async () => {
         if (!hasMore || localLoading) return;
-
+        setLoadingMore(true);
         const newNotifications = await paginateNotifications(activeTab, currentSkipRef.current);
 
         if (newNotifications.length < 20) {
@@ -124,6 +125,7 @@ const ViewAll = () => {
 
         // Обновляем оба значения
         currentSkipRef.current = currentSkipRef.current + 20;
+        setLoadingMore(false)
     }, [hasMore, localLoading, activeTab, paginateNotifications]);
 
     const renderContent = (viewType: string) => {
@@ -134,12 +136,16 @@ const ViewAll = () => {
             return viewType === 'system'
                 ? <System notifications={filteredNotifications}
                           onMarkAsRead={handleMarkAsRead}
+                          loadingMore={loadingMore}
+                          messages={messages}
                           onLoadMore={handleLoadMore}
                           hasMore={hasMore}
                 />
                 : <General notifications={filteredNotifications}
                            onMarkAsRead={handleMarkAsRead}
                            onLoadMore={handleLoadMore}
+                           messages={messages}
+                           loadingMore={loadingMore}
                            hasMore={hasMore}
                 />;
         } else {
@@ -148,6 +154,8 @@ const ViewAll = () => {
     };
 
     const performSearch = async (s: string) => {
+        currentSkipRef.current = 20
+        setHasMore(true)
         setLocalLoading(true);
         await search(s, activeTab)
         setTimeout(() => {
@@ -164,7 +172,7 @@ const ViewAll = () => {
                 <div className="flex justify-between items-center">
                     <Input
                         type="search"
-                        placeholder="Search"
+                        placeholder={messages["Search"]}
                         onChange={(e) => {
                             handleSearch(e.target.value)
                         }}
@@ -178,7 +186,7 @@ const ViewAll = () => {
                     />
                     <div className="flex items-center gap-2">
                         {readLoading && <LoaderCircle className="size-6 animate-spin"/>}
-                        <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                        <Button variant="green" size="sm" onClick={markAllRead}>{messages["Make all read"]}</Button>
                     </div>
                 </div>
             </div>
