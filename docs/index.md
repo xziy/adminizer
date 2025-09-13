@@ -15,6 +15,7 @@
 
 * [Localization](Configuration/Localization.md)
 * [Icons](Icons.md)
+* [Notifications](Notifications.md)
 ## 3. Frontend Integration
 
 * [Inertia Adapter & Flash](InertiaAdapter.md)
