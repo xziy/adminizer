@@ -14,6 +14,8 @@ interface NotificationContextType {
     paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
     search: (s: string, type: string) => Promise<void>;
     getTabs: () => Promise<void>;
+    getLocale: () => Promise<void>;
+    messages: Record<string, string>;
     tabs: string[];
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
@@ -28,6 +30,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [loading, setLoading] = useState(false);
     const [tabs, setTabs] = useState<string[]>([]);
     const page = usePage<SharedData>()
+    const [messages, setMessages] = useState<Record<string, string>>({});
 
     const allNotifications = [...sseNotifications, ...loadedNotifications];
 
@@ -41,6 +44,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             console.error('Error fetching bell notifications:', error);
         }
     };
+
+    const getLocale = async () => {
+        try {
+            const res = await axios.post(`${window.routePrefix}/notifications`);
+
+            setMessages(res.data);
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const refreshBellNotifications = async () => {
         await fetchBellNotifications();
@@ -105,6 +118,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     useEffect(() => {
         if(!page.props.notifications) return
+
+        getLocale()
 
         fetchBellNotifications();
 
@@ -176,6 +191,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             search,
             markAsRead,
             markAllAsRead,
+            getLocale,
+            messages,
             fetchAllNotifications,
             paginateNotifications,
             loading,
