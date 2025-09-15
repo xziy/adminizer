@@ -673,7 +673,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
 /** SequelizeAdapter — адаптер, заменяющий WaterlineAdapter */
 export class SequelizeAdapter extends AbstractAdapter {
     public Model = SequelizeModel;
-
+    public alter = false;
     constructor(private sequelize: Sequelize) {
         super("sequelize", sequelize);
     }
@@ -702,7 +702,7 @@ export class SequelizeAdapter extends AbstractAdapter {
     }
 
     /**Registration of system models*/
-    static async registerSystemModels(sequelize: Sequelize): Promise<void> {
+    static async registerSystemModels(sequelize: Sequelize, alter = false): Promise<void> {
         let modelsDir = path.resolve(import.meta.dirname, "../../../../models");
         if (!fs.existsSync(modelsDir)) {
             modelsDir = path.resolve(import.meta.dirname, "../../../../src/models");
@@ -733,7 +733,9 @@ export class SequelizeAdapter extends AbstractAdapter {
 
         generateAssociationsFromSchema(sequelize.models, schemas);
 
-        await sequelize.sync();
+        if (alter === true) {
+            await sequelize.sync();
+        }
     }
 }
 
