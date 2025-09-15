@@ -702,7 +702,7 @@ export class SequelizeAdapter extends AbstractAdapter {
     }
 
     /**Registration of system models*/
-    static async registerSystemModels(sequelize: Sequelize, alter = false): Promise<void> {
+    static async registerSystemModels(sequelize: Sequelize, alter = true): Promise<void> {
         let modelsDir = path.resolve(import.meta.dirname, "../../../../models");
         if (!fs.existsSync(modelsDir)) {
             modelsDir = path.resolve(import.meta.dirname, "../../../../src/models");
