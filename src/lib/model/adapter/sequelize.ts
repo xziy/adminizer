@@ -34,7 +34,11 @@ function generateAssociationsFromSchema(
                 const targetSchema = schemas[field.collection];
                 const inverseField = targetSchema?.[field.via];
 
-                const throughTableName = [modelName, field.collection].sort().join("");
+                // Normalize join table to lowercase for consistency across dialects
+                const throughTableName = [modelName, field.collection]
+                    .sort()
+                    .join("")
+                    .toLowerCase();
 
                 // 💡 M:N связь
                 if (inverseField && inverseField.collection === modelName) {

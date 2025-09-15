@@ -19,3 +19,6 @@
 
 ## 4.2.2
 - Explicit foreign key names now avoid collisions between attributes and associations in Sequelize.
+
+## 4.3.1
+- Added TypeScript Umzug migration for system models at `src/migrations/umzug/0001.ts` (SQLite fixture-compatible). Join table naming normalized to lowercase (`groupapuserap`). Updated docs in `docs/Database-Migrations-Umzug.md` and examples for tsx-based runs.
