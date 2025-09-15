@@ -1,5 +1,5 @@
-import { migrationsUmzug as umzug } from "./umzug";
+import { umzugExports } from "./umzugExports";
 
 export const migrations = {
-    umzug
+    umzug: umzugExports
 }
