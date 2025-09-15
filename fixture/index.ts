@@ -1,16 +1,13 @@
 import {Adminizer} from "../dist";
 import http from 'http';
-import {WaterlineAdapter, WaterlineModel} from "../dist/lib/v4/model/adapter/waterline";
+import {WaterlineAdapter, WaterlineModel} from "../dist/lib/model/adapter/waterline";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import ExampleWaterline from "./models/Example";
 import TestWaterline from "./models/Test";
+import TestCatalogWaterline from "./models/TestCatalog";
 import JsonSchemaWaterline from "./models/JsonSchema";
 import CategoryWaterline from "./models/Category";
-import CatalogGroupNav from "./models/CatalogGroupNav";
-import CatalogPageNav from "./models/CatalogPageNav";
-import GroupCatalog from "./models/GroupCatalog";
-import UserWaterline from "./models/User";
 import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
@@ -28,7 +25,7 @@ import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
 import {Test as TestSequelize} from "./models/sequelize/Test";
 import {Category as CategorySequelize} from "./models/sequelize/Category";
 import {TestCatalog as TestCatalogSequelize} from "./models/sequelize/TestCatalog";
-import {SequelizeAdapter} from "../dist/lib/v4/model/adapter/sequelize";
+import {SequelizeAdapter} from "../dist/lib/model/adapter/sequelize";
 import {seedDatabase} from "./helpers/seedDatabase";
 
 
@@ -60,10 +57,7 @@ if (ormType === "waterline") {
     orm.registerModel(TestWaterline);
     orm.registerModel(JsonSchemaWaterline);
     orm.registerModel(CategoryWaterline);
-    orm.registerModel(CatalogGroupNav);
-    orm.registerModel(CatalogPageNav);
-    orm.registerModel(GroupCatalog);
-    orm.registerModel(UserWaterline);
+    orm.registerModel(TestCatalogWaterline);
 
     const ontology = await new Promise<any>((resolve, reject) => {
         orm.initialize(waterlineConfig as any, (err, ontology) => {
@@ -195,7 +189,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
         /** Test notifications */
-        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 15, delayMs: 1000}), 10000); // Начальная задержка 10 секунд
+        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 10000); // Начальная задержка 10 секунд
 
     } catch (e) {
         console.log(e)

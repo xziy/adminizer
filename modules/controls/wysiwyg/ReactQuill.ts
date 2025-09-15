@@ -1,4 +1,4 @@
-import {AbstractControls, ControlType, Config, Path} from "../../../dist/lib/v4/controls/AbstractControls";
+import {AbstractControls, ControlType, Config, Path} from "../../../dist/lib/controls/AbstractControls";
 import {Adminizer} from "../../../dist";
 
 export class ReactQuill extends AbstractControls {

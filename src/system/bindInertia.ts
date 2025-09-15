@@ -1,5 +1,5 @@
-import flash from "../lib/v4/inertia/flash";
-import inertia, {Page} from "../lib/v4/inertia/inertiaAdapter";
+import flash from "../lib/inertia/flash";
+import inertia, {Page} from "../lib/inertia/inertiaAdapter";
 import fs from "fs";
 import path from "node:path";
 import {Adminizer} from "../lib/Adminizer";
@@ -153,7 +153,8 @@ export function bindInertia(adminizer: Adminizer) {
                     }))
                 )
             ] : null,
-            showVersion: req.adminizer.config.showVersion ?? false
+            showVersion: req.adminizer.config.showVersion ?? false,
+            notifications: req.adminizer.config.notifications.enabled ?? false,
         });
 
         next();

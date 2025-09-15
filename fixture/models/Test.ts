@@ -8,7 +8,7 @@ const Test = Waterline.Collection.extend({
 		// @ts-ignore
 		id: { type: "number", autoMigrations: { autoIncrement: true } },
 		title: { type: "string", required: true },
-        example: { model: "Example" },
+        example: { model: "example" },
 
 		owner: { 
 			model: 'UserAP'

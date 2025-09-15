@@ -1,7 +1,7 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
 import {deleteRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
-import {ModelAnyField, ModelAnyInstance} from "../lib/v4/model/AbstractModel";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {ModelAnyField, ModelAnyInstance} from "../lib/model/AbstractModel";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 import {diff} from "deep-object-diff";
@@ -76,19 +76,7 @@ export default async function remove(req: ReqType, res: ResType) {
     }
 
     if (destroyedRecord) {
-        const cleanRecordBeforeDelete = sanitizeForDiff(destroyedRecord[0]);
-        const changesDiff = diff(cleanRecordBeforeDelete, {});
-        const formattedChanges = formatChanges(changesDiff, cleanRecordBeforeDelete, {});
 
-        // log system event notification с diff
-        await req.adminizer.logSystemDeletedEvent(
-            req.i18n.__('Deleted'),
-            `user ${req.user.login} ${req.i18n.__('delete')} ${entity.name} ${destroyedRecord[0].id}`,
-            {
-                changes: formattedChanges,
-                summary: `${req.i18n.__('Deleted')} ${formattedChanges.length} ${req.i18n.__('fields')}`
-            }
-        );
 
         req.flash.setFlashMessage('success', req.i18n.__('Record was removed successfully !'));
 

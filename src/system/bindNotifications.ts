@@ -1,7 +1,7 @@
 import { Adminizer } from '../lib/Adminizer';
-import { NotificationHandler } from '../lib/v4/notifications/NotificationHandler';
-import { GeneralNotificationService } from '../lib/v4/notifications/GeneralNotificationService';
-import { SystemNotificationService } from '../lib/v4/notifications/SystemNotificationService';
+import { NotificationHandler } from '../lib/notifications/NotificationHandler';
+import { GeneralNotificationService } from '../lib/notifications/GeneralNotificationService';
+import { SystemNotificationService } from '../lib/notifications/SystemNotificationService';
 
 export async function bindNotifications(adminizer: Adminizer): Promise<void> {
     // Создаем хендлер

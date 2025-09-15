@@ -1,12 +1,15 @@
-import { SharedData } from "@/types";
-import { usePage, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { LoaderCircle } from "lucide-react";
+import {SharedData} from "@/types";
+import {router, usePage} from "@inertiajs/react";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import {LoaderCircle} from "lucide-react";
 import General from "@/components/notifications/General.tsx";
 import System from "@/components/notifications/System.tsx";
-import { useNotifications } from '@/contexts/NotificationContext';
-import { INotification } from '../../../../interfaces/types';
+import {useNotifications} from '@/contexts/NotificationContext';
+import {INotification} from '../../../../interfaces/types';
+import {Button} from "@/components/ui/button.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {debounce} from "lodash-es";
 
 interface NotificationProps extends SharedData {
     title: string
@@ -19,25 +22,33 @@ interface NotificationProps extends SharedData {
 
 const ViewAll = () => {
     const page = usePage<NotificationProps & { url: string }>();
-    const { allNotifications, markAsRead, fetchAllNotifications, loading: contextLoading, refreshBellNotifications } = useNotifications();
+    const {
+        allNotifications,
+        markAsRead,
+        markAllAsRead,
+        tabs,
+        search,
+        fetchAllNotifications,
+        paginateNotifications,
+        refreshBellNotifications
+    } = useNotifications();
     const [localLoading, setLocalLoading] = useState(true);
     const [filteredNotifications, setFilteredNotifications] = useState<INotification[]>([]);
+    const [hasMore, setHasMore] = useState(true);
+    const [readLoading, setReadLoading] = useState(false);
+
+
+    // Используем ref для хранения текущего skip
+    const currentSkipRef = useRef(20);
 
     // Получаем активную табу из query параметров
     const getInitialTab = () => {
         const url = new URL(page.url, window.location.origin);
-        const typeParam = url.searchParams.get('type');
-        // Проверяем, что тип валидный и пользователь имеет доступ
-        if (typeParam === 'system' && page.props.auth.user.isAdministrator) {
-            return 'system';
-        }
-        if (typeParam === 'general') {
-            return 'general';
-        }
-        return 'general'; // значение по умолчанию
+        return url.searchParams.get('type') ?? 'general';
     };
 
     const [activeTab, setActiveTab] = useState<string>(getInitialTab());
+
 
     // Обновляем активную табу при изменении URL
     useEffect(() => {
@@ -45,11 +56,6 @@ const ViewAll = () => {
         const typeParam = url.searchParams.get('type');
 
         if (typeParam && typeParam !== activeTab) {
-            // Проверяем доступ для системных уведомлений
-            if (typeParam === 'system' && !page.props.auth.user.isAdministrator) {
-                setActiveTab('general');
-                return;
-            }
             setActiveTab(typeParam);
         }
     }, [page.url, activeTab, page.props.auth.user.isAdministrator]);
@@ -58,8 +64,12 @@ const ViewAll = () => {
     useEffect(() => {
         const loadData = async () => {
             setLocalLoading(true);
+            currentSkipRef.current = 20; // Сбрасываем ref
+            setHasMore(true);
             await fetchAllNotifications(activeTab);
-            setLocalLoading(false);
+            setTimeout(() => {
+                setLocalLoading(false);
+            }, 0)
         };
         loadData();
     }, [activeTab]);
@@ -73,29 +83,17 @@ const ViewAll = () => {
     }, [allNotifications, activeTab]);
 
     const handleTabChange = async (tab: string) => {
-        // Проверяем доступ для системных уведомлений
-        if (tab === 'system' && !page.props.auth.user.isAdministrator) {
-            return;
-        }
-
-        setActiveTab(tab);
-        setLocalLoading(true);
-
-        // Обновляем URL с query параметром
-        router.get(page.url, { type: tab }, {
+        router.get(page.url, {type: tab}, {
             preserveState: true,
             preserveScroll: true,
             replace: true
         });
 
-        await fetchAllNotifications(tab);
-        setLocalLoading(false);
     };
 
     const handleMarkAsRead = async (notificationClass: string, id: string) => {
         try {
             await markAsRead(notificationClass, id);
-            // После пометки как прочитанное, обновляем колокольчик
             await refreshBellNotifications();
         } catch (error) {
             console.error('Error marking as read:', error);
@@ -103,43 +101,104 @@ const ViewAll = () => {
         }
     };
 
-    const renderContent = (viewType: 'general' | 'system') => {
-        if (localLoading || contextLoading) {
-            return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
+    // Используем useCallback для стабильной ссылки на функцию
+    const markAllRead = async () => {
+        try {
+            setReadLoading(true);
+            await markAllAsRead();
+            await refreshBellNotifications();
+            setReadLoading(false)
+        } catch (error) {
+            console.log(error);
         }
-        if (filteredNotifications.length === 0) {
-            return <div className="text-center font-medium mt-8">No notifications found</div>;
+    }
+
+    const handleLoadMore = useCallback(async () => {
+        if (!hasMore || localLoading) return;
+
+        const newNotifications = await paginateNotifications(activeTab, currentSkipRef.current);
+
+        if (newNotifications.length < 20) {
+            setHasMore(false);
         }
 
-        return viewType === 'general'
-            ? <General notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>
-            : <System notifications={filteredNotifications} onMarkAsRead={handleMarkAsRead}/>;
+        // Обновляем оба значения
+        currentSkipRef.current = currentSkipRef.current + 20;
+    }, [hasMore, localLoading, activeTab, paginateNotifications]);
+
+    const renderContent = (viewType: string) => {
+        if (localLoading) {
+            return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
+        }
+        if (!localLoading && filteredNotifications.length > 0) {
+            return viewType === 'system'
+                ? <System notifications={filteredNotifications}
+                          onMarkAsRead={handleMarkAsRead}
+                          onLoadMore={handleLoadMore}
+                          hasMore={hasMore}
+                />
+                : <General notifications={filteredNotifications}
+                           onMarkAsRead={handleMarkAsRead}
+                           onLoadMore={handleLoadMore}
+                           hasMore={hasMore}
+                />;
+        } else {
+            return <div className="text-center font-medium mt-8">No notifications found</div>;
+        }
     };
+
+    const performSearch = async (s: string) => {
+        setLocalLoading(true);
+        await search(s, activeTab)
+        setTimeout(() => {
+            setLocalLoading(false)
+        }, 0)
+    }
+
+    const handleSearch = debounce(performSearch, 500)
 
     return (
         <div className="flex h-auto flex-1 flex-col gap-4 rounded-xl p-4">
-            <h1 className="font-bold text-xl">{page.props.title}</h1>
+            <div className="flex flex-col gap-4">
+                <h1 className="font-bold text-xl">{page.props.title}</h1>
+                <div className="flex justify-between items-center">
+                    <Input
+                        type="search"
+                        placeholder="Search"
+                        onChange={(e) => {
+                            handleSearch(e.target.value)
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                performSearch(e.currentTarget.value);
+                            }
+                        }}
+                        className="w-[200px] p-2 border rounded"
+                    />
+                    <div className="flex items-center gap-2">
+                        {readLoading && <LoaderCircle className="size-6 animate-spin"/>}
+                        <Button variant="green" size="sm" onClick={markAllRead}>Make all read</Button>
+                    </div>
+                </div>
+            </div>
+
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="w-full mb-4">
-                    <TabsTrigger
-                        value="general"
-                        disabled={localLoading}
-                    >
-                        General
-                    </TabsTrigger>
-                    {page.props.auth.user.isAdministrator &&
+                    {tabs.map(tab => (
                         <TabsTrigger
-                            value="system"
+                            key={tab}
+                            value={tab}
                             disabled={localLoading}
+                            className="capitalize"
                         >
-                            System
+                            {tab}
                         </TabsTrigger>
-                    }
+                    ))}
                 </TabsList>
-                <TabsContent value="general">{renderContent('general')}</TabsContent>
-                {page.props.auth.user.isAdministrator &&
-                    <TabsContent value="system">{renderContent('system')}</TabsContent>
-                }
+                {tabs.map(tab => (
+                    <TabsContent key={tab} value={tab}>{renderContent(tab)}</TabsContent>
+                ))}
             </Tabs>
         </div>
     );
