@@ -568,7 +568,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             include: Object.values(this.model.associations)
         });
 
-        return reloaded.map(r => r.get({plain: true}) as T);
+        return reloaded.map((r: any) => r.get({plain: true}) as T);
     }
 
 
@@ -651,7 +651,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             }
         }
 
-        const raw = records.map(r => r.get({plain: true}));
+        const raw = records.map((r: any) => r.get({plain: true}));
         await this.model.destroy({where});
 
         return raw;
@@ -673,13 +673,13 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     }
 }
 
-
-/** SequelizeAdapter — адаптер, заменяющий WaterlineAdapter */
 export class SequelizeAdapter extends AbstractAdapter {
+    public sequelize: Sequelize;
     public Model = SequelizeModel;
 
-    constructor(private sequelize: Sequelize) {
+    constructor(sequelize: Sequelize) {
         super("sequelize", sequelize);
+        this.sequelize = sequelize;
     }
 
     get models(): Record<string, any> {
@@ -687,57 +687,64 @@ export class SequelizeAdapter extends AbstractAdapter {
     }
 
     getModel(modelName: string): any {
-        const matchedKey = Object.keys(this.sequelize.models).find(
-            key => key.toLowerCase() === modelName.toLowerCase()
-        );
-
+        const matchedKey = Object.keys(this.sequelize.models).find(key => key.toLowerCase() === modelName.toLowerCase());
         if (!matchedKey) {
             return undefined;
         }
-
-
         return this.sequelize.models[matchedKey];
     }
 
     getAttributes(modelName: string): any {
         const model = this.getModel(modelName);
-
         return model?.getAttributes();
     }
 
-    /**Registration of system models*/
-    static async registerSystemModels(sequelize: Sequelize, alter = true): Promise<void> {
-        let modelsDir = path.resolve(import.meta.dirname, "../../../../models");
-        if (!fs.existsSync(modelsDir)) {
-            modelsDir = path.resolve(import.meta.dirname, "../../../../src/models");
-        }
-        let files = fs.readdirSync(modelsDir).filter(f => f.endsWith(".js"));
+    /** Registration of system models */
+    static async registerSystemModels(sequelize: Sequelize, alter: boolean = true): Promise<void> {
+        // Try multiple possible model locations
+        const possiblePaths = [
+            path.resolve(import.meta.dirname, "../../../../models"),
+            path.resolve(import.meta.dirname, "../../../../src/models"),
+            path.resolve(import.meta.dirname, "../../../models"),
+            path.resolve(import.meta.dirname, "../../../src/models"),
+            path.resolve(process.cwd(), "node_modules/adminizer/src/models"),
+            path.resolve(process.cwd(), "node_modules/adminizer/models")
+        ];
 
-        if (!files.length) {
-            files = fs.readdirSync(modelsDir).filter(f =>
-                f.endsWith(".ts") && !f.endsWith(".d.ts")
-            );
+        let modelsDir: string | null = null;
+        for (const possiblePath of possiblePaths) {
+            if (fs.existsSync(possiblePath)) {
+                modelsDir = possiblePath;
+                break;
+            }
         }
 
+        if (!modelsDir) {
+            return;
+        }
+
+        let files = fs.readdirSync(modelsDir).filter((f: string) => f.endsWith(".js"));
         if (!files.length) {
-            throw `Model files not found in dir ${modelsDir}`;
+            files = fs.readdirSync(modelsDir).filter((f: string) => f.endsWith(".ts") && !f.endsWith(".d.ts"));
+        }
+        if (!files.length) {
+            return;
         }
 
         const schemas: Record<string, any> = {};
-
         for (const file of files) {
             const modelName = path.basename(file, path.extname(file));
             const filePath = path.resolve(modelsDir, file);
             const mod = await import(pathToFileURL(filePath).href);
             const definition = mod.default;
-
             schemas[modelName] = definition;
             generateSequelizeModel(sequelize, modelName, definition);
         }
-
         generateAssociationsFromSchema(sequelize.models, schemas);
-        if(alter) {
+        // Check ORM_ALTER environment variable before sync
+        if (process.env.ORM_ALTER !== 'false' && alter) {
             await sequelize.sync();
+        } else {
         }
     }
 }
