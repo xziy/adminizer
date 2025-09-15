@@ -70,3 +70,9 @@ export interface INotificationEvent {
     channel?: string
     userId?: number;
 }
+
+export type Migration = {
+  name: string;
+  up: (args: { context: any }) => Promise<unknown> | unknown;
+  down: (args: { context: any }) => Promise<unknown> | unknown;
+};
