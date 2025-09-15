@@ -4,6 +4,8 @@ import { faker } from '@faker-js/faker';
 export interface SendNotificationsOptions {
     count?: number;
     delayMs?: number;
+    userId?: number;
+    onlyGeneral?: boolean;
     generalRatio?: number; // Вероятность general уведомлений (0-1)
 }
 
@@ -23,7 +25,7 @@ export async function sendNotificationsWithDelay(
 
     const generateRandomNotification = (): Omit<INotification, 'id' | 'createdAt' | 'icon'> => {
         // Определяем тип уведомления с учетом вероятности
-        const isGeneral = faker.number.float({ min: 0, max: 1 }) < generalRatio;
+        const isGeneral = options.onlyGeneral ? true : faker.number.float({ min: 0, max: 1 }) < generalRatio;
 
         if (!isGeneral) {
             // System notification
@@ -53,7 +55,7 @@ export async function sendNotificationsWithDelay(
             };
         } else {
             // General notification
-            const userIdOption = faker.helpers.arrayElement([
+            const userIdOption = options.userId ?? faker.helpers.arrayElement([
                 undefined, // для всех пользователей
                 1,         // пользователь с ID 1
                 2          // пользователь с ID 2

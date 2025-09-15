@@ -1,5 +1,5 @@
 import {AdminpanelConfig, BaseFieldConfig, ModelConfig} from "../interfaces/adminpanelConfig";
-import {Attribute} from "../lib/v4/model/AbstractModel";
+import {Attribute} from "../lib/model/AbstractModel";
 import {Adminizer} from "../lib/Adminizer";
 
 export class ConfigHelper {

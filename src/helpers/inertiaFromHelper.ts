@@ -3,7 +3,7 @@ import {
     AdminpanelConfig
 } from "../interfaces/adminpanelConfig";
 import {inputText, setSelectMany, getControlsOptions, PropsFieldType} from "./inertiaAddHelper";
-import {ControlType} from "../lib/v4/controls/AbstractControls";
+import {ControlType} from "../lib/controls/AbstractControls";
 
 interface FormProps extends Record<string | number | symbol, unknown> {
     fields: PropsField[],

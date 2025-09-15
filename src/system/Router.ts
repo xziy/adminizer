@@ -114,7 +114,7 @@ export default class Router {
         /**
          * Notifications
          */
-        if (adminizer.config.notification.enabled) {
+        if (adminizer.config.notifications.enabled) {
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.viewAll)
@@ -133,9 +133,10 @@ export default class Router {
                 `${adminizer.config.routePrefix}/api/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
             );
-            adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications-all`,
-                adminizer.policyManager.bindPolicies(policies, NotificationController.getAllUserNotifications)
+
+            adminizer.app.put(
+                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
             );
 
             adminizer.app.put(
@@ -143,13 +144,15 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
             );
 
-            // adminizer.app.post(
-            //     `${adminizer.config.routePrefix}/api/notifications/send`,
-            //     adminizer.policyManager.bindPolicies([...policies, 'isAdmin'],
-            //         (req: ReqType, res: ResType) => NotificationController.sendNotification(req, res)
-            //     )
-            // );
+            adminizer.app.put(
+                `${adminizer.config.routePrefix}/api/notifications/read-all`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.markAllAsRead)
+            );
 
+            adminizer.app.post(
+                `${adminizer.config.routePrefix}/api/notifications/search`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.search)
+            );
         }
         /**
          * List of records

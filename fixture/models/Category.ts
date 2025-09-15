@@ -1,18 +1,25 @@
 import Waterline from "waterline";
 
 const Category = Waterline.Collection.extend({
-  identity: "category",
-  datastore: "default",
-  primaryKey: "id",
-  attributes: {
-    id: {
-      type: "number",
-      autoMigrations: { autoIncrement: true }
-    },
-    title: {
-      type: "string"
-    },
-  }
+    identity: "category",
+    datastore: "default",
+    primaryKey: "id",
+    attributes: {
+        // @ts-ignore
+        id: {type: "number", autoMigrations: {autoIncrement: true}},
+        title: {
+            type: "string"
+        },
+        slug: {
+            type: "string"
+        },
+        mediamanager_one: {
+            type: "json"
+        },
+        mediamanager_two: {
+            type: "json"
+        }
+    }
 });
 
 export default Category;

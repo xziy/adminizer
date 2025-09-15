@@ -1,4 +1,4 @@
-import {SwitchBase} from "../../lib/v4/widgets/abstractSwitch";
+import {SwitchBase} from "../../lib/widgets/abstractSwitch";
 
 export async function widgetSwitchController(req: ReqType, res: ResType) {
 	let widgetId = req.params.widgetId;

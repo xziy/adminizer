@@ -1,8 +1,8 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
-import {DataAccessor} from "../lib/v4/DataAccessor";
-import {Column, NodeTable} from "../lib/v4/datatable/NodeTable";
+import {DataAccessor} from "../lib/DataAccessor";
+import {Column, NodeTable} from "../lib/datatable/NodeTable";
 import {Adminizer} from "../lib/Adminizer";
-import {NodeOutput} from "../lib/v4/datatable/NodeTable";
+import {NodeOutput} from "../lib/datatable/NodeTable";
 import {inertiaListHelper} from "../helpers/inertiaListHelper";
 import {Field, Fields} from "../helpers/fieldsHelper";
 import {BaseFieldConfig} from "../interfaces/adminpanelConfig";

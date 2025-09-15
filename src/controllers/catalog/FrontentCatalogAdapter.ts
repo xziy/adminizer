@@ -1,4 +1,4 @@
-import {AbstractCatalog, Item} from "../../lib/v4/catalog/AbstractCatalog";
+import {AbstractCatalog, Item} from "../../lib/catalog/AbstractCatalog";
 
 
 interface NodeModel<TDataType> {

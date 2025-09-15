@@ -3,7 +3,7 @@ import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig} from "../interfaces/adminpanelConfig";
 import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
-import {DataAccessor} from "../lib/v4/DataAccessor";
+import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
 import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";

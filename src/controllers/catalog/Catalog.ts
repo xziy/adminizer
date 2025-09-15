@@ -1,4 +1,3 @@
-import {CatalogHandler} from "../../lib/v4/catalog/CatalogHandler";
 import {VueCatalog} from "./FrontentCatalogAdapter";
 import {Adminizer} from "../../lib/Adminizer";
 

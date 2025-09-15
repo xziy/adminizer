@@ -1,13 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INotification } from '../../../interfaces/types';
 import axios from 'axios';
+import {usePage} from "@inertiajs/react";
+import {SharedData} from "@/types";
 
 interface NotificationContextType {
     bellNotifications: INotification[];
     allNotifications: INotification[];
     unreadCount: number;
     markAsRead: (notificationClass: string, id: string) => Promise<void>;
-    fetchAllNotifications: (type?: string) => Promise<INotification[]>;
+    markAllAsRead: () => Promise<void>;
+    fetchAllNotifications: (type: string) => Promise<INotification[]>;
+    paginateNotifications: (type: string, skip: number) => Promise<INotification[]>;
+    search: (s: string, type: string) => Promise<void>;
+    getTabs: () => Promise<void>;
+    tabs: string[];
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -16,8 +23,13 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [bellNotifications, setBellNotifications] = useState<INotification[]>([]);
-    const [allNotifications, setAllNotifications] = useState<INotification[]>([]);
+    const [sseNotifications, setSseNotifications] = useState<INotification[]>([]);
+    const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
+    const [tabs, setTabs] = useState<string[]>([]);
+    const page = usePage<SharedData>()
+
+    const allNotifications = [...sseNotifications, ...loadedNotifications];
 
     const fetchBellNotifications = async () => {
         try {
@@ -34,15 +46,41 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         await fetchBellNotifications();
     };
 
-    const fetchAllNotifications = async (type?: string) => {
+    const getTabs = async () => {
+        try {
+            const res = await axios.put(`${window.routePrefix}/api/notifications/get-classes`);
+            setTabs(res.data);
+        } catch (error) {
+            console.error('Error fetching tabs:', error);
+        }
+    }
+
+    const search = async (s: string, type: string) => {
+        try {
+            if (!s) {
+                await fetchAllNotifications(type);
+                return;
+            }
+
+            const res = await axios.post(`${window.routePrefix}/api/notifications/search`, {
+                s: s,
+                notificationClass: type
+            });
+            setLoadedNotifications(res.data);
+        } catch (error) {
+            console.error('Error searching notifications:', error);
+        }
+    }
+
+    const fetchAllNotifications = async (type: string) => {
         setLoading(true);
         try {
-            const url = type
-                ? `${window.routePrefix}/api/notifications/${type}`
-                : `${window.routePrefix}/api/notifications`;
+            const url = `${window.routePrefix}/api/notifications/${type}`
+            const res = await axios.get(url, {params: {limit: 20, skip: 0, unreadOnly: false}});
 
-            const res = await axios.get(url);
-            setAllNotifications(res.data);
+            // Очищаем SSE уведомления при загрузке новой табы
+            setSseNotifications([]);
+            setLoadedNotifications(res.data);
             return res.data;
         } catch (error) {
             console.error('Error fetching all notifications:', error);
@@ -52,7 +90,22 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     };
 
+    const paginateNotifications = async (type: string, skip: number) => {
+        try {
+            const url = `${window.routePrefix}/api/notifications/${type}`
+            const res = await axios.get(url, {params: {limit: 20, skip, unreadOnly: false}});
+
+            setLoadedNotifications(prev => [...prev, ...res.data]);
+            return res.data;
+        } catch (error) {
+            console.error('Error paginating notifications:', error);
+            return [];
+        }
+    }
+
     useEffect(() => {
+        if(!page.props.notifications) return
+
         fetchBellNotifications();
 
         const eventSource = new EventSource(`${window.routePrefix}/api/notifications/stream`);
@@ -60,14 +113,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         eventSource.addEventListener('connected', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
             console.log('Connected event:', data);
+            getTabs()
         });
 
         eventSource.addEventListener('notification', (event) => {
             const data = JSON.parse((event as MessageEvent).data);
-
-            // Добавляем новое уведомление в оба списка
-            setBellNotifications(prev => [data, ...prev.filter(n => n.id !== data.id)].slice(0, 4));
-            setAllNotifications(prev => [data, ...prev.filter(n => n.id !== data.id)]);
+            setSseNotifications(prev => [data, ...prev]);
+            setBellNotifications(prev => [data, ...prev].slice(0, 4));
         });
 
         eventSource.onerror = () => {
@@ -81,20 +133,36 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         try {
             await axios.put(`${window.routePrefix}/api/notifications/${notificationClass}/${id}/read`, {});
 
-            // Обновляем только allNotifications
-            setAllNotifications(prev =>
+            // Обновляем все списки уведомлений
+            setSseNotifications(prev =>
                 prev.map(notif =>
                     notif.id === id ? { ...notif, read: true } : notif
                 )
             );
 
-            // После пометки как прочитанное, загружаем свежие непрочитанные для колокольчика
-            await fetchBellNotifications();
+            setLoadedNotifications(prev =>
+                prev.map(notif =>
+                    notif.id === id ? { ...notif, read: true } : notif
+                )
+            );
+
+            setBellNotifications([]);
+
         } catch (error) {
             console.error('Error marking as read:', error);
-            throw error;
         }
     };
+
+    const markAllAsRead = async () => {
+        try {
+            await axios.put(`${window.routePrefix}/api/notifications/read-all`);
+            setSseNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+            setLoadedNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+            await fetchBellNotifications();
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    }
 
     const unreadCount = bellNotifications.filter(n => !n.read).length;
 
@@ -103,8 +171,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             bellNotifications,
             allNotifications,
             unreadCount,
+            getTabs,
+            tabs,
+            search,
             markAsRead,
+            markAllAsRead,
             fetchAllNotifications,
+            paginateNotifications,
             loading,
             refreshBellNotifications
         }}>

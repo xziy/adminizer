@@ -424,7 +424,7 @@ const config: AdminpanelConfig = {
             }
         },
     },
-    notification: {
+    notifications: {
         enabled: true
     },
     routePrefix: routePrefix,

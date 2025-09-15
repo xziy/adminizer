@@ -9,8 +9,9 @@ import {
     BelongsTo,
     HasMany,
   } from 'sequelize-typescript';
-  import { InferAttributes, InferCreationAttributes, Optional } from 'sequelize';
+  import {InferAttributes, InferCreationAttributes, ModelStatic, Optional, Sequelize} from 'sequelize';
   import { Test } from './Test';
+import {UserAP} from "../../../src";
   
   
   @Table({ tableName: 'example', timestamps: true })
