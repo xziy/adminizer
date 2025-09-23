@@ -88,44 +88,64 @@ export class Adminizer {
     }
 
     getMiddleware() {
-        return (req: express.Request, res: express.Response, next: () => void ) => {
+        return (req: express.Request, res: express.Response, next: () => void) => {
             try {
                 const prefix = (this.config && this.config.routePrefix) ? String(this.config.routePrefix) : '';
+                if(prefix  === '/') {
+                    throw new Error('Using "/" as routePrefix is temporarily prohibited')
+                }
                 const normalizedPrefix = prefix.replace(/\/+/g, '/').replace(/\/+$/g, '');
-
-                if (normalizedPrefix) {
-                    const url = req.url || req.originalUrl || '';
-
+                
+                // Check if this middleware is already mounted under a prefix
+                const isMountedUnderPrefix = req.baseUrl && req.baseUrl === normalizedPrefix;
+                
+                if (normalizedPrefix && !isMountedUnderPrefix) {
+                    // Legacy behavior: middleware not mounted under prefix, check URL manually
+                    const url = req.originalUrl || req.url || '';
+                    const condition1 = url === normalizedPrefix;
+                    const condition2 = url.startsWith(normalizedPrefix + '/');
+                    const condition3 = url.startsWith('/public');
+                    
                     const conditions = [
-                        url === normalizedPrefix,
-                        url.startsWith(normalizedPrefix + '/')
+                        condition1,
+                        condition2
                     ];
-
                     if (process.env.IS_SAILS === undefined) {
-                        conditions.push(url.startsWith('/public'));
+                        conditions.push(condition3);
                     }
-
+                    
                     if (!conditions.some(condition => condition)) {
                         return typeof next === 'function' ? next() : undefined;
                     }
+                } else if (isMountedUnderPrefix) {
+                    // When mounted under prefix, we need to restore the full path for internal routing
+                    // because Router expects routes with full prefix
+                    const originalUrl = req.url;
+                    req.url = normalizedPrefix + req.url;
+                } else {
+                    // No prefix configured, handling all requests
                 }
             }
             catch (e) {
                 // fall back to handling the request
             }
-
+            
             this.app(req, res, (err) => {
                 if (err) {
-                    console.error("Error in Adminizer", err);
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Internal Server Error');
+                    console.error("❌ Error in Adminizer:", err);
+                    if (!res.headersSent) {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end('Internal Server Error');
+                    }
                 }
                 else {
                     if (typeof next === 'function') {
                         return next();
                     }
-                    res.writeHead(404, { 'Content-Type': 'text/plain' });
-                    res.end('Route Not Found in Adminizer');
+                    if (!res.headersSent) {
+                        res.writeHead(404, { 'Content-Type': 'text/plain' });
+                        res.end('Route Not Found in Adminizer');
+                    }
                 }
             });
         };
