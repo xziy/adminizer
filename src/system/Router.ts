@@ -119,6 +119,10 @@ export default class Router {
                 `${adminizer.config.routePrefix}/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.viewAll)
             );
+            adminizer.app.post(
+                `${adminizer.config.routePrefix}/notifications`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.viewAll)
+            );
 
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/notifications/stream`,

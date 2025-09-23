@@ -4,6 +4,52 @@ import {INotification, INotificationEvent} from '../../interfaces/types';
 import {NotificationAPModel} from "../../models/NotificationAP";
 import {UserAP} from "../../models/UserAP";
 
+
+/**
+ * ░█████╗░██████╗░░██████╗████████╗██████╗░░█████╗░░█████╗░████████╗
+ * ██╔══██╗██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝
+ * ███████║██████╦╝╚█████╗░░░░██║░░░██████╔╝███████║██║░░╚═╝░░░██║░░░
+ * ██╔══██║██╔══██╗░╚═══██╗░░░██║░░░██╔══██╗██╔══██║██║░░██╗░░░██║░░░
+ * ██║░░██║██████╦╝██████╔╝░░░██║░░░██║░░██║██║░░██║╚█████╔╝░░░██║░░░
+ * ╚═╝░░╚═╝╚═════╝░╚═════╝░░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░░░░╚═╝░░░
+ *
+ * ███╗░░██╗░█████╗░████████╗██╗███████╗██╗░█████╗░░█████╗░████████╗██╗░█████╗░███╗░░██╗
+ * ████╗░██║██╔══██╗╚══██╔══╝██║██╔════╝██║██╔══██╗██╔══██╗╚══██╔══╝██║██╔══██╗████╗░██║
+ * ██╔██╗██║██║░░██║░░░██║░░░██║█████╗░░██║██║░░╚═╝███████║░░░██║░░░██║██║░░██║██╔██╗██║
+ * ██║╚████║██║░░██║░░░██║░░░██║██╔══╝░░██║██║░░██╗██╔══██║░░░██║░░░██║██║░░██║██║╚████║
+ * ██║░╚███║╚█████╔╝░░░██║░░░██║██║░░░░░██║╚█████╔╝██║░░██║░░░██║░░░██║╚█████╔╝██║░╚███║
+ * ╚═╝░░╚══╝░╚════╝░░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░╚════╝░╚═╝░░╚══╝
+ *
+ * Class: AbstractNotificationService
+ *
+ * Description:
+ * The `AbstractNotificationService` is a base class that provides the fundamental structure and functionality
+ * for implementing notification services in the application. It manages client connections, dispatches notifications,
+ * tracks user notification status, and handles database interactions for storing and retrieving notification data.
+ * This abstract class is intended to be extended by concrete notification service implementations.
+ *
+ * Key Features:
+ * - Manages a registry of clients associated with users using a nested Map structure.
+ * - Provides methods to add, remove, and retrieve clients.
+ * - Dispatches notifications to connected clients via an abstract method to be implemented by subclasses.
+ * - Sends heartbeat (ping) messages to keep client connections alive.
+ * - Creates and retrieves user notification records in the database.
+ * - Fetches paginated and filtered notification lists for a specific user.
+ * - Supports searching notifications by message content.
+ * - Marks notifications as read or all notifications as read for a user.
+ * - Emits events using Node.js EventEmitter for extensibility and integration.
+ *
+ * Usage Example:
+ * Subclasses should override the `dispatchNotification` method to implement custom notification logic.
+ *
+ * @abstract
+ * @extends EventEmitter
+ * @property {Map<number, Map<string, Function>>} clients - A map of user IDs to their client maps.
+ * @property {Adminizer} adminizer - Reference to the Adminizer instance for accessing helpers and models.
+ * @property {string} notificationClass - Abstract property representing the class name of the notification.
+ * @property {string} icon - Abstract property for the notification icon.
+ * @property {string} iconColor - Abstract property for the notification icon color.
+ */
 export abstract class AbstractNotificationService extends EventEmitter {
     protected clients: Map<number, Map<string, (event: INotificationEvent) => void>> = new Map();
     protected adminizer: Adminizer;
@@ -28,7 +74,14 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }, 100)
     }
 
-    // Добавление клиента
+    /**
+     * Registers a client for a user and associates it with a send function.
+     * If the user does not yet have a Map of clients, one is created.
+     * The client is then added to the user's Map with the provided send function.
+     * @param {string} clientId - The unique identifier of the client to be registered.
+     * @param {(event: INotificationEvent) => void} sendFn - The function used to send notifications to the client.
+     * @param {UserAP} user - The user associated with the client.
+     */
     addClient(clientId: string, sendFn: (event: INotificationEvent) => void, user: UserAP): void {
         const userId = user.id;
 
@@ -45,7 +98,11 @@ export abstract class AbstractNotificationService extends EventEmitter {
     }
 
 
-    // Удаление клиента
+    /**
+     * Removes a client from the internal tracking structure.
+     * If the user associated with the client has no more clients after removal, the user's Map is also removed.
+     * @param {string} clientId - The unique identifier of the client to be removed.
+     */
     removeClient(clientId: string): void {
         // Ищем клиента во всех пользовательских Map
         for (const [userId, userClients] of this.clients.entries()) {
@@ -65,17 +122,29 @@ export abstract class AbstractNotificationService extends EventEmitter {
         Adminizer.log.warn(`[${this.notificationClass}] Client ${clientId} not found for removal`);
     }
 
-    // Получение клиентов конкретного пользователя
+    /**
+     * Retrieves the Map of clients associated with a specific user.
+     * If the user has no clients, an empty Map is returned.
+     * @param {number} userId - The unique identifier of the user whose clients should be retrieved.
+     * @returns {Map<string, (event: INotificationEvent) => void>} A Map where the keys are client IDs and the values are send functions.
+     */
     getUserClients(userId: number): Map<string, (event: INotificationEvent) => void> {
         return this.clients.get(userId) || new Map();
     }
 
-    // Получение количества подключенных клиентов
+    /**
+     * Returns the total number of users who have at least one connected client.
+     * @returns {number} The count of users with active clients.
+     */
     getClientCount(): number {
         return this.clients.size;
     }
 
-    // Получение всех клиентов (для обратной совместимости)
+    /**
+     * Aggregates all clients from all users into a single Map for backward compatibility.
+     * Each client is uniquely identified by its ID and mapped to its corresponding send function.
+     * @returns {Map<string, (event: INotificationEvent) => void>} A combined Map of all client IDs and their send functions.
+     */
     getAllClients(): Map<string, (event: INotificationEvent) => void> {
         const allClients = new Map();
         for (const userClients of this.clients.values()) {
@@ -87,10 +156,19 @@ export abstract class AbstractNotificationService extends EventEmitter {
     }
 
 
-    // Абстрактные методы
+    /**
+     * Abstract method that must be implemented by subclasses to dispatch a notification.
+     * @param {Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>} notification - The notification data to be dispatched (excluding id, createdAt, notificationClass, and icon).
+     * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the notification was successfully dispatched.
+     */
     abstract dispatchNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'notificationClass' | 'icon'>): Promise<boolean>;
 
-    // Рассылка события всем клиентам
+    /**
+     * Sends a notification event to all connected clients.
+     * Iterates through each user's client Map and invokes the send function for each client.
+     * If sending fails, logs an error and removes the client.
+     * @param {INotificationEvent} event - The notification event to broadcast.
+     */
     protected broadcast(event: INotificationEvent): void {
         for (const userClients of this.clients.values()) {
             userClients.forEach((sendFn, clientId) => {
@@ -104,7 +182,11 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
-    // Отправка heartbeat
+    /**
+     * Sends a heartbeat (ping) message to a specific client.
+     * Searches for the client across all user client Maps and sends a heartbeat event if found.
+     * @param {string} clientId - The unique identifier of the client to receive the heartbeat.
+     */
     sendHeartbeat(clientId: string): void {
         for (const userClients of this.clients.values()) {
             const sendFn = userClients.get(clientId);
@@ -119,7 +201,13 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
-    // Метод для создания записи в UserNotificationAP
+    /**
+     * Creates a new user notification record in the 'usernotificationap' model.
+     * This method is used to associate a notification with a specific user and mark it as unread.
+     * @param {string} notificationId - The unique identifier of the notification.
+     * @param {number} [userId] - The ID of the user to associate the notification with. Optional.
+     * @returns {Promise<void>} A promise that resolves when the record is created or an error is logged.
+     */
     protected async createUserNotification(notificationId: string, userId?: number): Promise<void> {
         if (this.adminizer.modelHandler.model.has('usernotificationap') && userId) {
             try {
@@ -134,7 +222,13 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
-    // Метод для получения UserNotificationAP по ID уведомления и пользователя
+    /**
+     * Retrieves a user notification record from the 'usernotificationap' model.
+     * The record is fetched based on the provided notification ID and user ID.
+     * @param {string} notificationId - The unique identifier of the notification.
+     * @param {number} userId - The ID of the user associated with the notification.
+     * @returns {Promise<any>} A promise that resolves with the found record or null if not found or an error occurs.
+     */
     protected async getUserNotification(notificationId: string, userId: number): Promise<any> {
         if (this.adminizer.modelHandler.model.has('usernotificationap')) {
             try {
@@ -149,6 +243,14 @@ export abstract class AbstractNotificationService extends EventEmitter {
         return null;
     }
 
+    /**
+     * Retrieves a paginated list of notifications for a specific user, optionally filtered by read status.
+     * @param {number} userId - The ID of the user whose notifications should be fetched.
+     * @param {number} [limit=20] - The maximum number of notifications to return.
+     * @param {number} [skip=0] - The number of notifications to skip (used for pagination).
+     * @param {boolean} [unreadOnly=false] - Whether to return only unread notifications.
+     * @returns {Promise<INotification[]>} A promise that resolves with an array of notification objects.
+     */
     async getNotifications(userId: number, limit: number = 20, skip: number = 0, unreadOnly: boolean = false): Promise<INotification[]> {
         if (!this.adminizer.modelHandler.model.has('notificationap')) {
             return [];
@@ -192,6 +294,12 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
+    /**
+     * Prepares notification data by enriching it with user-specific read status and icon information.
+     * @param {NotificationAPModel[]} notificationsDB - An array of raw notification records from the database.
+     * @param {number} userId - The ID of the user for whom the read status is determined.
+     * @returns {Promise<INotification[]>} A promise that resolves with an array of enriched notification objects.
+     */
     protected async prepareNotification(notificationsDB: NotificationAPModel[], userId: number): Promise<INotification[]> {
         let notifications: INotification[] = [];
 
@@ -215,6 +323,12 @@ export abstract class AbstractNotificationService extends EventEmitter {
         return notifications;
     }
 
+    /**
+     * Searches for notifications for a specific user based on a message keyword.
+     * @param {string} s - The search string used to filter notifications by message content.
+     * @param {number} userId - The ID of the user whose notifications should be searched.
+     * @returns {Promise<INotification[]>} A promise that resolves with an array of matching notification objects.
+     */
     async search(s: string, userId: number): Promise<INotification[]> {
         try {
             const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
@@ -243,6 +357,12 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
+    /**
+     * Marks a specific notification as read for a given user.
+     * @param {number} userId - The ID of the user for whom the notification should be marked as read.
+     * @param {string} id - The ID of the notification to mark as read.
+     * @returns {Promise<void>} A promise that resolves when the operation is complete.
+     */
     async markAsRead(userId: number, id: string): Promise<void> {
         try {
             const userNotification = await this.getUserNotification(id, userId);
@@ -256,6 +376,11 @@ export abstract class AbstractNotificationService extends EventEmitter {
         }
     }
 
+    /**
+     * Marks all notifications as read for a given user.
+     * @param {number} userId - The ID of the user for whom all notifications should be marked as read.
+     * @returns {Promise<void>} A promise that resolves when the operation is complete.
+     */
     async markAllAsRead(userId: number): Promise<void> {
         try {
             const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
@@ -270,6 +395,4 @@ export abstract class AbstractNotificationService extends EventEmitter {
             Adminizer.log.error('Error marking all notifications as read:', error);
         }
     }
-
-
 }

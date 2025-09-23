@@ -7,7 +7,7 @@ export class NotificationController {
     static async search(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)
 
-        if(req.method.toUpperCase() === 'POST') {
+        if (req.method.toUpperCase() === 'POST') {
             const {s, notificationClass} = req.body;
             const hasPermission = req.adminizer.accessRightsHelper.hasPermission(
                 `notification-${notificationClass}`,
@@ -28,18 +28,40 @@ export class NotificationController {
     static async viewAll(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)
 
-        return req.Inertia.render({
-            component: 'notification',
-            props: {
-                title: req.i18n.__('Notifications'),
-            }
-        });
+        if (req.method.toUpperCase() === 'POST') {
+            const messages = {
+                "Make read": "",
+                "View All": "",
+                "Search": "",
+                "Make all read": "",
+                "Title": "",
+                "Message": "",
+                "Date": "",
+                "Diff": "",
+                "The end of the list has been reached": "",
+            };
+
+            return res.json(Object.fromEntries(
+                Object.keys(messages).map(key => [key, req.i18n.__(key)])
+            ));
+        }
+
+        if (req.method.toUpperCase() === 'GET') {
+            return req.Inertia.render({
+                component: 'notification',
+                props: {
+                    title: req.i18n.__('Notifications'),
+                }
+            });
+        }
+
+        return res.status(405)
     }
 
     static async getNotificationClasses(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)
 
-        if(req.adminizer.config.notifications.enabled === false) return res.json([])
+        if (req.adminizer.config.notifications.enabled === false) return res.json([])
 
         const services = req.adminizer.notificationHandler.getAllServices();
         let activeServices = []

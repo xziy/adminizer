@@ -10,6 +10,8 @@ import {NotificationProps} from "@/types";
 import {debounce} from 'lodash';
 
 interface NotificationTableProps extends NotificationProps {
+    loadingMore: boolean
+    messages: Record<string, string>
     showDiff?: boolean;
 }
 
@@ -18,6 +20,8 @@ export const NotificationTable = (
         notifications,
         onMarkAsRead,
         onLoadMore,
+        loadingMore,
+        messages,
         hasMore = false,
         showDiff = false
     }: NotificationTableProps) => {
@@ -27,13 +31,13 @@ export const NotificationTable = (
     const [diffOpen, setDiffOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<any>(null);
 
+
     const debouncedLoadMore = useRef(
         debounce(() => {
             if (onLoadMore && hasMore && !loadingRef.current) {
                 loadingRef.current = true;
                 onLoadMore()
                 loadingRef.current = false;
-
             }
         }, 300)
     ).current;
@@ -96,15 +100,15 @@ export const NotificationTable = (
 
     return (
         <div>
-            <Table wrapperHeight="max-h-[70vh]" ref={tableContent}>
+            <Table wrapperHeight="max-h-[70vh]" ref={tableContent} className={`${loadingMore ? 'opacity-40' : ''}`}>
                 <TableHeader className="sticky top-0 bg-background shadow z-1">
                     <TableRow
                         className={`grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
                         <TableHead className="p-2 text-left"></TableHead>
-                        <TableHead className="p-2 text-left">Title</TableHead>
-                        <TableHead className="p-2 text-left">Message</TableHead>
-                        <TableHead className="p-2 text-left">Date</TableHead>
-                        {showDiff && <TableHead className="p-2 text-left">Diff</TableHead>}
+                        <TableHead className="p-2 text-left">{messages["Title"]}</TableHead>
+                        <TableHead className="p-2 text-left">{messages["Message"]}</TableHead>
+                        <TableHead className="p-2 text-left">{messages["Date"]}</TableHead>
+                        {showDiff && <TableHead className="p-2 text-left">{messages["Diff"]}</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -121,7 +125,7 @@ export const NotificationTable = (
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="right" className="z-[1003]">
-                                        <p>Make read</p>
+                                        <p>{messages["Make read"]}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TableCell>
@@ -152,7 +156,7 @@ export const NotificationTable = (
                     <TableRow>
                         {!hasMore && (
                             <TableCell colSpan={showDiff ? 5 : 4}>
-                                <div className="text-center py-2 font-medium">The end of the list has been reached</div>
+                                <div className="text-center py-2 font-medium">{messages["The end of the list has been reached"]}</div>
                             </TableCell>
                         )}
                     </TableRow>

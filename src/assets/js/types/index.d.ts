@@ -253,6 +253,8 @@ export interface MediaProps {
 export interface NotificationProps {
     notifications: INotification[];
     onMarkAsRead: (notificationClass: string, id: string) => Promise<void>;
+    loadingMore: boolean;
     onLoadMore: () => void;
     hasMore: boolean;
+    messages: Record<string, string>
 }
