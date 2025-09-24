@@ -15,6 +15,14 @@ const models: AdminpanelConfig["models"] = {
                 type: 'string',
                 required: true
             },
+            mediamanager: {
+                title: 'Images',
+                type: 'mediamanager',
+                options: {
+                    id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
+                    group: 'banner',
+                }
+            },
             schema: {}
         },
         list: {
@@ -474,6 +482,15 @@ const config: AdminpanelConfig = {
                     type: 'string',
                     value: 'Some string',
                     required: true,
+                },
+                mediamanager: {
+                    title: 'Images',
+                    type: 'mediamanager',
+                    options: {
+                        id: "default",
+                        group: 'form_global_images',
+                    },
+                    value: null
                 },
                 field2: {
                     title: 'Field2',

@@ -2,11 +2,10 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig} from "../interfaces/adminpanelConfig";
-import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
+// import {saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
-import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 
 export default async function add(req: ReqType, res: ResType) {
     let entity = ControllerHelper.findEntityObject(req);
@@ -105,9 +104,8 @@ export default async function add(req: ReqType, res: ResType) {
         try {
             let record = await entity.model.create(reqData, dataAccessor);
 
-
             // save associations media to json
-            await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, record.id)
+            // await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, record.id)
 
             Adminizer.log.debug(`A new record was created: `, record);
             if (req.body.jsonPopupCatalog) {
