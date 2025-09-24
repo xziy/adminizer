@@ -3,9 +3,9 @@ import {RequestProcessor} from "../lib/requestProcessor";
 import {FieldsHelper} from "../helpers/fieldsHelper";
 import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
 
- import {
+import {
     getRelationsMediaManager,
-    saveRelationsMediaManager
+    // saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
@@ -37,8 +37,8 @@ export default async function edit(req: ReqType, res: ResType) {
 
     let record;
     let dataAccessor;
+    const id = req.params.id as string;
     try {
-        const id = req.params.id as string;
         dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
         if (!record) return res.status(404).send("Adminpanel > Record not found");
@@ -135,7 +135,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
         try {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
-            await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
+            // await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
 
             Adminizer.log.debug(`Record was updated: `, newRecord);

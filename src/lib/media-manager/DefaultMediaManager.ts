@@ -15,7 +15,7 @@ import {Adminizer} from "../Adminizer";
 export class DefaultMediaManager extends AbstractMediaManager {
     public readonly itemTypes: File<MediaManagerItem>[] = [];
     public model: string = "mediamanagerap";
-    public modelAssoc: string = "mediamanagerassociationsap";
+    // public modelAssoc: string = "mediamanagerassociationsap";
     id: string;
     protected readonly adminizer: Adminizer;
 
@@ -35,7 +35,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
         data: MediaManagerItem[];
         next: boolean
     }> {
-        // TODO refactor CRUD functions for DataAccessor usage
+        //TODO refactor CRUD functions for DataAccessor usage
         let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
             where: {parent: null, group: group},
             limit: limit,
@@ -62,7 +62,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
     }
 
     public async searchAll(s: string, group: string): Promise<MediaManagerItem[]> {
-        // TODO refactor CRUD functions for DataAccessor usage
+        //TODO refactor CRUD functions for DataAccessor usage
         let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
             where: {filename: {contains: s}, parent: null, group: group},
             sort: "createdAt DESC",
@@ -80,37 +80,34 @@ export class DefaultMediaManager extends AbstractMediaManager {
         return data;
     }
 
-    public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
-        // TODO refactor CRUD functions for DataAccessor usage
-        let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
-            where: {modelId: modelId, model: model, widgetName: widgetName},
-        });
+    // public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
+    //     let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
+    //         where: {modelId: modelId, model: model, widgetName: widgetName},
+    //     });
+    //
+    //     for (const modelAssociation of modelAssociations) {
+    //         const q: Record<string, any> = {};
+    //         const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
+    //         q[pk] = modelAssociation.id;
+    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
+    //     }
+    //
+    //     for (const [key, widgetItem] of data.entries()) {
+    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
+    //             mediaManagerId: this.id,
+    //             model: model,
+    //             modelId: modelId,
+    //             file: widgetItem.id,
+    //             widgetName: widgetName,
+    //             sortOrder: key + 1,
+    //         });
+    //     }
+    // }
 
-        for (const modelAssociation of modelAssociations) {
-            const q: Record<string, any> = {};
-            const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
-            q[pk] = modelAssociation.id;
-            // TODO refactor CRUD functions for DataAccessor usage
-            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
-        }
-
-        for (const [key, widgetItem] of data.entries()) {
-            // TODO refactor CRUD functions for DataAccessor usage
-            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
-                mediaManagerId: this.id,
-                model: model,
-                modelId: modelId,
-                file: widgetItem.id,
-                widgetName: widgetName,
-                sortOrder: key + 1,
-            });
-        }
-    }
-
-    public async getRelations(items: MediaManagerWidgetItem[],): Promise<MediaManagerWidgetClientItem[]> {
+    public async getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]> {
         let widgetItems: MediaManagerWidgetClientItem[] = [];
         for (const item of items) {
-            // TODO refactor CRUD functions for DataAccessor usage
+            //TODO refactor CRUD functions for DataAccessor usage
             let file: MediaManagerItem = (await this.adminizer.modelHandler.model.get(this.model)["_find"]({
                 where: {id: item.id}
             }, {populate: [["variants", {sort: "createdAt DESC"}]]}))[0]
