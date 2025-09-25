@@ -116,6 +116,8 @@ export async function up({ context }: Ctx): Promise<void> {
   await context.createTable("groupapuserap", {
     UserAPId: { type: DataTypes.INTEGER, allowNull: false, references: { model: "userap", key: "id" } },
     GroupAPId: { type: DataTypes.INTEGER, allowNull: false, references: { model: "groupap", key: "id" } },
+    createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   });
 }
 
