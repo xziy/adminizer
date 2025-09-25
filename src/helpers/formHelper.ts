@@ -29,7 +29,9 @@ export class FormHelper {
                 let form = path.basename(formJson, '.json')
 
                 try {
-                    adminizer.config.forms.data[form] = require(`${formsDirectoryPath}/${formJson}`);
+                    const filePath = path.join(formsDirectoryPath, formJson);
+                    const fileContent = fs.readFileSync(filePath, 'utf-8');
+                    adminizer.config.forms.data[form] = JSON.parse(fileContent);
                 } catch (error) {
                     Adminizer.log.error(`Adminpanel > Error when reading ${formJson}: ${error}`);
                 }

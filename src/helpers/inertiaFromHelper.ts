@@ -1,9 +1,10 @@
 import {PropsField} from "../interfaces/types";
 import {
-    AdminpanelConfig
+    AdminpanelConfig, BaseFieldConfig, MediaManagerOptionsField
 } from "../interfaces/adminpanelConfig";
 import {inputText, setSelectMany, getControlsOptions, PropsFieldType} from "./inertiaAddHelper";
 import {ControlType} from "../lib/controls/AbstractControls";
+import {MediaManagerHandler} from "../lib/media-manager/MediaManagerHandler";
 
 interface FormProps extends Record<string | number | symbol, unknown> {
     fields: PropsField[],
@@ -33,7 +34,7 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
         let fieldType: PropsFieldType = 'text'
         let disabled = false
         let required = field.required ?? false
-        let options: Record<string, unknown> | Record<string, unknown>[] = {}
+        let options: Record<string, any> | Record<string, any>[] = {}
 
         let value = field.value ?? undefined
         if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'email', 'month', 'week', 'range'].includes(type)) {
@@ -98,6 +99,18 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
         if (['geojson', 'geo-polygon', 'geo-marker'].includes(type)) {
             fieldType = 'geoJson';
             options = getControlsOptions(field, req, fieldType as ControlType, 'leaflet')
+        }
+
+        if (type === 'mediamanager') {
+            const mOptions = field.options as MediaManagerOptionsField
+
+            const mediaManager = MediaManagerHandler.get(mOptions.id || 'default')
+            if (!mediaManager) {
+                options = {}
+            } else {
+                fieldType = 'mediamanager'
+                options = mOptions
+            }
         }
 
         props.fields.push({

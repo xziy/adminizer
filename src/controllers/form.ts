@@ -1,76 +1,85 @@
 import {FormHelper} from "../helpers/formHelper";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaFormHelper from "../helpers/inertiaFromHelper";
+import {getRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
+import {MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
 
 export default async function form(req: ReqType, res: ResType) {
-	let slug = req.params.slug;
+    let slug = req.params.slug;
 
-	// Check slug
-	if (!slug) {
-		return res.status(404).send({ error: 'Not Found' });
-	}
+    // Check slug
+    if (!slug) {
+        return res.status(404).send({error: 'Not Found'});
+    }
 
-	if (req.adminizer.config.auth.enable) {
-		if (!req.user) {
-			return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
-		} else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${slug}-form`, req.user)) {
-			return res.sendStatus(403);
-		}
-	}
-	let form = FormHelper.get(req.adminizer, slug);
+    if (req.adminizer.config.auth.enable) {
+        if (!req.user) {
+            return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+        } else if (!req.adminizer.accessRightsHelper.hasPermission(`update-${slug}-form`, req.user)) {
+            return res.sendStatus(403);
+        }
+    }
+    let form = FormHelper.get(req.adminizer, slug);
 
-	for (let prop in req.body) {
-		if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
-			try {
-				req.body[prop] = JSON.parse(req.body[prop]);
-			} catch (e) {
-				if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
-					Adminizer.log.error(JSON.stringify(req.body[prop]), e);
-				}
-			}
-		}
-	}
+    for (let prop in req.body) {
+        if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
+            try {
+                req.body[prop] = JSON.parse(req.body[prop]);
+            } catch (e) {
+                if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
+                    Adminizer.log.error(JSON.stringify(req.body[prop]), e);
+                }
+            }
+        }
+    }
 
 
-	if (!form) {
-		return res.status(404).send("Adminpanel > Form not found");
-	}
+    if (!form) {
+        return res.status(404).send("Adminpanel > Form not found");
+    }
 
-	if (req.method.toUpperCase() === "POST") {
-		if (!req.body) {
-			return res.status(500).send("Data is empty");
-		}
+    if (req.method.toUpperCase() === "POST") {
+        if (!req.body) {
+            return res.status(500).send("Data is empty");
+        }
 
-		// checkboxes processing
-		let checkboxes = [];
-		for (let key in form) {
-			if (form[key].type === "boolean") {
-				checkboxes.push(key);
-			}
-		}
+        // checkboxes processing
+        let checkboxes = [];
+        for (let key in form) {
+            if (form[key].type === "boolean") {
+                checkboxes.push(key);
+            }
+        }
 
-		for (let field of Object.keys(req.body)) {
-			await req.adminizer.config.forms.set(slug, field, req.body[field]);
-		}
+        for (let field of Object.keys(req.body)) {
+            await req.adminizer.config.forms.set(slug, field, req.body[field]);
+        }
 
-		for (let field of checkboxes) {
-			if (!req.body[field]) {
-				await req.adminizer.config.forms.set(slug, field, false);
-			}
-		}
+        for (let field of checkboxes) {
+            if (!req.body[field]) {
+                await req.adminizer.config.forms.set(slug, field, false);
+            }
+        }
         return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/form/${slug}`);
-	}
+    }
 
-	for (let key of Object.keys(form)) {
-		try {
-			form[key].value = await req.adminizer.config.forms.get(slug, key);
-		} catch (e) {
-			Adminizer.log.silly(`'${slug}' property was not found in storage, using source file`);
-		}
-	}
+    for (let key of Object.keys(form)) {
+        try {
+            if (key === 'mediamanager') {
+                form[key].value = await getRelationsMediaManager({
+                    list: await req.adminizer.config.forms.get(slug, key),
+                    mediaManagerId: (form[key].options as MediaManagerOptionsField)?.id ?? "default"
+                })
+            } else {
+                form[key].value = await req.adminizer.config.forms.get(slug, key);
+            }
+        } catch (e) {
+            Adminizer.log.silly(`'${slug}' property was not found in storage, using source file`);
+        }
+    }
 
     const props = inertiaFormHelper(req, `${req.adminizer.config.routePrefix}/form/${slug}`, form)
-    
+
     return req.Inertia.render({
         component: 'form',
         props: props
