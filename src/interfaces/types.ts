@@ -32,7 +32,7 @@ export interface PropsField {
     disabled?: boolean;
     required?: boolean;
     isIn?: string[] | number[] | boolean[];
-    options?: Record<string, unknown> | Record<string, unknown>[]
+    options?: Record<string, any> | Record<string, any>[]
 }
 
 export interface DiffChanges {
