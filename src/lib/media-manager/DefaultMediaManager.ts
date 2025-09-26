@@ -15,7 +15,7 @@ import {Adminizer} from "../Adminizer";
 export class DefaultMediaManager extends AbstractMediaManager {
     public readonly itemTypes: File<MediaManagerItem>[] = [];
     public model: string = "mediamanagerap";
-    // public modelAssoc: string = "mediamanagerassociationsap";
+    public modelAssoc: string = "mediamanagerassociationsap";
     id: string;
     protected readonly adminizer: Adminizer;
 
@@ -80,29 +80,29 @@ export class DefaultMediaManager extends AbstractMediaManager {
         return data;
     }
 
-    // public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
-    //     let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
-    //         where: {modelId: modelId, model: model, widgetName: widgetName},
-    //     });
-    //
-    //     for (const modelAssociation of modelAssociations) {
-    //         const q: Record<string, any> = {};
-    //         const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
-    //         q[pk] = modelAssociation.id;
-    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
-    //     }
-    //
-    //     for (const [key, widgetItem] of data.entries()) {
-    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
-    //             mediaManagerId: this.id,
-    //             model: model,
-    //             modelId: modelId,
-    //             file: widgetItem.id,
-    //             widgetName: widgetName,
-    //             sortOrder: key + 1,
-    //         });
-    //     }
-    // }
+    public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
+        let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
+            where: {modelId: modelId, model: model, widgetName: widgetName},
+        });
+
+        for (const modelAssociation of modelAssociations) {
+            const q: Record<string, any> = {};
+            const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
+            q[pk] = modelAssociation.id;
+            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
+        }
+
+        for (const [key, widgetItem] of data.entries()) {
+            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
+                mediaManagerId: this.id,
+                model: model,
+                modelId: modelId,
+                file: widgetItem.id,
+                widgetName: widgetName,
+                sortOrder: key + 1,
+            });
+        }
+    }
 
     public async getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]> {
         let widgetItems: MediaManagerWidgetClientItem[] = [];
