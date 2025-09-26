@@ -1,10 +1,8 @@
 import {ControllerHelper} from "../helpers/controllerHelper";
-// import {deleteRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
+import {deleteRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {ModelAnyField, ModelAnyInstance} from "../lib/model/AbstractModel";
 import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
-import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
-import {diff} from "deep-object-diff";
 
 export default async function remove(req: ReqType, res: ResType) {
     // Checking id of the record
@@ -70,7 +68,7 @@ export default async function remove(req: ReqType, res: ResType) {
         destroyedRecord = await entity.model.destroy(q, dataAccessor)
         console.log(destroyedRecord[0])
         // delete relations media manager
-        // await deleteRelationsMediaManager(req.adminizer, entity.name, destroyedRecord)
+        await deleteRelationsMediaManager(req.adminizer, entity.name, destroyedRecord)
     } catch (e) {
         Adminizer.log.error('adminpanel > error', e);
     }

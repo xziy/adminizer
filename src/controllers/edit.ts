@@ -5,12 +5,11 @@ import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../
 
 import {
     getRelationsMediaManager,
-    // saveRelationsMediaManager
+    saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
-import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 
 export default async function edit(req: ReqType, res: ResType) {
     //Check id
@@ -135,7 +134,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
         try {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
-            // await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
+            await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
 
 
             Adminizer.log.debug(`Record was updated: `, newRecord);

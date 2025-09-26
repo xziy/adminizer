@@ -260,25 +260,25 @@ export abstract class AbstractMediaManager {
         return this.getItemType(type)?.getItems(limit, skip, sort, group);
     }
 
-    // /**
-    //  * Save Relations.
-    //  * @param data
-    //  * @param model model in which a mediafile connection was added
-    //  * @param modelId Id in the model in which the mediafile was added
-    //  * @param widgetName
-    //  */
-    // public abstract setRelations(
-    //     data: MediaManagerWidgetData[],
-    //     /**
-    //      * widget model in which a mediafile connection was added
-    //      */
-    //     model: string,
-    //     /**
-    //      * widget Id in the model in which the mediafile was added
-    //      */
-    //     modelId: string,
-    //     widgetName: string
-    // ): Promise<void>;
+    /**
+     * Save Relations.
+     * @param data
+     * @param model model in which a mediafile connection was added
+     * @param modelId Id in the model in which the mediafile was added
+     * @param widgetName
+     */
+    public abstract setRelations(
+        data: MediaManagerWidgetData[],
+        /**
+         * widget model in which a mediafile connection was added
+         */
+        model: string,
+        /**
+         * widget Id in the model in which the mediafile was added
+         */
+        modelId: string,
+        widgetName: string
+    ): Promise<void>;
 
     public abstract getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]>;
 
