@@ -27,6 +27,7 @@ import {Category as CategorySequelize} from "./models/sequelize/Category";
 import {TestCatalog as TestCatalogSequelize} from "./models/sequelize/TestCatalog";
 import {SequelizeAdapter} from "../dist/lib/model/adapter/sequelize";
 import {seedDatabase} from "./helpers/seedDatabase";
+import {OpenAiDatabaseAgentService} from "./helpers/ai/OpenAiDatabaseAgentService";
 
 
 //Widgets imports
@@ -171,6 +172,25 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        if (adminizer.aiAssistantHandler) {
+            const openAiService = new OpenAiDatabaseAgentService(adminizer);
+            adminizer.aiAssistantHandler.registerModel(openAiService);
+
+            const aiConfig = adminizer.config.aiAssistant ?? {enabled: true, models: [], defaultModel: openAiService.id};
+            const models = new Set(aiConfig.models ?? []);
+            models.add(openAiService.id);
+
+            adminizer.config.aiAssistant = {
+                ...aiConfig,
+                models: Array.from(models),
+                defaultModel: openAiService.id,
+            };
+
+            Adminizer.log.info('Registered OpenAI data agent for the AI assistant.');
+        } else {
+            Adminizer.log.warn('AI assistant handler is not initialized; OpenAI data agent was not registered.');
+        }
 
         adminizer.widgetHandler.add(new SwitcherOne());
         adminizer.widgetHandler.add(new SwitcherTwo());

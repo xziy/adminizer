@@ -1,3 +1,7 @@
+## 4.3.6
+- Added an OpenAI-powered data agent to the fixture that queries the database through `DataAccessor` and registers it as the default AI assistant model.
+- Documented environment variables and tool usage in `docs/OpenAI-Data-Agent.md`.
+
 ## 4.3.5
 - Anchored the AI assistant panel as a fixed overlay that shifts the entire layout width instead of living inside the content container.
 - Persisted the chat open state and selected model across Inertia navigations via a shared viewport manager and updated documentation.
