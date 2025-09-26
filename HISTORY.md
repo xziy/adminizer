@@ -1,3 +1,18 @@
+## 4.3.5
+- Anchored the AI assistant panel as a fixed overlay that shifts the entire layout width instead of living inside the content container.
+- Persisted the chat open state and selected model across Inertia navigations via a shared viewport manager and updated documentation.
+
+## 4.3.4
+- Replaced the AI assistant modal with a persistent right-side workspace that claims one quarter of the viewport when opened.
+- Added a dedicated panel component and layout margin handling so the main application content resizes alongside the chat.
+
+## 4.3.3
+- Enabled the AI assistant in the fixture configuration with the dummy model and ensured the backend build wires controller endpoints.
+- Documented that the fixture ships with the in-memory assistant for local testing.
+
+## 4.3.2
+- Added AI assistant chat mode with header toggle, in-memory history, and backend API scaffolding.
+
 
 ## 4.2.1
 - Renamed MediaManager parent association to `parent` to resolve Sequelize naming collision.
