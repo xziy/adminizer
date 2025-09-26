@@ -65,7 +65,7 @@ export default async function form(req: ReqType, res: ResType) {
 
     for (let key of Object.keys(form)) {
         try {
-            if (key === 'mediamanager') {
+            if (form[key].type === 'mediamanager') {
                 form[key].value = await getRelationsMediaManager({
                     list: await req.adminizer.config.forms.get(slug, key),
                     mediaManagerId: (form[key].options as MediaManagerOptionsField)?.id ?? "default"
