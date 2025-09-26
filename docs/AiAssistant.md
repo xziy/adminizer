@@ -52,3 +52,27 @@ To register a new model:
 2. Add a factory entry to `modelFactories` in `bindAiAssistant.ts`.
 3. Reference the new model identifier in `aiAssistant.models` within your configuration.
 4. Assign the generated access token (`ai-assistant-<modelId>`) to the user groups that should have access.
+
+## OpenAI Data Agent (fixture)
+
+The fixture now ships with an `openai-data` model that demonstrates how to integrate the SDK with
+OpenAI's Agents API while still relying on Adminizer's abstractions:
+
+* The agent implementation lives in `fixture/helpers/ai/OpenAiDataAgentService.ts` and extends
+  `AbstractAiModelService`.
+* Database reads are performed through `DataAccessor`, which means the usual access control and field
+  sanitisation rules are enforced automatically.
+* Conversation history is converted into the `@openai/agents` protocol so follow-up questions can
+  build on previous answers.
+
+To enable the agent locally, set the following environment variables before starting the fixture:
+
+```bash
+export OPENAI_API_KEY="sk-..."          # required
+export OPENAI_AGENT_MODEL="gpt-4.1-mini" # optional override
+```
+
+`ADMINIZER_OPENAI_KEY` can be used as an alternative variable name for the API key. When a key is
+available the fixture automatically registers the model, exposes it in the assistant model list, and
+prefers it as the default chat model. If the key is missing the agent stays disabled and a warning is
+logged during boot.

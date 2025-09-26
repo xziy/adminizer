@@ -11,6 +11,7 @@ import CategoryWaterline from "./models/Category";
 import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
+import {OpenAiDataAgentService} from "./helpers/ai/OpenAiDataAgentService";
 
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
@@ -171,6 +172,25 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        if (adminizer.config.aiAssistant?.enabled) {
+            const openAiAgent = new OpenAiDataAgentService(adminizer);
+            if (openAiAgent.isEnabled()) {
+                adminizer.aiAssistantHandler.registerModel(openAiAgent);
+
+                if (adminizer.config.aiAssistant) {
+                    const declaredModels = new Set(adminizer.config.aiAssistant.models ?? []);
+                    declaredModels.add(openAiAgent.id);
+                    adminizer.config.aiAssistant.models = Array.from(declaredModels);
+
+                    if (!adminizer.config.aiAssistant.defaultModel || adminizer.config.aiAssistant.defaultModel === 'dummy') {
+                        adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
+                    }
+                }
+            } else {
+                Adminizer.log.warn('[fixture] Skipping OpenAI data agent registration because OPENAI_API_KEY is missing.');
+            }
+        }
 
         adminizer.widgetHandler.add(new SwitcherOne());
         adminizer.widgetHandler.add(new SwitcherTwo());

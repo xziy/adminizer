@@ -37,3 +37,7 @@
 
 ## 4.3.1
 - Added TypeScript Umzug migration for system models at `src/migrations/umzug/0001.ts` (SQLite fixture-compatible). Join table naming normalized to lowercase (`groupapuserap`). Updated docs in `docs/Database-Migrations-Umzug.md` and examples for tsx-based runs.
+
+## 4.3.2
+- Added the `openai-data` AI assistant model to the fixture, powered by `@openai/agents` and backed by `DataAccessor` queries.
+- Automatically promotes the OpenAI agent as the default fixture model when an API key is present and documents the required environment variables.
