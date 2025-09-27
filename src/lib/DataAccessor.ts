@@ -16,6 +16,20 @@ import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
 import { isObject } from "../helpers/JsUtils";
 
+export interface AccessibleFieldSummary {
+    name: string;
+    label: string;
+    type?: FieldsTypes | string;
+    required: boolean;
+    description?: string;
+    association?: {
+        model?: string;
+        collection?: string;
+        multiple: boolean;
+    };
+    options?: BaseFieldConfig["options"];
+}
+
 export class DataAccessor {
     public readonly adminizer: Adminizer;
     user: UserAP;
@@ -153,6 +167,66 @@ export class DataAccessor {
 
         this.fields = result;
         return result;
+    }
+
+    /**
+     * Returns human-readable information about fields that are available for the current
+     * user and action. Useful for AI assistants or clients that need to understand which
+     * fields can be populated when creating or editing records.
+     */
+    public listAccessibleFields(): AccessibleFieldSummary[] {
+        const fieldsConfig = this.getFieldsConfig();
+
+        if (!fieldsConfig) {
+            return [];
+        }
+
+        const summaries: AccessibleFieldSummary[] = [];
+
+        for (const [fieldName, field] of Object.entries(fieldsConfig)) {
+            if (!field || !field.config) {
+                continue;
+            }
+
+            if (typeof field.config === "boolean") {
+                continue;
+            }
+
+            const config = typeof field.config === "object"
+                ? field.config
+                : {title: typeof field.config === "string" ? field.config : undefined};
+
+            const attribute = field.model;
+            const type = (config?.type ?? attribute?.type) as FieldsTypes | string | undefined;
+            const required = Boolean(config?.required ?? attribute?.required ?? false);
+
+            const summary: AccessibleFieldSummary = {
+                name: fieldName,
+                label: config?.title ?? fieldName,
+                type,
+                required,
+            };
+
+            if (config?.tooltip) {
+                summary.description = config.tooltip;
+            }
+
+            if (config?.options) {
+                summary.options = config.options;
+            }
+
+            if (attribute && (attribute.model || attribute.collection)) {
+                summary.association = {
+                    model: attribute.model,
+                    collection: attribute.collection,
+                    multiple: Boolean(attribute.collection) || type === "association-many",
+                };
+            }
+
+            summaries.push(summary);
+        }
+
+        return summaries;
     }
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {

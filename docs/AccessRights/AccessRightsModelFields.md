@@ -28,6 +28,25 @@ This class:
 * **Association support**: Handles both `BelongsTo` and `HasMany` style associations with optional population and recursive field filtering.
 * **Multi-level access logic**: Enforces both direct and intermediate relation-based access restrictions using the `userAccessRelation` model config key.
 * **CRUD-agnostic**: Designed to be used with various actions (`add`, `edit`, `view`, `list`) with unified processing logic.
+* **Field metadata helper**: `listAccessibleFields()` returns a normalized summary of writable fields so automated clients (for example, AI agents) can build valid payloads without guessing configuration details.
+
+#### **Listing Accessible Fields**
+
+Call `listAccessibleFields()` after constructing a `DataAccessor` to receive an array of metadata objects with the following shape:
+
+```ts
+{
+  name: string;
+  label: string;
+  type?: string;
+  required: boolean;
+  description?: string;
+  association?: { model?: string; collection?: string; multiple: boolean };
+  options?: BaseFieldConfig['options'];
+}
+```
+
+Only fields that pass the current user's permission checks are returned. This makes it safe to auto-generate forms or AI prompts because the helper mirrors the same field filtering applied during `add`/`edit` operations.
 
 ---
 
