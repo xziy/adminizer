@@ -177,20 +177,15 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
 
+        // Register OpenAI data agent after init if API key is available
         if (adminizer.config.aiAssistant?.enabled) {
             const openAiAgent = new OpenAiDataAgentService(adminizer);
             if (openAiAgent.isEnabled()) {
                 adminizer.aiAssistantHandler.registerModel(openAiAgent);
 
-                if (adminizer.config.aiAssistant) {
-                    const declaredModels = new Set(adminizer.config.aiAssistant.models ?? []);
-                    declaredModels.add(openAiAgent.id);
-                    adminizer.config.aiAssistant.models = Array.from(declaredModels);
+                // Set as default model
+                adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
 
-                    if (!adminizer.config.aiAssistant.defaultModel || adminizer.config.aiAssistant.defaultModel === 'dummy') {
-                        adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
-                    }
-                }
                 console.log(`[fixture] OpenAI data agent successfully registered with ID: ${openAiAgent.id}`);
             } else {
                 Adminizer.log.warn('[fixture] Skipping OpenAI data agent registration because OPENAI_API_KEY is missing.');

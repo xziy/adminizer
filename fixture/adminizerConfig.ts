@@ -438,7 +438,7 @@ const config: AdminpanelConfig = {
     aiAssistant: {
         enabled: true,
         defaultModel: 'openai',
-        models: ['openai', 'dummy'],
+        models: ['openai'],
     },
     routePrefix: routePrefix,
     // routePrefix: "/admin",
