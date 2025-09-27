@@ -203,7 +203,7 @@ const models: AdminpanelConfig["models"] = {
                             '|',
                             // 'horizontalLine',
                             'link',
-                            'insertImageViaUrl',
+                            'insertImage',
                             'insertTable',
                             'blockQuote',
                             '|',
@@ -503,6 +503,10 @@ const config: AdminpanelConfig = {
                     title: 'Json',
                     type: 'jsoneditor'
                 },
+                text: {
+                    title: 'Editor',
+                    type: 'wysiwyg',
+                }
             }
         }
     },

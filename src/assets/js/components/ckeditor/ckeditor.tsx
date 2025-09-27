@@ -15,14 +15,15 @@ import {
     Heading,
     HorizontalLine,
     ImageBlock,
-    ImageEditing,
+    ImageCaption,
     ImageInline,
+    ImageInsert,
     ImageInsertViaUrl,
+    ImageResize,
+    ImageStyle,
     ImageTextAlternative,
     ImageToolbar,
-    ImageUtils,
-    Indent,
-    IndentBlock,
+    ImageUpload,
     Italic,
     Link,
     List,
@@ -30,6 +31,7 @@ import {
     Paragraph,
     ShowBlocks,
     SourceEditing,
+    SimpleUploadAdapter,
     Table,
     TableCaption,
     TableCellProperties,
@@ -53,6 +55,8 @@ import viTanslations from 'ckeditor5/translations/vi.js';
 import enTanslations from 'ckeditor5/translations/en.js';
 
 import 'ckeditor5/ckeditor5.css';
+
+import UploadAdapterPlugin from './uploadAdapterPlugin';
 
 
 interface EditorProps {
@@ -98,6 +102,8 @@ export default function AdminCKEditor({initialValue, onChange, options, disabled
 
         return () => setIsLayoutReady(false);
     }, []);
+
+
     const editorConfig = useMemo<EditorConfig>((): EditorConfig => {
         if (!isLayoutReady) {
             return {};
@@ -117,14 +123,16 @@ export default function AdminCKEditor({initialValue, onChange, options, disabled
                 Heading,
                 HorizontalLine,
                 ImageBlock,
-                ImageEditing,
+                ImageCaption,
                 ImageInline,
                 ImageInsertViaUrl,
+                ImageResize,
+                ImageStyle,
                 ImageTextAlternative,
                 ImageToolbar,
-                ImageUtils,
-                Indent,
-                IndentBlock,
+                ImageUpload,
+                UploadAdapterPlugin,
+                ImageInsert,
                 Italic,
                 Link,
                 List,
@@ -132,6 +140,7 @@ export default function AdminCKEditor({initialValue, onChange, options, disabled
                 Paragraph,
                 ShowBlocks,
                 SourceEditing,
+                SimpleUploadAdapter,
                 Table,
                 TableCaption,
                 TableCellProperties,
@@ -186,7 +195,16 @@ export default function AdminCKEditor({initialValue, onChange, options, disabled
                 ]
             },
             image: {
-                toolbar: ['imageTextAlternative']
+                toolbar: [
+                    'toggleImageCaption',
+                    'imageTextAlternative',
+                    '|',
+                    'imageStyle:inline',
+                    'imageStyle:wrapText',
+                    'imageStyle:breakText',
+                    '|',
+                    'resizeImage'
+                ]
             },
             initialData: initialValue,
             licenseKey: 'GPL',

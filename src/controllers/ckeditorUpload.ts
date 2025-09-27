@@ -1,8 +1,9 @@
 import { ControllerHelper } from "../helpers/controllerHelper";
+import {Entity} from "../interfaces/types";
 import * as fs from "fs";
-import {Adminizer} from "../lib/Adminizer";
+import multer from "multer";
 
-export default function upload(req: ReqType, res: ResType): void {
+export async function ckEditorUpload(req: ReqType, res: ResType) {
 	let entity = ControllerHelper.findEntityObject(req);
 
 	if (req.adminizer.config.auth.enable) {
@@ -20,37 +21,66 @@ export default function upload(req: ReqType, res: ResType): void {
 		}
 	}
 
-	if (req.method.toUpperCase() === "POST") {
-		try {
-			// set upload directory
-			const dirDownload = `uploads/${entity.type}/${entity.name}/ckeditor`;
-			const dir = `${process.cwd()}/.tmp/public/${dirDownload}/`;
+    const dirDownload = `uploads/${entity.type}/${entity.name}/ckeditor`;
 
-			if (!fs.existsSync(dir)) {
-				fs.mkdirSync(dir, { recursive: true });
-			}
+    await handleUpload(req, res, dirDownload)
 
-			// save file
-			const filenameOrig = req.body.name.replace(' ', '_');
-			let filename = filenameOrig.replace(/$/, '_prefix');
+}
 
-			req.upload({
-				destination: dir,
-				filename: () => filename
-			}).single("image")(req, res, (err) => {
-				if (err) {
-					Adminizer.logger.error("Error uploading file:", err);
-					return res.status(500).send({ error: err.message || "Internal Server Error" });
-				}
+async function handleUpload(req: ReqType, res: ResType, dirDownload: string) {
+    const upload = multer(getUploadConfig(dirDownload)).single("file");
 
-				return res.send({
-					msg: "success",
-					url: `/${dirDownload}/${filename}`,
-				});
-			});
-		} catch (error) {
-			Adminizer.logger.error("Error in uploadImage:", error);
-			res.status(500).send({ error: "Internal Server Error" });
-		}
-	}
+    upload(req, res, async (err) => {
+        try {
+            if (err) {
+                let errorMessage = err.message;
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    const maxSizeMB = (5 * 1024 * 1024) / (1024 * 1024);
+                    errorMessage = `${req.i18n.__('The file exceeds the size limit')} ${maxSizeMB} MB`;
+                }
+                return res.status(400).json({msg: "error", error: errorMessage});
+            }
+
+            return res.send({
+                msg: "success",
+                url: `/${dirDownload}/${req.file.filename}`,
+            });
+        } catch (e) {
+            console.error(e);
+            return res.status(500).send({error: e.message || 'Upload failed'});
+        }
+    });
+}
+
+function getUploadConfig(dirDownload: string) {
+    return {
+        storage: setStorage(checkDirectory(dirDownload)),
+        limits: {
+            fileSize: 5 * 1024 * 1024,
+        },
+        fileFilter: (req: ReqType, file: any, cb: any) => {
+            cb(null, true);
+        }
+    };
+}
+
+function checkDirectory(dirDownload: string): string {
+    const outputDir = `${process.cwd()}/.tmp/public/${dirDownload}`;
+
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, {recursive: true});
+    }
+    return outputDir
+}
+
+function setStorage(outputDir: string) {
+    return multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, outputDir);
+        },
+        filename: (req, file, cb) => {
+            const filename = req.body.name;
+            cb(null, filename);
+        }
+    });
 }
