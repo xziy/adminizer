@@ -7,7 +7,7 @@ import {
     MediaManagerWidgetClientItem,
     SortCriteria,
 } from "./AbstractMediaManager";
-import {populateVariants} from "./helpers/MediaManagerHelper";
+import {getAssociationFieldName, populateVariants} from "./helpers/MediaManagerHelper";
 import {ApplicationItem, ImageItem, TextItem, VideoItem} from "./Items";
 import {Adminizer} from "../Adminizer";
 
@@ -92,12 +92,14 @@ export class DefaultMediaManager extends AbstractMediaManager {
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
         }
 
+        const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileId' : 'file';
+
         for (const [key, widgetItem] of data.entries()) {
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
                 mediaManagerId: this.id,
                 model: model,
                 modelId: modelId,
-                file: widgetItem.id,
+                [fieldName]: widgetItem.id,
                 widgetName: widgetName,
                 sortOrder: key + 1,
             });

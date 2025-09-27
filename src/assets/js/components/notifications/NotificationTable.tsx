@@ -115,7 +115,7 @@ export const NotificationTable = (
                     {uniqueNotifications.map((notification) => (
                         <TableRow key={notification.id}
                                   className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''} grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
-                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} pt-2.5`}>
+                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'} pt-2.5`}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon"
@@ -129,16 +129,16 @@ export const NotificationTable = (
                                     </TooltipContent>
                                 </Tooltip>
                             </TableCell>
-                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} font-medium`}>
+                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'} font-medium`}>
                                 {notification.title}
                             </TableCell>
                             <TableCell
-                                className={`p-2 ${showDiff ? 'align-middle' : 'align-top'} whitespace-break-spaces`}>
+                                className={`p-2 ${showDiff ? 'self-center' : 'self-start'} whitespace-break-spaces`}>
                                 <div className="max-w-[500px] whitespace-break-spaces">
                                     {notification.message}
                                 </div>
                             </TableCell>
-                            <TableCell className={`p-2 ${showDiff ? 'align-middle' : 'align-top'}`}>
+                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'}`}>
                                 {new Date(notification.createdAt).toLocaleString()}
                             </TableCell>
                             {showDiff && notification.metadata?.changes && (

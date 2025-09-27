@@ -87,3 +87,25 @@ export async function populateVariants(adminizer: Adminizer, variants: MediaMana
     }
     return items;
 }
+
+
+export function getAssociationFieldName(model: any, associationName: string): string {
+    const attributes = model.attributes || {};
+
+    // Для вашего случая: file связь использует fileId
+    if (associationName === 'file') {
+        // Проверяем есть ли связь file и какое у нее via
+        if (attributes.file?.type === 'association' && attributes.file.via) {
+            return attributes.file.via; // Вернет 'fileId'
+        }
+
+        // Или просто проверяем наличие fileId
+        if (attributes.fileId) {
+            return 'fileId';
+        }
+    }
+
+    // Общий случай
+    const idField = `${associationName}Id`;
+    return attributes[idField] ? idField : associationName;
+}

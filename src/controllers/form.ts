@@ -21,8 +21,6 @@ export default async function form(req: ReqType, res: ResType) {
     }
     let form = FormHelper.get(req.adminizer, slug);
 
-
-
     if (!form) {
         return res.status(404).send("Adminpanel > Form not found");
     }
@@ -31,7 +29,6 @@ export default async function form(req: ReqType, res: ResType) {
         if (!req.body) {
             return res.status(500).send("Data is empty");
         }
-        console.log(req.body)
         for (let prop in req.body) {
             if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
                 try {
