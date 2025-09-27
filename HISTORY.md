@@ -3,6 +3,8 @@
 - Added dotenv support for loading environment variables from .env file in fixture startup.
 - Created OpenAI setup documentation with security best practices and troubleshooting guide.
 - Modified fixture initialization to load and register OpenAI data agent when API key is available.
+- Added the OpenAI AI assistant fixture agent that executes JSON commands through `DataAccessor` with the caller's permissions.
+- Seeded an `openai` administrator account, granted AI assistant tokens to default groups, and documented the workflow.
 
 ## 4.3.5
 - Anchored the AI assistant panel as a fixed overlay that shifts the entire layout width instead of living inside the content container.

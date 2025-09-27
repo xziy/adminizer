@@ -23,6 +23,25 @@ The default configuration registers the in-memory `dummy` model that always repl
 The fixture configuration enables the assistant with this dummy model so the chat can be exercised locally without any external
 dependencies.
 
+## Fixture OpenAI Agent
+
+The fixture now also registers an `openai` model that executes structured commands against the database. The agent expects JSON instructions and uses `DataAccessor` under the hood, so every operation is filtered by the requesting user's permissions.
+
+Example payload for creating a record:
+
+```json
+{
+  "action": "create",
+  "entity": "Example",
+  "data": {
+    "title": "Hello from the assistant",
+    "description": "Generated through the OpenAI agent"
+  }
+}
+```
+
+If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
+
 ## Backend Overview
 
 * `AiAssistantHandler` keeps registered model services and in-memory conversation history per user and model.
