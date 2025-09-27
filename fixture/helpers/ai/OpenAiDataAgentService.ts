@@ -1,4 +1,3 @@
-import {z} from 'zod';
 import {
     Agent,
     AgentInputItem,
@@ -11,7 +10,8 @@ import {AbstractAiModelService} from '../../../dist/lib/ai-assistant/AbstractAiM
 import {AiAssistantMessage, Entity} from '../../../dist/interfaces/types';
 import {ModelConfig} from '../../../dist/interfaces/adminpanelConfig';
 import {Adminizer} from '../../../dist/lib/Adminizer';
-import {DataAccessor} from '../../../dist/lib/DataAccessor';
+import {DataAccessor, FieldMetadata} from '../../../dist/lib/DataAccessor';
+import {isObject} from '../../../dist/helpers/JsUtils';
 import {UserAP} from '../../../dist/models/UserAP';
 
 interface AgentContext {
@@ -102,7 +102,7 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                         description: 'Maximum number of records to return (default 10).'
                     }
                 },
-                required: ['model', 'filter', 'fields', 'limit'],
+                required: ['model'],
                 additionalProperties: false
             },
             execute: async (input: any, runContext?: RunContext<AgentContext>) => {
@@ -140,19 +140,120 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             },
         });
 
+        const describeFieldsTool = tool({
+            name: 'describe_model_fields',
+            description: 'List fields available for a given action, including descriptions and association details.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1,
+                    },
+                    action: {
+                        type: 'string',
+                        enum: ['list', 'view', 'add', 'edit'],
+                        description: 'Action to describe (defaults to "add" to assist with record creation).',
+                    },
+                },
+                required: ['model'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+                const action = (input.action ?? 'add') as 'list' | 'view' | 'add' | 'edit';
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                const accessor = new DataAccessor(this.adminizer, activeUser, entity, action);
+                const metadata = accessor.listFieldMetadata();
+
+                if (metadata.length === 0) {
+                    return JSON.stringify({
+                        model: entity.name,
+                        action,
+                        fields: [],
+                        message: 'No fields are accessible for this action with the current permissions.',
+                    }, null, 2);
+                }
+
+                return JSON.stringify({
+                    model: entity.name,
+                    action,
+                    fields: metadata,
+                }, null, 2);
+            },
+        });
+
+        const createRecordTool = tool({
+            name: 'create_model_record',
+            description: 'Create a new record in an Adminizer model using DataAccessor and the current user permissions.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1,
+                    },
+                    data: {
+                        description: 'JSON object describing the fields for the new record.',
+                        anyOf: [
+                            {type: 'string', minLength: 2},
+                            {type: 'object'},
+                        ],
+                    },
+                },
+                required: ['model', 'data'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+                const metadata = accessor.listFieldMetadata();
+                if (metadata.length === 0) {
+                    throw new Error('You do not have permission to create records for this model.');
+                }
+
+                const payload = this.parsePayload(input.data);
+                const filteredData = this.restrictPayloadToAccessibleFields(payload, metadata);
+
+                if (Object.keys(filteredData).length === 0) {
+                    throw new Error('None of the provided fields are allowed for creation.');
+                }
+
+                const created = await entity.model.create(filteredData, accessor);
+                return JSON.stringify({
+                    model: entity.name,
+                    record: created,
+                }, null, 2);
+            },
+        });
+
         return new Agent<AgentContext>({
             name: 'Adminizer data agent',
             instructions: [
                 'You are an assistant that answers questions using Adminizer data.',
-                'Always rely on the provided tool to inspect database records.',
-                'Only include fields that are relevant to the question.',
+                'Always rely on the provided tools to inspect database records or modify them.',
+                'Use `describe_model_fields` before creating data to learn which fields are required and what they mean.',
+                'Only include fields that are relevant to the question or action.',
                 'Summaries should explain how the answer was derived from the data.',
                 '',
                 'Accessible models:',
                 modelSummary,
             ].join('\n'),
             handoffDescription: 'Retrieves Adminizer records using DataAccessor with full permission checks.',
-            tools: [dataQueryTool],
+            tools: [describeFieldsTool, dataQueryTool, createRecordTool],
             model: this.model,
         });
     }
@@ -265,5 +366,31 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
         }
 
         return config;
+    }
+
+    private parsePayload(data: unknown): Record<string, unknown> {
+        if (typeof data === 'string') {
+            try {
+                return JSON.parse(data);
+            } catch (error) {
+                throw new Error('Unable to parse the provided JSON payload.');
+            }
+        }
+
+        if (isObject(data)) {
+            return data as Record<string, unknown>;
+        }
+
+        throw new Error('Payload must be either a JSON string or an object.');
+    }
+
+    private restrictPayloadToAccessibleFields(
+        payload: Record<string, unknown>,
+        metadata: FieldMetadata[],
+    ): Record<string, unknown> {
+        const allowedFields = new Set(metadata.map((field) => field.name));
+        return Object.fromEntries(
+            Object.entries(payload).filter(([key]) => allowedFields.has(key)),
+        );
     }
 }

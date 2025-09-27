@@ -25,22 +25,19 @@ dependencies.
 
 ## Fixture OpenAI Agent
 
-The fixture now also registers an `openai` model that executes structured commands against the database. The agent expects JSON instructions and uses `DataAccessor` under the hood, so every operation is filtered by the requesting user's permissions.
+The fixture now also registers an `openai` model that executes structured commands against the database. The agent relies on `DataAccessor` for every operation, so the requesting user's permissions are always enforced—both for reading data and for creating new records. Two tools are exposed to the model:
 
-Example payload for creating a record:
+* `describe_model_fields` — surfaces the list of fields available for a specific action (`add`, `edit`, `list`, or `view`) along with descriptions, required flags, and association metadata. The tool is powered by `DataAccessor.listFieldMetadata()`.
+* `create_model_record` — creates a record through `DataAccessor` using the caller's permissions. The payload can be a JSON object or a JSON string. Any fields outside of the allowed set are ignored before persisting the record.
 
-```json
-{
-  "action": "create",
-  "entity": "Example",
-  "data": {
-    "title": "Hello from the assistant",
-    "description": "Generated through the OpenAI agent"
-  }
-}
+The recommended workflow is to ask the agent to call `describe_model_fields` for the desired model and action, then construct a `create_model_record` payload that includes the required fields. For example, creating an `Example` record from the chat can be accomplished with the following instruction:
+
+```text
+Create an Example entry with title "Hello from the assistant" and description "Generated through the OpenAI agent".
+Call describe_model_fields first so you can confirm the required fields, then call create_model_record.
 ```
 
-If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
+If the user lacks the required access token (for example, `add-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
 
 ## Backend Overview
 
@@ -79,8 +76,10 @@ OpenAI's Agents API while still relying on Adminizer's abstractions:
 
 * The agent implementation lives in `fixture/helpers/ai/OpenAiDataAgentService.ts` and extends
   `AbstractAiModelService`.
-* Database reads are performed through `DataAccessor`, which means the usual access control and field
+* Database reads and writes are performed through `DataAccessor`, which means the usual access control and field
   sanitisation rules are enforced automatically.
+* `DataAccessor.listFieldMetadata()` powers the field-discovery tool so the model can understand which columns are writable and
+  how to describe them when drafting payloads.
 * Conversation history is converted into the `@openai/agents` protocol so follow-up questions can
   build on previous answers.
 
