@@ -1,3 +1,8 @@
+## 4.3.8
+- Added write-capable `create_model_record` tool to the fixture OpenAI agent with DataAccessor permission checks.
+- Updated agent instructions to use JSON envelopes and documented the new command format.
+- Switched the fixture configuration to the single `openai-data` model so reads and writes share one assistant.
+
 ## 4.3.7
 - Added `DataAccessor.describeAccessibleFields()` to expose per-action field metadata for AI and form builders.
 - Extended the fixture OpenAI agent with schema introspection, payload sanitisation, and required-field validation when creating records.
