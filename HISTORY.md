@@ -1,3 +1,9 @@
+## 4.3.6
+- Configured OpenAI API integration through environment variables for AI assistant functionality.
+- Added dotenv support for loading environment variables from .env file in fixture startup.
+- Created OpenAI setup documentation with security best practices and troubleshooting guide.
+- Modified fixture initialization to load and register OpenAI data agent when API key is available.
+
 ## 4.3.5
 - Anchored the AI assistant panel as a fixed overlay that shifts the entire layout width instead of living inside the content container.
 - Persisted the chat open state and selected model across Inertia navigations via a shared viewport manager and updated documentation.

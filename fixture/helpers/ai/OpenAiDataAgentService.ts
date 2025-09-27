@@ -7,12 +7,12 @@ import {
     setDefaultOpenAIKey,
     RunContext,
 } from '@openai/agents';
-import {AbstractAiModelService} from '../../dist/lib/ai-assistant/AbstractAiModelService';
-import {AiAssistantMessage, Entity} from '../../dist/interfaces/types';
-import {ModelConfig} from '../../dist/interfaces/adminpanelConfig';
-import {Adminizer} from '../../dist/lib/Adminizer';
-import {DataAccessor} from '../../dist/lib/DataAccessor';
-import {UserAP} from '../../dist/models/UserAP';
+import {AbstractAiModelService} from '../../../dist/lib/ai-assistant/AbstractAiModelService';
+import {AiAssistantMessage, Entity} from '../../../dist/interfaces/types';
+import {ModelConfig} from '../../../dist/interfaces/adminpanelConfig';
+import {Adminizer} from '../../../dist/lib/Adminizer';
+import {DataAccessor} from '../../../dist/lib/DataAccessor';
+import {UserAP} from '../../../dist/models/UserAP';
 
 interface AgentContext {
     user: UserAP;
@@ -75,44 +75,60 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             ? accessibleModels.map(({name, config}) => `• ${name} (model key: ${config.model})`).join('\n')
             : 'No models are currently accessible.';
 
-        const parameterSchema = z.object({
-            model: z
-                .string()
-                .min(1, 'Model name is required')
-                .describe('Model name as defined in the Adminizer configuration'),
-            filter: z
-                .record(z.any())
-                .optional()
-                .describe('Optional filter object matching the model criteria'),
-            fields: z
-                .array(z.string().min(1))
-                .optional()
-                .describe('Optional list of fields to include in the response'),
-            limit: z
-                .number()
-                .int()
-                .min(1)
-                .max(50)
-                .optional()
-                .describe('Maximum number of records to return (default 10).'),
-        });
-
         const dataQueryTool = tool({
             name: 'query_model_records',
             description: 'Query Adminizer models using DataAccessor. Provide the model name from the admin panel configuration.',
-            parameters: parameterSchema,
-            execute: async (input, runContext?: RunContext<AgentContext>) => {
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1
+                    },
+                    filter: {
+                        type: 'string',
+                        description: 'Optional filter as a JSON string matching the model criteria'
+                    },
+                    fields: {
+                        type: 'array',
+                        items: { type: 'string', minLength: 1 },
+                        description: 'Optional list of fields to include in the response'
+                    },
+                    limit: {
+                        type: 'number',
+                        minimum: 1,
+                        maximum: 50,
+                        description: 'Maximum number of records to return (default 10).'
+                    }
+                },
+                required: ['model', 'filter', 'fields', 'limit'],
+                additionalProperties: false
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
                 const activeUser = runContext?.context?.user ?? user;
+                
+                if (!input.model) {
+                    throw new Error('Model name is required');
+                }
+                
                 const entity = this.resolveEntity(input.model);
                 if (!entity.model) {
                     throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
                 }
 
                 const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'list');
-                const criteria = input.filter ?? {};
+                let criteria = {};
+                if (input.filter && input.filter.trim()) {
+                    try {
+                        criteria = JSON.parse(input.filter);
+                    } catch (e) {
+                        throw new Error('Invalid filter JSON');
+                    }
+                }
                 const records = await entity.model.find(criteria, accessor);
                 const limited = records.slice(0, input.limit ?? 10);
-                const projected = input.fields?.length
+                const projected = input.fields && input.fields.length > 0
                     ? limited.map((record) => this.pickFields(record, input.fields ?? []))
                     : limited;
 

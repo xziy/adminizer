@@ -1,3 +1,7 @@
+// Load environment variables from .env file
+import dotenv from 'dotenv';
+dotenv.config();
+
 import {Adminizer} from "../dist";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/model/adapter/waterline";
@@ -187,6 +191,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                         adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
                     }
                 }
+                console.log(`[fixture] OpenAI data agent successfully registered with ID: ${openAiAgent.id}`);
             } else {
                 Adminizer.log.warn('[fixture] Skipping OpenAI data agent registration because OPENAI_API_KEY is missing.');
             }
