@@ -15,6 +15,17 @@ import {Adminizer} from "./Adminizer";
 import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
 import { isObject } from "../helpers/JsUtils";
+import type {Attribute} from "./model/AbstractModel";
+
+export interface FieldMetadata {
+    name: string;
+    label: string;
+    description?: string;
+    type: FieldsTypes | string;
+    required: boolean;
+    referenceModel?: string;
+    multiple?: boolean;
+}
 
 export class DataAccessor {
     public readonly adminizer: Adminizer;
@@ -153,6 +164,71 @@ export class DataAccessor {
 
         this.fields = result;
         return result;
+    }
+
+    /**
+     * Lists fields available for the current action together with human friendly metadata.
+     * The returned array is already filtered by access rights via {@link getFieldsConfig}.
+     */
+    public listFieldMetadata(): FieldMetadata[] {
+        const fields = this.getFieldsConfig();
+
+        if (!fields) {
+            return [];
+        }
+
+        return Object.entries(fields).map(([fieldName, field]): FieldMetadata => {
+            const config = field.config as BaseFieldConfig;
+            const modelField = field.model as Attribute | undefined;
+            const type = config.type ?? this.resolveModelFieldType(modelField);
+            const referenceModel = this.resolveReferenceModel(modelField);
+
+            return {
+                name: fieldName,
+                label: config.title ?? fieldName,
+                description: config.tooltip,
+                type,
+                required: Boolean(config.required ?? (typeof modelField === 'object' && modelField?.required)),
+                referenceModel: referenceModel ?? undefined,
+                multiple: type === 'association-many' ? true : undefined,
+            };
+        });
+    }
+
+    private resolveModelFieldType(modelField: Attribute | undefined): string {
+        if (!modelField) {
+            return 'string';
+        }
+
+        if (typeof modelField.type === 'string' && modelField.type.length > 0) {
+            return modelField.type;
+        }
+
+        if (modelField.model) {
+            return 'association';
+        }
+
+        if (modelField.collection) {
+            return 'association-many';
+        }
+
+        return 'string';
+    }
+
+    private resolveReferenceModel(modelField: Attribute | undefined): string | null {
+        if (!modelField) {
+            return null;
+        }
+
+        if (modelField.model) {
+            return modelField.model;
+        }
+
+        if (modelField.collection) {
+            return modelField.collection;
+        }
+
+        return null;
     }
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {

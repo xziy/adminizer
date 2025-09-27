@@ -1,4 +1,6 @@
 ## 4.3.6
+- Added a `DataAccessor.listFieldMetadata` helper that surfaces accessible fields with descriptions for permission-aware flows.
+- Extended the fixture OpenAI data agent with field-discovery and record-creation tools driven by DataAccessor permissions.
 - Configured OpenAI API integration through environment variables for AI assistant functionality.
 - Added dotenv support for loading environment variables from .env file in fixture startup.
 - Created OpenAI setup documentation with security best practices and troubleshooting guide.
