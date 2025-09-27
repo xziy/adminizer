@@ -160,6 +160,20 @@ describe('DataAccessor test', () => {
     expect(result[0]).toHaveProperty('guardedField');
   });
 
+  it('describeAccessibleFields exposes only permitted fields with metadata', () => {
+    instance = new DataAccessor(adminizer, adminUser, entity, 'add');
+    const descriptors = instance.describeAccessibleFields();
+    const titleField = descriptors.find((descriptor) => descriptor.key === 'title');
+    expect(titleField).toBeTruthy();
+    expect(titleField?.type).toBeDefined();
+    expect(titleField?.title).toBe('Title');
+
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
+    const restrictedDescriptors = instance.describeAccessibleFields();
+    const restrictedKeys = restrictedDescriptors.map((descriptor) => descriptor.key);
+    expect(restrictedKeys).not.toContain('guardedField');
+  });
+
   it('`sanitizeUserRelationAccess()` includes user ID in criteria', async () => {
     // if (entity.config && entity.config.userAccessRelation) {
     //   entity.config.userAccessRelation = {

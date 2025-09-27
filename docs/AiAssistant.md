@@ -42,6 +42,25 @@ Example payload for creating a record:
 
 If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
 
+### Discovering available fields
+
+Before issuing a `create` command the agent can now describe the exact payload shape that is accepted for the chosen model. This
+is achieved through the `fields` action which asks `DataAccessor` for the list of writable fields, their types, requirements, and
+association hints. The agent trims any values that are not allowed and will stop execution if mandatory properties are missing.
+
+Example request for the schema:
+
+```json
+{
+  "action": "fields",
+  "entity": "Example"
+}
+```
+
+The response enumerates each accessible field, including required flags, optional descriptions (taken from field tooltips),
+allowed enums, and association targets. When a `create` command is executed afterwards the agent automatically reuses this
+metadata to validate the payload and report missing values instead of failing with a generic database error.
+
 ## Backend Overview
 
 * `AiAssistantHandler` keeps registered model services and in-memory conversation history per user and model.

@@ -4,7 +4,7 @@ import {UserAP} from '../src/models/UserAP';
 import {Adminizer} from '../src/lib/Adminizer';
 import {ActionType, ModelConfig} from '../src/interfaces/adminpanelConfig';
 import {Entity} from '../src/interfaces/types';
-import {DataAccessor} from '../src/lib/DataAccessor';
+import {AccessibleFieldDescriptor, DataAccessor} from '../src/lib/DataAccessor';
 
 describe('OpenAiModelService', () => {
     const createAdminizerStub = () => {
@@ -66,7 +66,14 @@ describe('OpenAiModelService', () => {
 
     it('creates a record using DataAccessor when JSON command is provided', async () => {
         const {adminizer, user, modelCreate} = createAdminizerStub();
-        const accessorStub = {} as DataAccessor;
+        const descriptors: AccessibleFieldDescriptor[] = [{
+            key: 'title',
+            title: 'Title',
+            type: 'string',
+            required: false,
+            disabled: false,
+        }];
+        const accessorStub = {describeAccessibleFields: vi.fn(() => descriptors)} as unknown as DataAccessor;
         const accessorFactory = vi.fn((entity: Entity, currentUser: UserAP, action: ActionType) => {
             expect(entity.name).toBe('Example');
             expect(currentUser).toBe(user);
@@ -84,6 +91,7 @@ describe('OpenAiModelService', () => {
         const reply = await service.generateReply(JSON.stringify(payload), [], user);
 
         expect(accessorFactory).toHaveBeenCalledTimes(1);
+        expect(accessorStub.describeAccessibleFields).toHaveBeenCalled();
         expect(modelCreate).toHaveBeenCalledWith(payload.data, accessorStub);
         expect(reply).toContain('Record created in Example');
         expect(reply).toContain('AI title');
@@ -103,5 +111,65 @@ describe('OpenAiModelService', () => {
         const reply = await service.generateReply(JSON.stringify(payload), [], user);
 
         expect(reply).toContain('does not have permission');
+    });
+
+    it('describes accessible fields when requested', async () => {
+        const {adminizer, user} = createAdminizerStub();
+        const descriptors: AccessibleFieldDescriptor[] = [{
+            key: 'title',
+            title: 'Title',
+            type: 'string',
+            required: true,
+            disabled: false,
+            description: 'Name shown in the admin panel',
+        }];
+
+        const accessorStub = {
+            describeAccessibleFields: vi.fn(() => descriptors),
+        } as unknown as DataAccessor;
+
+        const accessorFactory = vi.fn(() => accessorStub);
+
+        const service = new OpenAiModelService(adminizer, accessorFactory);
+        const request = {
+            action: 'fields',
+            entity: 'Example',
+        };
+
+        const reply = await service.generateReply(JSON.stringify(request), [], user);
+
+        expect(accessorFactory).toHaveBeenCalledWith(expect.objectContaining({name: 'Example'}), user, 'add');
+        expect(reply).toContain('Fields available for creating Example records');
+        expect(reply).toContain('title');
+        expect(reply).toContain('required');
+    });
+
+    it('prevents creation when required fields are missing', async () => {
+        const {adminizer, user} = createAdminizerStub();
+        const descriptors: AccessibleFieldDescriptor[] = [{
+            key: 'title',
+            title: 'Title',
+            type: 'string',
+            required: true,
+            disabled: false,
+        }];
+
+        const accessorStub = {
+            describeAccessibleFields: vi.fn(() => descriptors),
+        } as unknown as DataAccessor;
+
+        const accessorFactory = vi.fn(() => accessorStub);
+
+        const service = new OpenAiModelService(adminizer, accessorFactory);
+        const payload = {
+            action: 'create',
+            entity: 'Example',
+            data: {},
+        };
+
+        const reply = await service.generateReply(JSON.stringify(payload), [], user);
+
+        expect(reply).toContain('Please provide values for: title');
+        expect(accessorFactory).toHaveBeenCalled();
     });
 });

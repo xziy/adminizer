@@ -1,3 +1,8 @@
+## 4.3.7
+- Added `DataAccessor.describeAccessibleFields()` to expose per-action field metadata for AI and form builders.
+- Extended the fixture OpenAI agent with schema introspection, payload sanitisation, and required-field validation when creating records.
+- Documented the new workflow and updated tests to cover the field discovery command.
+
 ## 4.3.6
 - Configured OpenAI API integration through environment variables for AI assistant functionality.
 - Added dotenv support for loading environment variables from .env file in fixture startup.

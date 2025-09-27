@@ -116,3 +116,31 @@ In this example:
 * `internalStatus` is only shown to admins and QA team members.
 * `createdAt` is hidden entirely.
 * Only records where the current user is the `owner` are accessible to non-admins.
+
+---
+
+#### **Field Metadata Export (`describeAccessibleFields`)**
+
+When building automated tooling—such as the fixture's OpenAI agent—it is often necessary to know not only which fields are
+visible, but also how they should be populated. The new `describeAccessibleFields()` helper returns a curated list of descriptors
+for the current action, honouring all checks described above. Each descriptor contains:
+
+* `key`, `title`, and `type` — the normalized field metadata.
+* `required` / `disabled` flags — so clients know whether a value must be supplied.
+* `description`, `placeholder`, `allowedValues`, and `options` — sourced from the field configuration when present.
+* `association` details — identifies the linked model and whether the relation accepts multiple entries.
+
+The method is especially useful for AI or form builders because it eliminates guesswork and guarantees parity with the existing
+permission model:
+
+```ts
+const accessor = new DataAccessor(adminizer, user, entity, 'add');
+const fields = accessor.describeAccessibleFields();
+
+fields.forEach((field) => {
+    console.log(`${field.key} → ${field.type}`);
+});
+```
+
+Consumers can confidently pre-validate payloads, filter out forbidden attributes, and craft meaningful prompts before they reach
+the persistence layer.
