@@ -440,7 +440,8 @@ export class DataAccessor {
             return null;
         }
 
-        const targetModel = (field.model?.model ?? field.model?.collection ?? field.model?.ref) as string | undefined;
+        const modelReference = field.model as {model?: string; collection?: string; ref?: string} | undefined;
+        const targetModel = (modelReference?.model ?? modelReference?.collection ?? modelReference?.ref) as string | undefined;
 
         if (!targetModel) {
             return null;

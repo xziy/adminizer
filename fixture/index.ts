@@ -16,6 +16,7 @@ import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
 import {OpenAiDataAgentService} from "./helpers/ai/OpenAiDataAgentService";
+import {AiAssistantHandler} from "../dist/lib/ai-assistant/AiAssistantHandler";
 
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
@@ -181,9 +182,12 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         if (adminizer.config.aiAssistant?.enabled) {
             const openAiAgent = new OpenAiDataAgentService(adminizer);
             if (openAiAgent.isEnabled()) {
+                // Re-create the handler so only the data agent is exposed in the fixture.
+                adminizer.aiAssistantHandler = new AiAssistantHandler(adminizer);
                 adminizer.aiAssistantHandler.registerModel(openAiAgent);
 
-                // Set as default model
+                // Reflect the active model in the runtime configuration so the UI shows a single option.
+                adminizer.config.aiAssistant.models = [openAiAgent.id];
                 adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
 
                 console.log(`[fixture] OpenAI data agent successfully registered with ID: ${openAiAgent.id}`);

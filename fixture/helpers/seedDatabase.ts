@@ -28,8 +28,7 @@ export async function seedDatabase(
   // ------------------ Groups ------------------ //
   const groupNames = [
     { name: 'Admins', description: 'System administrators', tokens: [
-      'ai-assistant-dummy',
-      'ai-assistant-openai',
+      'ai-assistant-openai-data',
     ] },
     { name: 'Users', description: 'Registered users', tokens:
       [
@@ -43,8 +42,7 @@ export async function seedDatabase(
         "update-example-model",
 
         "read-jsonschema-model",
-        "ai-assistant-dummy",
-        "ai-assistant-openai",
+        "ai-assistant-openai-data",
       ]
     },
     { name: 'Guests', description: 'Guest access' },

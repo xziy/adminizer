@@ -100,8 +100,33 @@ OpenAI's Agents API while still relying on Adminizer's abstractions:
   `AbstractAiModelService`.
 * Database reads are performed through `DataAccessor`, which means the usual access control and field
   sanitisation rules are enforced automatically.
+* Record creation is also performed through the same accessor using the `mutate_model_record`
+  tool. The agent builds a JSON payload with the caller's permissions, validates required fields,
+  and persists the record on behalf of the user.
 * Conversation history is converted into the `@openai/agents` protocol so follow-up questions can
   build on previous answers.
+
+### Creating Records Through the Agent
+
+When the user requests a new record the agent calls the `mutate_model_record` tool with a payload
+similar to the following:
+
+```json
+{
+  "action": "create",
+  "model": "Example",
+  "payload": {
+    "title": "Launch checklist",
+    "description": "Kick-off tasks captured by the agent",
+    "sort": true
+  }
+}
+```
+
+The payload is sanitised against the current user's `DataAccessor` permissions, so any disabled or
+restricted fields are ignored automatically. Required fields are validated before the mutation runs
+and a descriptive error is returned to the chat if anything is missing. Once the tool succeeds the
+assistant summarises the action and returns the created record identifier to the user.
 
 To enable the agent locally, set the following environment variables before starting the fixture:
 
