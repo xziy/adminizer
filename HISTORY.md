@@ -1,3 +1,7 @@
+## 4.3.6
+- Added the OpenAI AI assistant fixture agent that executes JSON commands through `DataAccessor` with the caller's permissions.
+- Seeded an `openai` administrator account, granted AI assistant tokens to default groups, and documented the workflow.
+
 ## 4.3.5
 - Anchored the AI assistant panel as a fixed overlay that shifts the entire layout width instead of living inside the content container.
 - Persisted the chat open state and selected model across Inertia navigations via a shared viewport manager and updated documentation.
