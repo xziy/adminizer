@@ -61,7 +61,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const getTabs = async () => {
         try {
-            const res = await axios.put(`${window.routePrefix}/api/notifications/get-classes`);
+            const res = await axios.get(`${window.routePrefix}/api/notifications/get-classes`);
             setTabs(res.data);
         } catch (error) {
             console.error('Error fetching tabs:', error);
