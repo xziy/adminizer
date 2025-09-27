@@ -16,6 +16,23 @@ import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
 import { isObject } from "../helpers/JsUtils";
 
+export interface AccessibleFieldDescriptor {
+    key: string;
+    title: string;
+    type: FieldsTypes;
+    required: boolean;
+    disabled: boolean;
+    description?: string;
+    placeholder?: string;
+    defaultValue?: unknown;
+    allowedValues?: unknown[];
+    options?: Record<string, unknown>;
+    association?: {
+        model: string;
+        multiple: boolean;
+    } | null;
+}
+
 export class DataAccessor {
     public readonly adminizer: Adminizer;
     user: UserAP;
@@ -343,6 +360,96 @@ export class DataAccessor {
         }
 
         return filteredAssociatedRecord;
+    }
+
+    public describeAccessibleFields(): AccessibleFieldDescriptor[] {
+        const fieldsConfig = this.getFieldsConfig();
+
+        if (!fieldsConfig) {
+            return [];
+        }
+
+        const descriptors: AccessibleFieldDescriptor[] = [];
+
+        for (const [key, field] of Object.entries(fieldsConfig)) {
+            if (!field || !isObject(field.config)) {
+                continue;
+            }
+
+            const config = field.config as (BaseFieldConfig & {
+                value?: unknown;
+                default?: unknown;
+                placeholder?: string;
+                description?: string;
+                helperText?: string;
+                isIn?: unknown;
+                options?: Record<string, unknown>;
+            });
+
+            if (!this.checkFieldAccess(key, config)) {
+                continue;
+            }
+
+            const fieldType = (config.type ?? field.model?.type ?? 'string') as FieldsTypes;
+            const allowedValues = this.extractAllowedValues(config);
+
+            const options = isObject(config.options)
+                ? config.options as Record<string, unknown>
+                : undefined;
+
+            const descriptor: AccessibleFieldDescriptor = {
+                key,
+                title: config.title ?? key,
+                type: fieldType,
+                required: Boolean(config.required),
+                disabled: Boolean(config.disabled),
+                description: config.tooltip ?? config.description ?? config.helperText,
+                placeholder: config.placeholder,
+                defaultValue: config.value ?? config.default,
+                allowedValues,
+                options,
+                association: this.describeAssociation(fieldType, field),
+            };
+
+            descriptors.push(descriptor);
+        }
+
+        return descriptors;
+    }
+
+    private extractAllowedValues(config: BaseFieldConfig & {isIn?: unknown}): unknown[] | undefined {
+        if (!config.isIn) {
+            return undefined;
+        }
+
+        const values = config.isIn;
+
+        if (Array.isArray(values)) {
+            return [...values];
+        }
+
+        if (isObject(values)) {
+            return Object.entries(values).map(([value, label]) => ({value, label}));
+        }
+
+        return undefined;
+    }
+
+    private describeAssociation(type: FieldsTypes, field: Field): AccessibleFieldDescriptor['association'] {
+        if (type !== 'association' && type !== 'association-many') {
+            return null;
+        }
+
+        const targetModel = (field.model?.model ?? field.model?.collection ?? field.model?.ref) as string | undefined;
+
+        if (!targetModel) {
+            return null;
+        }
+
+        return {
+            model: targetModel,
+            multiple: type === 'association-many',
+        };
     }
 
     /** Process for an array of records */
