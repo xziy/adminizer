@@ -1,4 +1,3 @@
-import {z} from 'zod';
 import {
     Agent,
     AgentInputItem,
@@ -69,6 +68,7 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
         }
     }
 
+
     private createAgent(user: UserAP): Agent<AgentContext> {
         const accessibleModels = this.listReadableModels(user);
         const modelSummary = accessibleModels.length > 0
@@ -87,46 +87,40 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                         minLength: 1
                     },
                     filter: {
-                        type: 'string',
-                        description: 'Optional filter as a JSON string matching the model criteria'
+                        type: 'object',
+                        description: 'Optional filter expressed as JSON using Adminizer criteria operators.',
+                        additionalProperties: true
                     },
                     fields: {
                         type: 'array',
                         items: { type: 'string', minLength: 1 },
-                        description: 'Optional list of fields to include in the response'
+                        description: 'Optional list of fields to include in the response',
                     },
                     limit: {
                         type: 'number',
                         minimum: 1,
                         maximum: 50,
-                        description: 'Maximum number of records to return (default 10).'
+                        description: 'Maximum number of records to return (default 10).',
                     }
                 },
-                required: ['model', 'filter', 'fields', 'limit'],
+                required: ['model'],
                 additionalProperties: false
             },
             execute: async (input: any, runContext?: RunContext<AgentContext>) => {
                 const activeUser = runContext?.context?.user ?? user;
-                
+
                 if (!input.model) {
                     throw new Error('Model name is required');
                 }
-                
+
                 const entity = this.resolveEntity(input.model);
                 if (!entity.model) {
                     throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
                 }
 
                 const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'list');
-                let criteria = {};
-                if (input.filter && input.filter.trim()) {
-                    try {
-                        criteria = JSON.parse(input.filter);
-                    } catch (e) {
-                        throw new Error('Invalid filter JSON');
-                    }
-                }
-                const records = await entity.model.find(criteria, accessor);
+                const filter = this.ensurePlainObject(input.filter ?? {});
+                const records = await entity.model.find(filter, accessor);
                 const limited = records.slice(0, input.limit ?? 10);
                 const projected = input.fields && input.fields.length > 0
                     ? limited.map((record) => this.pickFields(record, input.fields ?? []))
@@ -140,19 +134,118 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             },
         });
 
+        const dataMutationTool = tool({
+            name: 'mutate_model_records',
+            description: 'Create, update, or delete Adminizer model records with DataAccessor permissions.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    action: {
+                        type: 'string',
+                        enum: ['create', 'update', 'delete'],
+                        description: 'Mutation type to perform on the target model.'
+                    },
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'Field values to apply when creating or updating a record.',
+                        additionalProperties: true
+                    },
+                    criteria: {
+                        type: 'object',
+                        description: 'Optional criteria object used to select a record for update/delete.',
+                        additionalProperties: true
+                    },
+                    id: {
+                        description: 'Optional identifier helper used when targeting a specific record.',
+                        anyOf: [
+                            {type: 'string', minLength: 1},
+                            {type: 'number'}
+                        ]
+                    }
+                },
+                required: ['action', 'model'],
+                additionalProperties: false
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+
+                if (!input.model) {
+                    throw new Error('Model name is required');
+                }
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                const action = String(input.action);
+
+                switch (action) {
+                    case 'create': {
+                        const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+                        const payload = this.filterWritableData(input.data, accessor);
+                        if (Object.keys(payload).length === 0) {
+                            throw new Error('Provide at least one writable field in "data" to create a record.');
+                        }
+                        const created = await entity.model.create(payload, accessor);
+                        return JSON.stringify({
+                            model: entity.name,
+                            record: created,
+                        }, null, 2);
+                    }
+                    case 'update': {
+                        const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'edit');
+                        const payload = this.filterWritableData(input.data, accessor);
+                        if (Object.keys(payload).length === 0) {
+                            throw new Error('Provide at least one writable field in "data" to update a record.');
+                        }
+                        const criteria = this.buildCriteria(input.criteria, input.id);
+                        const updated = await entity.model.updateOne(criteria, payload, accessor);
+                        if (!updated) {
+                            throw new Error('No matching record was found or you do not have permission to update it.');
+                        }
+                        return JSON.stringify({
+                            model: entity.name,
+                            record: updated,
+                        }, null, 2);
+                    }
+                    case 'delete': {
+                        const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'remove');
+                        const criteria = this.buildCriteria(input.criteria, input.id);
+                        const removed = await entity.model.destroyOne(criteria, accessor);
+                        if (!removed) {
+                            throw new Error('No matching record was found or you do not have permission to delete it.');
+                        }
+                        return JSON.stringify({
+                            model: entity.name,
+                            record: removed,
+                        }, null, 2);
+                    }
+                    default:
+                        throw new Error('Unsupported action. Use "create", "update", or "delete".');
+                }
+            },
+        });
+
         return new Agent<AgentContext>({
             name: 'Adminizer data agent',
             instructions: [
                 'You are an assistant that answers questions using Adminizer data.',
-                'Always rely on the provided tool to inspect database records.',
-                'Only include fields that are relevant to the question.',
+                'Always rely on the provided tools to inspect or change database records.',
+                'All tool calls must be expressed as JSON instructions, e.g. {"action":"create","model":"Example","data":{...}}.',
+                'Only include fields that are relevant to the question and respect user permissions.',
                 'Summaries should explain how the answer was derived from the data.',
                 '',
                 'Accessible models:',
                 modelSummary,
             ].join('\n'),
             handoffDescription: 'Retrieves Adminizer records using DataAccessor with full permission checks.',
-            tools: [dataQueryTool],
+            tools: [dataQueryTool, dataMutationTool],
             model: this.model,
         });
     }
@@ -164,6 +257,45 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             }
             return acc;
         }, {});
+    }
+
+    private ensurePlainObject<T = Record<string, unknown>>(value: unknown): T {
+        if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+            throw new Error('Expected a JSON object.');
+        }
+
+        return value as T;
+    }
+
+    private filterWritableData(
+        rawData: unknown,
+        accessor: DataAccessor,
+    ): Record<string, unknown> {
+        const data = rawData ? this.ensurePlainObject<Record<string, unknown>>(rawData) : {};
+        const fieldsConfig = accessor.getFieldsConfig();
+
+        if (!fieldsConfig) {
+            throw new Error('You do not have permission to modify this model.');
+        }
+
+        const writableEntries = Object.entries(data)
+            .filter(([key]) => Boolean(fieldsConfig[key]));
+
+        return Object.fromEntries(writableEntries);
+    }
+
+    private buildCriteria(criteriaInput: unknown, id: unknown): Record<string, unknown> {
+        const criteria = criteriaInput ? this.ensurePlainObject<Record<string, unknown>>(criteriaInput) : {};
+
+        if (id !== undefined) {
+            criteria.id = id;
+        }
+
+        if (Object.keys(criteria).length === 0) {
+            throw new Error('Provide either "id" or "criteria" to target a record.');
+        }
+
+        return criteria;
     }
 
     private toAgentInput(history: AiAssistantMessage[]): AgentInputItem[] {

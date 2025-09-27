@@ -1,3 +1,7 @@
+## 4.3.8
+- Added a single OpenAI data agent in the fixture with JSON-based query and mutation tools that honour `DataAccessor` permissions.
+- Documented the JSON instruction format for querying, creating, updating, and deleting records through the assistant.
+
 ## 4.3.7
 - Added `DataAccessor.describeAccessibleFields()` to expose per-action field metadata for AI and form builders.
 - Extended the fixture OpenAI agent with schema introspection, payload sanitisation, and required-field validation when creating records.

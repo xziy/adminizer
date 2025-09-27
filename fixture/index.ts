@@ -179,6 +179,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         // Register OpenAI data agent after init if API key is available
         if (adminizer.config.aiAssistant?.enabled) {
+            adminizer.aiAssistantHandler.clearModels();
             const openAiAgent = new OpenAiDataAgentService(adminizer);
             if (openAiAgent.isEnabled()) {
                 adminizer.aiAssistantHandler.registerModel(openAiAgent);

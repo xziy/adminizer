@@ -19,6 +19,10 @@ export class AiAssistantHandler {
         this.models.set(service.id, service);
     }
 
+    clearModels(): void {
+        this.models.clear();
+    }
+
     getModel(id: string): AbstractAiModelService | undefined {
         return this.models.get(id);
     }
