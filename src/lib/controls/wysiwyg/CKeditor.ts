@@ -25,7 +25,7 @@ export class CKeditor extends AbstractControls {
             '|',
             'horizontalLine',
             'link',
-            'insertImageViaUrl',
+            'insertImage',
             'insertTable',
             'blockQuote',
             '|',
