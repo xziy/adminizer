@@ -1,3 +1,8 @@
+## 4.3.8
+- Added a `mutate_model_record` tool so the fixture OpenAI agent can create records through `DataAccessor` with the caller's permissions.
+- Limited the fixture AI assistant to the OpenAI data agent and updated seeded access rights for the new token.
+- Documented the JSON payload format for agent-driven mutations.
+
 ## 4.3.7
 - Added `DataAccessor.describeAccessibleFields()` to expose per-action field metadata for AI and form builders.
 - Extended the fixture OpenAI agent with schema introspection, payload sanitisation, and required-field validation when creating records.
