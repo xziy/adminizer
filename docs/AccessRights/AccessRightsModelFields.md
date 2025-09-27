@@ -28,6 +28,31 @@ This class:
 * **Association support**: Handles both `BelongsTo` and `HasMany` style associations with optional population and recursive field filtering.
 * **Multi-level access logic**: Enforces both direct and intermediate relation-based access restrictions using the `userAccessRelation` model config key.
 * **CRUD-agnostic**: Designed to be used with various actions (`add`, `edit`, `view`, `list`) with unified processing logic.
+* **Field metadata discovery**: `listAccessibleFields()` returns sanitized metadata describing every field the current user can touch for the current action.
+
+---
+
+#### **Field Metadata API**
+
+The `listAccessibleFields()` helper exposes a lightweight description of the fields that remain after
+all permission checks. Each entry includes:
+
+| Property | Description |
+| --- | --- |
+| `key` | Field identifier as used in payloads and criteria |
+| `label` | Human-friendly title derived from the model configuration |
+| `type` | Normalised field type (e.g. `string`, `association-many`, `jsoneditor`) |
+| `required` | Indicates whether the field must be supplied when creating or editing records |
+| `description` | Tooltip/description text from the configuration (when available) |
+| `readOnly` | True if the field is marked as disabled/readonly for the current user |
+| `isAssociation` | True for relation fields (`association` or `association-many`) |
+| `isCollection` | True only for `association-many` relations |
+| `options` | Widget-specific options (when defined) |
+| `choices` | The `isIn` enumeration, useful for select-style inputs |
+
+Because the method respects the accessor action (`add`, `edit`, `list`, or `view`), it can be used to
+drive dynamic form generation, AI assistant hints, or API schema discovery without leaking fields that
+the caller cannot access.
 
 ---
 

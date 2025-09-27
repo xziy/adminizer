@@ -16,6 +16,19 @@ import { GroupAP } from "models/GroupAP";
 import { UserAP } from "models/UserAP";
 import { isObject } from "../helpers/JsUtils";
 
+export interface DataAccessorFieldMetadata {
+    key: string;
+    label: string;
+    type: FieldsTypes;
+    required: boolean;
+    description?: string;
+    readOnly: boolean;
+    isAssociation: boolean;
+    isCollection: boolean;
+    options?: BaseFieldConfig["options"];
+    choices?: BaseFieldConfig["isIn"];
+}
+
 export class DataAccessor {
     public readonly adminizer: Adminizer;
     user: UserAP;
@@ -153,6 +166,44 @@ export class DataAccessor {
 
         this.fields = result;
         return result;
+    }
+
+    public listAccessibleFields(): DataAccessorFieldMetadata[] {
+        const config = this.getFieldsConfig();
+
+        if (!config) {
+            return [];
+        }
+
+        return Object.entries(config).reduce<DataAccessorFieldMetadata[]>((acc, [key, field]) => {
+            if (!field || !isObject(field.config)) {
+                return acc;
+            }
+
+            const normalizedConfig = field.config as BaseFieldConfig & Record<string, unknown>;
+            const rawType = typeof normalizedConfig.type === "string"
+                ? normalizedConfig.type
+                : typeof field.model?.type === "string"
+                    ? field.model.type
+                    : "string";
+            const normalizedType = rawType.toLowerCase() as FieldsTypes;
+
+            const metadata: DataAccessorFieldMetadata = {
+                key,
+                label: normalizedConfig.title ?? key,
+                type: normalizedType,
+                required: Boolean(normalizedConfig.required),
+                description: normalizedConfig.tooltip ?? (normalizedConfig as { description?: string }).description,
+                readOnly: Boolean((normalizedConfig as { disabled?: boolean }).disabled ?? (normalizedConfig as { readonly?: boolean }).readonly),
+                isAssociation: normalizedType === "association" || normalizedType === "association-many",
+                isCollection: normalizedType === "association-many",
+                options: normalizedConfig.options,
+                choices: normalizedConfig.isIn,
+            };
+
+            acc.push(metadata);
+            return acc;
+        }, []);
     }
 
     private getAssociatedFieldsConfig(modelName: string): { [fieldName: string]: Field } | undefined {
