@@ -21,17 +21,6 @@ export default async function form(req: ReqType, res: ResType) {
     }
     let form = FormHelper.get(req.adminizer, slug);
 
-    for (let prop in req.body) {
-        if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
-            try {
-                req.body[prop] = JSON.parse(req.body[prop]);
-            } catch (e) {
-                if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
-                    Adminizer.log.error(JSON.stringify(req.body[prop]), e);
-                }
-            }
-        }
-    }
 
 
     if (!form) {
@@ -41,6 +30,18 @@ export default async function form(req: ReqType, res: ResType) {
     if (req.method.toUpperCase() === "POST") {
         if (!req.body) {
             return res.status(500).send("Data is empty");
+        }
+        console.log(req.body)
+        for (let prop in req.body) {
+            if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
+                try {
+                    req.body[prop] = JSON.parse(req.body[prop]);
+                } catch (e) {
+                    if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
+                        Adminizer.log.error(JSON.stringify(req.body[prop]), e);
+                    }
+                }
+            }
         }
 
         // checkboxes processing

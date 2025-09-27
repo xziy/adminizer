@@ -1,10 +1,9 @@
 import {DialogStack, DialogStackBody, DialogStackContent, DialogStackOverlay} from "@/components/ui/dialog-stack.tsx";
 import DropZone from "@/components/media-manager/components/DropZone.tsx";
-import {FC, RefObject, useContext, useEffect, useRef, useState} from "react";
+import {FC, RefObject, useContext, useRef, useState} from "react";
 import Gallery, {GalleryRef} from "@/components/media-manager/components/Gallery.tsx";
 import MediaMetaForm from "@/components/media-manager/components/MediaMeta.tsx";
 import {Media} from "@/types";
-import axios from "axios";
 import {MediaManagerContext} from "@/components/media-manager/media-manager.tsx";
 import ImageCropper from "@/components/media-manager/components/ImageCropper.tsx";
 import MediaVariants from "@/components/media-manager/components/MediaVariants.tsx";
@@ -16,8 +15,7 @@ interface MediaDialogStackProps {
 const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
     const galleryRef = useRef<GalleryRef>(null);
     const [media, setMedia] = useState<Media | null>(null);
-    const [messages, setMessages] = useState<Record<string, string>>({})
-    const {uploadUrl, group} = useContext(MediaManagerContext);
+    const {uploadUrl, group, messages} = useContext(MediaManagerContext);
     const [popupType, setPopupType] = useState<string>('');
 
 
@@ -48,16 +46,7 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
         }, 0)
     }
 
-    useEffect(() => {
-        const initLocales = async () => {
-            let res = await axios.post(`${uploadUrl}`, {
-                _method: 'getLocales'
-            });
-            setMessages(res.data.data);
-        };
 
-        initLocales();
-    }, []);
     return (
         <DialogStack ref={dialogRef}>
             <DialogStackOverlay/>
@@ -107,7 +96,7 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                                 <MediaVariants
                                     item={media}
                                     messages={messages}
-                                    destroy={(item, variant)=> galleryRef.current?.destroyVariant(item, variant)}
+                                    destroy={(item, variant) => galleryRef.current?.destroyVariant(item, variant)}
                                 />
                             }
                         </div>

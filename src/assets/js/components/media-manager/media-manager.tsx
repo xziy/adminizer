@@ -1,4 +1,4 @@
-import {useRef, useState, createContext, useCallback} from 'react';
+import {useRef, useState, createContext, useCallback, useEffect} from 'react';
 import {
     closestCenter,
     DndContext,
@@ -36,6 +36,7 @@ import {Grid2x2Plus} from "lucide-react";
 import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 import MediaDialogStack from "@/components/media-manager/components/MediaDialogStack.tsx";
 import {Media} from "@/types";
+import axios from "axios";
 
 interface Props {
     layout: Layout;
@@ -52,6 +53,7 @@ type MediaManagerContextType = {
     config?: Record<string, any>
     managerId: string
     group: string
+    messages: Record<string, string>
     addMedia: (media: Media) => void
     removeMedia: (media: Media) => void
     imageUrl: (media: Media) => string
@@ -64,6 +66,7 @@ export const MediaManagerContext = createContext<MediaManagerContextType>({
     config: {},
     managerId: '',
     group: '',
+    messages: {},
     addMedia: (_media) => console.warn('addMedia not implemented'),
     removeMedia: (_media: Media) => console.warn('removeMedia not implemented'),
     imageUrl: (_media: Media) => {
@@ -110,6 +113,21 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
+    const [messages, setMessages] = useState<Record<string, string>>({});
+
+    const uploadUrl = `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`;
+
+    const initLocales = async () => {
+        let res = await axios.post(uploadUrl, {
+            _method: 'getLocales'
+        });
+        setMessages(res.data.data);
+    };
+
+    useEffect(() => {
+        initLocales()
+    }, []);
+
     const addMediaWithCallback = useCallback((newMedia: Media) => {
         setItems((prev) => {
             const newItems = [...prev, newMedia];
@@ -128,9 +146,10 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
     }, [onChange]);
 
     const contextValue: MediaManagerContextType = {
-        uploadUrl: `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`,
+        uploadUrl: uploadUrl,
         managerId: config.id,
         group: config.group,
+        messages: messages,
         config: {},
         addMedia: (media) => addMediaWithCallback(media),
         removeMedia: (media) => removeMediaWithCallback(media),
@@ -178,6 +197,11 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
 
         setActiveId(null);
     }
+
+    const handleRemoveMedia = useCallback((media: Media) => {
+        removeMediaWithCallback(media);
+    }, [removeMediaWithCallback]);
+
     return (
         <MediaManagerContext.Provider value={contextValue}>
             <div>
@@ -205,7 +229,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
                                     url={contextValue.imageUrl(media)}
                                     layout={layout}
                                     activeIndex={activeIndex}
-                                    onRemove={() => setItems(prev => prev.filter(m => m.id !== media.id))}
+                                    onRemove={() => handleRemoveMedia(media)}
                                 />
                             ))}
                         </ul>
