@@ -15,6 +15,7 @@ export class ImageItem extends File<MediaManagerItem> {
     public type: MediaFileType = "image";
     public model: string = "mediamanagerap";
     public metaModel: string = "mediamanagermetaap";
+    public modelAssoc: string = "mediamanagerassociationsap";
     public imageSizes: any
     protected readonly adminizer: Adminizer
 
@@ -227,7 +228,12 @@ export class ImageItem extends File<MediaManagerItem> {
         return (await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: item.id}}))
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: string): Promise<boolean> {
+        const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileId' : 'file';
+        const assoc = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({where: {[fieldName]: id}})
+        if(assoc.length){
+            return Promise.resolve(false);
+        }
         const criteria = {where: {id: id}};
         // TODO refactor CRUD functions for DataAccessor usage
         let record = await this.adminizer.modelHandler.model.get(this.model)["_findOne"](criteria);
@@ -243,6 +249,8 @@ export class ImageItem extends File<MediaManagerItem> {
                 await deleteFile(variant.path);
             }
         }
+
+        return Promise.resolve(true);
     }
 }
 

@@ -1,32 +1,38 @@
-import { MediaManagerAP } from "./MediaManagerAP";
+import {MediaManagerAP} from "./MediaManagerAP";
 
 export default {
-  id: {
-    type: "string",
-    allowNull: false,
-    uuid: true,
-    primaryKey: true,
-    required: true
-  },
-  key: {
-    type: "string"
-  },
-  value: {
-    type: "json"
-  },
-  isPublic: {
-    type: "boolean"
-  },
-  parent: {
-    model: "MediaManagerAP"
-  }
+    id: {
+        type: "number",
+        autoIncrement: true,
+        primaryKey: true
+    },
+    key: {
+        type: "string"
+    },
+    value: {
+        type: "json"
+    },
+    isPublic: {
+        type: "boolean"
+    },
+    parent: {
+        model: "MediaManagerAP"
+    },
+    createdAt: {
+        type: 'number',
+        autoCreatedAt: true
+    },
+    updatedAt: {
+        type: 'number',
+        autoUpdatedAt: true
+    }
 }
 
 
 export interface MediaManagerMetaAP {
-  id: string;
-  key?: string;
-  value?: Record<string, unknown>;
-  isPublic?: boolean;
-  parent?: MediaManagerAP;
+    id: string;
+    key?: string;
+    value?: Record<string, unknown>;
+    isPublic?: boolean;
+    parent?: MediaManagerAP;
 }

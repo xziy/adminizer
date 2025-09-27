@@ -134,7 +134,7 @@ export abstract class File<T extends MediaManagerItem> {
      * Delete an item.
      * @param id
      */
-    public abstract delete(id: string): Promise<void>;
+    public abstract delete(id: string): Promise<boolean>;
 
     /**
      * Get all items of a type.
@@ -349,7 +349,7 @@ export abstract class AbstractMediaManager {
      * Delete an item.
      * @param item
      */
-    public delete(item: MediaManagerItem): Promise<void> {
+    public delete(item: MediaManagerItem): Promise<boolean> {
         const parts = item.mimeType.split("/");
         return this.getItemType(parts[0])?.delete(item.id);
     }

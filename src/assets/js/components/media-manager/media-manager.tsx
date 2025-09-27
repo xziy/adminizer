@@ -113,19 +113,25 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
-    const [messages, setMessages] = useState<Record<string, string>>({});
+    const [messages, setMessages] = useState({})
 
     const uploadUrl = `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`;
 
-    const initLocales = async () => {
-        let res = await axios.post(uploadUrl, {
-            _method: 'getLocales'
-        });
-        setMessages(res.data.data);
-    };
-
     useEffect(() => {
-        initLocales()
+        const initLocales = async () => {
+            try {
+                // Используйте GET запрос вместо POST для получения данных
+                let res = await axios.get(uploadUrl, {
+                    params: {
+                        _method: 'getLocales'
+                    }
+                });
+                setMessages(res.data.data);
+            } catch (error) {
+                console.error('Failed to load locales:', error);
+            }
+        };
+        initLocales();
     }, []);
 
     const addMediaWithCallback = useCallback((newMedia: Media) => {
@@ -197,11 +203,6 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
 
         setActiveId(null);
     }
-
-    const handleRemoveMedia = useCallback((media: Media) => {
-        removeMediaWithCallback(media);
-    }, [removeMediaWithCallback]);
-
     return (
         <MediaManagerContext.Provider value={contextValue}>
             <div>
@@ -229,7 +230,17 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
                                     url={contextValue.imageUrl(media)}
                                     layout={layout}
                                     activeIndex={activeIndex}
-                                    onRemove={() => handleRemoveMedia(media)}
+                                    onRemove={() => {
+                                        setItems(prev => {
+                                            const newItems = prev.filter(item => item.id !== media.id);
+                                            if (onChange) {
+                                                setTimeout(() => {
+                                                    onChange(newItems)
+                                                }, 100)
+                                            }
+                                            return newItems;
+                                        });
+                                    }}
                                 />
                             ))}
                         </ul>

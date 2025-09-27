@@ -43,7 +43,11 @@ const Image = ({media, className, messages, openMeta, crop, openVariant, destroy
 
     const destroyItem = async () => {
         const res = await axios.delete(uploadUrl, {data: {item: media}});
-        if (res.data.msg === "ok") destroy(media);
+        if (res.data.type === "success"){
+            destroy(media);
+        } else {
+            alert(res.data.msg);
+        }
     }
 
     const toggleMedia = () => {
