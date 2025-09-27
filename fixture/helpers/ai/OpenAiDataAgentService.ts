@@ -1,4 +1,3 @@
-import {z} from 'zod';
 import {
     Agent,
     AgentInputItem,
@@ -52,6 +51,16 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             return 'The OpenAI data agent is not configured. Please set the OPENAI_API_KEY environment variable.';
         }
 
+        const directCommand = this.tryParseDirectCommand(prompt);
+        if (directCommand) {
+            try {
+                return await this.executeDirectCommand(directCommand, user);
+            } catch (error) {
+                Adminizer.log.error('[OpenAiDataAgentService] Direct command failed', error);
+                return 'Failed to execute the provided JSON command. Please verify the payload and try again.';
+            }
+        }
+
         try {
             const agent = this.createAgent(user);
             const conversation = this.toAgentInput(history);
@@ -102,41 +111,40 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                         description: 'Maximum number of records to return (default 10).'
                     }
                 },
-                required: ['model', 'filter', 'fields', 'limit'],
+                required: ['model'],
                 additionalProperties: false
             },
             execute: async (input: any, runContext?: RunContext<AgentContext>) => {
                 const activeUser = runContext?.context?.user ?? user;
-                
-                if (!input.model) {
-                    throw new Error('Model name is required');
-                }
-                
-                const entity = this.resolveEntity(input.model);
-                if (!entity.model) {
-                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
-                }
+                return this.executeQueryModelRecords(input, activeUser);
+            },
+        });
 
-                const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'list');
-                let criteria = {};
-                if (input.filter && input.filter.trim()) {
-                    try {
-                        criteria = JSON.parse(input.filter);
-                    } catch (e) {
-                        throw new Error('Invalid filter JSON');
-                    }
-                }
-                const records = await entity.model.find(criteria, accessor);
-                const limited = records.slice(0, input.limit ?? 10);
-                const projected = input.fields && input.fields.length > 0
-                    ? limited.map((record) => this.pickFields(record, input.fields ?? []))
-                    : limited;
-
-                return JSON.stringify({
-                    model: entity.name,
-                    count: projected.length,
-                    records: projected,
-                }, null, 2);
+        const createRecordTool = tool({
+            name: 'create_model_record',
+            description: 'Create a new Adminizer record using DataAccessor with the current user permissions.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1,
+                    },
+                    data: {
+                        description: 'Object with field values for the new record. Accepts either an object or a JSON string.',
+                        oneOf: [
+                            {type: 'object'},
+                            {type: 'string'},
+                        ],
+                    },
+                },
+                required: ['model', 'data'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+                return this.executeCreateModelRecord(input, activeUser);
             },
         });
 
@@ -144,17 +152,136 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             name: 'Adminizer data agent',
             instructions: [
                 'You are an assistant that answers questions using Adminizer data.',
-                'Always rely on the provided tool to inspect database records.',
+                'Always rely on the provided tools to inspect or modify database records.',
+                'Use JSON commands when calling tools. Example: {"action":"create_model_record","model":"Example","data":{"title":"Hello"}}.',
                 'Only include fields that are relevant to the question.',
                 'Summaries should explain how the answer was derived from the data.',
                 '',
                 'Accessible models:',
                 modelSummary,
             ].join('\n'),
-            handoffDescription: 'Retrieves Adminizer records using DataAccessor with full permission checks.',
-            tools: [dataQueryTool],
+            handoffDescription: 'Retrieves and mutates Adminizer records using DataAccessor with full permission checks.',
+            tools: [dataQueryTool, createRecordTool],
             model: this.model,
         });
+    }
+
+    private async executeQueryModelRecords(input: any, activeUser: UserAP): Promise<string> {
+        if (!input.model) {
+            throw new Error('Model name is required');
+        }
+
+        const entity = this.resolveEntity(input.model);
+        if (!entity.model) {
+            throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+        }
+
+        const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'list');
+        let criteria = {};
+        if (input.filter && typeof input.filter === 'string' && input.filter.trim()) {
+            try {
+                criteria = JSON.parse(input.filter);
+            } catch (e) {
+                throw new Error('Invalid filter JSON');
+            }
+        }
+
+        const records = await entity.model.find(criteria, accessor);
+        const limit = typeof input.limit === 'number' ? input.limit : 10;
+        const limited = records.slice(0, limit);
+        const projected = Array.isArray(input.fields) && input.fields.length > 0
+            ? limited.map((record) => this.pickFields(record, input.fields ?? []))
+            : limited;
+
+        return JSON.stringify({
+            model: entity.name,
+            count: projected.length,
+            records: projected,
+        }, null, 2);
+    }
+
+    private async executeCreateModelRecord(input: any, activeUser: UserAP): Promise<string> {
+        if (!input.model) {
+            throw new Error('Model name is required');
+        }
+
+        const entity = this.resolveEntity(input.model);
+        if (!entity.model) {
+            throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+        }
+
+        const token = `add-${entity.model.modelname}-model`;
+        if (!this.adminizer.accessRightsHelper.hasPermission(token, activeUser)) {
+            throw new Error(`You do not have permission to create records in the "${entity.name}" model.`);
+        }
+
+        const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+        const payload = this.parseRecordInput(input.data);
+        const record = await entity.model.create(payload, accessor);
+
+        return JSON.stringify({
+            model: entity.name,
+            record,
+        }, null, 2);
+    }
+
+    private parseRecordInput(raw: unknown): Record<string, unknown> {
+        if (raw === null || raw === undefined) {
+            throw new Error('Record data must be provided.');
+        }
+
+        if (typeof raw === 'string') {
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    return parsed as Record<string, unknown>;
+                }
+            } catch (error) {
+                throw new Error('Invalid JSON provided for record data.');
+            }
+
+            throw new Error('Record data string must be a valid JSON object.');
+        }
+
+        if (typeof raw === 'object' && !Array.isArray(raw)) {
+            return raw as Record<string, unknown>;
+        }
+
+        throw new Error('Record data must be an object or a JSON string representing an object.');
+    }
+
+    private tryParseDirectCommand(prompt: string): Record<string, unknown> | null {
+        const trimmed = prompt.trim();
+        if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
+            return null;
+        }
+
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && typeof parsed['action'] === 'string') {
+                return parsed as Record<string, unknown>;
+            }
+        } catch (error) {
+            Adminizer.log.warn('[OpenAiDataAgentService] Failed to parse direct JSON command', error);
+            return null;
+        }
+
+        return null;
+    }
+
+    private async executeDirectCommand(command: Record<string, unknown>, user: UserAP): Promise<string> {
+        const action = typeof command['action'] === 'string' ? command['action'] : undefined;
+        if (!action) {
+            throw new Error('Direct command is missing an "action" field.');
+        }
+        switch (action) {
+            case 'query_model_records':
+                return this.executeQueryModelRecords(command, user);
+            case 'create_model_record':
+                return this.executeCreateModelRecord(command, user);
+            default:
+                throw new Error(`Unknown command action: ${String(action)}`);
+        }
     }
 
     private pickFields<T extends Record<string, unknown>>(record: T, fields: string[]): Partial<T> {
