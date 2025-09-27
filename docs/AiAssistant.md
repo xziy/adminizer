@@ -79,7 +79,7 @@ OpenAI's Agents API while still relying on Adminizer's abstractions:
 
 * The agent implementation lives in `fixture/helpers/ai/OpenAiDataAgentService.ts` and extends
   `AbstractAiModelService`.
-* Database reads are performed through `DataAccessor`, which means the usual access control and field
+* Database reads and writes are performed through `DataAccessor`, which means the usual access control and field
   sanitisation rules are enforced automatically.
 * Conversation history is converted into the `@openai/agents` protocol so follow-up questions can
   build on previous answers.
@@ -95,3 +95,16 @@ export OPENAI_AGENT_MODEL="gpt-4.1-mini" # optional override
 available the fixture automatically registers the model, exposes it in the assistant model list, and
 prefers it as the default chat model. If the key is missing the agent stays disabled and a warning is
 logged during boot.
+
+### Tools exposed to the agent
+
+The `openai-data` agent wires three tools into the Agents runtime so prompts can stay declarative:
+
+1. `describe_model_fields` – lists the fields that are available for a given action (`add`, `edit`, `list`, or `view`).
+   The response mirrors `DataAccessor#listAccessibleFields`, so the assistant can reason about required inputs before
+   attempting a mutation.
+2. `query_model_records` – fetches records with the active user's `list` permissions, optionally filtered and projected.
+3. `create_model_record` – creates a new record using the `add` permissions of the active user.
+
+Every tool call is executed with the same permission checks the admin panel would apply, so the agent cannot escalate
+privileges beyond the assigned access tokens.

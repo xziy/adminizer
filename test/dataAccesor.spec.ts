@@ -122,6 +122,20 @@ describe('DataAccessor test', () => {
     expect(instance.getFieldsConfig()).toBeUndefined();
   });
 
+  it('listAccessibleFields reports metadata for allowed fields only', () => {
+    instance = new DataAccessor(adminizer, editorUser, entity, 'add');
+    const metadata = instance.listAccessibleFields();
+    const titleField = metadata.find(field => field.key === 'title');
+    const guardedField = metadata.find(field => field.key === 'guardedField');
+
+    expect(titleField?.label).toBe('Title');
+    expect(titleField?.required).toBe(true);
+    expect(guardedField).toBeDefined();
+
+    instance = new DataAccessor(adminizer, defaultUser, entity, 'add');
+    expect(instance.listAccessibleFields()).toEqual([]);
+  });
+
   it('Populated selfAssociation has guardedField for admin', () => {
     instance = new DataAccessor(adminizer, adminUser, entity, 'edit');
     expect(instance.getFieldsConfig().selfAssociation.populated).toHaveProperty('guardedField');

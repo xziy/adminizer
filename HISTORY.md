@@ -1,3 +1,8 @@
+## 4.3.7
+- Exposed `DataAccessor#listAccessibleFields` so callers (including AI agents) can inspect writeable fields with metadata.
+- Enabled the fixture OpenAI data agent to describe model fields and create records through `DataAccessor` respecting user permissions.
+- Documented the new metadata API and AI assistant tooling updates.
+
 ## 4.3.6
 - Configured OpenAI API integration through environment variables for AI assistant functionality.
 - Added dotenv support for loading environment variables from .env file in fixture startup.
