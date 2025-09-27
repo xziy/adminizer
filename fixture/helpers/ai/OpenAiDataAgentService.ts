@@ -77,33 +77,33 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
 
         const dataQueryTool = tool({
             name: 'query_model_records',
-            description: 'Query Adminizer models using DataAccessor. Provide the model name from the admin panel configuration.',
+            description: 'Read Adminizer records through DataAccessor with the active user\'s permissions.',
             parameters: {
                 type: 'object',
                 properties: {
                     model: {
                         type: 'string',
-                        description: 'Model name as defined in the Adminizer configuration',
-                        minLength: 1
+                        description: 'Model name as defined in the Adminizer configuration.',
+                        minLength: 1,
                     },
                     filter: {
                         type: 'string',
-                        description: 'Optional filter as a JSON string matching the model criteria'
+                        description: 'Optional filter as a JSON string matching the model criteria.',
                     },
                     fields: {
                         type: 'array',
-                        items: { type: 'string', minLength: 1 },
-                        description: 'Optional list of fields to include in the response'
+                        items: {type: 'string', minLength: 1},
+                        description: 'Optional list of fields to include in the response.',
                     },
                     limit: {
                         type: 'number',
                         minimum: 1,
                         maximum: 50,
-                        description: 'Maximum number of records to return (default 10).'
-                    }
+                        description: 'Maximum number of records to return (default 10).',
+                    },
                 },
-                required: ['model', 'filter', 'fields', 'limit'],
-                additionalProperties: false
+                required: ['model'],
+                additionalProperties: false,
             },
             execute: async (input: any, runContext?: RunContext<AgentContext>) => {
                 const activeUser = runContext?.context?.user ?? user;
@@ -127,7 +127,8 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                     }
                 }
                 const records = await entity.model.find(criteria, accessor);
-                const limited = records.slice(0, input.limit ?? 10);
+                const limit = typeof input.limit === 'number' ? input.limit : 10;
+                const limited = records.slice(0, limit);
                 const projected = input.fields && input.fields.length > 0
                     ? limited.map((record) => this.pickFields(record, input.fields ?? []))
                     : limited;
@@ -140,19 +141,66 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             },
         });
 
+        const dataCreateTool = tool({
+            name: 'create_model_record',
+            description: 'Create Adminizer records through DataAccessor. Provide a JSON payload with the field values for the new record.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration.',
+                        minLength: 1,
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'Field values for the new record that comply with the model schema.',
+                    },
+                },
+                required: ['model', 'data'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+
+                if (!input.model) {
+                    throw new Error('Model name is required');
+                }
+
+                if (!input.data || typeof input.data !== 'object' || Array.isArray(input.data)) {
+                    throw new Error('Data must be a JSON object with field values.');
+                }
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+                const created = await entity.model.create(input.data, accessor);
+
+                return JSON.stringify({
+                    model: entity.name,
+                    record: created,
+                }, null, 2);
+            },
+        });
+
         return new Agent<AgentContext>({
             name: 'Adminizer data agent',
             instructions: [
                 'You are an assistant that answers questions using Adminizer data.',
-                'Always rely on the provided tool to inspect database records.',
-                'Only include fields that are relevant to the question.',
-                'Summaries should explain how the answer was derived from the data.',
+                'Respond with JSON commands that describe which tool to invoke and the required parameters.',
+                'Use "query_model_records" to read data. Example: {"tool": "query_model_records", "parameters": {"model": "Example", "filter": "{\\"id\\": 1}"}}',
+                'Use "create_model_record" to add data. Example: {"tool": "create_model_record", "parameters": {"model": "Example", "data": {"title": "Test"}}}',
+                'Only include fields that are relevant to the user\'s request and confirm successful writes with the created payload.',
+                'Summaries should explain how the answer was derived from the data or acknowledge that a record was created.',
                 '',
                 'Accessible models:',
                 modelSummary,
             ].join('\n'),
             handoffDescription: 'Retrieves Adminizer records using DataAccessor with full permission checks.',
-            tools: [dataQueryTool],
+            tools: [dataQueryTool, dataCreateTool],
             model: this.model,
         });
     }

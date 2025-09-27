@@ -25,41 +25,45 @@ dependencies.
 
 ## Fixture OpenAI Agent
 
-The fixture now also registers an `openai` model that executes structured commands against the database. The agent expects JSON instructions and uses `DataAccessor` under the hood, so every operation is filtered by the requesting user's permissions.
+The fixture now registers a single `openai-data` model that executes structured commands against the database. The agent expects
+JSON envelopes describing which tool to call and relies on `DataAccessor`, so every operation is filtered by the requesting
+user's permissions.
 
-Example payload for creating a record:
+Supported commands share the following shape:
 
 ```json
 {
-  "action": "create",
-  "entity": "Example",
-  "data": {
-    "title": "Hello from the assistant",
-    "description": "Generated through the OpenAI agent"
+  "tool": "query_model_records",
+  "parameters": {
+    "model": "Example",
+    "filter": "{\"title\": \"Test\"}",
+    "fields": ["id", "title"],
+    "limit": 5
   }
 }
 ```
 
-If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
+* `query_model_records` performs read operations using the caller's `list` permissions. Filters are expressed as JSON strings
+  that match the model criteria. Field projections and result limits are optional.
+* `create_model_record` performs write operations through the caller's `add` permissions:
 
-### Discovering available fields
+  ```json
+  {
+    "tool": "create_model_record",
+    "parameters": {
+      "model": "Example",
+      "data": {
+        "title": "Hello from the assistant",
+        "description": "Generated through the OpenAI agent"
+      }
+    }
+  }
+  ```
 
-Before issuing a `create` command the agent can now describe the exact payload shape that is accepted for the chosen model. This
-is achieved through the `fields` action which asks `DataAccessor` for the list of writable fields, their types, requirements, and
-association hints. The agent trims any values that are not allowed and will stop execution if mandatory properties are missing.
-
-Example request for the schema:
-
-```json
-{
-  "action": "fields",
-  "entity": "Example"
-}
-```
-
-The response enumerates each accessible field, including required flags, optional descriptions (taken from field tooltips),
-allowed enums, and association targets. When a `create` command is executed afterwards the agent automatically reuses this
-metadata to validate the payload and report missing values instead of failing with a generic database error.
+If the user lacks the required access token (for example, `add-example-model`), the agent responds with an authorization error
+instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators
+group, granting full access for experimentation. Regular users can be granted permissions by assigning the
+`ai-assistant-openai-data` token to their groups.
 
 ## Backend Overview
 
