@@ -160,6 +160,25 @@ describe('DataAccessor test', () => {
     expect(result[0]).toHaveProperty('guardedField');
   });
 
+  it('`listAccessibleFields()` describes fields based on permissions', () => {
+    instance = new DataAccessor(adminizer, editorUser, entity, 'add');
+    const editorFields = instance.listAccessibleFields();
+    const guardedField = editorFields.find(field => field.name === 'guardedField');
+    const titleField = editorFields.find(field => field.name === 'title');
+
+    expect(editorFields.length).toBeGreaterThan(0);
+    expect(guardedField?.label).toBe('Restricted Field');
+    expect(titleField?.label).toBe('Title');
+    expect(titleField?.required).toBe(true);
+
+    instance = new DataAccessor(adminizer, managerUser, entity, 'add');
+    const managerFields = instance.listAccessibleFields();
+    expect(managerFields.find(field => field.name === 'guardedField')).toBeUndefined();
+
+    instance = new DataAccessor(adminizer, defaultUser, entity, 'add');
+    expect(instance.listAccessibleFields()).toEqual([]);
+  });
+
   it('`sanitizeUserRelationAccess()` includes user ID in criteria', async () => {
     // if (entity.config && entity.config.userAccessRelation) {
     //   entity.config.userAccessRelation = {

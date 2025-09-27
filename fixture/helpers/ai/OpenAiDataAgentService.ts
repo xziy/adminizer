@@ -9,7 +9,7 @@ import {
 } from '@openai/agents';
 import {AbstractAiModelService} from '../../../dist/lib/ai-assistant/AbstractAiModelService';
 import {AiAssistantMessage, Entity} from '../../../dist/interfaces/types';
-import {ModelConfig} from '../../../dist/interfaces/adminpanelConfig';
+import {ActionType, ModelConfig} from '../../../dist/interfaces/adminpanelConfig';
 import {Adminizer} from '../../../dist/lib/Adminizer';
 import {DataAccessor} from '../../../dist/lib/DataAccessor';
 import {UserAP} from '../../../dist/models/UserAP';
@@ -70,9 +70,15 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
     }
 
     private createAgent(user: UserAP): Agent<AgentContext> {
-        const accessibleModels = this.listReadableModels(user);
+        const accessibleModels = this.listModelCapabilities(user);
         const modelSummary = accessibleModels.length > 0
-            ? accessibleModels.map(({name, config}) => `• ${name} (model key: ${config.model})`).join('\n')
+            ? accessibleModels.map(({name, config, canRead, canCreate}) => {
+                const abilities = [
+                    canRead ? 'read' : null,
+                    canCreate ? 'create' : null,
+                ].filter(Boolean).join(', ');
+                return `• ${name} (model key: ${config.model}) — ${abilities}`;
+            }).join('\n')
             : 'No models are currently accessible.';
 
         const dataQueryTool = tool({
@@ -102,21 +108,22 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                         description: 'Maximum number of records to return (default 10).'
                     }
                 },
-                required: ['model', 'filter', 'fields', 'limit'],
+                required: ['model'],
                 additionalProperties: false
             },
             execute: async (input: any, runContext?: RunContext<AgentContext>) => {
                 const activeUser = runContext?.context?.user ?? user;
-                
+
                 if (!input.model) {
                     throw new Error('Model name is required');
                 }
-                
+
                 const entity = this.resolveEntity(input.model);
                 if (!entity.model) {
                     throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
                 }
 
+                this.ensurePermission(entity, activeUser, 'list');
                 const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'list');
                 let criteria = {};
                 if (input.filter && input.filter.trim()) {
@@ -127,7 +134,9 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                     }
                 }
                 const records = await entity.model.find(criteria, accessor);
-                const limited = records.slice(0, input.limit ?? 10);
+                const limit = typeof input.limit === 'number' ? Math.floor(input.limit) : undefined;
+                const safeLimit = limit ? Math.min(Math.max(limit, 1), 50) : 10;
+                const limited = records.slice(0, safeLimit);
                 const projected = input.fields && input.fields.length > 0
                     ? limited.map((record) => this.pickFields(record, input.fields ?? []))
                     : limited;
@@ -140,11 +149,105 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
             },
         });
 
+        const describeFieldsTool = tool({
+            name: 'describe_model_fields',
+            description: 'List the fields that can be populated when creating records for the selected model.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1,
+                    },
+                },
+                required: ['model'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+
+                if (!input.model) {
+                    throw new Error('Model name is required');
+                }
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                this.ensurePermission(entity, activeUser, 'add');
+                const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+                const fields = accessor.listAccessibleFields();
+
+                if (fields.length === 0) {
+                    return JSON.stringify({
+                        model: entity.name,
+                        fields: [],
+                        note: 'No fields are available with the current permissions.',
+                    }, null, 2);
+                }
+
+                return JSON.stringify({
+                    model: entity.name,
+                    fields,
+                }, null, 2);
+            },
+        });
+
+        const createRecordTool = tool({
+            name: 'create_model_record',
+            description: 'Create a new record in an Adminizer model using DataAccessor with full permission checks.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    model: {
+                        type: 'string',
+                        description: 'Model name as defined in the Adminizer configuration',
+                        minLength: 1,
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'Field values for the new record. Use describe_model_fields to learn available fields.',
+                        additionalProperties: true,
+                    },
+                },
+                required: ['model', 'data'],
+                additionalProperties: false,
+            },
+            execute: async (input: any, runContext?: RunContext<AgentContext>) => {
+                const activeUser = runContext?.context?.user ?? user;
+
+                if (!input.model) {
+                    throw new Error('Model name is required');
+                }
+
+                if (!input.data || typeof input.data !== 'object') {
+                    throw new Error('The "data" property must be an object with field values.');
+                }
+
+                const entity = this.resolveEntity(input.model);
+                if (!entity.model) {
+                    throw new Error(`Model "${input.model}" is not registered in Adminizer.`);
+                }
+
+                this.ensurePermission(entity, activeUser, 'add');
+                const accessor = new DataAccessor(this.adminizer, activeUser, entity, 'add');
+                const created = await entity.model.create(input.data, accessor);
+
+                return JSON.stringify({
+                    model: entity.name,
+                    record: created,
+                }, null, 2);
+            },
+        });
+
         return new Agent<AgentContext>({
             name: 'Adminizer data agent',
             instructions: [
                 'You are an assistant that answers questions using Adminizer data.',
                 'Always rely on the provided tool to inspect database records.',
+                'Use describe_model_fields before creating new records so that payloads include the correct fields.',
                 'Only include fields that are relevant to the question.',
                 'Summaries should explain how the answer was derived from the data.',
                 '',
@@ -152,7 +255,7 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                 modelSummary,
             ].join('\n'),
             handoffDescription: 'Retrieves Adminizer records using DataAccessor with full permission checks.',
-            tools: [dataQueryTool],
+            tools: [describeFieldsTool, dataQueryTool, createRecordTool],
             model: this.model,
         });
     }
@@ -195,8 +298,8 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
         });
     }
 
-    private listReadableModels(user: UserAP): Array<{name: string; config: ModelConfig}> {
-        const readable: Array<{name: string; config: ModelConfig}> = [];
+    private listModelCapabilities(user: UserAP): Array<{name: string; config: ModelConfig; canRead: boolean; canCreate: boolean}> {
+        const result: Array<{name: string; config: ModelConfig; canRead: boolean; canCreate: boolean}> = [];
 
         for (const [entityName, rawConfig] of Object.entries(this.adminizer.config.models ?? {})) {
             const config = this.ensureModelConfig(entityName, rawConfig);
@@ -208,13 +311,23 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
                 continue;
             }
 
-            const token = `read-${modelInstance.modelname}-model`;
-            if (this.adminizer.accessRightsHelper.hasPermission(token, user)) {
-                readable.push({name: entityName, config});
+            const entity: Entity = {
+                name: entityName,
+                config,
+                model: modelInstance,
+                type: 'model',
+                uri: `${this.adminizer.config.routePrefix}/model/${entityName}`,
+            };
+
+            const canRead = this.adminizer.accessRightsHelper.hasPermission(this.getActionToken(entity, 'list'), user);
+            const canCreate = this.adminizer.accessRightsHelper.hasPermission(this.getActionToken(entity, 'add'), user);
+
+            if (canRead || canCreate) {
+                result.push({name: entityName, config, canRead, canCreate});
             }
         }
 
-        return readable;
+        return result;
     }
 
     private resolveEntity(modelName: string): Entity {
@@ -247,6 +360,51 @@ export class OpenAiDataAgentService extends AbstractAiModelService {
         }
 
         throw new Error(`Unknown model "${modelName}".`);
+    }
+
+    private ensurePermission(entity: Entity, user: UserAP, action: ActionType): void {
+        const token = this.getActionToken(entity, action);
+        if (!this.adminizer.accessRightsHelper.hasPermission(token, user)) {
+            const actionName = this.describeAction(action);
+            throw new Error(`User "${user.login}" does not have permission to ${actionName} ${entity.name} records.`);
+        }
+    }
+
+    private getActionToken(entity: Entity, action: ActionType): string {
+        const verb = this.resolveActionVerb(action);
+        const modelName = entity.model?.modelname ?? entity.config?.model ?? entity.name;
+        return `${verb}-${modelName}-${entity.type}`.toLowerCase();
+    }
+
+    private resolveActionVerb(action: ActionType): 'create' | 'read' | 'update' | 'delete' {
+        switch (action) {
+            case 'add':
+                return 'create';
+            case 'edit':
+                return 'update';
+            case 'remove':
+                return 'delete';
+            case 'view':
+            case 'list':
+            default:
+                return 'read';
+        }
+    }
+
+    private describeAction(action: ActionType): string {
+        switch (action) {
+            case 'add':
+                return 'create';
+            case 'edit':
+                return 'update';
+            case 'remove':
+                return 'delete';
+            case 'view':
+                return 'view';
+            case 'list':
+            default:
+                return 'list';
+        }
     }
 
     private ensureModelConfig(entityName: string, config: ModelConfig | boolean): ModelConfig {

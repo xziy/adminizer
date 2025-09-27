@@ -40,7 +40,7 @@ Example payload for creating a record:
 }
 ```
 
-If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups.
+If the user lacks the required access token (for example, `create-example-model`), the agent responds with an authorization error instead of touching the database. The `openai` fixture user (`login: openai`, `password: openai`) belongs to the administrators group, granting full access for experimentation. Regular users can be granted permissions by assigning the `ai-assistant-openai` token to their groups. The fixture agent now exposes helper tooling so conversations can first discover which fields are writable (`describe_model_fields`) and then create data (`create_model_record`) without violating model permissions.
 
 ## Backend Overview
 
@@ -81,6 +81,9 @@ OpenAI's Agents API while still relying on Adminizer's abstractions:
   `AbstractAiModelService`.
 * Database reads are performed through `DataAccessor`, which means the usual access control and field
   sanitisation rules are enforced automatically.
+* `describe_model_fields` surfaces the list of writable fields using `DataAccessor.listAccessibleFields()` so prompts can include accurate payloads.
+* `query_model_records` retrieves live data with per-field filtering while respecting the caller's `read-*` permissions.
+* `create_model_record` persists new rows via `DataAccessor` and automatically applies user ownership rules before saving.
 * Conversation history is converted into the `@openai/agents` protocol so follow-up questions can
   build on previous answers.
 
