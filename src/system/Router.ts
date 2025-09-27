@@ -135,18 +135,20 @@ export default class Router {
             );
 
             adminizer.app.get(
+                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
+            );
+
+            adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
             );
+
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
             );
 
-            adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
-                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
-            );
 
             adminizer.app.put(
                 `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
