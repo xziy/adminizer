@@ -86,7 +86,7 @@ export default class Router {
         adminizer.app.all(`${adminizer.config.routePrefix}/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
 
         // Create a base entity route
-        let baseRoute = `${adminizer.config.routePrefix}/:entityType/:entityName`;
+        let baseRoute = `${adminizer.config.routePrefix}/:entityType(form|model)/:entityName`;
 
         /**
          * Catalog
