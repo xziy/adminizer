@@ -230,8 +230,6 @@ export default class Router {
          */
         adminizer.app.all(baseRoute + "/remove/:id", adminizer.policyManager.bindPolicies(policies, _remove));
 
-
-
         /**
          * Create a default dashboard
          */

@@ -6,7 +6,12 @@ import {
     MediaManagerWidgetItem,
     MediaManagerWidgetJSON
 } from "../AbstractMediaManager"
-import {BaseFieldConfig, MediaManagerOptionsField, ModelConfig} from "../../../interfaces/adminpanelConfig";
+import {
+    BaseFieldConfig,
+    FieldsForms,
+    MediaManagerOptionsField,
+    ModelConfig
+} from "../../../interfaces/adminpanelConfig";
 import {Adminizer} from "../../Adminizer";
 
 type PostParams = Record<string, string | number | boolean | object | string[] | number[] | null>;

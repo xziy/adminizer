@@ -1,8 +1,9 @@
 import {FormHelper} from "../helpers/formHelper";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaFormHelper from "../helpers/inertiaFromHelper";
-import {getRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
+import {getRelationsMediaManager, saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
+import {MediaManagerHandler} from "../lib/media-manager/MediaManagerHandler";
 
 export default async function form(req: ReqType, res: ResType) {
     let slug = req.params.slug;
@@ -47,6 +48,11 @@ export default async function form(req: ReqType, res: ResType) {
             if (form[key].type === "boolean") {
                 checkboxes.push(key);
             }
+            if(form[key].type === "mediamanager") {
+                let options = form[key].options as MediaManagerOptionsField;
+                let mediaManager = MediaManagerHandler.get(options?.id ?? "default")
+                await mediaManager.setRelations(req.body[key], "form", `${slug}_${key}`, key)
+            }
         }
 
         for (let field of Object.keys(req.body)) {
@@ -58,6 +64,8 @@ export default async function form(req: ReqType, res: ResType) {
                 await req.adminizer.config.forms.set(slug, field, false);
             }
         }
+
+
         return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/form/${slug}`);
     }
 
