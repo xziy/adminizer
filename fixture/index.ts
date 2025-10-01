@@ -72,7 +72,7 @@ if (ormType === "waterline") {
 
     if (!process.env.NO_SEED_DATA) {
         try {
-            await seedDatabase(waterlineAdapter.models, 77);
+            await seedDatabase(waterlineAdapter.models, 13);
             console.log("Database seeded with random data!");
         } catch (seedErr) {
             console.error("Error during database seeding:", seedErr);
