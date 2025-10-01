@@ -111,7 +111,7 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                     tabIndex={1}
                     required={field.required}
-                    className="cursor-pointer size-5"
+                    className="cursor-pointer size-5 scroll-pt-30 scroll-mt-30"
                     checked={value as boolean ?? false}
                     onCheckedChange={handleCheckboxChange}
                 />
@@ -126,6 +126,7 @@ const FieldRenderer: FC<{
                     required={field.required}
                     onChange={handleInputChange}
                     placeholder={field.label}
+                    className="scroll-pt-30 scroll-mt-30"
                 />
             );
         case 'range':
@@ -152,7 +153,7 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                     required={field.required}
                 >
-                    <SelectTrigger className="w-full cursor-pointer min-h-10" id={field.name}>
+                    <SelectTrigger className="w-full cursor-pointer min-h-10 scroll-pt-30 scroll-mt-30" id={field.name}>
                         <SelectValue placeholder=""/>
                     </SelectTrigger>
                     <SelectContent>
@@ -178,7 +179,7 @@ const FieldRenderer: FC<{
                     disabled={processing || field.disabled}
                     mode={field.type === 'association' ? 'single' : 'multiple'}
                     maxCount={10}
-                    className={`${processing ? 'pointer-events-none' : ''}`}
+                    className={`${processing ? 'pointer-events-none' : ''} scroll-pt-30 scroll-mt-30`}
                 />
             )
         case 'wysiwyg':
@@ -277,7 +278,7 @@ const FieldRenderer: FC<{
                 <Input
                     id={field.name}
                     type={field.type}
-                    className={`${inputClassName} min-h-10`}
+                    className={`${inputClassName} min-h-10 scroll-pt-30 scroll-mt-30`}
                     required={field.required}
                     tabIndex={1}
                     value={value as any ?? ''}

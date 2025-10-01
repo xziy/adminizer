@@ -112,7 +112,8 @@ const AddForm: FC<{
 
         const submit: FormEventHandler = async (e) => {
             e.preventDefault();
-
+            // console.log(data)
+            // return
             if (catalog) {
                 setCatalogProcessing(true)
                 const res = await axios.post(page.props.postLink, data)
