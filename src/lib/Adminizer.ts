@@ -294,8 +294,8 @@ export class Adminizer {
 
     // Хелпер для отправки уведомлений
     public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'icon'>): Promise<boolean> {
-        const notificationClass = notification.notificationClass || 'general';
         if (this.config.notifications.enabled) {
+            const notificationClass = notification.notificationClass || 'general';
             return this.notificationHandler.dispatchNotification(notificationClass, notification);
         } else {
             return Promise.resolve(false)
@@ -304,8 +304,8 @@ export class Adminizer {
 
     // Хелпер для системных событий
     public async logSystemEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
         if (this.config.notifications.enabled) {
+            const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
             return systemNotificationService.logSystemEvent(title, message, 'system', metadata);
         } else {
             return Promise.resolve(false)
