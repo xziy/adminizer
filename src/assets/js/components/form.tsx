@@ -37,13 +37,16 @@ const Form = () => {
 
     const handleFieldChange = useCallback(
         (fieldName: string, value: FieldValue) => {
+            // @ts-ignore
             setData(fieldName, value);
         }, []);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        
-        post(page.props.postLink);
+
+        post(page.props.postLink, {
+            preserveState: false
+        });
     };
 
     return (
@@ -56,7 +59,7 @@ const Form = () => {
                 </Button>
             </div>
             <form
-                className="mt-8"
+                className={`mt-8 ${processing ? 'invisible' : ''}`}
                 id="addUserForm"
                 onSubmit={submit}
             >
