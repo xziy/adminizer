@@ -506,6 +506,38 @@ const config: AdminpanelConfig = {
                 text: {
                     title: 'Editor',
                     type: 'wysiwyg',
+                },
+                tabs_links: {
+                    "title": "Табы полезные ссылки",
+                    "type": "table",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в соответствующих столбцах вставьте ссылку на сайт и его название",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "link": null,
+                                "text": null
+                            },
+                            "colHeaders": [
+                                "Ссылка",
+                                "Текст"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "link"
+                                },
+                                {
+                                    "data": "text"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
                 }
             }
         }
