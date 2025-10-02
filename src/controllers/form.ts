@@ -51,7 +51,7 @@ export default async function form(req: ReqType, res: ResType) {
             if(form[key].type === "mediamanager") {
                 let options = form[key].options as MediaManagerOptionsField;
                 let mediaManager = MediaManagerHandler.get(options?.id ?? "default")
-                await mediaManager.setRelations(req.body[key], "form", `${slug}_${key}`, key)
+                if(req.body[key]) await mediaManager.setRelations(req.body[key], "form", `${slug}_${key}`, key)
             }
         }
 
