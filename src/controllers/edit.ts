@@ -54,6 +54,9 @@ export default async function edit(req: ReqType, res: ResType) {
 
     // Save
     if (req.method.toUpperCase() === 'POST') {
+        const backUrl = req.body.redirectUrl
+        delete req.body.redirectUrl
+
         let reqData = RequestProcessor.processRequest(req, fields);
         let params: {
             [key: string]: number | string
@@ -155,7 +158,12 @@ export default async function edit(req: ReqType, res: ResType) {
                 }
 
                 req.flash.setFlashMessage('success', req.i18n.__('Record was updated'));
-                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
+
+                if(backUrl){
+                    return req.Inertia.redirect(backUrl)
+                } else {
+                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
+                }
             }
         } catch (e) {
             Adminizer.log.error(e);

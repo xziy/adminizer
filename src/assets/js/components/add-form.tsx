@@ -88,6 +88,7 @@ const AddForm: FC<{
             setData,
             post,
             processing,
+            transform
         } = useForm<Record<string, any>>({
             ...Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])),
             jsonPopupCatalog: catalog
@@ -107,6 +108,7 @@ const AddForm: FC<{
         }, [fields, catalog, openNewWindow]);
 
         const handleFieldChange = useCallback((fieldName: string, value: FieldValue) => {
+            // @ts-ignore
             setData(fieldName, value);
         }, []);
 
@@ -123,7 +125,16 @@ const AddForm: FC<{
                     }
                 }
             } else {
-                post(page.props.postLink);
+                const backUrl = localStorage.getItem('backUrl')
+                transform((data) => ({
+                    ...data,
+                    redirectUrl: backUrl ?? ''
+                }))
+                post(page.props.postLink, {
+                    onSuccess: () => {
+                        localStorage.setItem('backUrl', '')
+                    }
+                });
             }
         };
 
