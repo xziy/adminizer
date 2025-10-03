@@ -82,7 +82,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
 
     public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: number, widgetName: string,): Promise<void> {
         let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
-            where: {modelId: modelId, model: model.toLowerCase(), widgetName: widgetName},
+            where: {modelId: +modelId, model: model.toLowerCase(), widgetName: widgetName},
         });
 
         for (const modelAssociation of modelAssociations) {
@@ -98,7 +98,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
                 mediaManagerId: this.id,
                 model: model.toLowerCase(),
-                modelId: modelId,
+                modelId: +modelId,
                 [fieldName]: widgetItem.id,
                 widgetName: widgetName,
                 sortOrder: key + 1,
