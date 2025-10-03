@@ -6,7 +6,7 @@ export async function thumbController(req: ReqType, res: ResType) {
   const managerId = req.query.managerId as string
   if (method === 'GET') {
     res.setHeader('Content-Type', 'image/webp');
-    res.send(await MediaManagerThumb.getThumb(id, managerId));
+    res.send(await MediaManagerThumb.getThumb(id, managerId, req.adminizer));
   }
 
 }

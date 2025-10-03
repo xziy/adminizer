@@ -134,7 +134,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
         try {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
-            await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
+            await saveRelationsMediaManager(req.adminizer, fields, rawReqData, entity.model.identity, newRecord[0].id)
 
 
             Adminizer.log.debug(`Record was updated: `, newRecord);
@@ -167,7 +167,7 @@ export default async function edit(req: ReqType, res: ResType) {
     for (const field of Object.keys(fields)) {
         let fieldConfigConfig = fields[field].config as BaseFieldConfig;
         if (fieldConfigConfig.type === 'mediamanager') {
-            record[field] = await getRelationsMediaManager({
+            record[field] = await getRelationsMediaManager(req.adminizer, {
                 mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",
                 model: entity.model.modelname,
                 widgetName: field,

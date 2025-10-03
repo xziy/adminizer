@@ -100,7 +100,7 @@ export default async function view(req: ReqType, res: ResType) {
             for (const field of Object.keys(fields)) {
                 let fieldConfigConfig = fields[field].config as BaseFieldConfig;
                 if (fieldConfigConfig.type === 'mediamanager') {
-                    record[field] = await getRelationsMediaManager({
+                    record[field] = await getRelationsMediaManager(req.adminizer, {
                         mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",
                         model: entity.model.modelname,
                         widgetName: field,

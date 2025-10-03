@@ -14,7 +14,7 @@ export default function bindMediaManager(adminizer: Adminizer) {
 				'media-manager',
 				adminizer.config.mediamanager.fileStoragePath
 			)
-			MediaManagerHandler.add(mediaManager)
+			adminizer.mediaManagerHandler.add(mediaManager)
 		} catch (e) {
 			console.log(e)
 		}

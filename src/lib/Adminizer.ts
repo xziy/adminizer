@@ -38,6 +38,7 @@ import { GeneralNotificationService } from './notifications/GeneralNotificationS
 import { SystemNotificationService } from './notifications/SystemNotificationService';
 import {bindNotifications} from "../system/bindNotifications";
 import {INotification} from "../interfaces/types";
+import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
 
 export class Adminizer {
     // Preconfigures
@@ -62,6 +63,7 @@ export class Adminizer {
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
     catalogHandler!: CatalogHandler
+    mediaManagerHandler!: MediaManagerHandler
 
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
@@ -242,6 +244,8 @@ export class Adminizer {
         this.widgetHandler = new WidgetHandler(this);
 
         this.catalogHandler = new CatalogHandler();
+
+        this.mediaManagerHandler = new MediaManagerHandler();
 
         bindExpressUtils(this.app);
         bindReqFunctions(this);
