@@ -19,7 +19,7 @@ export async function mediaManagerController(req: ReqType, res: ResType) {
     if (!id) {
         return res.sendStatus(404)
     }
-    const _manager = MediaManagerHandler.get(id)
+    const _manager = req.adminizer.mediaManagerHandler.get(id)
     const manager = new MediaManagerAdapter(_manager)
     if (method === 'GET') {
         if (req.query._method === 'getLocales') {

@@ -32,18 +32,19 @@ export function randomFileName(filenameOrig: string, type: string, prefix: boole
 
 /**
  * Save media manager relations to database.
+ * @param adminizer
  * @param fields
  * @param reqData
  * @param model
  * @param recordId
  */
-export async function saveRelationsMediaManager(fields: Fields, reqData: PostParams, model: string, recordId: number) {
+export async function saveRelationsMediaManager(adminizer: Adminizer, fields: Fields, reqData: PostParams, model: string, recordId: number) {
     for (let prop in reqData) {
         let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
         let options = fieldConfigConfig.options as MediaManagerOptionsField;
         if (fieldConfigConfig.type === 'mediamanager') {
             let data = reqData[prop] as MediaManagerWidgetData[];
-            let mediaManager = MediaManagerHandler.get(options?.id ?? 'default')
+            let mediaManager = adminizer.mediaManagerHandler.get(options?.id ?? 'default')
             await mediaManager.setRelations(data, model, recordId, prop)
         }
     }
@@ -51,12 +52,13 @@ export async function saveRelationsMediaManager(fields: Fields, reqData: PostPar
 
 /**
  * Get realtions
+ * @param adminizer
  * @param data
  * @param model
  * @param widgetName
  */
-export async function getRelationsMediaManager(data: MediaManagerWidgetJSON) {
-    let mediaManager = MediaManagerHandler.get(data.mediaManagerId)
+export async function getRelationsMediaManager(adminizer: Adminizer, data: MediaManagerWidgetJSON) {
+    let mediaManager = adminizer.mediaManagerHandler.get(data.mediaManagerId)
     return await mediaManager.getRelations(data.model, data.widgetName, data.modelId)
 }
 
@@ -74,7 +76,7 @@ export async function deleteRelationsMediaManager(adminizer: Adminizer, model: s
         let field = config.fields[key] as BaseFieldConfig
         if (field && field.type === 'mediamanager') {
             const option = field.options as MediaManagerOptionsField
-            let mediaManager = MediaManagerHandler.get(option?.id ?? 'default')
+            let mediaManager = adminizer.mediaManagerHandler.get(option?.id ?? 'default')
             let emptyData: MediaManagerWidgetData[] = []
             await mediaManager.setRelations(emptyData, model, +record[0].id, key)
         }

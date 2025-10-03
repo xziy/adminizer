@@ -105,7 +105,7 @@ export default async function add(req: ReqType, res: ResType) {
             let record = await entity.model.create(reqData, dataAccessor);
 
             // save associations media to json
-            await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, record.id)
+            await saveRelationsMediaManager(req.adminizer, fields, rawReqData, entity.model.identity, record.id)
 
             Adminizer.log.debug(`A new record was created: `, record);
             if (req.body.jsonPopupCatalog) {

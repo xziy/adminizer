@@ -104,7 +104,7 @@ export default function inertiaFormHelper(req: ReqType, postLink: string, formDa
         if (type === 'mediamanager') {
             const mOptions = field.options as MediaManagerOptionsField
 
-            const mediaManager = MediaManagerHandler.get(mOptions.id || 'default')
+            const mediaManager = req.adminizer.mediaManagerHandler.get(mOptions.id || 'default')
             if (!mediaManager) {
                 options = {}
             } else {
