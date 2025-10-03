@@ -182,3 +182,6 @@
         transform: translate(0, 0) rotate(0deg);
     }
 }
+.leaflet-top, .leaflet-bottom {
+    z-index: 400 !important;
+}

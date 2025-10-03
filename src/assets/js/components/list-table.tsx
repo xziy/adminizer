@@ -240,7 +240,9 @@ const ListTable = () => {
                                     <DropdownMenuGroup>
                                         {page.props.header.crudActions?.editTitle && (
                                             <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href={`${page.props.header.entity.uri}/edit/${row.original.id}`}>
+                                                <Link href={`${page.props.header.entity.uri}/edit/${row.original.id}`} onClick={() => {
+                                                    localStorage.setItem('backUrl', window.location.pathname + window.location.search)
+                                                }}>
                                                     <Icon iconNode={Pencil}/>
                                                     {page.props.header.crudActions.editTitle}
                                                 </Link>
