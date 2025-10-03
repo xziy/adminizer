@@ -12,7 +12,6 @@ class UploadAdapterPlugin extends Plugin {
         const entityType = urlParts[1];
         const entityName = urlParts[2];
 
-        console.log(entityType, entityName);
         editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
             const uploadUrl = `${window.routePrefix}/${entityType}/${entityName}/ckeditor5/upload`;
             return new UploadAdapter(loader, uploadUrl);

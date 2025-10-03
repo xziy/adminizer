@@ -46,8 +46,10 @@ export interface MediaManagerWidgetClientItem extends MediaManagerWidgetItem {
 
 
 export interface MediaManagerWidgetJSON {
-    list: MediaManagerWidgetItem[];
     mediaManagerId: string;
+    model: string,
+    widgetName: string
+    modelId: string | number
 }
 
 export interface MediaManagerWidgetData {
@@ -276,11 +278,11 @@ export abstract class AbstractMediaManager {
         /**
          * widget Id in the model in which the mediafile was added
          */
-        modelId: string,
+        modelId: number,
         widgetName: string
     ): Promise<void>;
 
-    public abstract getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]>;
+    public abstract getRelations(model: string, widgetName: string, modelId: string | number): Promise<MediaManagerWidgetClientItem[]>;
 
     /**
      * Search all items.
