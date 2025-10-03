@@ -37,7 +37,7 @@ export function randomFileName(filenameOrig: string, type: string, prefix: boole
  * @param model
  * @param recordId
  */
-export async function saveRelationsMediaManager(fields: Fields, reqData: PostParams, model: string, recordId: string) {
+export async function saveRelationsMediaManager(fields: Fields, reqData: PostParams, model: string, recordId: number) {
     for (let prop in reqData) {
         let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
         let options = fieldConfigConfig.options as MediaManagerOptionsField;
@@ -52,14 +52,17 @@ export async function saveRelationsMediaManager(fields: Fields, reqData: PostPar
 /**
  * Get realtions
  * @param data
+ * @param model
+ * @param widgetName
  */
 export async function getRelationsMediaManager(data: MediaManagerWidgetJSON) {
     let mediaManager = MediaManagerHandler.get(data.mediaManagerId)
-    return await mediaManager.getItemsList(data.list ?? [])
+    return await mediaManager.getRelations(data.model, data.widgetName, data.modelId)
 }
 
 /**
  * Delate Ralations
+ * @param adminizer
  * @param model
  * @param record
  */
@@ -73,7 +76,7 @@ export async function deleteRelationsMediaManager(adminizer: Adminizer, model: s
             const option = field.options as MediaManagerOptionsField
             let mediaManager = MediaManagerHandler.get(option?.id ?? 'default')
             let emptyData: MediaManagerWidgetData[] = []
-            await mediaManager.setRelations(emptyData, model, record[0].id as string, key)
+            await mediaManager.setRelations(emptyData, model, +record[0].id, key)
         }
     }
 }

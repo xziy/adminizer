@@ -36,7 +36,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
     let record;
     let dataAccessor;
-    const id = req.params.id as string;
+    const id = req.params.id
     try {
         dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
@@ -168,8 +168,10 @@ export default async function edit(req: ReqType, res: ResType) {
         let fieldConfigConfig = fields[field].config as BaseFieldConfig;
         if (fieldConfigConfig.type === 'mediamanager') {
             record[field] = await getRelationsMediaManager({
-                list: record[field],
-                mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default"
+                mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",
+                model: entity.model.modelname,
+                widgetName: field,
+                modelId: id
             })
         }
     }
