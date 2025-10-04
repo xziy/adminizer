@@ -68,7 +68,6 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
     const hotTableRef = useRef<any>(null);
 
     useEffect(() => {
-        if (!hotTableRef.current || !data.length) return;
 
         const timer = setTimeout(() => {
             if (hotTableRef.current?.hotInstance) {
@@ -87,26 +86,6 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
         }
     }, [appearance]);
 
-    const optimizedConfig = {
-        ...config,
-        // Критически важные настройки производительности:
-        renderAllRows: false,
-        performanceTips: false,
-        autoRowSize: false,
-        viewportRowRenderingOffset: 20,
-        viewportColumnRenderingOffset: 10,
-        preventOverflow: 'horizontal',
-
-        // Отключаем ненужные фичи
-        dropdownMenu: false,
-        filters: false,
-        manualRowMove: false,
-        manualColumnMove: false,
-
-        // Оптимизация рендеринга
-        outsideClickDeselects: false,
-        observeDOMVisibility: false,
-    };
 
     return (
         <HotTable
@@ -114,7 +93,7 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
             themeName={theme}
             language={lang.languageCode}
             ref={hotTableRef}
-            {...optimizedConfig}
+            {...config}
             afterChange={handleChange}
         >
             {config.columns.map((item: ColumnSettings) => (
