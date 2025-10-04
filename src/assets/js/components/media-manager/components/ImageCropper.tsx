@@ -170,7 +170,7 @@ const ImageCropper = ({
     return (
         <div>
             <Cropper
-                src={`/public${item.url}`}
+                src={window.bindPublic ? `/public${item.url}` : item.url}
                 style={{height: 540, width: "100%"}}
                 initialAspectRatio={1}
                 ref={cropperRef}

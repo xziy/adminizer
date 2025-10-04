@@ -507,6 +507,65 @@ const config: AdminpanelConfig = {
                     title: 'Editor',
                     type: 'wysiwyg',
                 },
+                tabs_video: {
+                    "title": "Табы видео",
+                    "type": "table",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в добавленную строку вставьте код полученный на сервисе ВКонтакте или YouTube через кнопку \"Поделиться\"",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "iframe": null
+                            },
+                            "colHeaders": [
+                                "Iframe"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "iframe"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
+                },
+                tabs_tests: {
+                    "title": "Табы онлайн-тесты",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в соответствующих столбцах вставьте ссылку на тест и его название",
+                    "type": "table",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "link": null,
+                                "text": null
+                            },
+                            "colHeaders": [
+                                "Ссылка",
+                                "Текст"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "link"
+                                },
+                                {
+                                    "data": "text"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
+                },
                 tabs_links: {
                     "title": "Табы полезные ссылки",
                     "type": "table",

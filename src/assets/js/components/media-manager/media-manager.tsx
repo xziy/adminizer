@@ -196,7 +196,9 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         if (overIndex !== -1 && activeIndex !== overIndex) {
             setItems(prev => {
                 const newItems = arrayMove(prev, activeIndex, overIndex);
-                if (onChange) onChange(newItems);
+                if (onChange) {
+                    setTimeout(() => onChange(newItems), 100);
+                }
                 return newItems;
             });
         }
