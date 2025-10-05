@@ -154,6 +154,9 @@ let adminpanelConfig: AdminpanelConfig = {
     },
     notifications: {
         enabled: false
+    },
+    mediamanager: {
+        fileStoragePath: '.tmp/public',
     }
 }
 

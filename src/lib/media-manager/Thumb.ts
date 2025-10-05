@@ -16,7 +16,7 @@ export class MediaManagerThumb {
         if (await fileExists(thumb)) {
             return await fs.readFile(thumb)
         } else {
-            await sharp(path)
+            await sharp(`${process.cwd()}/${path}`)
                 .resize({width: 150, height: 150})
                 .toFile(thumb)
             return await fs.readFile(thumb)

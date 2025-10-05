@@ -418,7 +418,7 @@ const models: AdminpanelConfig["models"] = {
 
 const config: AdminpanelConfig = {
     mediamanager: {
-        fileStoragePath: `${process.cwd()}/.tmp/public`,
+        fileStoragePath: '.tmp/public',
         allowMIME: ['image/*', 'application/*', 'text/*', 'video/*'],
         maxByteSize: 1024 * 1024 * 2, // 2 Mb
         imageSizes: {
