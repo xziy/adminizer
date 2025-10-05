@@ -390,7 +390,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		let storage = StorageServices.get(catalogId)
 
 		let storageData = await this.dataPreparation(data, catalogId)
-        console.log(storageData)
+
 		delete data.name
 		delete data.parentId
 		storageData = {...storageData, ...data}
