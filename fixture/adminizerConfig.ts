@@ -21,6 +21,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
+                    accept: ['image/jpeg, image/png']
                 }
             },
             schema: {}
@@ -390,6 +391,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
+                    accept: ['image/jpeg, image/png']
                 }
             },
             mediamanager_two: {
@@ -398,6 +400,15 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'avatars',
+                    accept: ['image/jpeg']
+                },
+                displayModifier: function (data: any) {
+                    console.log(data)
+                    if (data.length) {
+                        return `<img width="100px" height="100px" style="margin: 0 auto" src="${routePrefix}/get-thumbs?id=${data[0].id}&managerId=default"/>`;
+                    } else {
+                        return `<p>No Image</p>`;
+                    }
                 }
             },
         }
@@ -493,6 +504,7 @@ const config: AdminpanelConfig = {
                     options: {
                         id: "default",
                         group: 'form_global_images',
+                        accept: ['image/jpeg, image/png']
                     },
                     value: null
                 },

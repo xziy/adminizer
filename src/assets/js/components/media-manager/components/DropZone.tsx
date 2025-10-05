@@ -15,7 +15,7 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
     const [loading, setLoading] = useState<boolean>(false);
     const [alert, setAlert] = useState<string>('');
 
-    const {uploadUrl, group} = useContext(MediaManagerContext);
+    const {uploadUrl, group, accept} = useContext(MediaManagerContext);
 
     const handleClose = () => {
         setAlert('')
@@ -130,7 +130,7 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
                             onChange={onLoad}
                             className="hidden"
                             multiple
-                            accept="*"
+                            accept={accept.join(',')}
                         />
                     </label>
                 </div>

@@ -5,6 +5,7 @@ import {ArrowDown, ArrowUp, ArrowUpDown} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {Icon} from "@/components/icon.tsx";
 import {Columns} from "@/types";
+import {simpleSanitizeHtml} from "@/lib/utils.ts";
 
 export function useTableColumns(
     columnConfigs: Columns,
@@ -45,7 +46,9 @@ export function useTableColumns(
                                 type="text"
                                 defaultValue={config.searchColumnValue}
                                 className="text-xs p-1 border rounded mb-2 text-foreground"
-                                onChange={(e) => {onColumnSearch(config.data, (e.target as HTMLInputElement).value);}}
+                                onChange={(e) => {
+                                    onColumnSearch(config.data, (e.target as HTMLInputElement).value);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && handleSearch) {
                                         handleSearch()
@@ -56,11 +59,13 @@ export function useTableColumns(
                     </div>
                 )
             },
-            cell: ({row}) => (
-                <div className="text-center max-w-[300px] overflow-hidden text-ellipsis">
-                    {row.getValue(key)?.toString()}
-                </div>
-            )
+            cell: ({row}) => {
+                const cleanHtml = simpleSanitizeHtml(row.getValue(key)?.toString() ?? '');
+                return (
+                    <div className="text-center max-w-[300px] overflow-hidden text-ellipsis" dangerouslySetInnerHTML={{ __html: cleanHtml }}>
+                    </div>
+                )
+            }
         }));
     }, [columnConfigs, onSort, showSearchInputs, onColumnSearch]);
 }

@@ -43,6 +43,7 @@ interface Props {
     config: {
         id: string
         group: string
+        accept: string[]
     }
     onChange?: (media: Media[]) => void
     value?: Media[]
@@ -53,6 +54,7 @@ type MediaManagerContextType = {
     config?: Record<string, any>
     managerId: string
     group: string
+    accept: string[]
     messages: Record<string, string>
     addMedia: (media: Media) => void
     removeMedia: (media: Media) => void
@@ -66,6 +68,7 @@ export const MediaManagerContext = createContext<MediaManagerContextType>({
     config: {},
     managerId: '',
     group: '',
+    accept: [],
     messages: {},
     addMedia: (_media) => console.warn('addMedia not implemented'),
     removeMedia: (_media: Media) => console.warn('removeMedia not implemented'),
@@ -155,6 +158,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         uploadUrl: uploadUrl,
         managerId: config.id,
         group: config.group,
+        accept: config.accept,
         messages: messages,
         config: {},
         addMedia: (media) => addMediaWithCallback(media),

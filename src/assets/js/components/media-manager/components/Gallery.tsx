@@ -186,7 +186,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                         }}
                         className="w-[200px] p-2 border rounded"
                     />
-                    <TabsList className="w-full]">
+                    <TabsList className="sm:w-full">
                         <TabsTrigger
                             className="text-[12px] sm:text-sm"
                             value="tile-image"
