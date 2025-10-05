@@ -135,7 +135,7 @@ export class MediaManagerAdapter {
     }
 
     private checkDirectory(): string {
-        const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
+        const outputDir = `${process.cwd()}/${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
         }

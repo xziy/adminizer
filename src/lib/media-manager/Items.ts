@@ -72,7 +72,7 @@ export class ImageItem extends File<MediaManagerItem> {
             parent: null,
             mimeType: file.mimetype,
             size: file.size,
-            path: file.path,
+            path: `${this.fileStoragePath}/${this.urlPathPrefix}/${filename}`,
             group: group,
             tag: "origin",
             filename: origFileName,
@@ -193,8 +193,7 @@ export class ImageItem extends File<MediaManagerItem> {
 
     protected async resizeImage(input: string, output: string, width: number, height: number,) {
         // Get the directory from the output path
-        const outputDir = path.dirname(output);
-
+        const outputDir = `${process.cwd()}/${path.dirname(output)}`;
         // Check if the directory exists, and create it if it doesn't
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
@@ -266,7 +265,7 @@ export class TextItem extends ImageItem {
             parent: null,
             mimeType: file.mimetype,
             size: file.size,
-            path: file.path,
+            path: `${this.fileStoragePath}/${filename}`,
             group: group,
             filename: origFileName,
             tag: "origin",
