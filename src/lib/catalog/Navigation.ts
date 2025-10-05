@@ -8,6 +8,7 @@ export interface NavItem extends Item {
 	urlPath?: string;
 	modelId?: string | number;
 	targetBlank?: boolean
+    visible?: boolean
 }
 
 
@@ -255,7 +256,8 @@ class NavigationItem extends AbstractItem<NavItem> {
 			storageData = await this.dataPreparation({
 				record: record,
 				parentId: data.parentId,
-				targetBlank: data.targetBlank
+				targetBlank: data.targetBlank,
+                visible: data.visible
 			}, catalogId)
 		} else {
 			storageData = await this.dataPreparation(data, catalogId)
@@ -271,6 +273,8 @@ class NavigationItem extends AbstractItem<NavItem> {
             id: uuid(),
             modelId: data.record.id,
             targetBlank: data.targetBlank ?? data.record.targetBlank,
+            visible: data.visible ?? data.record.visible,
+            isNavigation: true,
             name: data.record.name ?? data.record.title ?? data.record.id,
             parentId: parentId,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
@@ -290,6 +294,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 			item.urlPath = urlPath
 			if (item.id === data.record.treeId) {
 				item.targetBlank = data.record.targetBlank
+				item.visible = data.record.visible
 			}
 			response.push(await storage.setElement(item.id, item));
 		}
@@ -342,6 +347,7 @@ class NavigationItem extends AbstractItem<NavItem> {
                     createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
                     OR: req.i18n.__('OR'),
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible')
                 }
             }
 		}
@@ -406,8 +412,8 @@ class NavigationGroup extends AbstractGroup<NavItem> {
             name: data.name,
             targetBlank: data.targetBlank,
             visible: data.visible,
-            parentId: parentId,
             isNavigation: true,
+            parentId: parentId,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
             icon: this.icon,
             type: this.type
