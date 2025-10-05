@@ -471,6 +471,10 @@ const config: AdminpanelConfig = {
             {
                 name: "Test Field",
                 required: false
+            },
+            {
+                name: "Test Field111",
+                required: false
             }
         ],
     },
