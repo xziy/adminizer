@@ -390,6 +390,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 		let storage = StorageServices.get(catalogId)
 
 		let storageData = await this.dataPreparation(data, catalogId)
+        console.log(storageData)
 		delete data.name
 		delete data.parentId
 		storageData = {...storageData, ...data}
@@ -404,6 +405,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
             id: uuid(),
             name: data.name,
             targetBlank: data.targetBlank,
+            visible: data.visible,
             parentId: parentId,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
             icon: this.icon,
@@ -455,6 +457,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
                 items: resItems,
                 labels: {
                     openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
                     title: req.i18n.__('Title'),
                     save: req.i18n.__('Save')
                 }
@@ -491,6 +494,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 				item: item,
 				labels: {
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					title: req.i18n.__('Title'),
 					save: req.i18n.__('Save')
 				}
@@ -542,6 +546,7 @@ class LinkItem extends NavigationGroup {
 				labels: {
 					title: req.i18n.__('Title'),
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					save: req.i18n.__('Save')
 				}
 			}
@@ -574,6 +579,7 @@ class LinkItem extends NavigationGroup {
 				item: item,
 				labels: {
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					title: req.i18n.__('Title'),
 					save: req.i18n.__('Save')
 				}
