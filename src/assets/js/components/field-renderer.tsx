@@ -271,7 +271,7 @@ const FieldRenderer: FC<{
             }
         case 'mediamanager':
             return (
-                <MediaLazy layout={Layout.Grid} config={{id: field.options.id, group: field.options.group}} value={value as Media[]} onChange={handleMediaChange}/>
+                <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange} config={{...field.options}}/>
             )
         default:
             return (
