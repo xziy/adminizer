@@ -75,12 +75,14 @@ const LazyField: FC<{
 const AddForm: FC<{
     page: { props: AddProps },
     catalog: boolean,
-    callback?: (record: any, targetBlank?: boolean) => void,
+    callback?: (record: any, targetBlank?: boolean, visible?: boolean) => void,
     openNewWindow?: boolean,
+    DnavVisible?: boolean,
     openNewWindowLabel?: string,
+    visibleLable?: string,
     isNavigation?: boolean
 }> =
-    ({page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation}) => {
+    ({page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable}) => {
 
         const {fields, btnBack, view, notFound} = page.props;
         const {
@@ -95,6 +97,7 @@ const AddForm: FC<{
         });
         const [catalogProcessing, setCatalogProcessing] = useState(false)
         const [navTargetBlank, setNavTargetBlank] = useState(openNewWindow ?? false)
+        const [navVisible, setNavVisible] = useState(DnavVisible ?? false)
 
         // Forcibly updating data when changing passes
         useEffect(() => {
@@ -121,7 +124,7 @@ const AddForm: FC<{
                 const res = await axios.post(page.props.postLink, data)
                 if (res.status === 200) {
                     if (callback) {
-                        isNavigation ? callback(res.data.record, navTargetBlank) : callback(res.data.record)
+                        isNavigation ? callback(res.data.record, navTargetBlank, navVisible) : callback(res.data.record)
                     }
                 }
             } else {
@@ -200,15 +203,26 @@ const AddForm: FC<{
                         <div
                             className={`p-4 rounded-md h-fit sticky shadow ${catalog ? 'top-0 grid gap-4' : 'top-[84px] hidden lg:block'}`}>
                             {isNavigation &&
-                                <div className="flex gap-4 items-center">
-                                    <Checkbox
-                                        id="targetBlank"
-                                        checked={navTargetBlank}
-                                        onCheckedChange={(checked) => setNavTargetBlank(!!checked)}
-                                        className="cursor-pointer size-5"
-                                    />
-                                    <Label htmlFor="targetBlank">{openNewWindowLabel}</Label>
-                                </div>
+                                <>
+                                    <div className="flex gap-4 items-center">
+                                        <Checkbox
+                                            id="targetBlank"
+                                            checked={navTargetBlank}
+                                            onCheckedChange={(checked) => setNavTargetBlank(!!checked)}
+                                            className="cursor-pointer size-5"
+                                        />
+                                        <Label htmlFor="targetBlank">{openNewWindowLabel}</Label>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <Checkbox
+                                            id="visible"
+                                            checked={navVisible}
+                                            onCheckedChange={(checked) => setNavVisible(!!checked)}
+                                            className="cursor-pointer size-5"
+                                        />
+                                        <Label htmlFor="visible">{visibleLable}</Label>
+                                    </div>
+                                </>
                             }
                             <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>

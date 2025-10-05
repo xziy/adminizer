@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import {NodeModel} from "@minoru/react-dnd-treeview";
 import styles from "@/components/catalog/catalogUI/CatalogNode.module.css";
 import {ChevronRight, Eye, EyeOff, LoaderCircle} from "lucide-react";
@@ -24,9 +24,6 @@ const CatalogNode: React.FC<Props> = (props) => {
         props.onToggle(props.node.id);
     };
 
-    useEffect(() => {
-        console.log(props.node)
-    }, []);
     const handleSelect = () => props.onSelect(props.node);
 
     return (

@@ -75,6 +75,7 @@ const CatalogTree = () => {
     const [parentid, setParentId] = useState<string | number>(0)
 
     const [popUpTargetBlank, setPopUpTargetBlank] = useState<boolean>(false)
+    const [popUpVisible, setPopUpVisible] = useState<boolean>(false)
     const [isNavigation, setIsNavigation] = useState<boolean>(false)
 
     const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
@@ -338,6 +339,7 @@ const CatalogTree = () => {
                             const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
                             setAddProps(resEdit.data)
                             setPopUpTargetBlank(item.targetBlank)
+                            setPopUpVisible(item.visible)
                             setPopupType('model')
                             setFirstRender(false)
                             break
@@ -465,8 +467,9 @@ const CatalogTree = () => {
         setSecondRender(false)
     }, [itemType])
 
-    const addModel = async (record: any, targetBlank?: boolean) => {
+    const addModel = async (record: any, targetBlank?: boolean, visible?: boolean) => {
         if (targetBlank) record.targetBlank = targetBlank
+        if(visible) record.visible = visible
         try {
             await axios.post('', {
                 data: {
@@ -484,8 +487,9 @@ const CatalogTree = () => {
         }
     }
 
-    const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
+    const editModel = useCallback(async (record: any, targetBlank?: boolean, visivle?: boolean) => {
         if (targetBlank) record[0].targetBlank = targetBlank;
+        if(visivle) record[0].visible = visivle;
 
         record[0].treeId = selectedNodes[0]?.data?.id;
 
@@ -517,7 +521,8 @@ const CatalogTree = () => {
                             text: name, // Берём name из ответа сервера
                             data: {
                                 ...node.data,
-                                ...res.data, // Обновляем все данные из ответа
+                                ...res.data.data, // Обновляем все данные из ответа
+                                ...{visible: res.data.data.visible ?? false}
                             },
                         };
                     }
@@ -907,6 +912,7 @@ const CatalogTree = () => {
                         addProps={addProps}
                         editModel={editModel}
                         popUpTargetBlank={popUpTargetBlank}
+                        popUpVisible={popUpVisible}
                         isNavigation={isNavigation}
                         messages={messages}
                         DynamicComponent={DynamicComponent}

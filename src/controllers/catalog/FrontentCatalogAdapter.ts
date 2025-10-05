@@ -82,6 +82,7 @@ export class VueCatalog {
             "Select Ids": "",
             "OR": "",
             "Open in a new window": "",
+            "Visible": "",
             "Clean": "",
             "Performing an action...": "",
             "Action completed": "",

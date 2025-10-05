@@ -21,6 +21,7 @@ interface CatalogDialogStackProps {
     addProps: any;
     editModel: (record: any, targetBlank?: boolean) => Promise<void>;
     popUpTargetBlank: boolean;
+    popUpVisible: boolean;
     isNavigation: boolean;
     messages: Record<string, string>;
     DynamicComponent: React.ReactElement | null;
@@ -36,29 +37,31 @@ interface CatalogDialogStackProps {
     selectCatalogItem: (type: string) => Promise<void>;
 }
 
-const CatalogDialogStack: React.FC<CatalogDialogStackProps> = ({
-                                                                   dialogRef,
-                                                                   PopupEvent,
-                                                                   firstRender,
-                                                                   secondRender,
-                                                                   popupType,
-                                                                   addProps,
-                                                                   editModel,
-                                                                   popUpTargetBlank,
-                                                                   isNavigation,
-                                                                   messages,
-                                                                   DynamicComponent,
-                                                                   DynamicActionComponent,
-                                                                   addLinksGroupProps,
-                                                                   reloadCatalog,
-                                                                   itemType,
-                                                                   parentid,
-                                                                   addItemProps,
-                                                                   getAddModelJSON,
-                                                                   addModel,
-                                                                   items,
-                                                                   selectCatalogItem
-                                                               }) => {
+const CatalogDialogStack: React.FC<CatalogDialogStackProps> = (
+    {
+        dialogRef,
+        PopupEvent,
+        firstRender,
+        secondRender,
+        popupType,
+        addProps,
+        editModel,
+        popUpTargetBlank,
+        popUpVisible,
+        isNavigation,
+        messages,
+        DynamicComponent,
+        DynamicActionComponent,
+        addLinksGroupProps,
+        reloadCatalog,
+        itemType,
+        parentid,
+        addItemProps,
+        getAddModelJSON,
+        addModel,
+        items,
+        selectCatalogItem
+    }) => {
     return (
         <DialogStack ref={dialogRef}>
             <DialogStackOverlay/>
@@ -81,7 +84,9 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = ({
                                                      catalog={true}
                                                      callback={editModel}
                                                      openNewWindowLabel={messages["Open in a new window"]}
+                                                     visibleLable={messages["Visible"]}
                                                      openNewWindow={popUpTargetBlank}
+                                                     DnavVisible={popUpVisible}
                                                      isNavigation={isNavigation}
                                             />
                                         }
@@ -185,6 +190,7 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = ({
                                  catalog={true}
                                  callback={addModel}
                                  openNewWindowLabel={messages["Open in a new window"]}
+                                 visibleLable={messages["Visible"]}
                                  isNavigation={isNavigation}
                         />
                     </div>
