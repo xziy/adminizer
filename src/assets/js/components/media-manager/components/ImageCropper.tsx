@@ -1,4 +1,4 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import Cropper from "react-cropper";
 import type {ReactCropperElement, ReactCropperProps} from 'react-cropper';
 import {Button} from "@/components/ui/button.tsx";
@@ -31,7 +31,7 @@ const ImageCropper = ({
                           group,
                           messages
                       }: ImageCropperProps) => {
-    const cropperRef = useRef<ReactCropperElement>(null);
+    const cropperRef = useRef<ReactCropperElement & {cropper : {ready: boolean}}>(null);
     const [convertWebp, setConvertWebp] = useState(false);
     const [convertJpeg, setConvertJpeg] = useState(false);
     const [coordinates, setCoordinates] = useState({
@@ -42,6 +42,7 @@ const ImageCropper = ({
     });
     const [previewSrc, setPreviewSrc] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isReady, setIsReady] = useState(false);
 
     // Аналогичные настройки Cropper.js
     const cropperOptions: ReactCropperProps = {
@@ -66,6 +67,10 @@ const ImageCropper = ({
         cropBoxResizable: true,
         toggleDragModeOnDblclick: true,
     };
+
+    useEffect(() => {
+        if(cropperRef.current) setIsReady(cropperRef.current?.cropper.ready)
+    }, [cropperRef.current?.cropper]);
 
     const onCrop = () => {
         if (cropperRef.current?.cropper) {
@@ -168,15 +173,18 @@ const ImageCropper = ({
     };
 
     return (
-        <div>
+        <div className="relative">
+            {!isReady && <LoaderCircle className="animate-spin absolute top-1/3 left-1/2 -translate-x-1/2"/> }
             <Cropper
                 src={window.bindPublic ? `/public${item.url}` : item.url}
                 style={{height: 540, width: "100%"}}
+                className={`${isReady ? '' : 'invisible'}`}
                 initialAspectRatio={1}
                 ref={cropperRef}
                 {...cropperOptions}
                 crop={onCrop}
             />
+
             {/* Координаты */}
             <div className="grid grid-cols-4 gap-2 mt-4">
                 {Object.entries(coordinates).map(([key, value]) => (
