@@ -1,7 +1,7 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {NodeModel} from "@minoru/react-dnd-treeview";
 import styles from "@/components/catalog/catalogUI/CatalogNode.module.css";
-import {ChevronRight, LoaderCircle} from "lucide-react";
+import {ChevronRight, Eye, EyeOff, LoaderCircle} from "lucide-react";
 import {CustomCatalogData} from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";
 
@@ -24,6 +24,9 @@ const CatalogNode: React.FC<Props> = (props) => {
         props.onToggle(props.node.id);
     };
 
+    useEffect(() => {
+        console.log(props.node)
+    }, []);
     const handleSelect = () => props.onSelect(props.node);
 
     return (
@@ -43,7 +46,11 @@ const CatalogNode: React.FC<Props> = (props) => {
                     </div>
                 )}
             </div>
-            <MaterialIcon name={props.node.data?.icon ?? "folder"}/>
+            <div className="flex items-center gap-2">
+                {props.node.data?.isNavigation &&
+                    (props.node.data?.visible ? (<Eye className="size-5"/>) : (<EyeOff className="size-5"/>) )}
+                <MaterialIcon name={props.node.data?.icon ?? "folder"}/>
+            </div>
             <div className={styles.labelGridItem}>
                 <span>{props.node.text}</span>
             </div>

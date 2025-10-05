@@ -159,6 +159,8 @@ export interface CustomCatalogData {
     id: string | number;
     name: string;
     parentId: string | number | null;
+    visible: undefined | boolean;
+    isNavigation: boolean | undefined
     sortOrder: number
     icon: string
     type: string;
