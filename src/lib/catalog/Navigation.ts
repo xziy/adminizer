@@ -407,6 +407,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
             targetBlank: data.targetBlank,
             visible: data.visible,
             parentId: parentId,
+            isNavigation: true,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
             icon: this.icon,
             type: this.type
