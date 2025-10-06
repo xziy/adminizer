@@ -39,7 +39,7 @@ class TestCatalogStorageService {
     }
 
     public async buildTree(): Promise<any> {
-        const rootElements: TestItem[] = await this.findElementsByParentId(0, null);
+        const rootElements: TestItem[] = await this.findElementsByParentId(null, null);
         const buildSubTree = async (elements: TestItem[]): Promise<any[]> => {
             const tree = [];
             for (const element of elements) {
@@ -70,7 +70,7 @@ class TestCatalogStorageService {
     }
 
     public async populateFromTree(tree: any[]): Promise<void> {
-        const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
+        const traverseTree = async (node: any, parentId: string | number | null = null): Promise<void> => {
             const {children, ...itemData} = node;
             const item = {...itemData, parentId} as TestItem;
             await this.setElement(item.id, item, true);
@@ -239,7 +239,7 @@ export class TestGroup extends AbstractGroup<TestItem> {
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
         let storage = StorageHandler.getStorage()
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
         return {
             id: uuid(),
             name: data.title,
@@ -346,7 +346,7 @@ class TestItemM extends AbstractItem<TestItem> {
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
         let storage = StorageHandler.getStorage()
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
         return {
             id: uuid(),
             modelId: data.record.id,
