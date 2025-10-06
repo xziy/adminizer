@@ -121,12 +121,12 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
 
                 {data.items.map(item => (
                     <div className="grid gap-4" key={item.name}>
-                        <Label>{item.name}</Label>
+                        <Label>{item.label}</Label>
                         <Input
                             required={item.required}
                             value={formData[item.name] || ""}
                             name={item.name}
-                            placeholder={item.name}
+                            placeholder={item.label}
                             onChange={handleChange}
                         />
                     </div>

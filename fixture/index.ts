@@ -192,35 +192,6 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         /** Test notifications */
         //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 5000); // Начальная задержка 10 секунд
 
-        // setTimeout(() => {
-        //     let header = adminizer.storageServices.get('header')
-        //     header.populateFromTree([{
-        //         "id": "eb323e5d-606a-470a-8a63-d25694f0915c",
-        //         "name": "CCCCCCCCCCCCCCCCCC",
-        //         "targetBlank": false,
-        //         "visible": true,
-        //         "isNavigation": true,
-        //         "parentId": 0,
-        //         "sortOrder": 0,
-        //         "icon": "insert_link",
-        //         "type": "link",
-        //         "Link": "dasd",
-        //         "children": []
-        //     }, {
-        //         "id": "15de2268-c42f-40f2-a450-18b152453fdd",
-        //         "name": "FFFFFFFFFFFFFF",
-        //         "targetBlank": true,
-        //         "visible": false,
-        //         "isNavigation": true,
-        //         "parentId": 0,
-        //         "sortOrder": 1,
-        //         "icon": "insert_link",
-        //         "type": "link",
-        //         "Link": "43232",
-        //         "children": []
-        //     }])
-        //     console.log('reset tree')
-        // }, 2000)
 
     } catch (e) {
         console.log(e)
