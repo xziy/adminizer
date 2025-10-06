@@ -547,7 +547,6 @@ export interface NavigationConfig {
     allowContentInGroup?: boolean
     items: NavigationItemTypeConfig[],
     movingGroupsRootOnly?: boolean
-    bindAfter: boolean
 }
 
 export interface MediaManagerConfig {
