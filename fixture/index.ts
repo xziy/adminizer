@@ -192,7 +192,10 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         /** Test notifications */
         //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 5000); // Начальная задержка 10 секунд
 
-        setTimeout(async () => await bindNavigation(adminizer), 2000)
+        setTimeout( () =>  {
+            adminizer.emitter.emit('isSeeding')
+            console.log('isSeeding')
+        }, 8000)
 
     } catch (e) {
         console.log(e)
