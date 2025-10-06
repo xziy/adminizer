@@ -176,17 +176,20 @@ export class StorageService {
 }
 
 export class StorageServices {
-	protected static storages: StorageService[] = []
+	protected storages: StorageService[] = []
 
-	public static add(storage: StorageService) {
+    constructor() {
+    }
+
+	public add(storage: StorageService) {
 		this.storages.push(storage)
 	}
 
-	public static get(id: string) {
+	public get(id: string) {
 		return this.storages.find(storage => storage.getId() === id)
 	}
 
-	public static getAll() {
+	public getAll() {
 		return this.storages
 	}
 }
@@ -197,24 +200,32 @@ export class Navigation extends AbstractCatalog {
 	public readonly icon: string = "box";
 	public readonly actionHandlers: ActionHandler[] = []
 	public idList: string[] = []
+    storageServices!: StorageServices
 
 	constructor(adminizer: Adminizer, config: NavigationConfig) {
 		let items = []
+        const storageServices = new StorageServices()
 		for (const configElement of config.items) {
 			items.push(new NavigationItem(
 				adminizer,
 				configElement.title,
 				configElement.model,
 				config.model,
-				configElement.urlPath as string
+				configElement.urlPath as string,
+                storageServices
 			))
 		}
-		items.push(new NavigationGroup(adminizer, config.groupField))
-		items.push(new LinkItem(adminizer))
-		for (const section of config.sections) {
-			StorageServices.add(new StorageService(adminizer, section, config.model))
-		}
-		super(adminizer, items);
+
+		items.push(new NavigationGroup(adminizer, config.groupField, storageServices))
+        items.push(new LinkItem(adminizer, storageServices))
+        super(adminizer, items);
+
+        this.storageServices = storageServices
+        adminizer.storageServices = storageServices
+        for (const section of config.sections) {
+            this.storageServices.add(new StorageService(adminizer, section, config.model))
+        }
+
 		this.movingGroupsRootOnly = config.movingGroupsRootOnly
 		this.idList = config.sections ?? []
 	}
@@ -235,7 +246,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	public readonly urlPath: string;
 	public readonly adminizer: Adminizer
 
-	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: string) {
+	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: string, storageServices: StorageServices) {
 		super();
 		this.name = name
 		this.navigationModel = navigationModel
@@ -245,10 +256,11 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let configModel = adminizer.config.models[this.model] as ModelConfig
 		this.icon = configModel?.icon ?? 'file_present'
 		this.adminizer = adminizer;
+        this.storageServices = storageServices
 	}
 
 	async create(data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		let storageData = null
 		if (data._method === 'select') {
 			// Direct call by model adapter
@@ -266,7 +278,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-        let storage = StorageServices.get(catalogId);
+        let storage = this.storageServices.get(catalogId);
         let urlPath = eval('`' + this.urlPath + '`');
         let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
         return {
@@ -285,7 +297,7 @@ class NavigationItem extends AbstractItem<NavItem> {
     }
 
 	async updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		let items = await storage.findElementByModelId(modelId)
 		let urlPath = eval('`' + this.urlPath + '`')
 		let response = []
@@ -302,17 +314,17 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(itemId, data);
 	}
 
 	async deleteItem(itemId: string | number, catalogId: string): Promise<void> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.removeElementById(itemId);
 	}
 
 	async find(itemId: string | number, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementById(itemId);
 	}
 
@@ -354,7 +366,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
 	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
@@ -374,7 +386,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.search(s, this.type);
 	}
 
@@ -386,14 +398,15 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	readonly groupField: object[]
 	public readonly adminizer: Adminizer
 
-	constructor(adminizer: Adminizer, groupField: object[]) {
+	constructor(adminizer: Adminizer, groupField: object[], storageServices: StorageServices) {
 		super();
 		this.groupField = groupField
 		this.adminizer = adminizer;
+        this.storageServices = storageServices
 	}
 
 	async create(data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 
 		let storageData = await this.dataPreparation(data, catalogId)
 
@@ -405,7 +418,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-        let storage = StorageServices.get(catalogId);
+        let storage = this.storageServices.get(catalogId);
         let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
         return {
             id: uuid(),
@@ -421,22 +434,22 @@ class NavigationGroup extends AbstractGroup<NavItem> {
     }
 
 	async deleteItem(itemId: string | number, catalogId: string): Promise<void> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.removeElementById(itemId);
 	}
 
 	async find(itemId: string | number, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementById(itemId);
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(itemId, data);
 	}
 
 	async updateModelItems(modelId: string | number, data: NavItem, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
 
@@ -510,12 +523,12 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.search(s, this.type);
 	}
 }
@@ -527,8 +540,8 @@ class LinkItem extends NavigationGroup {
 	readonly type: string = 'link';
 	readonly isGroup: boolean = false;
 
-	constructor(adminizer: Adminizer) {
-		super(adminizer, []);
+	constructor(adminizer: Adminizer, storageServices: StorageServices) {
+		super(adminizer, [], storageServices);
 	}
 
 	getAddTemplate(req: ReqType):Promise<{

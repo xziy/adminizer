@@ -39,6 +39,7 @@ import {SystemNotificationService} from './notifications/SystemNotificationServi
 import {bindNotifications} from "../system/bindNotifications";
 import {INotification} from "../interfaces/types";
 import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
+import {StorageServices} from "./catalog/Navigation";
 
 export class Adminizer {
     // Preconfigures
@@ -64,6 +65,7 @@ export class Adminizer {
     controlsHandler!: ControlsHandler
     catalogHandler!: CatalogHandler
     mediaManagerHandler!: MediaManagerHandler
+    storageServices!: StorageServices
 
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
@@ -259,19 +261,11 @@ export class Adminizer {
 
         await bindDashboardWidgets(this);
 
-        if (this.config.navigation?.bindAfter) {
-            this._emitter.on('isSeeding', async () => {
-                await bindNavigation(this);
-            })
-        } else {
-            await bindNavigation(this);
-        }
-
+        await bindNavigation(this);
 
         bindMediaManager(this);
 
         await bindAccessRights(this);
-
 
         if (I18n.appendLocale) {
             bindTranslations(this);

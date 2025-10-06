@@ -1,5 +1,6 @@
 import {JSONSchema4} from "json-schema";
 import {Adminizer} from "../Adminizer";
+import {StorageServices} from "./Navigation";
 
 /**
  * Interface `Item` describes the data that the UI will operate on
@@ -34,6 +35,7 @@ export type _Item_ = {
  * General Item structure that will be available for all elements, including groups
  */
 export abstract class BaseItem<T extends Item> {
+    storageServices?: StorageServices
     // public abstract readonly id: string;
     public abstract readonly type: string;
 
@@ -471,7 +473,7 @@ export abstract class AbstractCatalog {
      * Method for getting group elements
      */
     public getitemTypes() {
-        return this.itemTypes.map(({adminizer, ...rest}) => rest);
+        return this.itemTypes.map(({adminizer, storageServices, ...rest}) => rest);
     };
 
 

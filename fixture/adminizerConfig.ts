@@ -457,7 +457,6 @@ const config: AdminpanelConfig = {
     },
     dashboard: true,
     navigation: {
-        bindAfter: true,
         items: [
             {
                 title: 'Category',
