@@ -403,7 +403,6 @@ const models: AdminpanelConfig["models"] = {
                     accept: ['image/jpeg']
                 },
                 displayModifier: function (data: any) {
-                    console.log(data)
                     if (data.length) {
                         return `<img width="100px" height="100px" style="margin: 0 auto" src="${routePrefix}/get-thumbs?id=${data[0].id}&managerId=default"/>`;
                     } else {
@@ -458,6 +457,7 @@ const config: AdminpanelConfig = {
     },
     dashboard: true,
     navigation: {
+        bindAfter: true,
         items: [
             {
                 title: 'Category',
