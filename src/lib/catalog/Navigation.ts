@@ -12,7 +12,7 @@ export interface NavItem extends Item {
 }
 
 
-class StorageService {
+export class StorageService {
 	protected storageMap: Map<string | number, NavItem> = new Map();
 	protected id: string
 	protected model: string
@@ -25,7 +25,7 @@ class StorageService {
 		this.initModel()
 	}
 
-	protected async initModel() {
+	public async initModel() {
 		// Direct call by model adapter
 		const navigation = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ label: this.id });
 		if (navigation) {

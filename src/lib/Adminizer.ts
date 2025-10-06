@@ -10,7 +10,7 @@ import Router from "./../system/Router";
 import bindAssets from "../system/bindAssets";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
-import bindNavigation from "../system/bindNavigation";
+import {bindNavigation} from "../system/bindNavigation";
 import bindMediaManager from "../system/bindMediaManager";
 import bindAccessRights from "../system/bindAccessRights";
 import bindAuthorization from "../system/bindAuthorization";
@@ -261,7 +261,7 @@ export class Adminizer {
 
         await bindDashboardWidgets(this);
 
-        bindNavigation(this);
+        if (!this.config.navigation?.bindAfter) bindNavigation(this);
 
         bindMediaManager(this);
 
