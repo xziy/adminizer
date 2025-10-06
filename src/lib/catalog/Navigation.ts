@@ -4,13 +4,12 @@ import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../interfaces/
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../Adminizer";
 
-export interface NavItem extends Item {
+interface NavItem extends Item {
 	urlPath?: string;
 	modelId?: string | number;
 	targetBlank?: boolean
     visible?: boolean
 }
-
 
 export class StorageService {
 	protected storageMap: Map<string | number, NavItem> = new Map();
@@ -44,7 +43,7 @@ export class StorageService {
 	}
 
 	public async buildTree(): Promise<any> {
-		const rootElements: NavItem[] = await this.findElementsByParentId(0, null);
+		const rootElements: NavItem[] = await this.findElementsByParentId(null, null);
 		const buildSubTree = async (elements: NavItem[]): Promise<any[]> => {
 			const tree = [];
 			for (const element of elements) {
@@ -76,9 +75,9 @@ export class StorageService {
 
 
 	public async populateFromTree(tree: any[]): Promise<void> {
-		const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
+		const traverseTree = async (node: any, parentId: string | number | null = null): Promise<void> => {
 			const {children, ...itemData} = node;
-			const item = {...itemData, parentId} as NavItem;
+			const item = {...itemData, parentId: itemData.parentId === 0 ? null : itemData.parentId} as NavItem;
 			await this.setElement(item.id, item, true);
 
 			if (children && children.length > 0) {
@@ -141,6 +140,7 @@ export class StorageService {
     public async findElementsByParentId(parentId: string | number, type: string | null): Promise<NavItem[]> {
         const elements: NavItem[] = [];
         for (const item of this.storageMap.values()) {
+			if(parentId === 0) parentId = null;
             if (type === null && item.parentId === parentId) {
                 elements.push(item);
                 continue;
@@ -280,7 +280,8 @@ class NavigationItem extends AbstractItem<NavItem> {
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
         let storage = this.storageServices.get(catalogId);
         let urlPath = eval('`' + this.urlPath + '`');
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
+        if (parentId === 0) parentId = null;
         return {
             id: uuid(),
             modelId: data.record.id,
@@ -419,7 +420,8 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
         let storage = this.storageServices.get(catalogId);
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
+        if (parentId === 0) parentId = null;
         return {
             id: uuid(),
             name: data.name,

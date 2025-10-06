@@ -1,4 +1,4 @@
-import {VueCatalog} from "./FrontentCatalogAdapter";
+import {FrontendCatalog, FrontendCatalogUtils} from "./FrontendCatalogAdapter";
 import {Adminizer} from "../../lib/Adminizer";
 
 export async function catalogController(req: ReqType, res: ResType) {
@@ -40,7 +40,7 @@ export async function catalogController(req: ReqType, res: ResType) {
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
         const data = req.body
-        const frontendCatalog = new VueCatalog(_catalog);
+        const frontendCatalog = new FrontendCatalog(_catalog);
         if (!frontendCatalog) return res.status(404);
 
         frontendCatalog.setId(id)
@@ -69,7 +69,8 @@ export async function catalogController(req: ReqType, res: ResType) {
                         })
                     }
                     case 'createItem':
-                        return res.json({'data': await frontendCatalog.createItem(data.data, req)})
+                        const createdItem = await frontendCatalog.createItem(data.data, req);
+                        return res.json({'data': FrontendCatalogUtils.normalizeForFrontend(createdItem)})
                     case 'getChilds':
                         return res.json({data: await frontendCatalog.getChilds(data.data, req)})
                     case 'getActions':
@@ -91,7 +92,8 @@ export async function catalogController(req: ReqType, res: ResType) {
                     case 'getPopUpTemplate':
                         return res.json({data: await frontendCatalog.getPopUpTemplate(data.actionId, req)})
                     case 'updateItem':
-                        return res.json({data: await frontendCatalog.updateItem(item, data.modelId, data.data, req)})
+                        const updatedItem = await frontendCatalog.updateItem(item, data.modelId, data.data, req);
+                        return res.json({data: FrontendCatalogUtils.normalizeForFrontend(updatedItem)})
                 }
                 break
             case 'DELETE':

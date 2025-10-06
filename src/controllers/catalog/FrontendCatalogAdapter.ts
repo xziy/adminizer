@@ -6,7 +6,7 @@ interface NodeModel<TDataType> {
     droppable: boolean;
     // isExpanded: boolean;
     id: string;
-    parent: string;
+    parent: number;
     data?: TDataType;
     children?: NodeModel<TDataType>[];
 
@@ -157,6 +157,9 @@ export class FrontendCatalog {
 
     async getChilds(data: any, req: ReqType) {
         data = FrontendCatalogUtils.refinement(data);
+        if (!data || data.id === 0 || data.id === undefined) {
+            data = { id: null };
+        }
         if (data.id === 0) data.id = null;
         return FrontendCatalogUtils.arrayToNode(await this.catalog.getChilds(data.id, undefined, req), this.catalog.getGroupType().type);
     }
@@ -230,21 +233,29 @@ export class FrontendCatalogUtils {
         return nodeModel.data;
     }
 
+    /**
+     * Normalizes data for frontend: replaces null parentId with 0
+     */
+    public static normalizeForFrontend<T extends Item>(item: T): T {
+        return { ...item, parentId: item.parentId === null ? 0 : item.parentId };
+    }
+
     public static arrayToNode<T extends Item>(items: T[], groupTypeName: string): NodeModel<T>[] {
         return items.map(node => FrontendCatalogUtils.toNode(node, groupTypeName));
     }
 
     public static toNode<T extends NodeData>(data: T, groupTypeName: string): NodeModel<T> {
+        const normalizedData = FrontendCatalogUtils.normalizeForFrontend(data);
         return {
-            data: data,
+            data: normalizedData,
             droppable: data.type === groupTypeName,
             id: data.id as string,
             text: data.name,
-            parent: data.parentId as string,
+            parent: (data.parentId === null ? 0 : data.parentId as number),
         };
     }
 
-    public static expandTo<T extends NodeData>(vueCatalogData: NodeModel<T>, theseItemIdsNeedToBeOpened: (string | number)[]): NodeModel<T> {
+    public static expandTo<T extends NodeData>(frontendCatalogData: NodeModel<T>, theseItemIdsNeedToBeOpened: (string | number)[]): NodeModel<T> {
         function expand(node: NodeModel<T>): void {
             if (theseItemIdsNeedToBeOpened.includes(node.data.id)) {
                 // node.isExpanded = true;
@@ -258,10 +269,10 @@ export class FrontendCatalogUtils {
         }
 
         theseItemIdsNeedToBeOpened.forEach(id => {
-            expand(vueCatalogData);
+            expand(frontendCatalogData);
         });
 
-        return vueCatalogData;
+        return frontendCatalogData;
     }
 
     public static treeToNode(tree: Item[], groupTypeName: string): NodeModel<Item>[] {
