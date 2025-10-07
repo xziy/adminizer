@@ -403,7 +403,8 @@ class TestItemM extends AbstractItem<TestItem> {
         return Promise.resolve({
             type: 'model',
             data: {
-                item: await this.find(id, catalogId)
+                item: await this.find(id, catalogId),
+                model: this.model
             }
         })
     }
