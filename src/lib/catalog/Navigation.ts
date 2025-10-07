@@ -469,6 +469,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
             resItems = this.groupField.map((field: any) => {
                 return {
                     name: field.name,
+                    label: field.label,
                     required: field.required
                 }
             })
@@ -504,6 +505,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 			resItems = this.groupField.map((field: any) => {
 				return {
 					name: field.name,
+                    label: field.label,
 					required: field.required
 				}
 			})
@@ -555,9 +557,10 @@ class LinkItem extends NavigationGroup {
 		}
 	}>  {
 		let type: 'navigation.link' = 'navigation.link'
-		let resItems: { name: string; required: boolean; }[] = [
+		let resItems: { name: string; required: boolean; label: string }[] = [
 			{
-				name: req.i18n.__('Link'),
+				label: req.i18n.__('Link'),
+                name: "link",
 				required: true
 			}
 		]
@@ -587,9 +590,10 @@ class LinkItem extends NavigationGroup {
 		let item = await this.find(id, catalogId)
 		let type: 'navigation.group' = 'navigation.group'
 
-		let resItems: { name: string; required: boolean; }[] = [
+		let resItems: { name: string; required: boolean; label: string }[] = [
 			{
-				name: req.i18n.__('Link'),
+                label: req.i18n.__('Link'),
+                name: 'link',
 				required: true
 			}
 		]

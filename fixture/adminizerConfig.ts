@@ -476,14 +476,17 @@ const config: AdminpanelConfig = {
         groupField: [
             {
                 name: 'link',
+                label: 'Ссылка',
                 required: false
             },
             {
-                name: "Test Field",
+                name: "test_field",
+                label: 'Test',
                 required: false
             },
             {
-                name: "Test Field111",
+                name: "test_feild2",
+                label: 'Test2',
                 required: false
             }
         ],
