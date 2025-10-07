@@ -20,7 +20,6 @@ export class SystemNotificationService extends AbstractNotificationService {
         };
 
         let notificationDB: NotificationAPModel;
-
         // Сохраняем в базу
         if (this.adminizer.modelHandler.model.has('notificationap')) {
             try {

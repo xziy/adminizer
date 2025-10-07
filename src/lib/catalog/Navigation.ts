@@ -4,14 +4,14 @@ import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../interfaces/
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../Adminizer";
 
-export interface NavItem extends Item {
+interface NavItem extends Item {
 	urlPath?: string;
 	modelId?: string | number;
 	targetBlank?: boolean
+    visible?: boolean
 }
 
-
-class StorageService {
+export class StorageService {
 	protected storageMap: Map<string | number, NavItem> = new Map();
 	protected id: string
 	protected model: string
@@ -24,7 +24,7 @@ class StorageService {
 		this.initModel()
 	}
 
-	protected async initModel() {
+	public async initModel() {
 		// Direct call by model adapter
 		const navigation = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ label: this.id });
 		if (navigation) {
@@ -43,7 +43,7 @@ class StorageService {
 	}
 
 	public async buildTree(): Promise<any> {
-		const rootElements: NavItem[] = await this.findElementsByParentId(0, null);
+		const rootElements: NavItem[] = await this.findElementsByParentId(null, null);
 		const buildSubTree = async (elements: NavItem[]): Promise<any[]> => {
 			const tree = [];
 			for (const element of elements) {
@@ -75,9 +75,9 @@ class StorageService {
 
 
 	public async populateFromTree(tree: any[]): Promise<void> {
-		const traverseTree = async (node: any, parentId: string | number | null = 0): Promise<void> => {
+		const traverseTree = async (node: any, parentId: string | number | null = null): Promise<void> => {
 			const {children, ...itemData} = node;
-			const item = {...itemData, parentId} as NavItem;
+			const item = {...itemData, parentId: itemData.parentId === 0 ? null : itemData.parentId} as NavItem;
 			await this.setElement(item.id, item, true);
 
 			if (children && children.length > 0) {
@@ -140,6 +140,7 @@ class StorageService {
     public async findElementsByParentId(parentId: string | number, type: string | null): Promise<NavItem[]> {
         const elements: NavItem[] = [];
         for (const item of this.storageMap.values()) {
+			if(parentId === 0) parentId = null;
             if (type === null && item.parentId === parentId) {
                 elements.push(item);
                 continue;
@@ -175,17 +176,20 @@ class StorageService {
 }
 
 export class StorageServices {
-	protected static storages: StorageService[] = []
+	protected storages: StorageService[] = []
 
-	public static add(storage: StorageService) {
+    constructor() {
+    }
+
+	public add(storage: StorageService) {
 		this.storages.push(storage)
 	}
 
-	public static get(id: string) {
+	public get(id: string) {
 		return this.storages.find(storage => storage.getId() === id)
 	}
 
-	public static getAll() {
+	public getAll() {
 		return this.storages
 	}
 }
@@ -196,24 +200,32 @@ export class Navigation extends AbstractCatalog {
 	public readonly icon: string = "box";
 	public readonly actionHandlers: ActionHandler[] = []
 	public idList: string[] = []
+    storageServices!: StorageServices
 
 	constructor(adminizer: Adminizer, config: NavigationConfig) {
 		let items = []
+        const storageServices = new StorageServices()
 		for (const configElement of config.items) {
 			items.push(new NavigationItem(
 				adminizer,
 				configElement.title,
 				configElement.model,
 				config.model,
-				configElement.urlPath as string
+				configElement.urlPath as string,
+                storageServices
 			))
 		}
-		items.push(new NavigationGroup(adminizer, config.groupField))
-		items.push(new LinkItem(adminizer))
-		for (const section of config.sections) {
-			StorageServices.add(new StorageService(adminizer, section, config.model))
-		}
-		super(adminizer, items);
+
+		items.push(new NavigationGroup(adminizer, config.groupField, storageServices))
+        items.push(new LinkItem(adminizer, storageServices))
+        super(adminizer, items);
+
+        this.storageServices = storageServices
+        adminizer.storageServices = storageServices
+        for (const section of config.sections) {
+            this.storageServices.add(new StorageService(adminizer, section, config.model))
+        }
+
 		this.movingGroupsRootOnly = config.movingGroupsRootOnly
 		this.idList = config.sections ?? []
 	}
@@ -234,7 +246,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	public readonly urlPath: string;
 	public readonly adminizer: Adminizer
 
-	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: string) {
+	constructor(adminizer: Adminizer, name: string, model: string, navigationModel: string, urlPath: string, storageServices: StorageServices) {
 		super();
 		this.name = name
 		this.navigationModel = navigationModel
@@ -244,10 +256,11 @@ class NavigationItem extends AbstractItem<NavItem> {
 		let configModel = adminizer.config.models[this.model] as ModelConfig
 		this.icon = configModel?.icon ?? 'file_present'
 		this.adminizer = adminizer;
+        this.storageServices = storageServices
 	}
 
 	async create(data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		let storageData = null
 		if (data._method === 'select') {
 			// Direct call by model adapter
@@ -255,7 +268,8 @@ class NavigationItem extends AbstractItem<NavItem> {
 			storageData = await this.dataPreparation({
 				record: record,
 				parentId: data.parentId,
-				targetBlank: data.targetBlank
+				targetBlank: data.targetBlank,
+                visible: data.visible
 			}, catalogId)
 		} else {
 			storageData = await this.dataPreparation(data, catalogId)
@@ -264,13 +278,16 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-        let storage = StorageServices.get(catalogId);
+        let storage = this.storageServices.get(catalogId);
         let urlPath = eval('`' + this.urlPath + '`');
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
+        if (parentId === 0) parentId = null;
         return {
             id: uuid(),
             modelId: data.record.id,
             targetBlank: data.targetBlank ?? data.record.targetBlank,
+            visible: data.visible ?? data.record.visible,
+            isNavigation: true,
             name: data.record.name ?? data.record.title ?? data.record.id,
             parentId: parentId,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
@@ -281,7 +298,7 @@ class NavigationItem extends AbstractItem<NavItem> {
     }
 
 	async updateModelItems(modelId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		let items = await storage.findElementByModelId(modelId)
 		let urlPath = eval('`' + this.urlPath + '`')
 		let response = []
@@ -290,6 +307,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 			item.urlPath = urlPath
 			if (item.id === data.record.treeId) {
 				item.targetBlank = data.record.targetBlank
+				item.visible = data.record.visible
 			}
 			response.push(await storage.setElement(item.id, item));
 		}
@@ -297,17 +315,17 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(itemId, data);
 	}
 
 	async deleteItem(itemId: string | number, catalogId: string): Promise<void> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.removeElementById(itemId);
 	}
 
 	async find(itemId: string | number, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementById(itemId);
 	}
 
@@ -316,14 +334,14 @@ class NavigationItem extends AbstractItem<NavItem> {
 	* // TODO: need passing custom React module 
 	*/
 	async getAddTemplate(req: ReqType): Promise<{
-        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: {
             items: { id: string; name: string}[],
             model: string,
             labels?: Record<string, string>,
         }
     }> {
-		let type: 'model' = 'model'
+		let type: 'model.link' = 'model.link'
 		// Direct call by model adapter
 		let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -342,25 +360,26 @@ class NavigationItem extends AbstractItem<NavItem> {
                     createTitle: `${req.i18n.__('create new')} ${req.i18n.__(this.name + 's')}`,
                     OR: req.i18n.__('OR'),
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible')
                 }
             }
 		}
 	}
 
 	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
-		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
 		data: {
 			item: NavItem
 		}
 	}> {
 		return Promise.resolve({
-			type: 'model',
+			type: 'model.link',
             data: {
 				item: await this.find(id, catalogId)
 			}
@@ -368,7 +387,7 @@ class NavigationItem extends AbstractItem<NavItem> {
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.search(s, this.type);
 	}
 
@@ -380,16 +399,18 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	readonly groupField: object[]
 	public readonly adminizer: Adminizer
 
-	constructor(adminizer: Adminizer, groupField: object[]) {
+	constructor(adminizer: Adminizer, groupField: object[], storageServices: StorageServices) {
 		super();
 		this.groupField = groupField
 		this.adminizer = adminizer;
+        this.storageServices = storageServices
 	}
 
 	async create(data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 
 		let storageData = await this.dataPreparation(data, catalogId)
+
 		delete data.name
 		delete data.parentId
 		storageData = {...storageData, ...data}
@@ -398,12 +419,15 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
     protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
-        let storage = StorageServices.get(catalogId);
-        let parentId = data.parentId ? data.parentId : 0; // changed from null to 0
+        let storage = this.storageServices.get(catalogId);
+        let parentId = data.parentId ? data.parentId : null; // changed from 0 to null
+        if (parentId === 0) parentId = null;
         return {
             id: uuid(),
             name: data.name,
             targetBlank: data.targetBlank,
+            visible: data.visible,
+            isNavigation: true,
             parentId: parentId,
             sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
             icon: this.icon,
@@ -412,27 +436,27 @@ class NavigationGroup extends AbstractGroup<NavItem> {
     }
 
 	async deleteItem(itemId: string | number, catalogId: string): Promise<void> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.removeElementById(itemId);
 	}
 
 	async find(itemId: string | number, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementById(itemId);
 	}
 
 	async update(itemId: string | number, data: any, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(itemId, data);
 	}
 
 	async updateModelItems(modelId: string | number, data: NavItem, catalogId: string): Promise<NavItem> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.setElement(modelId, data);
 	}
 
 	getAddTemplate(req: ReqType):Promise<{
-		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: {
             items?: { name: string, required: boolean }[] | Record<string, any>[],
             model?: string,
@@ -445,6 +469,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
             resItems = this.groupField.map((field: any) => {
                 return {
                     name: field.name,
+                    label: field.label,
                     required: field.required
                 }
             })
@@ -455,6 +480,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
                 items: resItems,
                 labels: {
                     openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
                     title: req.i18n.__('Title'),
                     save: req.i18n.__('Save')
                 }
@@ -463,7 +489,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -479,6 +505,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 			resItems = this.groupField.map((field: any) => {
 				return {
 					name: field.name,
+                    label: field.label,
 					required: field.required
 				}
 			})
@@ -491,6 +518,7 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 				item: item,
 				labels: {
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					title: req.i18n.__('Title'),
 					save: req.i18n.__('Save')
 				}
@@ -499,12 +527,12 @@ class NavigationGroup extends AbstractGroup<NavItem> {
 	}
 
 	async getChilds(parentId: string | number | null, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.findElementsByParentId(parentId, this.type);
 	}
 
 	async search(s: string, catalogId: string): Promise<NavItem[]> {
-		let storage = StorageServices.get(catalogId)
+		let storage = this.storageServices.get(catalogId)
 		return await storage.search(s, this.type);
 	}
 }
@@ -516,12 +544,12 @@ class LinkItem extends NavigationGroup {
 	readonly type: string = 'link';
 	readonly isGroup: boolean = false;
 
-	constructor(adminizer: Adminizer) {
-		super(adminizer, []);
+	constructor(adminizer: Adminizer, storageServices: StorageServices) {
+		super(adminizer, [], storageServices);
 	}
 
 	getAddTemplate(req: ReqType):Promise<{
-		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -529,9 +557,10 @@ class LinkItem extends NavigationGroup {
 		}
 	}>  {
 		let type: 'navigation.link' = 'navigation.link'
-		let resItems: { name: string; required: boolean; }[] = [
+		let resItems: { name: string; required: boolean; label: string }[] = [
 			{
-				name: req.i18n.__('Link'),
+				label: req.i18n.__('Link'),
+                name: "link",
 				required: true
 			}
 		]
@@ -542,6 +571,7 @@ class LinkItem extends NavigationGroup {
 				labels: {
 					title: req.i18n.__('Title'),
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					save: req.i18n.__('Save')
 				}
 			}
@@ -549,7 +579,7 @@ class LinkItem extends NavigationGroup {
 	}
 
 	async getEditTemplate(id: string | number, catalogId: string, req: ReqType): Promise<{
-		type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+		type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
 		data: {
 			items?: { name: string, required: boolean }[] | Record<string, any>[],
 			model?: string,
@@ -560,9 +590,10 @@ class LinkItem extends NavigationGroup {
 		let item = await this.find(id, catalogId)
 		let type: 'navigation.group' = 'navigation.group'
 
-		let resItems: { name: string; required: boolean; }[] = [
+		let resItems: { name: string; required: boolean; label: string }[] = [
 			{
-				name: req.i18n.__('Link'),
+                label: req.i18n.__('Link'),
+                name: 'link',
 				required: true
 			}
 		]
@@ -574,6 +605,7 @@ class LinkItem extends NavigationGroup {
 				item: item,
 				labels: {
 					openInNewWindow: req.i18n.__('Open in a new window'),
+                    visible: req.i18n.__('Visible'),
 					title: req.i18n.__('Title'),
 					save: req.i18n.__('Save')
 				}

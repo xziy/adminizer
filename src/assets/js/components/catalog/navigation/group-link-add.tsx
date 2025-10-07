@@ -11,7 +11,12 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
     // Инициализация состояния формы
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [targetBlank, setTargetBlank] = useState<boolean>(false);
+    const [visible, setVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        console.log(data)
+    }, []);
 
     // Инициализация формы данными при монтировании или изменении data.item
     useEffect(() => {
@@ -23,6 +28,7 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                 )
             });
             setTargetBlank(data.item.targetBlank || false);
+            setVisible(data.item.visible || false);
         } else {
             // Сброс формы для создания нового элемента
             setFormData({
@@ -30,6 +36,7 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                 ...Object.fromEntries(data.items.map(item => [item.name, '']))
             });
             setTargetBlank(false);
+            setVisible(false)
         }
     }, [data.item, data.items]);
 
@@ -52,7 +59,8 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                     data: {
                         ...data.item,
                         ...formData,
-                        targetBlank
+                        targetBlank,
+                        visible
                     },
                     _method: 'updateItem'
                 });
@@ -62,6 +70,7 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                     data: {
                         ...formData,
                         targetBlank,
+                        visible,
                         parentId: parentId,
                         type: type
                     },
@@ -89,6 +98,15 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
                     />
                     <Label htmlFor="targetBlank">{data.labels.openInNewWindow}</Label>
                 </div>
+                <div className="flex gap-4 items-center">
+                    <Checkbox
+                        id="visible"
+                        checked={visible}
+                        onCheckedChange={(checked) => setVisible(!!checked)}
+                        className="cursor-pointer size-5"
+                    />
+                    <Label htmlFor="visible">{data.labels.visible}</Label>
+                </div>
 
                 <div className="grid gap-4">
                     <Label htmlFor="name">{data.labels.title}</Label>
@@ -103,12 +121,12 @@ const GroupLinkAdd = ({update = false, type, parentId, ...data}: NavGroupAddProp
 
                 {data.items.map(item => (
                     <div className="grid gap-4" key={item.name}>
-                        <Label>{item.name}</Label>
+                        <Label>{item.label}</Label>
                         <Input
                             required={item.required}
                             value={formData[item.name] || ""}
                             name={item.name}
-                            placeholder={item.name}
+                            placeholder={item.label}
                             onChange={handleChange}
                         />
                     </div>

@@ -99,88 +99,7 @@ const ListTable = () => {
         document.body.removeAttribute('style')
     }, [data])
 
-    let columns: ColumnDef<any>[] = [
-        {
-            accessorKey: 'actions',
-            header: () => (
-                <div className="text-center">
-                    {page.props.header.thActionsTitle}
-                </div>
-            ),
-            cell: ({row}) => {
-                return (
-                    <div className="text-center">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild className="cursor-pointer">
-                                <Button variant="outline" size="icon">
-                                    <BetweenHorizontalStart/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-46" side="right" align="start">
-                                <DropdownMenuGroup>
-                                    {page.props.header.crudActions?.editTitle && (
-                                        <DropdownMenuItem asChild className="cursor-pointer">
-                                            <Link href={`${page.props.header.entity.uri}/edit/${row.original.id}`}>
-                                                <Icon iconNode={Pencil}/>
-                                                {page.props.header.crudActions.editTitle}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    )}
-                                    {page.props.header.crudActions?.viewsTitle && (
-                                        <DropdownMenuItem asChild className="cursor-pointer">
-                                            <Link href={`${page.props.header.entity.uri}/view/${row.original.id}`}>
-                                                <Icon iconNode={Eye}/>
-                                                {page.props.header.crudActions.viewsTitle}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    )}
-                                    {page.props.header.crudActions?.deleteTitle && (
-                                        <DropdownMenuItem asChild className="cursor-pointer">
-                                            <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
-                                                         delModal={page.props.header.delModal}
-                                                         btnCLass="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start"
-                                                         link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
-                                        </DropdownMenuItem>
-                                    )}
-                                </DropdownMenuGroup>
-                                {page.props.header.inlineActions && page.props.header.inlineActions.length > 0 && (
-                                    <>
-                                        <DropdownMenuSeparator/>
-                                        {page.props.header.inlineActions.map((action: Action) => (
-                                            <DropdownMenuItem
-                                                key={action.id}
-                                                asChild
-                                                className="cursor-pointer"
-                                            >
-                                                {action.type === 'blank' ? (
-                                                    <a target="_blank"
-                                                       href={action.link}
-                                                    >
-                                                        {action.icon && <MaterialIcon name={action.icon}
-                                                                                      className="!text-[18px] mr-2"/>}
-                                                        <span>{action.title}</span>
-                                                    </a>
-                                                ) : (
-                                                    <Link
-                                                        href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
-                                                    >
-                                                        {action.icon && <MaterialIcon name={action.icon}
-                                                                                      className="!text-[18px] mr-2"/>}
-                                                        <span>{action.title}</span>
-                                                    </Link>
-                                                )}
 
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )
-            }
-        }
-    ]
 
     const pagination = useMemo(() => {
         return generatePagination(
@@ -253,7 +172,7 @@ const ListTable = () => {
     const handleGlobalSearch = useCallback((value: string) => {
         setSearchValue(value)
         setCurrentPage(1)
-    }, [data])
+    }, [])
 
     const handleSearch = useCallback(() => {
         setLoading(true)
@@ -262,7 +181,7 @@ const ListTable = () => {
             only: ['data', 'columns', 'header'],
             onSuccess: () => setLoading(false)
         })
-    }, [data, searchValue])
+    }, [page.props.header.entity.uri, buildQueryString])
 
     const handleColumnSearch = useCallback((key: string, value: string) => {
         setCurrentPage(1)
@@ -291,13 +210,110 @@ const ListTable = () => {
         })
     }
 
-    columns = [...columns, ...useTableColumns(
+    const dynamicColumns = useTableColumns(
         page.props.columns,
         handleCustomSort,
         handleColumnSearch,
         handleSearch,
-        showSearch // send state input visible
-    )]
+        showSearch
+    );
+
+    const tableColumns = useMemo(() => {
+        const baseColumns: ColumnDef<any>[] = [
+            {
+                accessorKey: 'actions',
+                header: () => (
+                    <div className="text-center">
+                        {page.props.header.thActionsTitle}
+                    </div>
+                ),
+                cell: ({row}) => {
+                    return (
+                        <div className="text-center">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild className="cursor-pointer">
+                                    <Button variant="outline" size="icon">
+                                        <BetweenHorizontalStart/>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-46" side="right" align="start">
+                                    <DropdownMenuGroup>
+                                        {page.props.header.crudActions?.editTitle && (
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <Link href={`${page.props.header.entity.uri}/edit/${row.original.id}`} onClick={() => {
+                                                    localStorage.setItem('backUrl', window.location.pathname + window.location.search)
+                                                }}>
+                                                    <Icon iconNode={Pencil}/>
+                                                    {page.props.header.crudActions.editTitle}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        )}
+                                        {page.props.header.crudActions?.viewsTitle && (
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <Link href={`${page.props.header.entity.uri}/view/${row.original.id}`}>
+                                                    <Icon iconNode={Eye}/>
+                                                    {page.props.header.crudActions.viewsTitle}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        )}
+                                        {page.props.header.crudActions?.deleteTitle && (
+                                            <DropdownMenuItem asChild className="cursor-pointer">
+                                                <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
+                                                             delModal={page.props.header.delModal}
+                                                             btnCLass="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start"
+                                                             link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
+                                            </DropdownMenuItem>
+                                        )}
+                                    </DropdownMenuGroup>
+                                    {page.props.header.inlineActions && page.props.header.inlineActions.length > 0 && (
+                                        <>
+                                            <DropdownMenuSeparator/>
+                                            {page.props.header.inlineActions.map((action: Action) => (
+                                                <DropdownMenuItem
+                                                    key={action.id}
+                                                    asChild
+                                                    className="cursor-pointer"
+                                                >
+                                                    {action.type === 'blank' ? (
+                                                        <a target="_blank"
+                                                           href={action.link}
+                                                        >
+                                                            {action.icon && <MaterialIcon name={action.icon}
+                                                                                          className="!text-[18px] mr-2"/>}
+                                                            <span>{action.title}</span>
+                                                        </a>
+                                                    ) : (
+                                                        <Link
+                                                            href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
+                                                        >
+                                                            {action.icon && <MaterialIcon name={action.icon}
+                                                                                          className="!text-[18px] mr-2"/>}
+                                                            <span>{action.title}</span>
+                                                        </Link>
+                                                    )}
+
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )
+                }
+            }
+        ]
+        return [...baseColumns, ...dynamicColumns];
+    }, [
+        page.props.header.thActionsTitle,
+        page.props.header.crudActions,
+        page.props.header.inlineActions,
+        page.props.header.entity.uri,
+        page.props.header.entity.name,
+        page.props.header.delModal,
+        dynamicColumns
+    ]);
+
 
     return (
         <>
@@ -368,12 +384,12 @@ const ListTable = () => {
                     )}
                 </div>
                 <DataTable
-                    columns={columns}
+                    columns={tableColumns}
                     data={data.data}
                     searchValue={searchValue}
                     searchTxt={page.props.header.searchBtn}
                     notFoundContent={page.props.header.notFoundContent}
-                    key={new Date().getTime()}
+                    // key={new Date().getTime()}
                     globalSearch={showSearch}
                     onGlobalSearch={handleGlobalSearch}
                     handleSearch={handleSearch}

@@ -68,9 +68,14 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
     const hotTableRef = useRef<any>(null);
 
     useEffect(() => {
-        if (hotTableRef.current) {
-            hotTableRef.current.hotInstance.loadData(data);
-        }
+
+        const timer = setTimeout(() => {
+            if (hotTableRef.current?.hotInstance) {
+                hotTableRef.current.hotInstance.loadData(data);
+            }
+        }, 100);
+
+        return () => clearTimeout(timer);
     }, [data]);
 
     useEffect(() => {
@@ -80,6 +85,7 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
             setTheme('ht-theme-main');
         }
     }, [appearance]);
+
 
     return (
         <HotTable

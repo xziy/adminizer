@@ -5,12 +5,11 @@ import {BaseFieldConfig, CreateUpdateConfig, MediaManagerOptionsField} from "../
 
 import {
     getRelationsMediaManager,
-    // saveRelationsMediaManager
+    saveRelationsMediaManager
 } from "../lib/media-manager/helpers/MediaManagerHelper";
 import {DataAccessor} from "../lib/DataAccessor";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
-import {formatChanges, sanitizeForDiff} from "../helpers/diffHelpers";
 
 export default async function edit(req: ReqType, res: ResType) {
     //Check id
@@ -37,7 +36,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
     let record;
     let dataAccessor;
-    const id = req.params.id as string;
+    const id = req.params.id
     try {
         dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "edit");
         record = await entity.model.findOne({id: id}, dataAccessor);
@@ -55,6 +54,9 @@ export default async function edit(req: ReqType, res: ResType) {
 
     // Save
     if (req.method.toUpperCase() === 'POST') {
+        const backUrl = req.body.redirectUrl
+        delete req.body.redirectUrl
+
         let reqData = RequestProcessor.processRequest(req, fields);
         let params: {
             [key: string]: number | string
@@ -135,7 +137,7 @@ export default async function edit(req: ReqType, res: ResType) {
 
         try {
             let newRecord = await entity.model.update(params, reqData, dataAccessor);
-            // await saveRelationsMediaManager(fields, rawReqData, entity.model.identity, newRecord[0].id)
+            await saveRelationsMediaManager(req.adminizer, fields, rawReqData, entity.model.modelname, newRecord[0].id)
 
 
             Adminizer.log.debug(`Record was updated: `, newRecord);
@@ -156,7 +158,12 @@ export default async function edit(req: ReqType, res: ResType) {
                 }
 
                 req.flash.setFlashMessage('success', req.i18n.__('Record was updated'));
-                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
+
+                if(backUrl){
+                    return req.Inertia.redirect(backUrl)
+                } else {
+                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/${entity.name}`)
+                }
             }
         } catch (e) {
             Adminizer.log.error(e);
@@ -168,9 +175,11 @@ export default async function edit(req: ReqType, res: ResType) {
     for (const field of Object.keys(fields)) {
         let fieldConfigConfig = fields[field].config as BaseFieldConfig;
         if (fieldConfigConfig.type === 'mediamanager') {
-            record[field] = await getRelationsMediaManager({
-                list: record[field],
-                mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default"
+            record[field] = await getRelationsMediaManager(req.adminizer, {
+                mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",
+                model: entity.model.modelname,
+                widgetName: field,
+                modelId: id
             })
         }
     }

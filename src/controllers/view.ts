@@ -34,6 +34,7 @@ export default async function view(req: ReqType, res: ResType) {
         }
     }
 
+
     let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "view");
     let fields = dataAccessor.getFieldsConfig();
 
@@ -99,9 +100,11 @@ export default async function view(req: ReqType, res: ResType) {
             for (const field of Object.keys(fields)) {
                 let fieldConfigConfig = fields[field].config as BaseFieldConfig;
                 if (fieldConfigConfig.type === 'mediamanager') {
-                    record[field] = await getRelationsMediaManager({
-                        list: record[field],
-                        mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default"
+                    record[field] = await getRelationsMediaManager(req.adminizer, {
+                        mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",
+                        model: entity.model.modelname,
+                        widgetName: field,
+                        modelId: req.params.id
                     })
                 }
             }

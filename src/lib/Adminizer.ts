@@ -10,7 +10,7 @@ import Router from "./../system/Router";
 import bindAssets from "../system/bindAssets";
 import bindDev from "../system/bindDev";
 import bindDashboardWidgets from "../system/bindDashboardWidgets";
-import bindNavigation from "../system/bindNavigation";
+import {bindNavigation} from "../system/bindNavigation";
 import bindMediaManager from "../system/bindMediaManager";
 import bindAccessRights from "../system/bindAccessRights";
 import bindAuthorization from "../system/bindAuthorization";
@@ -33,17 +33,19 @@ import {bindControls} from "../system/bindControls";
 import {ControlsHandler} from "./controls/ControlsHandler";
 import {CatalogHandler} from "./catalog/CatalogHandler";
 import {v4 as uuid} from "uuid";
-import { NotificationHandler } from './notifications/NotificationHandler';
-import { SystemNotificationService } from './notifications/SystemNotificationService';
 import { AiAssistantHandler } from './ai-assistant/AiAssistantHandler';
+import {NotificationHandler} from './notifications/NotificationHandler';
+import {SystemNotificationService} from './notifications/SystemNotificationService';
 import {bindNotifications} from "../system/bindNotifications";
 import {bindAiAssistant} from "../system/bindAiAssistant";
 import {INotification} from "../interfaces/types";
+import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
+import {StorageServices} from "./catalog/Navigation";
 
 export class Adminizer {
     // Preconfigures
     /**
-     * If you convey this default Middleware, it will add it to the very top of the router, 
+     * If you convey this default Middleware, it will add it to the very top of the router,
      * and will contact each request
      */
     defaultMiddleware: MiddlewareType
@@ -64,6 +66,8 @@ export class Adminizer {
     vite: ViteDevServer
     controlsHandler!: ControlsHandler
     catalogHandler!: CatalogHandler
+    mediaManagerHandler!: MediaManagerHandler
+    storageServices!: StorageServices
 
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
@@ -93,21 +97,21 @@ export class Adminizer {
         return (req: express.Request, res: express.Response, next: () => void) => {
             try {
                 const prefix = (this.config && this.config.routePrefix) ? String(this.config.routePrefix) : '';
-                if(prefix  === '/') {
+                if (prefix === '/') {
                     throw new Error('Using "/" as routePrefix is temporarily prohibited')
                 }
                 const normalizedPrefix = prefix.replace(/\/+/g, '/').replace(/\/+$/g, '');
-                
+
                 // Check if this middleware is already mounted under a prefix
                 const isMountedUnderPrefix = req.baseUrl && req.baseUrl === normalizedPrefix;
-                
+
                 if (normalizedPrefix && !isMountedUnderPrefix) {
                     // Legacy behavior: middleware not mounted under prefix, check URL manually
                     const url = req.originalUrl || req.url || '';
                     const condition1 = url === normalizedPrefix;
                     const condition2 = url.startsWith(normalizedPrefix + '/');
                     const condition3 = url.startsWith('/public');
-                    
+
                     const conditions = [
                         condition1,
                         condition2
@@ -115,7 +119,7 @@ export class Adminizer {
                     if (process.env.IS_SAILS === undefined) {
                         conditions.push(condition3);
                     }
-                    
+
                     if (!conditions.some(condition => condition)) {
                         return typeof next === 'function' ? next() : undefined;
                     }
@@ -127,25 +131,23 @@ export class Adminizer {
                 } else {
                     // No prefix configured, handling all requests
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 // fall back to handling the request
             }
-            
+
             this.app(req, res, (err) => {
                 if (err) {
                     console.error("❌ Error in Adminizer:", err);
                     if (!res.headersSent) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.writeHead(500, {'Content-Type': 'text/plain'});
                         res.end('Internal Server Error');
                     }
-                }
-                else {
+                } else {
                     if (typeof next === 'function') {
                         return next();
                     }
                     if (!res.headersSent) {
-                        res.writeHead(404, { 'Content-Type': 'text/plain' });
+                        res.writeHead(404, {'Content-Type': 'text/plain'});
                         res.end('Route Not Found in Adminizer');
                     }
                 }
@@ -158,14 +160,14 @@ export class Adminizer {
      * @protected
      */
     protected async viteMiddleware() {
-        const { createServer: createViteServer } = await import('vite');
+        const {createServer: createViteServer} = await import('vite');
         const chalk = (await import('chalk')).default;
         this.vite = await createViteServer({
-            server: { middlewareMode: true },
+            server: {middlewareMode: true},
             appType: 'custom',
         });
         this.app.use(this.vite.middlewares);
-        
+
         // eslint-disable-next-line no-console
         console.log(
             chalk.green.bold('Vite is running in development mode!') +
@@ -176,8 +178,8 @@ export class Adminizer {
     public async init(config: AdminpanelConfig) {
         // set cookie parser
         this.app.use(cookieParser());
-        
-        if(!config || Object.keys(config).length === 0) {
+
+        if (!config || Object.keys(config).length === 0) {
             Adminizer.log.warn(`Adminizer init > Adminizer config is emtpy`)
         }
 
@@ -245,13 +247,15 @@ export class Adminizer {
 
         this.catalogHandler = new CatalogHandler();
 
+        this.mediaManagerHandler = new MediaManagerHandler();
+
         bindExpressUtils(this.app);
         bindReqFunctions(this);
 
         // Bind assets
         bindAssets(this.app, this.config.routePrefix);
-        
-        if(!process.env.VITEST) {
+
+        if (!process.env.VITEST) {
             if ((process.env.DEV && process.env.NODE_ENV !== 'production') || process.env.ADMINPANEL_FORCE_BIND_DEV === "TRUE") {
                 bindDev(this)
             }
@@ -259,12 +263,11 @@ export class Adminizer {
 
         await bindDashboardWidgets(this);
 
-        bindNavigation(this);
+        await bindNavigation(this);
 
         bindMediaManager(this);
 
         await bindAccessRights(this);
-
 
         if (I18n.appendLocale) {
             bindTranslations(this);
@@ -298,14 +301,22 @@ export class Adminizer {
 
     // Хелпер для отправки уведомлений
     public async sendNotification(notification: Omit<INotification, 'id' | 'createdAt' | 'icon'>): Promise<boolean> {
-        const notificationClass = notification.notificationClass || 'general';
-        return this.notificationHandler.dispatchNotification(notificationClass, notification);
+        if (this.config.notifications.enabled) {
+            const notificationClass = notification.notificationClass || 'general';
+            return this.notificationHandler.dispatchNotification(notificationClass, notification);
+        } else {
+            return Promise.resolve(false)
+        }
     }
 
     // Хелпер для системных событий
     public async logSystemEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logSystemEvent(title, message, 'system', metadata);
+        if (this.config.notifications.enabled) {
+            const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
+            return systemNotificationService.logSystemEvent(title, message, 'system', metadata);
+        } else {
+            return Promise.resolve(false)
+        }
     }
 
     // Хелпер для CRUD системных событий

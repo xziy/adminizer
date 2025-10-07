@@ -1,8 +1,9 @@
 import {FormHelper} from "../helpers/formHelper";
 import {Adminizer} from "../lib/Adminizer";
 import inertiaFormHelper from "../helpers/inertiaFromHelper";
-import {getRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
+import {getRelationsMediaManager, saveRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 import {MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
+import {MediaManagerHandler} from "../lib/media-manager/MediaManagerHandler";
 
 export default async function form(req: ReqType, res: ResType) {
     let slug = req.params.slug;
@@ -21,19 +22,6 @@ export default async function form(req: ReqType, res: ResType) {
     }
     let form = FormHelper.get(req.adminizer, slug);
 
-    for (let prop in req.body) {
-        if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
-            try {
-                req.body[prop] = JSON.parse(req.body[prop]);
-            } catch (e) {
-                if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
-                    Adminizer.log.error(JSON.stringify(req.body[prop]), e);
-                }
-            }
-        }
-    }
-
-
     if (!form) {
         return res.status(404).send("Adminpanel > Form not found");
     }
@@ -42,12 +30,28 @@ export default async function form(req: ReqType, res: ResType) {
         if (!req.body) {
             return res.status(500).send("Data is empty");
         }
+        for (let prop in req.body) {
+            if (form[prop].type === 'json' && typeof req.body[prop] === 'string') {
+                try {
+                    req.body[prop] = JSON.parse(req.body[prop]);
+                } catch (e) {
+                    if (typeof req.body[prop] === "string" && req.body[prop].replace(/(\r\n|\n|\r|\s{2,})/gm, "") && e.message !== "Unexpected end of JSON input" && !/Unexpected (token .|number) in JSON at position \d/.test(e.message)) {
+                        Adminizer.log.error(JSON.stringify(req.body[prop]), e);
+                    }
+                }
+            }
+        }
 
         // checkboxes processing
         let checkboxes = [];
         for (let key in form) {
             if (form[key].type === "boolean") {
                 checkboxes.push(key);
+            }
+            if(form[key].type === "mediamanager") {
+                let options = form[key].options as MediaManagerOptionsField;
+                let mediaManager = req.adminizer.mediaManagerHandler.get(options?.id ?? "default")
+                if(req.body[key]) await mediaManager.setRelations(req.body[key], `${slug}_${key}`, 0, key)
             }
         }
 
@@ -60,15 +64,19 @@ export default async function form(req: ReqType, res: ResType) {
                 await req.adminizer.config.forms.set(slug, field, false);
             }
         }
+
+
         return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/form/${slug}`);
     }
 
     for (let key of Object.keys(form)) {
         try {
-            if (key === 'mediamanager') {
-                form[key].value = await getRelationsMediaManager({
-                    list: await req.adminizer.config.forms.get(slug, key),
-                    mediaManagerId: (form[key].options as MediaManagerOptionsField)?.id ?? "default"
+            if (form[key].type === 'mediamanager') {
+                form[key].value = await getRelationsMediaManager(req.adminizer, {
+                    mediaManagerId: (form[key].options as MediaManagerOptionsField)?.id ?? "default",
+                    model: `${slug}_${key}`,
+                    widgetName: key,
+                    modelId: 0
                 })
             } else {
                 form[key].value = await req.adminizer.config.forms.get(slug, key);

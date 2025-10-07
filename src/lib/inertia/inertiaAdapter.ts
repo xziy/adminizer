@@ -62,8 +62,6 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                 const csrfCookie = req.cookies['XSRF-TOKEN'];
                 const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
 
-                
-
                 if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
                     res.status(403).send({ message: 'Invalid CSRF token' });
                     return

@@ -146,7 +146,7 @@ export class ControllerHelper {
                 return Object.keys(models).find(key => key.toLowerCase() === entityName.toLowerCase());
             }
 
-            throw new Error(`Unsupported entity type "${entityType}" in URL`);
+            throw new Error(`Unsupported entity type ${entityType} in URL`);
         }
 
     /**

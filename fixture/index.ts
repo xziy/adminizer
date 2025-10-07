@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import {Adminizer} from "../dist";
+import {bindNavigation} from "../dist";
 import http from 'http';
 import {WaterlineAdapter, WaterlineModel} from "../dist/lib/model/adapter/waterline";
 import Waterline from "waterline";
@@ -77,7 +78,7 @@ if (ormType === "waterline") {
 
     if (!process.env.NO_SEED_DATA) {
         try {
-            await seedDatabase(waterlineAdapter.models, 77);
+            await seedDatabase(waterlineAdapter.models, 13);
             console.log("Database seeded with random data!");
         } catch (seedErr) {
             console.error("Error during database seeding:", seedErr);
@@ -214,7 +215,8 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         adminizer.catalogHandler.add(new TestCatalog(adminizer, 'testcatalog'))
 
         /** Test notifications */
-        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 10000); // Начальная задержка 10 секунд
+        //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 5000); // Начальная задержка 10 секунд
+
 
     } catch (e) {
         console.log(e)

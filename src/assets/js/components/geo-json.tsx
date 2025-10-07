@@ -7,12 +7,13 @@ import {
     useMap,
     Polyline,
     Rectangle,
+    Popup,
 } from "react-leaflet";
 import L from "leaflet";
 import { Button } from "@/components/ui/button.tsx";
 import { Hexagon, MapPin, RectangleHorizontal, Trash2, Check } from "lucide-react";
 
-// F
+// Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -41,6 +42,7 @@ interface MapFeature {
     rectangle?: [Position, Position];
     popupContent?: string;
     color?: string;
+    draggable?: boolean;
 }
 
 interface GeoJsonEditorProps {
@@ -54,6 +56,7 @@ interface GeoJsonEditorProps {
     className?: string;
     style?: React.CSSProperties;
     disabled?: boolean;
+    allowMarkerMovement?: boolean;
 }
 
 const ControlPanel = ({
@@ -175,19 +178,41 @@ const MapEditor = ({
                        onFeaturesChange,
                        setDrawingInProgress,
                        onFinishDrawing,
+                       allowMarkerMovement = true,
                    }: {
     features: MapFeature[];
     mode: string;
     drawingMode: string;
-    setDrawingMode: (mode: string) => void;
+    setDrawingMode: (mode: "none" | "marker" | "polygon" | "rectangle") => void;
     onFeaturesChange: (features: MapFeature[]) => void;
     setDrawingInProgress: (value: boolean) => void;
-    onFinishDrawing: () => void;
+    onFinishDrawing: number;
+    allowMarkerMovement?: boolean;
 }) => {
     const map = useMap();
     const [currentPolygon, setCurrentPolygon] = useState<Position[]>([]);
     const [rectangleStart, setRectangleStart] = useState<Position | null>(null);
     const [rectangleEnd, setRectangleEnd] = useState<Position | null>(null);
+
+    // Обработчик перемещения маркера
+    const handleMarkerDragEnd = useCallback((e: L.DragEndEvent, featureId: string | number) => {
+        if (!allowMarkerMovement) return;
+
+        const marker = e.target;
+        const newPosition = marker.getLatLng();
+
+        const updatedFeatures = features.map(feature => {
+            if (feature.id === featureId) {
+                return {
+                    ...feature,
+                    position: [newPosition.lat, newPosition.lng] as Position
+                };
+            }
+            return feature;
+        });
+
+        onFeaturesChange(updatedFeatures);
+    }, [features, onFeaturesChange, allowMarkerMovement]);
 
     // Завершение рисования полигона
     const completePolygon = useCallback(() => {
@@ -224,7 +249,7 @@ const MapEditor = ({
         if (drawingMode === "polygon" && currentPolygon.length > 0) {
             completePolygon();
         }
-    }, [onFinishDrawing]);
+    }, [onFinishDrawing, drawingMode, currentPolygon, completePolygon]);
 
     // Добавление маркера
     const addMarker = useCallback(
@@ -235,10 +260,11 @@ const MapEditor = ({
                 id: Date.now(),
                 position: [latlng.lat, latlng.lng],
                 popupContent: `Маркер ${features.length + 1}`,
+                draggable: allowMarkerMovement,
             };
             onFeaturesChange([...features, newFeature]);
         },
-        [features, onFeaturesChange, drawingMode]
+        [features, onFeaturesChange, drawingMode, allowMarkerMovement]
     );
 
     // Добавление точки полигона
@@ -382,7 +408,25 @@ const MapEditor = ({
             {features.map((feature) => (
                 <React.Fragment key={feature.id}>
                     {(mode === "marker" || mode === "all") && feature.position && (
-                        <Marker position={feature.position}>
+                        <Marker
+                            position={feature.position}
+                            draggable={feature.draggable !== false && allowMarkerMovement}
+                            eventHandlers={{
+                                dragend: (e) => handleMarkerDragEnd(e, feature.id)
+                            }}
+                        >
+                            <Popup>
+                                <div className="text-sm">
+                                    <div className="font-semibold">{feature.popupContent}</div>
+                                    <div>Широта: {feature.position[0].toFixed(6)}</div>
+                                    <div>Долгота: {feature.position[1].toFixed(6)}</div>
+                                    {allowMarkerMovement && (
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Перетащите для перемещения
+                                        </div>
+                                    )}
+                                </div>
+                            </Popup>
                         </Marker>
                     )}
 
@@ -391,6 +435,12 @@ const MapEditor = ({
                             positions={feature.polygon}
                             pathOptions={{ color: feature.color || "blue" }}
                         >
+                            <Popup>
+                                <div className="text-sm">
+                                    <div className="font-semibold">{feature.popupContent}</div>
+                                    <div>Точек: {feature.polygon[0].length}</div>
+                                </div>
+                            </Popup>
                         </Polygon>
                     )}
 
@@ -399,6 +449,13 @@ const MapEditor = ({
                             bounds={feature.rectangle}
                             pathOptions={{ color: feature.color || "green" }}
                         >
+                            <Popup>
+                                <div className="text-sm">
+                                    <div className="font-semibold">{feature.popupContent}</div>
+                                    <div>Угол 1: {feature.rectangle[0][0].toFixed(6)}, {feature.rectangle[0][1].toFixed(6)}</div>
+                                    <div>Угол 2: {feature.rectangle[1][0].toFixed(6)}, {feature.rectangle[1][1].toFixed(6)}</div>
+                                </div>
+                            </Popup>
                         </Rectangle>
                     )}
                 </React.Fragment>
@@ -445,6 +502,7 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                                                          className,
                                                          style,
                                                          disabled,
+                                                         allowMarkerMovement = true,
                                                      }) => {
     const [features, setFeatures] = useState<MapFeature[]>(initialFeatures);
     const [drawingMode, setDrawingMode] = useState<
@@ -483,6 +541,13 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
         setDrawingMode("none");
     }, [handleFeaturesChange, drawingInProgress]);
 
+    // Обновляем фичи при изменении initialFeatures
+    useEffect(() => {
+        if (JSON.stringify(initialFeatures) !== JSON.stringify(features)) {
+            setFeatures(initialFeatures);
+        }
+    }, [initialFeatures]);
+
     return (
         <div className={`${className} ${disabled ? "pointer-events-none opacity-50" : ""}`} style={{ position: "relative", ...style }}>
             <MapContainer
@@ -490,7 +555,6 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                 zoom={zoom}
                 style={{ height: "500px", width: "100%" }}
                 doubleClickZoom={true}
-
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -500,12 +564,11 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                     features={features}
                     mode={mode}
                     drawingMode={drawingMode}
-                    // @ts-ignore
                     setDrawingMode={setDrawingMode}
                     onFeaturesChange={handleFeaturesChange}
                     setDrawingInProgress={setDrawingInProgress}
-                    // @ts-ignore
                     onFinishDrawing={finishDrawingTrigger}
+                    allowMarkerMovement={allowMarkerMovement && !disabled}
                 />
             </MapContainer>
             {showControls && (
@@ -536,8 +599,8 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                     }}
                 >
                     {drawingInProgress
-                        ? "Add more polygon points on the map, then click finish"
-                        : "Add a point on the map"}
+                        ? "Добавьте точки полигона на карте, затем нажмите 'Готово'"
+                        : "Добавьте первую точку полигона на карте"}
                 </div>
             )}
 
@@ -556,7 +619,9 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         zIndex: 410,
                     }}
                 >
-                    Drawing a rectangle: click and drag to create a rectangle
+                    {drawingInProgress
+                        ? "Кликните для завершения рисования прямоугольника"
+                        : "Кликните для начала рисования прямоугольника"}
                 </div>
             )}
 
@@ -575,7 +640,9 @@ const GeoJsonEditor: React.FC<GeoJsonEditorProps> = ({
                         zIndex: 1000,
                     }}
                 >
-                    Put markers on the map, then click the marker again to finish
+                    {allowMarkerMovement
+                        ? "Кликните для добавления маркера. Перетащите маркер для перемещения. Кликните еще раз на маркер справа в углу, чтобы завершить рисование"
+                        : "Кликните для добавления маркера"}
                 </div>
             )}
         </div>

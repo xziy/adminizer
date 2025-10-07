@@ -6,7 +6,12 @@ import {
     MediaManagerWidgetItem,
     MediaManagerWidgetJSON
 } from "../AbstractMediaManager"
-import {BaseFieldConfig, MediaManagerOptionsField, ModelConfig} from "../../../interfaces/adminpanelConfig";
+import {
+    BaseFieldConfig,
+    FieldsForms,
+    MediaManagerOptionsField,
+    ModelConfig
+} from "../../../interfaces/adminpanelConfig";
 import {Adminizer} from "../../Adminizer";
 
 type PostParams = Record<string, string | number | boolean | object | string[] | number[] | null>;
@@ -27,51 +32,56 @@ export function randomFileName(filenameOrig: string, type: string, prefix: boole
 
 /**
  * Save media manager relations to database.
+ * @param adminizer
  * @param fields
  * @param reqData
  * @param model
  * @param recordId
  */
-// export async function saveRelationsMediaManager(fields: Fields, reqData: PostParams, model: string, recordId: string) {
-//     for (let prop in reqData) {
-//         let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
-//         let options = fieldConfigConfig.options as MediaManagerOptionsField;
-//         if (fieldConfigConfig.type === 'mediamanager') {
-//             let data = reqData[prop] as MediaManagerWidgetData[];
-//             let mediaManager = MediaManagerHandler.get(options?.id ?? 'default')
-//             await mediaManager.setRelations(data, model, recordId, prop)
-//         }
-//     }
-// }
+export async function saveRelationsMediaManager(adminizer: Adminizer, fields: Fields, reqData: PostParams, model: string, recordId: number) {
+    for (let prop in reqData) {
+        let fieldConfigConfig = fields[prop].config as BaseFieldConfig;
+        let options = fieldConfigConfig.options as MediaManagerOptionsField;
+        if (fieldConfigConfig.type === 'mediamanager') {
+            let data = reqData[prop] as MediaManagerWidgetData[];
+            let mediaManager = adminizer.mediaManagerHandler.get(options?.id ?? 'default')
+            await mediaManager.setRelations(data, model, recordId, prop)
+        }
+    }
+}
 
 /**
  * Get realtions
+ * @param adminizer
  * @param data
+ * @param model
+ * @param widgetName
  */
-export async function getRelationsMediaManager(data: MediaManagerWidgetJSON) {
-    let mediaManager = MediaManagerHandler.get(data.mediaManagerId)
-    return await mediaManager.getItemsList(data.list ?? [])
+export async function getRelationsMediaManager(adminizer: Adminizer, data: MediaManagerWidgetJSON) {
+    let mediaManager = adminizer.mediaManagerHandler.get(data.mediaManagerId)
+    return await mediaManager.getRelations(data.model, data.widgetName, data.modelId)
 }
 
-// /**
-//  * Delate Ralations
-//  * @param model
-//  * @param record
-//  */
-// export async function deleteRelationsMediaManager(adminizer: Adminizer, model: string, record: {
-//     [p: string]: string | MediaManagerWidgetItem[]
-// }[]) {
-//     let config = adminizer.config.models[model] as ModelConfig
-//     for (const key of Object.keys(record[0])) {
-//         let field = config.fields[key] as BaseFieldConfig
-//         if (field && field.type === 'mediamanager') {
-//             const option = field.options as MediaManagerOptionsField
-//             let mediaManager = MediaManagerHandler.get(option?.id ?? 'default')
-//             let emptyData: MediaManagerWidgetData[] = []
-//             await mediaManager.setRelations(emptyData, model, record[0].id as string, key)
-//         }
-//     }
-// }
+/**
+ * Delate Ralations
+ * @param adminizer
+ * @param model
+ * @param record
+ */
+export async function deleteRelationsMediaManager(adminizer: Adminizer, model: string, record: {
+    [p: string]: string | MediaManagerWidgetItem[]
+}[]) {
+    let config = adminizer.config.models[model] as ModelConfig
+    for (const key of Object.keys(record[0])) {
+        let field = config.fields[key] as BaseFieldConfig
+        if (field && field.type === 'mediamanager') {
+            const option = field.options as MediaManagerOptionsField
+            let mediaManager = adminizer.mediaManagerHandler.get(option?.id ?? 'default')
+            let emptyData: MediaManagerWidgetData[] = []
+            await mediaManager.setRelations(emptyData, model, +record[0].id, key)
+        }
+    }
+}
 
 /**
  * @param adminizer
@@ -86,4 +96,26 @@ export async function populateVariants(adminizer: Adminizer, variants: MediaMana
         items.push(variant)
     }
     return items;
+}
+
+
+export function getAssociationFieldName(model: any, associationName: string): string {
+    const attributes = model.attributes || {};
+
+    // Для вашего случая: file связь использует fileId
+    if (associationName === 'file') {
+        // Проверяем есть ли связь file и какое у нее via
+        if (attributes.file?.type === 'association' && attributes.file.via) {
+            return attributes.file.via; // Вернет 'fileId'
+        }
+
+        // Или просто проверяем наличие fileId
+        if (attributes.fileId) {
+            return 'fileId';
+        }
+    }
+
+    // Общий случай
+    const idField = `${associationName}Id`;
+    return attributes[idField] ? idField : associationName;
 }

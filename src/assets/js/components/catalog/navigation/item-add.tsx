@@ -9,6 +9,7 @@ import {useState} from "react";
 
 const ItemAdd = ({type, callback, parentId, isNavigation, ...data}: NavItemAddProps) => {
     const [targetBlank, setTargetBlank] = useState<boolean>(false);
+    const [visible, setVisible] = useState<boolean>(false);
 
     const handleSelect = async (value: string) => {
         try {
@@ -17,6 +18,7 @@ const ItemAdd = ({type, callback, parentId, isNavigation, ...data}: NavItemAddPr
                     record: value,
                     parentId: parentId,
                     targetBlank: targetBlank,
+                    visible: visible,
                     _method: 'select',
                     type: type
                 },
@@ -36,7 +38,7 @@ const ItemAdd = ({type, callback, parentId, isNavigation, ...data}: NavItemAddPr
                         <SelectTrigger className="w-full max-w-[170px] cursor-pointer">
                             <SelectValue placeholder={data.labels.selectTitle}/>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[1003]">
                             {data.items.map((item) => (
                                 <SelectItem value={item.id.toString()}
                                             key={`${item.id}-${item.name}`}>{item.name}</SelectItem>
@@ -45,15 +47,26 @@ const ItemAdd = ({type, callback, parentId, isNavigation, ...data}: NavItemAddPr
                     </Select>
                 </div>
                 {isNavigation &&
-                    <div className="flex gap-4 items-center">
-                        <Checkbox
-                            id="targetBlank"
-                            checked={targetBlank}
-                            onCheckedChange={(checked) => setTargetBlank(!!checked)}
-                            className="cursor-pointer size-5"
-                        />
-                        <Label htmlFor="targetBlank">{data.labels.openInNewWindow}</Label>
-                    </div>
+                    <>
+                        <div className="flex gap-4 items-center">
+                            <Checkbox
+                                id="targetBlank"
+                                checked={targetBlank}
+                                onCheckedChange={(checked) => setTargetBlank(!!checked)}
+                                className="cursor-pointer size-5"
+                            />
+                            <Label htmlFor="targetBlank">{data.labels.openInNewWindow}</Label>
+                        </div>
+                        <div className="flex gap-4 items-center">
+                            <Checkbox
+                                id="visible"
+                                checked={visible}
+                                onCheckedChange={(checked) => setVisible(!!checked)}
+                                className="cursor-pointer size-5"
+                            />
+                            <Label htmlFor="visible">{data.labels.visible}</Label>
+                        </div>
+                    </>
                 }
             </div>
             <div className="mt-8">
