@@ -79,6 +79,17 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = (
                             <div className="h-full overflow-y-auto mt-5">
                                 {!firstRender ? (
                                     <>
+                                        {popupType === 'model.link' &&
+                                            <AddForm page={addProps}
+                                                     catalog={true}
+                                                     callback={editModel}
+                                                     openNewWindowLabel={messages["Open in a new window"]}
+                                                     visibleLable={messages["Visible"]}
+                                                     openNewWindow={popUpTargetBlank}
+                                                     DnavVisible={popUpVisible}
+                                                     isNavigation={isNavigation}
+                                            />
+                                        }
                                         {popupType === 'model' &&
                                             <AddForm page={addProps}
                                                      catalog={true}
@@ -139,7 +150,7 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = (
                         }
                         {PopupEvent === 'create' &&
                             <>
-                                {popupType === 'model' &&
+                                {popupType === 'model.link' &&
                                     <NavItemAdd
                                         add={getAddModelJSON}
                                         callback={() => {
@@ -151,6 +162,17 @@ const CatalogDialogStack: React.FC<CatalogDialogStackProps> = (
                                         isNavigation={isNavigation}
                                         {...addItemProps}
                                     />
+                                }
+                                {popupType === 'model' &&
+                                    <div className="h-full overflow-y-auto mt-5">
+                                        <AddForm page={addProps}
+                                                 catalog={true}
+                                                 callback={addModel}
+                                                 openNewWindowLabel={messages["Open in a new window"]}
+                                                 visibleLable={messages["Visible"]}
+                                                 isNavigation={isNavigation}
+                                        />
+                                    </div>
                                 }
                                 {popupType === 'navigation.group' &&
                                     <NavLinkGropuAdd
