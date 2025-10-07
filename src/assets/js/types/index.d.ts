@@ -150,6 +150,7 @@ export interface NavGroupAddProps{
     item?: Record<string, any>
     items: {
         name: string,
+        label: string
         required: boolean
     }[],
     callback: (item: any) => void
