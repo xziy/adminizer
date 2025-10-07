@@ -194,6 +194,7 @@ export class TestCatalog extends AbstractCatalog {
         let items = []
         items.push(new TestGroup(adminizer))
         items.push(new TestItemM(adminizer))
+        items.push(new TestItemModel(adminizer))
         super(adminizer, items);
         this.addActionHandler(new Link())
         this.addActionHandler(new ContextAction())
@@ -295,7 +296,7 @@ export class TestGroup extends AbstractGroup<TestItem> {
 }
 
 class TestItemM extends AbstractItem<TestItem> {
-    type: string = 'category';
+    type: string = 'model.link';
     model: string = 'category';
     adminizer: Adminizer;
     name: string = 'Category';
@@ -364,14 +365,14 @@ class TestItemM extends AbstractItem<TestItem> {
     }
 
     async getAddTemplate(req: ReqType): Promise<{
-        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: {
             items: { id: string; name: string }[],
             model: string,
             labels?: Record<string, string>,
         }
     }> {
-        let type: 'model' = 'model'
+        let type: 'model.link' = 'model.link'
         // Direct call by model adapter
         let itemsDB = await this.adminizer.modelHandler.model.get(this.model)["_find"]({})
         let items = itemsDB.map((item: any) => {
@@ -395,9 +396,110 @@ class TestItemM extends AbstractItem<TestItem> {
     }
 
     async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
-        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: {
             item: NavItem
+        }
+    }> {
+        return Promise.resolve({
+            type: 'model.link',
+            data: {
+                item: await this.find(id, catalogId),
+                model: this.model
+            }
+        })
+    }
+
+    async getChilds(parentId: string | number, catalogId: string, req?: ReqType): Promise<TestItem[]> {
+        let storage = StorageHandler.getStorage()
+        return await storage.findElementsByParentId(parentId, this.type);
+    }
+
+    async search(s: string, catalogId: string, req?: ReqType): Promise<TestItem[]> {
+        let storage = StorageHandler.getStorage()
+        return await storage.search(s, this.type);
+    }
+
+}
+
+class TestItemModel extends AbstractItem<TestItem> {
+    type: string = 'model';
+    model: string = 'test';
+    adminizer: Adminizer;
+    name: string = 'Test Item Model';
+    allowedRoot: boolean = true;
+    icon: string = 'file_present';
+
+    constructor(adminizer: Adminizer) {
+        super();
+        this.adminizer = adminizer;
+    }
+
+    async find(itemId: string | number, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.findElementById(itemId);
+    }
+
+    async update(itemId: string | number, data: TestItem, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        return await storage.setElement(itemId, data);
+    }
+
+    async updateModelItems(modelId: string | number, data: any, catalogId: string, req?: ReqType): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        let items = await storage.findElementByModelId(modelId)
+        let response = []
+        for (const item of items) {
+            item.name = data.record.name ?? data.record.title ?? data.record.id
+            response.push(await storage.setElement(item.id, item));
+        }
+        return response[0]
+    }
+
+    async create(data: any, catalogId: string): Promise<TestItem> {
+        let storage = StorageHandler.getStorage()
+        let storageData = await this.dataPreparation(data, catalogId)
+        return await storage.setElement(data.id, storageData) as TestItem;
+    }
+
+    protected async dataPreparation(data: any, catalogId: string, sortOrder?: number) {
+        let storage = StorageHandler.getStorage()
+        let parentId = data.parentId ? data.parentId : null;
+        return {
+            id: uuid(),
+            modelId: data.record.id,
+            name: data.record.title,
+            parentId: parentId,
+            sortOrder: sortOrder ?? (await storage.findElementsByParentId(parentId, null)).length,
+            icon: this.icon,
+            type: this.type,
+        };
+    }
+
+    async deleteItem(itemId: string | number, catalogId: string, req?: ReqType): Promise<void> {
+        let storage = StorageHandler.getStorage()
+        return await storage.removeElementById(itemId);
+    }
+
+    async getAddTemplate(req: ReqType): Promise<{
+        type: 'model',
+        data: {
+            model: string
+        }
+    }> {
+        return {
+            type: 'model',
+            data: {
+                model: this.model
+            }
+        }
+    }
+
+    async getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId: string | number): Promise<{
+        type: 'model',
+        data: {
+            item: NavItem,
+            model: string
         }
     }> {
         return Promise.resolve({

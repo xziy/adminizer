@@ -304,8 +304,14 @@ const CatalogTree = () => {
         setItemType(type)
         setFirstRender(true)
         const res = await axios.post('', {type: type, _method: 'getAddTemplate'})
-        setPopUpData(res.data)
-        dialogRef.current?.next()
+        if (type === 'model') {
+            // For 'model', directly get the add form
+            setPopupType('model')
+            await getAddModelJSON(res.data.data.model)
+        } else {
+            setPopUpData(res.data)
+            dialogRef.current?.next()
+        }
         setFirstRender(false)
     }, [parentid])
 
@@ -334,12 +340,21 @@ const CatalogTree = () => {
                     }
                 } else {
                     switch (res.data.type) {
-                        case 'model':
+                        case 'model.link':
                             const item = res.data.data.item
-                            const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
+                            const resEdit = await axios.get(`${window.routePrefix}/model/${res.data.data.model}/edit/${item.modelId}?without_layout=true`)
                             setAddProps(resEdit.data)
                             setPopUpTargetBlank(item.targetBlank)
                             setPopUpVisible(item.visible)
+                            setPopupType('model.link')
+                            setFirstRender(false)
+                            break
+                        case 'model':
+                            const itemModel = res.data.data.item
+                            const resEditModel = await axios.get(`${window.routePrefix}/model/${res.data.data.model}/edit/${itemModel.modelId}?without_layout=true`)
+                            setAddProps(resEditModel.data)
+                            setPopUpTargetBlank(itemModel.targetBlank)
+                            setPopUpVisible(itemModel.visible)
                             setPopupType('model')
                             setFirstRender(false)
                             break
@@ -419,9 +434,9 @@ const CatalogTree = () => {
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
             switch (data.type) {
-                case 'model':
+                case 'model.link':
                     setAddItemProps(data.data)
-                    setPopupType('model')
+                    setPopupType('model.link')
                     break
                 case 'navigation.group':
                     setAddLinksGroupProps(data.data)
@@ -435,6 +450,10 @@ const CatalogTree = () => {
             }
         } else {
             switch (data.type) {
+                case 'model.link':
+                    setAddItemProps(data.data)
+                    setPopupType('model.link')
+                    break
                 case 'model':
                     setAddItemProps(data.data)
                     setPopupType('model')
