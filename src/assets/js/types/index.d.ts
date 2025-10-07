@@ -158,6 +158,7 @@ export interface NavGroupAddProps{
     item?: Record<string, any>
     items: {
         name: string,
+        label: string
         required: boolean
     }[],
     callback: (item: any) => void
@@ -167,6 +168,8 @@ export interface CustomCatalogData {
     id: string | number;
     name: string;
     parentId: string | number | null;
+    visible: undefined | boolean;
+    isNavigation: boolean | undefined
     sortOrder: number
     icon: string
     type: string;

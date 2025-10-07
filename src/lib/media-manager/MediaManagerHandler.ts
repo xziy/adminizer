@@ -2,13 +2,13 @@ import {AbstractMediaManager} from "./AbstractMediaManager";
 import {Adminizer} from "../Adminizer";
 
 export class MediaManagerHandler {
-    private static managers: AbstractMediaManager[] = []
+    private managers: AbstractMediaManager[] = []
 
-    public static add(manager: AbstractMediaManager) {
+    public add(manager: AbstractMediaManager) {
         this.managers.push(manager)
     }
 
-    public static get(id: string): AbstractMediaManager {
+    public get(id: string): AbstractMediaManager {
         let instance = this.managers.find(e => e.id === id)
         /**
          * ✨ We magically get one

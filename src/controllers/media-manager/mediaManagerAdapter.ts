@@ -12,8 +12,18 @@ export class MediaManagerAdapter {
     }
 
     public async delete(req: ReqType, res: ResType) {
-        await this.manager.delete(req.body.item);
-        return res.send({msg: "ok"});
+        let result = await this.manager.delete(req.body.item);
+        if(result){
+            return res.send({
+                type: "success",
+                msg: "ok"
+            })
+        } else{
+            return res.send({
+                type: "error",
+                msg: req.i18n.__("The file used by the models")
+            });
+        }
     }
 
     public async get(req: ReqType, res: ResType) {
@@ -125,7 +135,7 @@ export class MediaManagerAdapter {
     }
 
     private checkDirectory(): string {
-        const outputDir = `${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
+        const outputDir = `${process.cwd()}/${this.manager.fileStoragePath}/${this.manager.urlPathPrefix}`;
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
         }

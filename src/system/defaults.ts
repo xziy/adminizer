@@ -159,6 +159,9 @@ let adminpanelConfig: AdminpanelConfig = {
         enabled: false,
         defaultModel: 'dummy',
         models: ['dummy']
+    },
+    mediamanager: {
+        fileStoragePath: '.tmp/public',
     }
 }
 

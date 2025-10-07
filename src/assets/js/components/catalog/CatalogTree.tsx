@@ -75,6 +75,7 @@ const CatalogTree = () => {
     const [parentid, setParentId] = useState<string | number>(0)
 
     const [popUpTargetBlank, setPopUpTargetBlank] = useState<boolean>(false)
+    const [popUpVisible, setPopUpVisible] = useState<boolean>(false)
     const [isNavigation, setIsNavigation] = useState<boolean>(false)
 
     const [DynamicComponent, setDynamicComponent] = useState<React.ReactElement | null>(null);
@@ -303,8 +304,14 @@ const CatalogTree = () => {
         setItemType(type)
         setFirstRender(true)
         const res = await axios.post('', {type: type, _method: 'getAddTemplate'})
-        setPopUpData(res.data)
-        dialogRef.current?.next()
+        if (type === 'model') {
+            // For 'model', directly get the add form
+            setPopupType('model')
+            await getAddModelJSON(res.data.data.model)
+        } else {
+            setPopUpData(res.data)
+            dialogRef.current?.next()
+        }
         setFirstRender(false)
     }, [parentid])
 
@@ -333,11 +340,21 @@ const CatalogTree = () => {
                     }
                 } else {
                     switch (res.data.type) {
-                        case 'model':
+                        case 'model.link':
                             const item = res.data.data.item
-                            const resEdit = await axios.get(`${window.routePrefix}/model/${item.type}/edit/${item.modelId}?without_layout=true`)
+                            const resEdit = await axios.get(`${window.routePrefix}/model/${res.data.data.model}/edit/${item.modelId}?without_layout=true`)
                             setAddProps(resEdit.data)
                             setPopUpTargetBlank(item.targetBlank)
+                            setPopUpVisible(item.visible)
+                            setPopupType('model.link')
+                            setFirstRender(false)
+                            break
+                        case 'model':
+                            const itemModel = res.data.data.item
+                            const resEditModel = await axios.get(`${window.routePrefix}/model/${res.data.data.model}/edit/${itemModel.modelId}?without_layout=true`)
+                            setAddProps(resEditModel.data)
+                            setPopUpTargetBlank(itemModel.targetBlank)
+                            setPopUpVisible(itemModel.visible)
                             setPopupType('model')
                             setFirstRender(false)
                             break
@@ -417,9 +434,9 @@ const CatalogTree = () => {
     const setPopUpData = useCallback((data: { type: string, data: any }) => {
         if (data.type.includes('navigation')) {
             switch (data.type) {
-                case 'model':
+                case 'model.link':
                     setAddItemProps(data.data)
-                    setPopupType('model')
+                    setPopupType('model.link')
                     break
                 case 'navigation.group':
                     setAddLinksGroupProps(data.data)
@@ -433,6 +450,10 @@ const CatalogTree = () => {
             }
         } else {
             switch (data.type) {
+                case 'model.link':
+                    setAddItemProps(data.data)
+                    setPopupType('model.link')
+                    break
                 case 'model':
                     setAddItemProps(data.data)
                     setPopupType('model')
@@ -465,8 +486,9 @@ const CatalogTree = () => {
         setSecondRender(false)
     }, [itemType])
 
-    const addModel = async (record: any, targetBlank?: boolean) => {
+    const addModel = async (record: any, targetBlank?: boolean, visible?: boolean) => {
         if (targetBlank) record.targetBlank = targetBlank
+        if(visible) record.visible = visible
         try {
             await axios.post('', {
                 data: {
@@ -484,8 +506,9 @@ const CatalogTree = () => {
         }
     }
 
-    const editModel = useCallback(async (record: any, targetBlank?: boolean) => {
+    const editModel = useCallback(async (record: any, targetBlank?: boolean, visivle?: boolean) => {
         if (targetBlank) record[0].targetBlank = targetBlank;
+        if(visivle) record[0].visible = visivle;
 
         record[0].treeId = selectedNodes[0]?.data?.id;
 
@@ -517,7 +540,8 @@ const CatalogTree = () => {
                             text: name, // Берём name из ответа сервера
                             data: {
                                 ...node.data,
-                                ...res.data, // Обновляем все данные из ответа
+                                ...res.data.data, // Обновляем все данные из ответа
+                                ...{visible: res.data.data.visible ?? false}
                             },
                         };
                     }
@@ -907,6 +931,7 @@ const CatalogTree = () => {
                         addProps={addProps}
                         editModel={editModel}
                         popUpTargetBlank={popUpTargetBlank}
+                        popUpVisible={popUpVisible}
                         isNavigation={isNavigation}
                         messages={messages}
                         DynamicComponent={DynamicComponent}

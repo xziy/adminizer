@@ -46,8 +46,10 @@ export interface MediaManagerWidgetClientItem extends MediaManagerWidgetItem {
 
 
 export interface MediaManagerWidgetJSON {
-    list: MediaManagerWidgetItem[];
     mediaManagerId: string;
+    model: string,
+    widgetName: string
+    modelId: string | number
 }
 
 export interface MediaManagerWidgetData {
@@ -134,7 +136,7 @@ export abstract class File<T extends MediaManagerItem> {
      * Delete an item.
      * @param id
      */
-    public abstract delete(id: string): Promise<void>;
+    public abstract delete(id: string): Promise<boolean>;
 
     /**
      * Get all items of a type.
@@ -260,27 +262,27 @@ export abstract class AbstractMediaManager {
         return this.getItemType(type)?.getItems(limit, skip, sort, group);
     }
 
-    // /**
-    //  * Save Relations.
-    //  * @param data
-    //  * @param model model in which a mediafile connection was added
-    //  * @param modelId Id in the model in which the mediafile was added
-    //  * @param widgetName
-    //  */
-    // public abstract setRelations(
-    //     data: MediaManagerWidgetData[],
-    //     /**
-    //      * widget model in which a mediafile connection was added
-    //      */
-    //     model: string,
-    //     /**
-    //      * widget Id in the model in which the mediafile was added
-    //      */
-    //     modelId: string,
-    //     widgetName: string
-    // ): Promise<void>;
+    /**
+     * Save Relations.
+     * @param data
+     * @param model model in which a mediafile connection was added
+     * @param modelId Id in the model in which the mediafile was added
+     * @param widgetName
+     */
+    public abstract setRelations(
+        data: MediaManagerWidgetData[],
+        /**
+         * widget model in which a mediafile connection was added
+         */
+        model: string,
+        /**
+         * widget Id in the model in which the mediafile was added
+         */
+        modelId: number,
+        widgetName: string
+    ): Promise<void>;
 
-    public abstract getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]>;
+    public abstract getRelations(model: string, widgetName: string, modelId: string | number): Promise<MediaManagerWidgetClientItem[]>;
 
     /**
      * Search all items.
@@ -349,7 +351,7 @@ export abstract class AbstractMediaManager {
      * Delete an item.
      * @param item
      */
-    public delete(item: MediaManagerItem): Promise<void> {
+    public delete(item: MediaManagerItem): Promise<boolean> {
         const parts = item.mimeType.split("/");
         return this.getItemType(parts[0])?.delete(item.id);
     }

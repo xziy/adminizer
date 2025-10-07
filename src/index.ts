@@ -17,6 +17,7 @@ export * from "./interfaces/MaaterialIcons"
 export * from "./lib/model/AbstractModel";
 export * from "./lib/model/adapter/waterline";
 export * from "./lib/model/adapter/sequelize"
+export * from "./lib/media-manager/AbstractMediaManager";
 export * from "./lib/Adminizer";
 export * from "./models/GroupAP"
 export * from "./models/UserAP"
@@ -25,3 +26,4 @@ export * from "./models/MediaManagerAssociationsAP"
 export * from "./models/MediaManagerMetaAP"
 export * from "./models/NavigationAP"
 export * from "./migrations"
+export * from "./system/bindNavigation"

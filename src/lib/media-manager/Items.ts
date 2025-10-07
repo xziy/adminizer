@@ -15,6 +15,7 @@ export class ImageItem extends File<MediaManagerItem> {
     public type: MediaFileType = "image";
     public model: string = "mediamanagerap";
     public metaModel: string = "mediamanagermetaap";
+    public modelAssoc: string = "mediamanagerassociationsap";
     public imageSizes: any
     protected readonly adminizer: Adminizer
 
@@ -71,7 +72,7 @@ export class ImageItem extends File<MediaManagerItem> {
             parent: null,
             mimeType: file.mimetype,
             size: file.size,
-            path: file.path,
+            path: `${this.fileStoragePath}/${this.urlPathPrefix}/${filename}`,
             group: group,
             tag: "origin",
             filename: origFileName,
@@ -192,8 +193,7 @@ export class ImageItem extends File<MediaManagerItem> {
 
     protected async resizeImage(input: string, output: string, width: number, height: number,) {
         // Get the directory from the output path
-        const outputDir = path.dirname(output);
-
+        const outputDir = `${process.cwd()}/${path.dirname(output)}`;
         // Check if the directory exists, and create it if it doesn't
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, {recursive: true});
@@ -227,7 +227,12 @@ export class ImageItem extends File<MediaManagerItem> {
         return (await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({where: {id: item.id}}))
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: string): Promise<boolean> {
+        const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileId' : 'file';
+        const assoc = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({where: {[fieldName]: id}})
+        if(assoc.length){
+            return Promise.resolve(false);
+        }
         const criteria = {where: {id: id}};
         // TODO refactor CRUD functions for DataAccessor usage
         let record = await this.adminizer.modelHandler.model.get(this.model)["_findOne"](criteria);
@@ -243,6 +248,8 @@ export class ImageItem extends File<MediaManagerItem> {
                 await deleteFile(variant.path);
             }
         }
+
+        return Promise.resolve(true);
     }
 }
 
@@ -258,7 +265,7 @@ export class TextItem extends ImageItem {
             parent: null,
             mimeType: file.mimetype,
             size: file.size,
-            path: file.path,
+            path: `${this.fileStoragePath}/${filename}`,
             group: group,
             filename: origFileName,
             tag: "origin",

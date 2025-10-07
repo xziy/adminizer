@@ -7,7 +7,7 @@ import {
     MediaManagerWidgetClientItem,
     SortCriteria,
 } from "./AbstractMediaManager";
-import {populateVariants} from "./helpers/MediaManagerHelper";
+import {getAssociationFieldName, populateVariants} from "./helpers/MediaManagerHelper";
 import {ApplicationItem, ImageItem, TextItem, VideoItem} from "./Items";
 import {Adminizer} from "../Adminizer";
 
@@ -15,7 +15,7 @@ import {Adminizer} from "../Adminizer";
 export class DefaultMediaManager extends AbstractMediaManager {
     public readonly itemTypes: File<MediaManagerItem>[] = [];
     public model: string = "mediamanagerap";
-    // public modelAssoc: string = "mediamanagerassociationsap";
+    public modelAssoc: string = "mediamanagerassociationsap";
     id: string;
     protected readonly adminizer: Adminizer;
 
@@ -80,45 +80,54 @@ export class DefaultMediaManager extends AbstractMediaManager {
         return data;
     }
 
-    // public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: string, widgetName: string,): Promise<void> {
-    //     let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
-    //         where: {modelId: modelId, model: model, widgetName: widgetName},
-    //     });
-    //
-    //     for (const modelAssociation of modelAssociations) {
-    //         const q: Record<string, any> = {};
-    //         const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
-    //         q[pk] = modelAssociation.id;
-    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
-    //     }
-    //
-    //     for (const [key, widgetItem] of data.entries()) {
-    //         await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
-    //             mediaManagerId: this.id,
-    //             model: model,
-    //             modelId: modelId,
-    //             file: widgetItem.id,
-    //             widgetName: widgetName,
-    //             sortOrder: key + 1,
-    //         });
-    //     }
-    // }
+    public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: number, widgetName: string,): Promise<void> {
+        let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
+            where: {modelId: +modelId, model: model.toLowerCase(), widgetName: widgetName},
+        });
 
-    public async getItemsList(items: MediaManagerWidgetItem[]): Promise<MediaManagerWidgetClientItem[]> {
-        let widgetItems: MediaManagerWidgetClientItem[] = [];
-        for (const item of items) {
-            //TODO refactor CRUD functions for DataAccessor usage
-            let file: MediaManagerItem = (await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-                where: {id: item.id}
-            }, {populate: [["variants", {sort: "createdAt DESC"}]]}))[0]
+        for (const modelAssociation of modelAssociations) {
+            const q: Record<string, any> = {};
+            const pk = this.adminizer.modelHandler.model.get(this.modelAssoc).primaryKey;
+            q[pk] = modelAssociation.id;
+            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_destroy"](q);
+        }
 
-            widgetItems.push({
-                id: file.id,
-                mimeType: file.mimeType,
-                url: file.url,
-                variants: file.variants,
+        const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileId' : 'file';
+
+        for (const [key, widgetItem] of data.entries()) {
+            await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
+                mediaManagerId: this.id,
+                model: model.toLowerCase(),
+                modelId: +modelId,
+                [fieldName]: widgetItem.id,
+                widgetName: widgetName,
+                sortOrder: key + 1,
             });
         }
-        return widgetItems;
+    }
+
+    public async getRelations(model: string, widgetName: string, modelId: string | number): Promise<MediaManagerWidgetClientItem[]> {
+        let widgetItems: MediaManagerWidgetClientItem[] = [];
+
+        const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileRef' : 'file';
+
+        let files =  await this.adminizer.modelHandler.model.get(this.modelAssoc)['_find']({
+            where: {
+                model: model.toLowerCase(),
+                widgetName: widgetName,
+                modelId: +modelId
+            },
+            sort: "sortOrder ASC"
+        }, {populate: [[fieldName, {}]]})
+
+        for (const file of files) {
+            widgetItems.push({
+                id: file[fieldName].id,
+                mimeType: file[fieldName].mimeType,
+                url: file[fieldName].url,
+                variants: []
+            })
+        }
+        return widgetItems
     }
 }

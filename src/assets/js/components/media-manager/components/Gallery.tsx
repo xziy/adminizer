@@ -27,7 +27,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
     const {uploadUrl, group} = useContext(MediaManagerContext);
-    const [count, _setCount] = useState<number>(5);
+    const [count, _setCount] = useState<number>(15);
     const [mediaList, setMediaList] = useState<Media[]>([]);
     const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
     const [skip, setSkip] = useState<number>(0);
@@ -173,7 +173,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
     return (
         <div className="flex justify-between mt-8 gap-4 px-2 pb-4">
             <Tabs value={activeTab} className="w-full">
-                <div className="flex gap-4 mb-4">
+                <div className="flex gap-4 mb-4 flex-wrap md:flex-nowrap">
                     <Input
                         type="search"
                         placeholder={messages["Search"]}
@@ -186,8 +186,9 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                         }}
                         className="w-[200px] p-2 border rounded"
                     />
-                    <TabsList className="w-full">
+                    <TabsList className="sm:w-full">
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="tile-image"
                             onClick={() => handleChange('image', 'tile-image')}
                             disabled={!!pendingTab}
@@ -195,6 +196,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                             {messages["Images"]}
                         </TabsTrigger>
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="table-video"
                             onClick={() => handleChange('video', 'table-video')}
                             disabled={!!pendingTab}
@@ -202,6 +204,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                             {messages["Videos"]}
                         </TabsTrigger>
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="table-text"
                             onClick={() => handleChange('text', 'table-text')}
                             disabled={!!pendingTab}
@@ -209,6 +212,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                             {messages["Texts"]}
                         </TabsTrigger>
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="table-application"
                             onClick={() => handleChange('application', 'table-application')}
                             disabled={!!pendingTab}
@@ -216,6 +220,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                             {messages["Applications"]}
                         </TabsTrigger>
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="table-all"
                             onClick={() => handleChange('all', 'table-all')}
                             disabled={!!pendingTab}
@@ -223,6 +228,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
                             {messages["Table"]}
                         </TabsTrigger>
                         <TabsTrigger
+                            className="text-[12px] sm:text-sm"
                             value="tile-all"
                             onClick={() => handleChange('all', 'tile-all')}
                             disabled={!!pendingTab}

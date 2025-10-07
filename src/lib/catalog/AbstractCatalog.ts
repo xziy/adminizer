@@ -1,5 +1,6 @@
-import {JSONSchema4} from "json-schema";
-import {Adminizer} from "../Adminizer";
+import { JSONSchema4 } from "json-schema";
+import { Adminizer } from "../Adminizer";
+import { StorageServices } from "./Navigation";
 
 /**
  * Interface `Item` describes the data that the UI will operate on
@@ -34,6 +35,7 @@ export type _Item_ = {
  * General Item structure that will be available for all elements, including groups
  */
 export abstract class BaseItem<T extends Item> {
+    storageServices?: StorageServices
     // public abstract readonly id: string;
     public abstract readonly type: string;
 
@@ -42,7 +44,7 @@ export abstract class BaseItem<T extends Item> {
      * I haven't found an easier way to extract this type that goes into generic
      * If you know how to open PR
      * */
-        // public readonly dataType: T
+    // public readonly dataType: T
 
     public abstract adminizer: Adminizer
 
@@ -126,7 +128,7 @@ export abstract class BaseItem<T extends Item> {
      * @param req
      */
     public abstract getAddTemplate(req: ReqType): Promise<{
-        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: any
     }>
 
@@ -138,7 +140,7 @@ export abstract class BaseItem<T extends Item> {
      * @param modelId
      */
     public abstract getEditTemplate(id: string | number, catalogId: string, req: ReqType, modelId?: string | number): Promise<{
-        type: 'component' | 'navigation.group' | 'navigation.link' | 'model',
+        type: 'component' | 'navigation.group' | 'navigation.link' | 'model' | 'model.link',
         data: any
     }>;
 
@@ -389,15 +391,15 @@ export abstract class AbstractCatalog {
      * Method for getting group elements
      * If there are several Items, then the global ones will be obtained
      */
-   public getActions(items?: Item[]) {
-    if (items.length === 1) {
-        const item = items[0];
-        const itemType = this.itemTypes.find((it) => it.type === item.type);
-        return itemType.actionHandlers
-    } else {
-        return this.actionHandlers
+    public getActions(items?: Item[]) {
+        if (items.length === 1) {
+            const item = items[0];
+            const itemType = this.itemTypes.find((it) => it.type === item.type);
+            return itemType.actionHandlers
+        } else {
+            return this.actionHandlers
+        }
     }
-}
 
 
     /**
@@ -471,7 +473,7 @@ export abstract class AbstractCatalog {
      * Method for getting group elements
      */
     public getitemTypes() {
-        return this.itemTypes.map(({adminizer, ...rest}) => rest);
+        return this.itemTypes.map(({ adminizer, storageServices, ...rest }) => rest);
     };
 
 
@@ -490,7 +492,7 @@ export abstract class AbstractCatalog {
                 accumulator.push(...extras);
             }
 
-            if (item.parentId === 0) return item;
+            if (item.parentId === null) return item;
             const parentItem = await groupType._find(item.parentId, this.id);
             if (parentItem) {
                 accumulator.push(parentItem);
@@ -503,13 +505,13 @@ export abstract class AbstractCatalog {
 
         // Handle all search
         for (const itemType of this.itemTypes) {
-            const items = (await itemType.search(s, this.id)).map(a => ({...a, marked: true}));
+            const items = (await itemType.search(s, this.id)).map(a => ({ ...a, marked: true }));
             foundItems = foundItems.concat(items);
         }
 
 
         for (const item of foundItems) {
-            if (item.parentId !== 0) { // changed from null to 0
+            if (item.parentId !== null) { // changed from 0 to null
                 await buildTreeUpwards(item, hasExtras);
             }
         }
@@ -542,7 +544,7 @@ export abstract class AbstractCatalog {
         });
 
         items.forEach(item => {
-            if (item.parentId === 0) { // changed from null to 0
+            if (item.parentId === null) {
                 tree.push(item);
             } else {
                 const parent = itemMap[item.parentId];

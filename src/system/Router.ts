@@ -5,7 +5,7 @@ import _edit from "../controllers/edit";
 import _add from "../controllers/add";
 import _view from "../controllers/view";
 import _remove from "../controllers/remove";
-import _uploadCKeditor5 from "../controllers/ckeditorUpload";
+import {ckEditorUpload} from "../controllers/ckeditorUpload";
 import _form from "../controllers/form";
 import {CreateUpdateConfig} from "../interfaces/adminpanelConfig";
 import {widgetSwitchController} from "../controllers/widgets/switch";
@@ -87,7 +87,7 @@ export default class Router {
         adminizer.app.all(`${adminizer.config.routePrefix}/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
 
         // Create a base entity route
-        let baseRoute = `${adminizer.config.routePrefix}/:entityType/:entityName`;
+        let baseRoute = `${adminizer.config.routePrefix}/:entityType(form|model)/:entityName`;
 
         /**
          * Catalog
@@ -113,6 +113,11 @@ export default class Router {
         adminizer.app.all(`${adminizer.config.routePrefix}/get-thumbs`, adminizer.policyManager.bindPolicies(policies, thumbController));
 
         /**
+         * Upload images CKeditor5
+         */
+        adminizer.app.post(`${baseRoute}/ckeditor5/upload`, adminizer.policyManager.bindPolicies(policies, ckEditorUpload));
+
+        /**
          * Notifications
          */
         if (adminizer.config.notifications.enabled) {
@@ -131,18 +136,20 @@ export default class Router {
             );
 
             adminizer.app.get(
+                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
+                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
+            );
+
+            adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
             );
+
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/notifications`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
             );
 
-            adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
-                adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
-            );
 
             adminizer.app.put(
                 `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
@@ -245,11 +252,7 @@ export default class Router {
          * Remove record
          */
         adminizer.app.all(baseRoute + "/remove/:id", adminizer.policyManager.bindPolicies(policies, _remove));
-        /**
-         * Upload images CKeditor5
-         */
-        //TODO check after mediamanager upgrade possible is not need
-        adminizer.app.all(`${baseRoute}/ckeditor5/upload`, adminizer.policyManager.bindPolicies(policies, _uploadCKeditor5));
+
         /**
          * Create a default dashboard
          */

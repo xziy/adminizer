@@ -21,6 +21,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
+                    accept: ['image/jpeg, image/png']
                 }
             },
             schema: {}
@@ -203,7 +204,7 @@ const models: AdminpanelConfig["models"] = {
                             '|',
                             // 'horizontalLine',
                             'link',
-                            'insertImageViaUrl',
+                            'insertImage',
                             'insertTable',
                             'blockQuote',
                             '|',
@@ -390,6 +391,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
+                    accept: ['image/jpeg, image/png']
                 }
             },
             mediamanager_two: {
@@ -398,6 +400,14 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'avatars',
+                    accept: ['image/jpeg']
+                },
+                displayModifier: function (data: any) {
+                    if (data.length) {
+                        return `<img width="100px" height="100px" style="margin: 0 auto" src="${routePrefix}/get-thumbs?id=${data[0].id}&managerId=default"/>`;
+                    } else {
+                        return `<p>No Image</p>`;
+                    }
                 }
             },
         }
@@ -418,7 +428,7 @@ const models: AdminpanelConfig["models"] = {
 
 const config: AdminpanelConfig = {
     mediamanager: {
-        fileStoragePath: `${process.cwd()}/.tmp/public`,
+        fileStoragePath: '.tmp/public',
         allowMIME: ['image/*', 'application/*', 'text/*', 'video/*'],
         maxByteSize: 1024 * 1024 * 2, // 2 Mb
         imageSizes: {
@@ -471,10 +481,17 @@ const config: AdminpanelConfig = {
         groupField: [
             {
                 name: 'link',
+                label: 'Ссылка',
                 required: false
             },
             {
-                name: "Test Field",
+                name: "test_field",
+                label: 'Test',
+                required: false
+            },
+            {
+                name: "test_feild2",
+                label: 'Test2',
                 required: false
             }
         ],
@@ -494,6 +511,7 @@ const config: AdminpanelConfig = {
                     options: {
                         id: "default",
                         group: 'form_global_images',
+                        accept: ['image/jpeg, image/png']
                     },
                     value: null
                 },
@@ -508,6 +526,101 @@ const config: AdminpanelConfig = {
                     title: 'Json',
                     type: 'jsoneditor'
                 },
+                text: {
+                    title: 'Editor',
+                    type: 'wysiwyg',
+                },
+                tabs_video: {
+                    "title": "Табы видео",
+                    "type": "table",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в добавленную строку вставьте код полученный на сервисе ВКонтакте или YouTube через кнопку \"Поделиться\"",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "iframe": null
+                            },
+                            "colHeaders": [
+                                "Iframe"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "iframe"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
+                },
+                tabs_tests: {
+                    "title": "Табы онлайн-тесты",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в соответствующих столбцах вставьте ссылку на тест и его название",
+                    "type": "table",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "link": null,
+                                "text": null
+                            },
+                            "colHeaders": [
+                                "Ссылка",
+                                "Текст"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "link"
+                                },
+                                {
+                                    "data": "text"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
+                },
+                tabs_links: {
+                    "title": "Табы полезные ссылки",
+                    "type": "table",
+                    "tooltip": "Нажмите на таблице правой клавишей мыши, выберите \"Вставить строку ниже\", в соответствующих столбцах вставьте ссылку на сайт и его название",
+                    "options": {
+                        "config": {
+                            "dataSchema": {
+                                "link": null,
+                                "text": null
+                            },
+                            "colHeaders": [
+                                "Ссылка",
+                                "Текст"
+                            ],
+                            "rowHeaders": true,
+                            "columns": [
+                                {
+                                    "data": "link"
+                                },
+                                {
+                                    "data": "text"
+                                }
+                            ],
+                            "height": "auto",
+                            "width": "100%",
+                            "manualColumnResize": true,
+                            "contextMenu": true,
+                            "licenseKey": "non-commercial-and-evaluation"
+                        }
+                    },
+                    "value": null
+                }
             }
         }
     },

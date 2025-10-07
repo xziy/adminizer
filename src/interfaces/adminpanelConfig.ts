@@ -434,7 +434,8 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 
 export interface MediaManagerOptionsField {
     id: 'default' | string
-    group: string
+    group: string,
+    accept: string []
     config?: Record<string, any>
 }
 
@@ -547,7 +548,7 @@ export interface NavigationItemTypeConfig {
 export interface NavigationConfig {
     model?: string
     sections: string[]
-    groupField: { name: string, required: boolean }[]
+    groupField: { name: string, required: boolean, label: string }[]
     allowContentInGroup?: boolean
     items: NavigationItemTypeConfig[],
     movingGroupsRootOnly?: boolean

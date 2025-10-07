@@ -16,33 +16,25 @@ interface PaginationProps {
 }
 
 const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentPage}) => {
-    // Получаем все числовые страницы (исключая Previous/Next)
-    const numericPages = pagination.links
-        .filter(link => link.label !== 'Previous' && link.label !== 'Next')
-        .map(link => parseInt(link.label));
-
-    // Проверяем, видна ли первая страница в основном списке
-    const isFirstPageVisible = numericPages.includes(1);
-    // Проверяем, видна ли последняя страница в основном списке
-    const isLastPageVisible = numericPages.includes(pagination.last_page);
+    const showFirstButton = currentPage !== 1 && pagination.last_page > 1;
+    const showLastButton = currentPage !== pagination.last_page && pagination.last_page > 1;
 
     return (
         <Pagination>
             <PaginationContent className="flex-wrap">
-                {/* First Item Button*/}
-                <PaginationItem className={`${!isFirstPageVisible ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                {/* First Item Button - показываем только когда не на первой странице */}
+                <PaginationItem className={`${showFirstButton ? '' : 'opacity-40 pointer-events-none'}`}>
                     <PaginationLink
-                        className={`px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}`}
+                        className="px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15"
                         onClick={(e) => {
                             e.preventDefault()
-                            if (currentPage !== 1) {
-                                pageChange(1)
-                            }
+                            pageChange(1)
                         }}
                     >
                         First
                     </PaginationLink>
                 </PaginationItem>
+
                 {/* Previous Item Button */}
                 <PaginationItem>
                     <PaginationPrevious
@@ -55,6 +47,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         }}
                     />
                 </PaginationItem>
+
                 {/* Item Numbers */}
                 {pagination.links.map((link, index) => {
                     if (link.label === 'Previous' || link.label === 'Next') return null;
@@ -74,6 +67,7 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         </PaginationItem>
                     );
                 })}
+
                 {/* Next Item Button */}
                 <PaginationItem>
                     <PaginationNext
@@ -86,15 +80,14 @@ const PaginationRender: FC<PaginationProps> = ({pagination, pageChange, currentP
                         }}
                     />
                 </PaginationItem>
-                {/* Last Item Button  */}
-                <PaginationItem className={`${!isLastPageVisible ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+
+                {/* Last Item Button - показываем только когда не на последней странице */}
+                <PaginationItem className={`${showLastButton ? '' : 'opacity-40 pointer-events-none'}`}>
                     <PaginationLink
-                        className={`px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15 ${currentPage === pagination.last_page ? 'opacity-50 pointer-events-none' : ''}`}
+                        className="px-6 cursor-pointer bg-secondary hover:bg-muted-foreground/15"
                         onClick={(e) => {
                             e.preventDefault()
-                            if (currentPage !== pagination.last_page) {
-                                pageChange(pagination.last_page)
-                            }
+                            pageChange(pagination.last_page)
                         }}
                     >
                         Last
