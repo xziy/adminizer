@@ -304,7 +304,7 @@ const CatalogTree = () => {
         setItemType(type)
         setFirstRender(true)
         const res = await axios.post('', {type: type, _method: 'getAddTemplate'})
-        if (type === 'model') {
+        if (res.data.type === 'model') {
             // For 'model', directly get the add form
             setPopupType('model')
             await getAddModelJSON(res.data.data.model)
