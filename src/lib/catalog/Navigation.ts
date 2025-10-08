@@ -4,7 +4,7 @@ import {AdminpanelConfig, ModelConfig, NavigationConfig} from "../../interfaces/
 import {v4 as uuid} from "uuid";
 import {Adminizer} from "../Adminizer";
 
-interface NavItem extends Item {
+export interface NavItem extends Item {
 	urlPath?: string;
 	modelId?: string | number;
 	targetBlank?: boolean
