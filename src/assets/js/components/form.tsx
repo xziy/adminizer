@@ -19,13 +19,17 @@ interface FormProps extends SharedData {
 const Form = () => {
     const page = usePage<FormProps>();
     const {fields} = page.props;
+
+    // initialize useForm with a safe fallback to avoid crashing when `fields` is missing
     const {
         data,
         setData,
         // errors,
         post,
         processing,
-    } = useForm<Record<string, any>>(Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])));
+    } = useForm<Record<string, any>>({
+        ...Object.fromEntries((fields || []).map(field => [field.name, field.value ?? undefined]))
+    });
 
     useEffect(() => {
         // Reset errors
@@ -39,7 +43,18 @@ const Form = () => {
         (fieldName: string, value: FieldValue) => {
             // @ts-ignore
             setData(fieldName, value);
-        }, []);
+        }, [setData]);
+
+    // Basic validation: ensure fields is an array and has entries
+    if (!Array.isArray(fields)) {
+        console.error('Fields is not an array in Form component:', fields);
+        return <div className="p-4 text-red-500">Error: Fields data is invalid</div>;
+    }
+
+    if (fields.length === 0) {
+        console.warn('Fields array is empty in Form component');
+        return <div className="p-4 text-gray-500">No fields to display</div>;
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
