@@ -156,7 +156,7 @@ const FieldRenderer: FC<{
                     <SelectTrigger className="w-full cursor-pointer min-h-10 scroll-pt-30 scroll-mt-30" id={field.name}>
                         <SelectValue placeholder=""/>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[9999999]">
                         {(field.isIn ?? []).map((option) => (
                             <SelectItem value={option} key={option}>
                                 {option}
