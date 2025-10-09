@@ -1,11 +1,10 @@
 .root {
-    align-items: center;
     display: grid;
     grid-template-columns: auto auto 1fr auto;
-    height: 32px;
+    height: auto;
     padding-inline-end: 18px;
     border-bottom: solid 1px #eee;
-    max-width: 300px;
+    align-items: start;
 }
 .root.isSelected {
     color: #1967d2;
