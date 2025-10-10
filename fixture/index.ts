@@ -12,6 +12,7 @@ import CategoryWaterline from "./models/Category";
 import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
+import cors from 'cors';
 
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
@@ -168,6 +169,48 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     adminizer.emitter.on('adminizer:loaded', () => {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
+
+    // Test cors
+    adminizer.emitter.on('adminizer:loaded', () => {
+        const routePrefix = adminizer.config.routePrefix || '';
+
+        // Эндпоинт для получения CSRF токена
+        adminizer.app.get(`${routePrefix}/api/csrf-token`, (req: any, res: any) => {
+            // Inertia middleware уже установила токен в cookies
+            // Мы просто возвращаем его в ответе для удобства
+            const csrfToken = req.cookies['XSRF-TOKEN'];
+            res.json({
+                csrfToken,
+                cookieName: 'XSRF-TOKEN',
+                headerName: 'x-xsrf-token'
+            });
+        });
+
+        adminizer.app.post(`${routePrefix}/api/auth/login`, async (req: any, res: any) => {
+            try {
+                const { login, password } = req.body;
+
+                // CSRF проверка уже выполнена в Inertia middleware
+                console.log('Login attempt:', login, password);
+
+                // Ваша логика аутентификации здесь
+                // ...
+
+                res.json({
+                    success: true,
+                    message: 'Login successful',
+                    user: { login }
+                });
+
+            } catch (e) {
+                console.log('Login error:', e);
+                res.status(401).json({
+                    success: false,
+                    message: 'Login failed'
+                });
+            }
+        });
+    });
 
     try {
 

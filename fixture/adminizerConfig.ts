@@ -445,6 +445,9 @@ const config: AdminpanelConfig = {
     notifications: {
         enabled: true
     },
+    cors: {
+        enabled: true
+    },
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     auth: {

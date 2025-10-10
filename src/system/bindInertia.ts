@@ -117,7 +117,7 @@ export function bindInertia(adminizer: Adminizer) {
                 enabled: true,
                 cookieName: 'XSRF-TOKEN',
                 headerName: 'x-xsrf-token'
-            },
+            }
         })
     );
 
