@@ -174,18 +174,9 @@ export class Adminizer {
     }
 
     public async init(config: AdminpanelConfig) {
-        // set cookie parser
-        this.app.use(cookieParser());
-
         if (!config || Object.keys(config).length === 0) {
             Adminizer.log.warn(`Adminizer init > Adminizer config is emtpy`)
         }
-
-        // Set vite middleware
-        const isViteDev = process.env.VITE_ENV === "dev";
-        if (isViteDev) await this.viteMiddleware()
-
-        this.emitter.emit('adminizer:init');
 
         if (this.config && Object.keys(this.config).length > 0) {
             throw new Error("Config has already been initialized");
@@ -220,6 +211,46 @@ export class Adminizer {
                 set: configForms.set ?? defaultForms.set
             }
         };
+
+        // Middleware для всех API маршрутов
+        const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:8080';
+
+        if (config?.cors?.enabled) {
+            const corsConfig = config.cors;
+
+            this.app.all(`${this.config.routePrefix}/api/*`, (req: any, res: any, next: any) => {
+                // Устанавливаем CORS заголовки
+                res.header('Access-Control-Allow-Origin', corsConfig.origin || allowedOrigin);
+                res.header('Access-Control-Allow-Credentials',
+                    corsConfig.credentials !== false ? 'true' : 'false');
+                res.header('Access-Control-Allow-Methods',
+                    corsConfig.methods?.join(',') || 'GET,POST,PUT,DELETE,OPTIONS');
+                res.header('Access-Control-Allow-Headers',
+                    corsConfig.allowedHeaders?.join(',') || 'Content-Type,Authorization,X-Requested-With,X-CSRF-Token,x-xsrf-token');
+
+                // Если это OPTIONS запрос - сразу отвечаем
+                if (req.method === 'OPTIONS') {
+                    return res.status(200).end();
+                }
+
+                next();
+            });
+
+            console.log('✅  API CORS middleware enabled');
+        }
+
+        // set cookie parser
+        this.app.use(cookieParser());
+
+
+
+        // Set vite middleware
+        const isViteDev = process.env.VITE_ENV === "dev";
+        if (isViteDev) await this.viteMiddleware()
+
+        this.emitter.emit('adminizer:init');
+
+
 
 
         this.modelHandler = new ModelHandler();

@@ -147,6 +147,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                 _page.props = propsRecord;
 
                 if (req.headers[headers.xInertia]) {
+
                     res
                         .status(_statusCode)
                         .set({

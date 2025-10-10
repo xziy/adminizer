@@ -254,6 +254,14 @@ export interface AdminpanelConfig {
     notifications?: {
         enabled: boolean
     }
+
+    cors?: {
+        enabled: boolean;
+        origin?: string;
+        credentials?: boolean;
+        methods?: string[];
+        allowedHeaders?: string[];
+    };
 }
 
 export interface ModelConfig {
