@@ -257,7 +257,7 @@ export interface AdminpanelConfig {
 
     cors?: {
         enabled: boolean;
-        origin?: string;
+        origin?: string[];
         credentials?: boolean;
         methods?: string[];
         allowedHeaders?: string[];

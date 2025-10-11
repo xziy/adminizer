@@ -213,22 +213,44 @@ export class Adminizer {
         };
 
         // Middleware для всех API маршрутов
-        const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:8080';
+        const defaultOrigin = process.env.FRONTEND_URL || 'http://localhost:8080';
 
         if (config?.cors?.enabled) {
             const corsConfig = config.cors;
 
-            this.app.all(`${this.config.routePrefix}/api/*`, (req: any, res: any, next: any) => {
-                // Устанавливаем CORS заголовки
-                res.header('Access-Control-Allow-Origin', corsConfig.origin || allowedOrigin);
-                res.header('Access-Control-Allow-Credentials',
-                    corsConfig.credentials !== false ? 'true' : 'false');
-                res.header('Access-Control-Allow-Methods',
-                    corsConfig.methods?.join(',') || 'GET,POST,PUT,DELETE,OPTIONS');
-                res.header('Access-Control-Allow-Headers',
-                    corsConfig.allowedHeaders?.join(',') || 'Content-Type,Authorization,X-Requested-With,X-CSRF-Token,x-xsrf-token');
+            // Поддерживаем массив разрешенных origin
+            const allowedOrigins = Array.isArray(corsConfig.origin)
+                ? corsConfig.origin
+                : [corsConfig.origin || defaultOrigin];
 
-                // Если это OPTIONS запрос - сразу отвечаем
+            this.app.all(`${this.config.routePrefix}/api/*`, (req: any, res: any, next: any) => {
+                const requestOrigin = req.headers.origin;
+
+                // Проверяем разрешен ли origin
+                const isOriginAllowed = !requestOrigin || allowedOrigins.includes(requestOrigin);
+
+                if (requestOrigin && !isOriginAllowed) {
+                    console.log(`❌ CORS: Blocked request from ${requestOrigin}`);
+
+                    if (req.method === 'OPTIONS') {
+                        return res.status(200).end();
+                    }
+                    return next();
+                }
+
+                // Запрос с разрешенного origin или без Origin
+                if (isOriginAllowed) {
+                    // Для CORS запросов возвращаем тот же origin (или первый из списка)
+                    const allowOrigin = requestOrigin || allowedOrigins[0];
+                    res.header('Access-Control-Allow-Origin', allowOrigin);
+                    res.header('Access-Control-Allow-Credentials',
+                        corsConfig.credentials !== false ? 'true' : 'false');
+                    res.header('Access-Control-Allow-Methods',
+                        corsConfig.methods?.join(',') || 'GET,POST,PUT,DELETE,OPTIONS');
+                    res.header('Access-Control-Allow-Headers',
+                        corsConfig.allowedHeaders?.join(',') || 'Content-Type,Authorization,X-Requested-With,X-CSRF-Token,x-xsrf-token');
+                }
+
                 if (req.method === 'OPTIONS') {
                     return res.status(200).end();
                 }
@@ -236,12 +258,10 @@ export class Adminizer {
                 next();
             });
 
-            console.log('✅  API CORS middleware enabled');
+            console.log('✅ API CORS middleware enabled. Allowed origins:', allowedOrigins);
         }
-
         // set cookie parser
         this.app.use(cookieParser());
-
 
 
         // Set vite middleware
@@ -249,8 +269,6 @@ export class Adminizer {
         if (isViteDev) await this.viteMiddleware()
 
         this.emitter.emit('adminizer:init');
-
-
 
 
         this.modelHandler = new ModelHandler();
