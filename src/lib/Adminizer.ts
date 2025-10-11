@@ -229,13 +229,19 @@ export class Adminizer {
                 // Проверяем разрешен ли origin
                 const isOriginAllowed = !requestOrigin || allowedOrigins.includes(requestOrigin);
 
+
                 if (requestOrigin && !isOriginAllowed) {
                     console.log(`❌ CORS: Blocked request from ${requestOrigin}`);
 
                     if (req.method === 'OPTIONS') {
+                        // Для preflight - 200 без CORS headers
                         return res.status(200).end();
+                    } else {
+                        // Для основных запросов - ошибка
+                        return res.status(403).json({
+                            error: 'CORS policy: Origin not allowed'
+                        });
                     }
-                    return next();
                 }
 
                 // Запрос с разрешенного origin или без Origin
