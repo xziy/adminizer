@@ -16,6 +16,7 @@
 		"dev:no-seed-clean": "cross-env VITE_ENV=dev NO_SEED_DATA=true CLEAN_TMP=true ORM=sequelize tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev:waterline": "cross-env VITE_ENV=dev ORM=waterline tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev:waterline:no-seed": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=waterline tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
+		"dev:cors": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=waterline FRONTEND_URL=http://localhost:4173 tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
 		"compile:backend": "tsc -p src/tsconfig.json",
 		"compile:ui": "tsc -p tsconfig.ui.json",

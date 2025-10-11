@@ -1,11 +1,10 @@
 import {POWCaptcha} from "../lib/POWCaptcha";
 import passwordHash from "password-hash";
 import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
-import { Adminizer } from "../lib/Adminizer";
-import { signUser } from "../lib/helper/jwt";
-import { serialize } from "cookie";
-import { UserAP } from "models/UserAP";
-
+import {Adminizer} from "../lib/Adminizer";
+import {signUser} from "../lib/helper/jwt";
+import {serialize} from "cookie";
+import {UserAP} from "models/UserAP";
 
 
 export default async function login(req: ReqType, res: ResType) {
@@ -65,7 +64,7 @@ export default async function login(req: ReqType, res: ResType) {
                     }
 
                     const token = signUser(user, req.adminizer.jwtSecret);
-                        res.setHeader('Set-Cookie', serialize('adminizer_jwt', token, {
+                    res.setHeader('Set-Cookie', serialize('adminizer_jwt', token, {
                         httpOnly: true,
                         sameSite: 'lax',
                         path: '/',
@@ -96,7 +95,7 @@ export default async function login(req: ReqType, res: ResType) {
 
     } else if (req.originalUrl.indexOf("logout") >= 0) {
         if (req.session.userPretended && req.session.userPretended.id && req.user && req.user.id) {
-            delete(req.session.userPretended);
+            delete (req.session.userPretended);
             return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
         }
         req.user = undefined;
