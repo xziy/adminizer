@@ -75,7 +75,6 @@ export class AccessRightsHelper {
 		if (user.isAdministrator) {
 			return true;
 		}
-
 		const tokenIsValid = this._tokens.some((token) => token.id === tokenId);
 
 		if (!tokenIsValid) {
