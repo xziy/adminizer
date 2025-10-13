@@ -15,7 +15,10 @@ export default function bindReqFunctions(adminizer: Adminizer) {
         /**
          * Add i18n
          * */
-        req.i18n = new I18n({locales: adminizer.config.translation !== false ? adminizer.config.translation.locales : []});
+        req.i18n = new I18n({
+            locales: adminizer.config.translation !== false ? adminizer.config.translation.locales : [],
+            directory: adminizer.config.translation !== false ? adminizer.config.translation.path ?? null : null
+        });
         if (res.locals) {
             req.i18n.registerMethods(res.locals, req)
         }
