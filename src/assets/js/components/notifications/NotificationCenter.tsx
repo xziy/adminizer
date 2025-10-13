@@ -133,7 +133,7 @@ export function NotificationCenter() {
                     )}
                 </DropdownMenuGroup>
                 <Button variant="secondary" asChild>
-                    <Link href={`${window.routePrefix}/notifications?type=general`}
+                    <Link href={`${window.routePrefix}/notifications`}
                           className={`w-full ${Rloading ? 'opacity-50 pointer-events-none' : ''}`}>
                         {messages["View All"]}
                         {Rloading &&

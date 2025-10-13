@@ -42,24 +42,22 @@ const ViewAll = () => {
     // Используем ref для хранения текущего skip
     const currentSkipRef = useRef(20);
 
-    // Получаем активную табу из query параметров
-    const getInitialTab = () => {
-        const url = new URL(page.url, window.location.origin);
-        return url.searchParams.get('type') ?? 'general';
-    };
-
-    const [activeTab, setActiveTab] = useState<string>(getInitialTab());
+    const [activeTab, setActiveTab] = useState<string>('');
 
 
-    // Обновляем активную табу при изменении URL
     useEffect(() => {
+        if (!tabs || tabs.length === 0) return;
+
         const url = new URL(page.url, window.location.origin);
         const typeParam = url.searchParams.get('type');
 
-        if (typeParam && typeParam !== activeTab) {
+        // Устанавливаем активную табу только когда tabs доступны
+        if (typeParam && tabs.includes(typeParam)) {
             setActiveTab(typeParam);
+        } else {
+            setActiveTab(tabs[0]);
         }
-    }, [page.url, activeTab, page.props.auth.user.isAdministrator]);
+    }, [tabs, page.url]);
 
     // Загрузка данных при изменении активной табы
     useEffect(() => {
@@ -193,7 +191,7 @@ const ViewAll = () => {
 
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="w-full mb-4">
-                    {tabs.map(tab => (
+                    {tabs?.map(tab => (
                         <TabsTrigger
                             key={tab}
                             value={tab}
@@ -204,7 +202,7 @@ const ViewAll = () => {
                         </TabsTrigger>
                     ))}
                 </TabsList>
-                {tabs.map(tab => (
+                {tabs?.map(tab => (
                     <TabsContent key={tab} value={tab}>{renderContent(tab)}</TabsContent>
                 ))}
             </Tabs>

@@ -41,6 +41,7 @@ export default async function editGroup(req: ReqType, res: ResType) {
     }
 
     let departments = req.adminizer.accessRightsHelper.getAllDepartments();
+
     let groupedTokens: {
         [key: string]: AccessRightsToken[]
     } = {}
@@ -48,7 +49,6 @@ export default async function editGroup(req: ReqType, res: ResType) {
     for (let department of departments) {
         groupedTokens[department] = req.adminizer.accessRightsHelper.getTokensByDepartment(department)
     }
-
     let reloadNeeded = false;
     if (req.method.toUpperCase() === 'POST') {
         let allTokens = req.adminizer.accessRightsHelper.getTokens();

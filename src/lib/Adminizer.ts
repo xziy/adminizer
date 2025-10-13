@@ -370,22 +370,6 @@ export class Adminizer {
         }
     }
 
-    // Хелпер для CRUD системных событий
-    public async logSystemCreatedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logCreatedEvent(title, message, metadata);
-    }
-
-    public async logSystemUpdatedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logUpdatedEvent(title, message, metadata);
-    }
-
-    public async logSystemDeletedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logDeletedEvent(title, message, metadata);
-    }
-
     public get emitter(): EventEmitter {
         return this._emitter;
     }

@@ -59,7 +59,6 @@ const models: AdminpanelConfig["models"] = {
                 type: 'self',
                 title: 'Form example',
                 icon: 'payment',
-                accessRightsToken: 'read-example-form'
             },
             {
                 id: '3',
@@ -67,7 +66,6 @@ const models: AdminpanelConfig["models"] = {
                 type: 'blank',
                 title: 'Form example from file Form example from file',
                 icon: 'touch_app',
-                accessRightsToken: 'read-exampleFromFile-form'
             }
         ],
         fields: {
@@ -443,10 +441,11 @@ const config: AdminpanelConfig = {
         },
     },
     notifications: {
-        enabled: true
+        enabled: true,
+        enableGeneral: true
     },
     cors: {
-        enabled: true
+        enabled: false
     },
     routePrefix: routePrefix,
     // routePrefix: "/admin",

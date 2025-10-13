@@ -131,38 +131,37 @@ export default class Router {
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/stream`,
+                `${adminizer.config.routePrefix}/notifications/api/stream`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsStream)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
+                `${adminizer.config.routePrefix}/notifications/api/get-classes`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
+                `${adminizer.config.routePrefix}/notifications/api/:notificationClass`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications`,
+                `${adminizer.config.routePrefix}/notifications/api`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
             );
 
-
             adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
+                `${adminizer.config.routePrefix}/notifications/api/:notificationClass/:id/read`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
             );
 
             adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/read-all`,
+                `${adminizer.config.routePrefix}/notifications/api/read-all`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAllAsRead)
             );
 
             adminizer.app.post(
-                `${adminizer.config.routePrefix}/api/notifications/search`,
+                `${adminizer.config.routePrefix}/notifications/api/search`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.search)
             );
         }
