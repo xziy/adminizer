@@ -45,8 +45,6 @@ export class I18n {
         this.sessionVarName = options.sessionVarName || "locale";
         this.indent = options.indent || "\t";
 
-        console.log(this.directory)
-
         if (options.locales) {
             options.locales.forEach((locale) => this.readFile(locale));
         }
