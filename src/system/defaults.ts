@@ -157,6 +157,8 @@ let adminpanelConfig: AdminpanelConfig = {
     },
     cors: {
         enabled: false,
+        origin: 'http://localhost:8080',
+        path: 'api/*'
     },
     mediamanager: {
         fileStoragePath: '.tmp/public',
