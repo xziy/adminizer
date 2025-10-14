@@ -67,12 +67,6 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                     const csrfCookie = req.cookies['XSRF-TOKEN'];
                     const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
 
-                    console.log('CSRF Check for non-API route:', {
-                        path: req.path,
-                        cookie: csrfCookie ? 'present' : 'missing',
-                        header: csrfHeader ? 'present' : 'missing',
-                        match: csrfCookie === csrfHeader
-                    });
 
                     if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
                         return res.status(403).json({
