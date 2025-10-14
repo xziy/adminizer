@@ -75,7 +75,7 @@ export default function Login() {
                 // spinner does not have time to appear, so call sleep function
                 await sleep(100)
 
-                        // Start solving
+                // Start solving
                 const puzzle = new Uint8Array(page.props.captchaTask)
 
                 const solution = await Puzzle.solve(puzzle);
@@ -89,7 +89,7 @@ export default function Login() {
                     captchaSolution: solution
                 }))
 
-                        post(page.props.submitLink, {
+                post(page.props.submitLink, {
                     onError: (errors) => {
                         for (const key of Object.keys(errors)) {
                             toast.error(errors[key])
@@ -116,9 +116,9 @@ export default function Login() {
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6 max-w-sm w-full h-fit mt-[15%]">
                 <h1 className="font-medium mb-6 text-xl">{page.props.title}</h1>
                 {page.props.description && (
-                <p className="font-thin mb-6 text-xs pb-10">
-                    {page.props.description}
-                </p>
+                    <p className="font-thin mb-6 text-xs pb-10">
+                        {page.props.description}
+                    </p>
                 )}
                 <form onSubmit={submit}>
                     <div className="grid gap-5">
@@ -175,39 +175,40 @@ export default function Login() {
                         </div>
                     </div>
                     {hasCaptcha && (
-                    <div className="bg-white rounded-lg shadow-lg p-4 mt-6 flex items-center space-x-4">
-                        <div className="relative">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500"
-                                     fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round"
-                                          d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
+                        <div className="bg-white rounded-lg shadow-lg p-4 mt-6 flex items-center space-x-4">
+                            <div className="relative">
+                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500"
+                                         fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round"
+                                              d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
+                                    </svg>
+                                </div>
+                                <div className={`${captchaProcessing ? '' : 'hidden'}`}>
+                                    <Icon iconNode={Loader2}
+                                          className="animate-spin size-6 absolute inset-0 m-auto !text-gray-600"/>
+                                </div>
+                            </div>
+                            <div className="text-gray-600 font-semibold">
+                                {captchaMessage}
+                            </div>
+                            <div
+                                className={`transition-opacity ${showCheckmark ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                                <svg id="checkmark" xmlns="http://www.w3.org/2000/svg"
+                                     className="h-8 w-8 text-green-500"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <path className="checkmark" strokeLinecap="round" strokeLinejoin="round"
+                                          d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <div className={`${captchaProcessing ? '' : 'hidden'}`}>
-                                <Icon iconNode={Loader2} className="animate-spin size-6 absolute inset-0 m-auto !text-gray-600"/>
-                            </div>
                         </div>
-                        <div className="text-gray-600 font-semibold">
-                            {captchaMessage}
-                        </div>
-                        <div
-                            className={`transition-opacity ${showCheckmark ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-                            <svg id="checkmark" xmlns="http://www.w3.org/2000/svg"
-                                 className="h-8 w-8 text-green-500"
-                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                <path className="checkmark" strokeLinecap="round" strokeLinejoin="round"
-                                      d="M5 13l4 4L19 7"/>
-                            </svg>
-                        </div>
-                    </div>
                     )}
                 </form>
                 {page.props.addishinalLoginPage && (
                     <div className="mt-6 text-center">
-                        <Link 
-                            href={page.props.addishinalLoginPage.link} 
+                        <Link
+                            href={page.props.addishinalLoginPage.link}
                             className="text-sm underline"
                             target={page.props.addishinalLoginPage.link.startsWith('http://') || page.props.addishinalLoginPage.link.startsWith('https://') ? '_blank' : undefined}
                             rel={page.props.addishinalLoginPage.link.startsWith('http://') || page.props.addishinalLoginPage.link.startsWith('https://') ? 'noopener noreferrer' : undefined}
