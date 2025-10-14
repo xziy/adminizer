@@ -63,6 +63,10 @@ export default async function login(req: ReqType, res: ResType) {
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
 
+                    if(!req.adminizer.accessRightsHelper.hasPermission('access-to-adminpanel', user)){
+                        return inertiaAdminMessage(req, "The user is not allowed to enter, please contact the administrator", 'captchaSolution');
+                    }
+
                     const token = signUser(user, req.adminizer.jwtSecret);
                     res.setHeader('Set-Cookie', serialize('adminizer_jwt', token, {
                         httpOnly: true,

@@ -445,7 +445,9 @@ const config: AdminpanelConfig = {
         enableGeneral: true
     },
     cors: {
-        enabled: false
+        enabled: false,
+        origin: 'http://localhost:8080',
+        path: 'api/*'
     },
     routePrefix: routePrefix,
     // routePrefix: "/admin",
