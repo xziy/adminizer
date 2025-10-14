@@ -9,7 +9,7 @@ export function bindCors(adminizer: Adminizer){
             ? corsConfig.origin
             : [corsConfig.origin];
 
-        this.app.all(`${adminizer.config.routePrefix}/${corsConfig.path}`, (req: any, res: any, next: any) => {
+        adminizer.app.all(`${adminizer.config.routePrefix}/${corsConfig.path}`, (req: any, res: any, next: any) => {
             const requestOrigin = req.headers.origin;
 
             // Проверяем разрешен ли origin
