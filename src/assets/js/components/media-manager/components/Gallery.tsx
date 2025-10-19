@@ -26,7 +26,7 @@ interface GalleryProps {
 const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVariant, messages}, ref) => {
     const [activeTab, setActiveTab] = useState<string>('tile-all');
     const [mediaType, setMediaType] = useState<string>('all');
-    const {uploadUrl, group} = useContext(MediaManagerContext);
+    const {uploadUrl, group, initTab} = useContext(MediaManagerContext);
     const [count, _setCount] = useState<number>(15);
     const [mediaList, setMediaList] = useState<Media[]>([]);
     const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
@@ -41,6 +41,10 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
         setIsLoadMore(data.next);
     };
 
+    useEffect(() => {
+        setActiveTab(initTab || 'tile-all');
+    }, [initTab]);
+
     // Загрузка данных при монтировании
     useEffect(() => {
         const initGallery = async () => {
@@ -54,8 +58,8 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({openMeta, crop, openVaria
         };
 
         initGallery();
-
     }, []);
+
 
     // Метод для добавления нового медиа
     const pushMediaItem = (item: Media) => {

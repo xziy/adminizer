@@ -398,6 +398,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'avatars',
+                    initTab: 'table-application',
                     accept: ['image/jpeg']
                 },
                 displayModifier: function (data: any) {
