@@ -44,6 +44,7 @@ interface Props {
         id: string
         group: string
         accept: string[]
+        initTab?: string
     }
     onChange?: (media: Media[]) => void
     value?: Media[]
@@ -52,6 +53,7 @@ interface Props {
 type MediaManagerContextType = {
     uploadUrl: string
     config?: Record<string, any>
+    initTab: string
     managerId: string
     group: string
     accept: string[]
@@ -66,6 +68,7 @@ type MediaManagerContextType = {
 export const MediaManagerContext = createContext<MediaManagerContextType>({
     uploadUrl: '',
     config: {},
+    initTab: '',
     managerId: '',
     group: '',
     accept: [],
@@ -160,6 +163,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         group: config.group,
         accept: config.accept,
         messages: messages,
+        initTab: config.initTab ?? 'tile-all',
         config: {},
         addMedia: (media) => addMediaWithCallback(media),
         removeMedia: (media) => removeMediaWithCallback(media),

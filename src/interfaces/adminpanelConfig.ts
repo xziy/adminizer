@@ -440,7 +440,8 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 export interface MediaManagerOptionsField {
     id: 'default' | string
     group: string,
-    accept: string []
+    accept: string [],
+    initTab?: 'tile-image' | 'table-video' | 'table-text' | 'table-application' | 'table-all' | 'tile-all'
     config?: Record<string, any>
 }
 
