@@ -402,7 +402,7 @@ const models: AdminpanelConfig["models"] = {
                     accept: ['image/jpeg']
                 },
                 displayModifier: function (data: any) {
-                    if (data.length) {
+                    if (data?.length) {
                         return `<img width="100px" height="100px" style="margin: 0 auto" src="${routePrefix}/get-thumbs?id=${data[0].id}&managerId=default"/>`;
                     } else {
                         return `<p>No Image</p>`;
