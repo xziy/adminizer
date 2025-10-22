@@ -1,5 +1,5 @@
 import {RequestHandler, Response, Request} from 'express';
-import { randomBytes } from 'crypto';
+import {randomBytes} from 'crypto';
 
 type props = Record<string | number | symbol, unknown>;
 
@@ -44,29 +44,26 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
         html,
         flashMessages,
         enableReload = false,
-        csrf = { enabled: false }, // by default disabled
+        csrf = {enabled: false}, // by default disabled
     }) {
     return (req: ReqType, res, next) => {
 
         if (csrf.enabled) {
-            const csrfToken = randomBytes(32).toString('hex');
+            const isApiRoute = isApiRequest(req);
 
-            res.cookie('XSRF-TOKEN', csrfToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production' && process.env.CSRF_COOKIE_INSECURE !== '1',
-                sameSite: 'lax',
-            });
+            if (!isApiRoute) {
+                const csrfToken = randomBytes(32).toString('hex');
 
-            // Проверяем CSRF только для не-GET запросов И не-API routes
-            if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+                res.cookie('XSRF-TOKEN', csrfToken, {
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production' && process.env.CSRF_COOKIE_INSECURE !== '1',
+                    sameSite: 'lax',
+                });
 
-                // Определяем API route через adminizer config
-                const isApiRoute = isApiRequest(req);
-
-                if (!isApiRoute) {
+                // Проверяем CSRF только для не-GET запросов И не-API routes
+                if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
                     const csrfCookie = req.cookies['XSRF-TOKEN'];
                     const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
-
 
                     if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
                         return res.status(403).json({
