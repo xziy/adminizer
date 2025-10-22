@@ -389,7 +389,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
-                    accept: ['image/jpeg, image/png']
+                    accept: ['image/svg+xml']
                 }
             },
             mediamanager_two: {
