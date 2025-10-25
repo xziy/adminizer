@@ -42,6 +42,16 @@ export class WaterlineModel<T> extends AbstractModel<T> {
     }
 
     protected async _find(criteria: Partial<T> = {}, options: FindOptions = {}): Promise<T[]> {
+
+        // Hack
+        const attributes = this.model.attributes;
+        const associations = Object.keys(attributes).filter(
+            attr => attributes[attr].model || attributes[attr].collection
+        );
+
+        //@ts-ignore
+        if(associations.includes(criteria?.sort?.split(' ')[0]) && JSON.stringify(criteria.where) === '{}') criteria.sort = undefined
+
         let query = this.model.find(criteria);
 
         if (options.populate && Array.isArray(options.populate) && options.populate.length > 0) {
