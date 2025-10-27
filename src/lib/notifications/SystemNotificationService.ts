@@ -6,6 +6,7 @@ import {UserAP} from "../../models/UserAP";
 
 export class SystemNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'system';
+    public readonly displayName: string = 'System';
     public readonly icon: string = 'settings'
     public readonly iconColor: string = '#1eb707';
 
