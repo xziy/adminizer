@@ -443,7 +443,8 @@ const config: AdminpanelConfig = {
     },
     notifications: {
         enabled: true,
-        enableGeneral: true
+        enableGeneral: true,
+        initTab: 'general',
     },
     cors: {
         enabled: false,

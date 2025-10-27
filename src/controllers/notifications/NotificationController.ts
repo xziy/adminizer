@@ -77,7 +77,10 @@ export class NotificationController {
                 });
             }
         }
-        return res.json(activeServices)
+        return res.json({
+            activeServices: activeServices,
+            initTab: req.adminizer.config?.notifications?.initTab || null
+        })
     }
 
     // Единый SSE endpoint для всех уведомлений

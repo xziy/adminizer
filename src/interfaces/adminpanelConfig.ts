@@ -254,6 +254,7 @@ export interface AdminpanelConfig {
     notifications?: {
         enabled: boolean
         enableGeneral?: boolean
+        initTab?: string
     }
 
     cors?: {
