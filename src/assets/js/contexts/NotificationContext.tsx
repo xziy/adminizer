@@ -4,6 +4,11 @@ import axios from 'axios';
 import {usePage} from "@inertiajs/react";
 import {SharedData} from "@/types";
 
+interface NotifTabs {
+    displayName: string,
+    notificationClass: string
+}
+
 interface NotificationContextType {
     bellNotifications: INotification[];
     allNotifications: INotification[];
@@ -16,7 +21,7 @@ interface NotificationContextType {
     getTabs: () => Promise<void>;
     getLocale: () => Promise<void>;
     messages: Record<string, string>;
-    tabs: string[] | null;
+    tabs: NotifTabs[] | null;
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -28,7 +33,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [sseNotifications, setSseNotifications] = useState<INotification[]>([]);
     const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
-    const [tabs, setTabs] = useState<string[] | null>(null);
+    const [tabs, setTabs] = useState<NotifTabs[] | null>(null);
     const page = usePage<SharedData>()
     const [messages, setMessages] = useState<Record<string, string>>({});
 
@@ -48,7 +53,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const getLocale = async () => {
         try {
             const res = await axios.post(`${window.routePrefix}/notifications`);
-
             setMessages(res.data);
         } catch (error) {
             console.log(error)
