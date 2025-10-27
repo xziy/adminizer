@@ -27,6 +27,7 @@ const ViewAll = () => {
         markAsRead,
         markAllAsRead,
         tabs,
+        initTab,
         search,
         fetchAllNotifications,
         paginateNotifications,
@@ -55,7 +56,7 @@ const ViewAll = () => {
         if (typeParam && tabs.some(tab => tab.notificationClass === typeParam)) {
             setActiveTab(typeParam);
         } else {
-            setActiveTab(tabs[0]?.notificationClass || '');
+            setActiveTab(initTab ?? tabs[0]?.notificationClass);
         }
     }, [tabs, page.url]);
 
