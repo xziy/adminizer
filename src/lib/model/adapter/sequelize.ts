@@ -14,6 +14,7 @@ import {AbstractAdapter, AbstractModel, Attribute, FindOptions} from "../Abstrac
 import path from "path";
 import fs from "fs";
 import {pathToFileURL} from "url";
+import {fileURLToPath} from "url";
 import {v4 as uuid} from "uuid";
 
 
@@ -701,12 +702,15 @@ export class SequelizeAdapter extends AbstractAdapter {
 
     /** Registration of system models */
     static async registerSystemModels(sequelize: Sequelize, alter: boolean = true): Promise<void> {
+        // Get current file directory from import.meta.url
+        const currentDir = import.meta.url ? path.dirname(fileURLToPath(import.meta.url)) : process.cwd();
+        
         // Try multiple possible model locations
         const possiblePaths = [
-            path.resolve(import.meta.dirname, "../../../../models"),
-            path.resolve(import.meta.dirname, "../../../../src/models"),
-            path.resolve(import.meta.dirname, "../../../models"),
-            path.resolve(import.meta.dirname, "../../../src/models"),
+            path.resolve(currentDir, "../../../../models"),
+            path.resolve(currentDir, "../../../../src/models"),
+            path.resolve(currentDir, "../../../models"),
+            path.resolve(currentDir, "../../../src/models"),
             path.resolve(process.cwd(), "node_modules/adminizer/src/models"),
             path.resolve(process.cwd(), "node_modules/adminizer/models")
         ];
