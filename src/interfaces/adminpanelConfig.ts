@@ -516,8 +516,9 @@ export interface CreateUpdateConfig {
     entityModifier?: <T>(fieldData: T) => T
     /**
      * You can change standard controller for any entity by this property
+     * Can be either a string path (for dynamic import) or a controller function
      * */
-    controller?: string
+    controller?: string | ((req: ReqType, res: ResType) => Promise<any>)
 }
 
 export interface HrefConfig {
