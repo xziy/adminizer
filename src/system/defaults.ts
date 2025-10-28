@@ -45,10 +45,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addUser"
+                controller: "../controllers/addUser.js"
             },
             edit: {
-                controller: "../controllers/editUser"
+                controller: "../controllers/editUser.js"
             },
             fields: {
                 login: {
@@ -90,10 +90,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addGroup"
+                controller: "../controllers/addGroup.js"
             },
             edit: {
-                controller: "../controllers/editGroup"
+                controller: "../controllers/editGroup.js"
             },
             list: {
                 fields: {
