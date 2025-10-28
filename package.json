@@ -18,7 +18,7 @@
 		"dev:waterline:no-seed": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=waterline tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"dev:cors": "cross-env VITE_ENV=dev NO_SEED_DATA=true ORM=waterline FRONTEND_URL=http://localhost:8080 tsx watch --tsconfig ./fixture/tsconfig.json ./fixture/index.ts",
 		"build:assets": "vite build",
-		"compile:backend": "tsc -p src/tsconfig.json",
+		"compile:backend": "tsc -p src/tsconfig.json && node ./scripts/appendJsExtension.js",
 		"compile:ui": "tsc -p tsconfig.ui.json",
 		"watch:backend": "tsc -w -p src/tsconfig.json",
 		"copy:backend": "node copy-backend.js",
