@@ -3,6 +3,10 @@ import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {FileStorageHelper} from "../helpers/fileStorageHelper";
 import timezones from "../lib/timezones";
 import {NavigationAP} from "../models/NavigationAP";
+import addUser from "../controllers/addUser.js";
+import editUser from "../controllers/editUser.js";
+import addGroup from "../controllers/addGroup.js";
+import editGroup from "../controllers/editGroup.js";
 
 /**
  * Default admin config
@@ -45,10 +49,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addUser.js"
+                controller: addUser
             },
             edit: {
-                controller: "../controllers/editUser.js"
+                controller: editUser
             },
             fields: {
                 login: {
@@ -90,10 +94,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addGroup.js"
+                controller: addGroup
             },
             edit: {
-                controller: "../controllers/editGroup.js"
+                controller: editGroup
             },
             list: {
                 fields: {
