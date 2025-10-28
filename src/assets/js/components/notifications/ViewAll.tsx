@@ -27,6 +27,7 @@ const ViewAll = () => {
         markAsRead,
         markAllAsRead,
         tabs,
+        initTab,
         search,
         fetchAllNotifications,
         paginateNotifications,
@@ -52,10 +53,10 @@ const ViewAll = () => {
         const typeParam = url.searchParams.get('type');
 
         // Устанавливаем активную табу только когда tabs доступны
-        if (typeParam && tabs.includes(typeParam)) {
+        if (typeParam && tabs.some(tab => tab.notificationClass === typeParam)) {
             setActiveTab(typeParam);
         } else {
-            setActiveTab(tabs[0]);
+            setActiveTab(initTab ?? tabs[0]?.notificationClass);
         }
     }, [tabs, page.url]);
 
@@ -193,17 +194,17 @@ const ViewAll = () => {
                 <TabsList className="w-full mb-4">
                     {tabs?.map(tab => (
                         <TabsTrigger
-                            key={tab}
-                            value={tab}
+                            key={tab.notificationClass}
+                            value={tab.notificationClass}
                             disabled={localLoading}
                             className="capitalize"
                         >
-                            {tab}
+                            {tab.displayName}
                         </TabsTrigger>
                     ))}
                 </TabsList>
                 {tabs?.map(tab => (
-                    <TabsContent key={tab} value={tab}>{renderContent(tab)}</TabsContent>
+                    <TabsContent key={tab.notificationClass} value={tab.notificationClass}>{renderContent(tab.notificationClass)}</TabsContent>
                 ))}
             </Tabs>
         </div>

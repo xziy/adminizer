@@ -4,6 +4,11 @@ import axios from 'axios';
 import {usePage} from "@inertiajs/react";
 import {SharedData} from "@/types";
 
+interface NotifTabs {
+    displayName: string,
+    notificationClass: string
+}
+
 interface NotificationContextType {
     bellNotifications: INotification[];
     allNotifications: INotification[];
@@ -16,7 +21,8 @@ interface NotificationContextType {
     getTabs: () => Promise<void>;
     getLocale: () => Promise<void>;
     messages: Record<string, string>;
-    tabs: string[] | null;
+    tabs: NotifTabs[] | null;
+    initTab: string
     loading: boolean;
     refreshBellNotifications: () => Promise<void>;
 }
@@ -28,7 +34,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [sseNotifications, setSseNotifications] = useState<INotification[]>([]);
     const [loadedNotifications, setLoadedNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(false);
-    const [tabs, setTabs] = useState<string[] | null>(null);
+    const [tabs, setTabs] = useState<NotifTabs[] | null>(null);
+    const [initTab, setInitTab] = useState<string>('');
     const page = usePage<SharedData>()
     const [messages, setMessages] = useState<Record<string, string>>({});
 
@@ -48,7 +55,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const getLocale = async () => {
         try {
             const res = await axios.post(`${window.routePrefix}/notifications`);
-
             setMessages(res.data);
         } catch (error) {
             console.log(error)
@@ -62,7 +68,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const getTabs = async () => {
         try {
             const res = await axios.get(`${window.routePrefix}/notifications/api/get-classes`);
-            setTabs(res.data);
+            if (res.data){
+                setTabs(res.data.activeServices)
+                setInitTab(res.data.initTab)
+            }
         } catch (error) {
             console.error('Error fetching tabs:', error);
         }
@@ -188,6 +197,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             unreadCount,
             getTabs,
             tabs,
+            initTab,
             search,
             markAsRead,
             markAllAsRead,
