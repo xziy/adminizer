@@ -71,11 +71,16 @@ export class NotificationController {
             const userClients = service.getUserClients(req.user.id);
 
             if (userClients.size > 0) {
-                activeServices.push(service.notificationClass);
+                activeServices.push({
+                    displayName: req.i18n.__(service.displayName),
+                    notificationClass: service.notificationClass,
+                });
             }
         }
-
-        return res.json(activeServices)
+        return res.json({
+            activeServices: activeServices,
+            initTab: req.adminizer.config?.notifications?.initTab || null
+        })
     }
 
     // Единый SSE endpoint для всех уведомлений

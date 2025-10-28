@@ -5,6 +5,7 @@ import {NotificationAPModel} from "../../models/NotificationAP";
 
 export class GeneralNotificationService extends AbstractNotificationService {
     public readonly notificationClass = 'general';
+    public readonly displayName: string = 'General';
     public readonly icon: string = 'info'
     public readonly iconColor: string = '#5987de';
 

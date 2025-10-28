@@ -54,6 +54,7 @@ export abstract class AbstractNotificationService extends EventEmitter {
     protected clients: Map<number, Map<string, (event: INotificationEvent) => void>> = new Map();
     protected adminizer: Adminizer;
     public abstract readonly notificationClass: string;
+    public abstract readonly displayName: string;
     public abstract readonly icon: string;
     public abstract readonly iconColor: string;
 
