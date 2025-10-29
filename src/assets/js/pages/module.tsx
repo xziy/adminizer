@@ -5,7 +5,7 @@ import AppLayout from "@/layouts/app-layout.tsx";
 import {LoaderCircle} from "lucide-react";
 
 export interface ComponentType {
-    default: FC<{ message?: string }>;
+    default: FC<{ data?: any }>;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [];
@@ -18,7 +18,7 @@ export default function Module() {
             // Загружаем JS-компонент
             const Module = await import(/* @vite-ignore */ page.props.moduleComponent as string);
             const Component = Module.default as ComponentType["default"];
-            setComponent(<Component message={page.props.message as string}/>);
+            setComponent(<Component data={page.props.data}/>);
         };
 
         // Загружаем CSS, если путь передан
