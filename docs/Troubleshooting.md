@@ -29,6 +29,56 @@ The configuration system looks up the model config by exact key match. If the ke
 **Planned Improvements:**
 
 In the future, we will introduce the concept of a *model entity*, which will allow for more flexible and case-independent model resolution.
+
+### ⚙️ Next.js Standalone Build Missing Adminizer Files
+
+**Description:**
+
+When using Adminizer with Next.js standalone build mode (`output: "standalone"`), the application may fail with errors like:
+
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/adminizer/controllers/addUser.js'
+```
+
+Or you may experience missing static assets (CSS, JS files, images) resulting in broken UI or 404 errors for files like:
+- `/adminizer/assets/app-*.css`
+- `/adminizer/assets/app-*.js`
+- `/adminizer/fileicons/*.svg`
+
+**Cause:**
+
+Next.js standalone build analyzes your code to determine which files from `node_modules` are needed and only includes those in the final build output. However, Adminizer serves static files and uses dynamic imports at runtime, which Next.js cannot automatically detect during the build process. As a result, essential Adminizer files (controllers, assets, icons) are excluded from the standalone build.
+
+**Solution:**
+
+Since Adminizer **v4.4.0+**, the library includes automatic path fallback detection for Next.js standalone builds. You only need to configure Next.js to include Adminizer files in the build output.
+
+Add the following to your `next.config.mjs`:
+
+```js
+/** @type {import("next").NextConfig} */
+const nextConfig = {
+  output: "standalone",
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/**/*": [
+        "./node_modules/adminizer/**/*"
+      ]
+    },
+  },
+};
+
+export default nextConfig;
+```
+
+**Explanation:**
+
+- `outputFileTracingIncludes` tells Next.js which additional files to include in the standalone build
+- `/api/**/*` applies this rule to all API routes (adjust the path if your Adminizer route is different)
+- `./node_modules/adminizer/**/*` includes all Adminizer files (controllers, assets, translations, icons, etc.)
+
+**Note:** With the `outputFileTracingIncludes` configuration, Next.js will automatically include Adminizer files in the `.next/standalone/node_modules/adminizer` directory, so no additional Docker COPY commands are needed.
+
 ### Build Fails Due to Missing `material-icons` CSS
 
 **Description:**
