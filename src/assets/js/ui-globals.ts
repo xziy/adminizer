@@ -209,12 +209,20 @@ import VanillaJSONEditor from '@/components/VanillaJSONEditor';
 import HandsonTable from '@/components/handsontable';
 import MonacoEditor from '@/components/monaco-editor';
 import MultiSelect from '@/components/multi-select';
+import axios from 'axios';
+import * as sonner from 'sonner';
+
 export function registerUIComponents(): void {
 
     //@ts-ignore
     window.UIComponents ??= {};
     //@ts-ignore
     window.JSComponents ??= {};
+
+    //@ts-ignore
+    window.axios = axios
+    //@ts-ignore
+    window.sonner = sonner
 
     //@ts-ignore
     Object.assign(window.UIComponents, {
