@@ -194,8 +194,14 @@ export default class Router {
                     if (modelConfig.add) {
                         let addHandler = modelConfig.add as CreateUpdateConfig;
                         if (addHandler.controller) {
-                            let controller = await import(addHandler.controller);
-                            adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            if (typeof addHandler.controller === 'string') {
+                                // Dynamic import for string paths
+                                let controller = await import(addHandler.controller);
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            } else {
+                                // Direct function reference (controller function matches middleware signature)
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, addHandler.controller as any));
+                            }
                         } else {
                             adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
                         }
@@ -208,8 +214,14 @@ export default class Router {
                     if (modelConfig.edit) {
                         let editHandler = modelConfig.edit as CreateUpdateConfig;
                         if (editHandler.controller) {
-                            let controller = await import(editHandler.controller);
-                            adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            if (typeof editHandler.controller === 'string') {
+                                // Dynamic import for string paths
+                                let controller = await import(editHandler.controller);
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            } else {
+                                // Direct function reference (controller function matches middleware signature)
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, editHandler.controller as any));
+                            }
                         } else {
                             adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
                         }

@@ -6,6 +6,11 @@ import {Adminizer} from "lib/Adminizer";
 import {GroupAP} from "models/GroupAP";
 import {UserAP} from "models/UserAP";
 
+/**
+ * Controller function type - async function that handles requests and returns a response
+ */
+export type ControllerFunction = (req: ReqType, res: ResType) => Promise<any>
+
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
     "string" |
@@ -516,8 +521,9 @@ export interface CreateUpdateConfig {
     entityModifier?: <T>(fieldData: T) => T
     /**
      * You can change standard controller for any entity by this property
+     * Can be either a string path (for dynamic import) or a controller function
      * */
-    controller?: string
+    controller?: string | ControllerFunction
 }
 
 export interface HrefConfig {
