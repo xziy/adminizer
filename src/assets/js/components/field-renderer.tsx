@@ -157,9 +157,12 @@ const FieldRenderer: FC<{
                         <SelectValue placeholder=""/>
                     </SelectTrigger>
                     <SelectContent className="z-[9999999]">
-                        {(field.isIn ?? []).map((option) => (
-                            <SelectItem value={option} key={option}>
-                                {option}
+                        {(Array.isArray(field.isIn)
+                                ? field.isIn.map(value => [value, value]) // если массив — используем значение и отображаемое значение одинаковыми
+                                : Object.entries(field.isIn as object) // если объект — получаем пары [ключ, отображаемое значение]
+                        ).map(([key, value]) => (
+                            <SelectItem value={String(key)} key={String(key)}>
+                                {String(value)}
                             </SelectItem>
                         ))}
                     </SelectContent>
