@@ -55,13 +55,13 @@ export function inertiaListHelper(entity: Entity, req: ReqType, fields: Fields) 
     if (entity.config.add && req.adminizer.accessRightsHelper.hasPermission(`create-${entity.name}-model`, req.user)) {
         props.crudActions.createTitle = req.i18n.__('create')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.user)) {
+    if (entity.config.edit && req.adminizer.accessRightsHelper.hasPermission(`update-${entity.name}-model`, req.user)) {
         props.crudActions.editTitle = req.i18n.__('Edit')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.user)) {
+    if (entity.config.view && req.adminizer.accessRightsHelper.hasPermission(`read-${entity.name}-model`, req.user)) {
         props.crudActions.viewsTitle = req.i18n.__('View')
     }
-    if (req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.user)) {
+    if (entity.config.remove && req.adminizer.accessRightsHelper.hasPermission(`delete-${entity.name}-model`, req.user)) {
         props.crudActions.deleteTitle = req.i18n.__('Delete')
     }
 
