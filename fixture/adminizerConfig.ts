@@ -103,7 +103,16 @@ const models: AdminpanelConfig["models"] = {
             select: {
                 title: 'Select',
                 type: "select",
-                isIn: ['one', 'two', 'three']
+                isIn: {
+                    decrease: 'Уменьшение баллов',
+                    increase: 'Увеличение баллов',
+                    none: 'Без изменений'
+                },
+                // isIn: [
+                //     "decrease",
+                //     "increase",
+                //     "none",
+                // ],
             },
             date: {
                 title: 'Date',
