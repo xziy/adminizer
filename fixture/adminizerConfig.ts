@@ -418,7 +418,11 @@ const models: AdminpanelConfig["models"] = {
                     }
                 }
             },
-        }
+        },
+        add: true,
+        edit: false,
+        view: true,
+        remove: false
     },
     TestCatalog: {
         title: '',
