@@ -18,25 +18,52 @@ const DropZone: FC<DropZoneProps> = ({callback, messages}) => {
     const {uploadUrl, group, accept} = useContext(MediaManagerContext);
 
     const handleClose = () => {
-        setAlert('')
-    }
+        setAlert('');
+    };
+
+    // Проверка, разрешён ли тип файла
+    const isFileAllowed = (file: File): boolean => {
+        const fileType = file.type;
+        const fileName = file.name;
+
+        // Проверяем по MIME-типу или расширению
+        return accept.some(type => {
+            if (type.startsWith('.')) {
+                return fileName.toLowerCase().endsWith(type.toLowerCase());
+            } else if (type.endsWith('/*')) {
+                const mainType = type.slice(0, -1); // 'image/*' -> 'image'
+                return fileType.startsWith(mainType);
+            } else {
+                return fileType === type;
+            }
+        });
+    };
 
     const onDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
         setLoading(true);
 
-        if (e.dataTransfer.files) {
-            for (const file of e.dataTransfer.files) {
-                await upload(file);
+        const files = Array.from(e.dataTransfer.files);
+        for (const file of files) {
+            if (!isFileAllowed(file)) {
+                setLoading(false);
+                setAlert(messages[`File type not allowed`] || `File type not allowed: ${file.name}`);
+                return; // Останавливаем загрузку
             }
+            await upload(file);
         }
     };
 
     const onLoad = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
         if (e.target.files) {
-            for (const file of e.target.files) {
+            const files = Array.from(e.target.files);
+            for (const file of files) {
+                if (!isFileAllowed(file)) {
+                    setAlert(`${messages[`File type are not supported`]} .${file.name.split('.').pop()?.toLowerCase()}`);
+                    return; // Останавливаем загрузку
+                }
                 setLoading(true);
                 await upload(file);
             }

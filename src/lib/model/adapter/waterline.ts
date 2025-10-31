@@ -41,7 +41,7 @@ export class WaterlineModel<T> extends AbstractModel<T> {
         return await query;
     }
 
-    protected async _find(criteria: Partial<T> = {}, options: FindOptions = {}): Promise<T[]> {
+    protected async _find(criteria: Partial<any> = {}, options: FindOptions = {}): Promise<T[]> {
 
         // Hack
         const attributes = this.model.attributes;
@@ -49,8 +49,21 @@ export class WaterlineModel<T> extends AbstractModel<T> {
             attr => attributes[attr].model || attributes[attr].collection
         );
 
-        //@ts-ignore
-        if(associations.includes(criteria?.sort?.split(' ')[0]) && JSON.stringify(criteria.where) === '{}') criteria.sort = undefined
+        if (JSON.stringify(criteria.where) === '{}') {
+            let sortField;
+
+            if (criteria?.sort) {
+                if (typeof criteria.sort === 'string') {
+                    sortField = criteria.sort.split(' ')[0];
+                } else if (Array.isArray(criteria.sort)) {
+                    sortField = criteria.sort[0];
+                }
+            }
+
+            if (sortField && associations.includes(sortField)) {
+                criteria.sort = undefined;
+            }
+        }
 
         let query = this.model.find(criteria);
 
