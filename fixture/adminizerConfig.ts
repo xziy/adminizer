@@ -525,7 +525,8 @@ const config: AdminpanelConfig = {
                     options: {
                         id: "default",
                         group: 'form_global_images',
-                        accept: ['image/jpeg, image/png']
+                        initTab: "table-application",
+                        accept: ["application/pdf", "application/msword"]
                     },
                     value: null
                 },

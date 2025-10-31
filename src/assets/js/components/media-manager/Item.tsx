@@ -23,15 +23,19 @@ export interface Props extends Omit<HTMLAttributes<HTMLButtonElement>, 'id'> {
     id: UniqueIdentifier;
     index?: number;
     url: string;
+    fileName: string
+    mimeType: string
     layout: Layout;
 
     onRemove?(): void;
 }
 
 export const Item = forwardRef<HTMLLIElement, Props>(function Page(
-    {id, index, active, clone, insertPosition, layout, onRemove, style, url, ...props},
+    {id, index, active, clone, insertPosition, layout, onRemove, style, url, mimeType, fileName, ...props},
     ref
 ) {
+    const isImage = mimeType?.startsWith('image/');
+
     return (
         <li
             className={cn(
@@ -46,8 +50,16 @@ export const Item = forwardRef<HTMLLIElement, Props>(function Page(
             ref={ref}
         >
             <button className={`${styles.Page} after:bg-black dark:after:bg-gray-300`} data-id={id.toString()} {...props}>
-                <img src={url} alt="" className="absolute top-0 left-0 w-full h-full object-cover overflow-hidden rounded-[5px]"/>
+                <img src={url} alt="" className="absolute top-0 left-0 w-full h-full object-cover overflow-hidden rounded-[5px]" />
+
+                {/* Показываем имя файла, если это НЕ изображение */}
+                {!isImage && (
+                    <div className="absolute inset-x-0 bottom-0 break-words text-white text-sm font-medium bg-black/75 h-[40%] rounded-b-[5px] p-2">
+                        {fileName}
+                    </div>
+                )}
             </button>
+
             {!active && onRemove ? (
                 <button className={styles.Remove} onClick={onRemove}>
                     {removeIcon}

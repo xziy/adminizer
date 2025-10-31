@@ -119,5 +119,6 @@
   "W x H (orig.)": "W x H (orig.)",
   "Sizes/Ver": "Sizes/Ver",
   "Locales": "Locales",
-  "Leave this field empty if you don't want to change the password": "Оставьте это поле пустым, если не хотите менять пароль"
+  "Leave this field empty if you don't want to change the password": "Оставьте это поле пустым, если не хотите менять пароль",
+  "File type are not supported": "Этот файл не поддерживается"
 }

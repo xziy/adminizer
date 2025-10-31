@@ -124,6 +124,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
             widgetItems.push({
                 id: file[fieldName].id,
                 mimeType: file[fieldName].mimeType,
+                filename: file[fieldName].filename,
                 url: file[fieldName].url,
                 variants: []
             })

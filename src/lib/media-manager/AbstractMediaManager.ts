@@ -41,6 +41,7 @@ export interface MediaManagerWidgetClientItem extends MediaManagerWidgetItem {
      */
     mimeType: string;
     variants: MediaManagerItem[];
+    filename: string;
     url?: string;
 }
 

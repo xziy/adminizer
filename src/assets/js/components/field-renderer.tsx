@@ -89,7 +89,10 @@ const FieldRenderer: FC<{
     }, [onChange, field.name])
 
     const handleMediaChange = useCallback((mediaList: Media[]) => {
-        const transformedData = mediaList.map(media => ({ id: media.id, url: media.url }))
+        const transformedData = mediaList.map(media => (
+            {
+                id: media.id, url: media.url, mimeType: media.mimeType, filename: media.filename
+            }))
         onChange(field.name, transformedData)
     }, [onChange, field.name])
 
@@ -232,7 +235,8 @@ const FieldRenderer: FC<{
             if (field.options?.name === 'jsoneditor') {
                 return (
                     <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
-                                    onChange={handleJSONChange} {...field.options?.config} disabled={processing || field.disabled}
+                                    onChange={handleJSONChange} {...field.options?.config}
+                                    disabled={processing || field.disabled}
                     />
                 )
             } else {
@@ -274,7 +278,8 @@ const FieldRenderer: FC<{
             }
         case 'mediamanager':
             return (
-                <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange} config={{...field.options}}/>
+                <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange}
+                           config={{...field.options}}/>
             )
         default:
             return (

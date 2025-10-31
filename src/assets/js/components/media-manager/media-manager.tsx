@@ -141,6 +141,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
     }, []);
 
     const addMediaWithCallback = useCallback((newMedia: Media) => {
+        console.log(newMedia)
         setItems((prev) => {
             const newItems = [...prev, newMedia];
             if (onChange) onChange(newItems);
@@ -238,6 +239,8 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
                                     key={media.id}
                                     index={index}
                                     url={contextValue.imageUrl(media)}
+                                    fileName={media.filename ?? ''}
+                                    mimeType={media.mimeType ?? ''}
                                     layout={layout}
                                     activeIndex={activeIndex}
                                     onRemove={() => {
@@ -262,6 +265,8 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
                                 layout={layout}
                                 items={items}
                                 url={activeMedia ? contextValue.imageUrl(activeMedia) : ''}
+                                fileName={activeMedia?.filename ? activeMedia.filename ?? '' : ''}
+                                mimeType={activeMedia?.mimeType ? activeMedia.mimeType ?? '' : ''}
                             />
                         ) : null}
                     </DragOverlay>
