@@ -101,7 +101,6 @@ const ViewAll = () => {
         }
     };
 
-    // Используем useCallback для стабильной ссылки на функцию
     const markAllRead = async () => {
         try {
             setReadLoading(true);

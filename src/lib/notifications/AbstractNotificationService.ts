@@ -396,4 +396,65 @@ export abstract class AbstractNotificationService extends EventEmitter {
             Adminizer.log.error('Error marking all notifications as read:', error);
         }
     }
+
+       /**
+     * Returns the count of user notifications: all notifications or only unread ones.
+     * If unreadOnly is true, returns the number of unread notifications.
+     * If unreadOnly is false, returns the total number of notifications (read + unread) associated with the user.
+     *
+     * @param {number} userId - The ID of the user whose notification count is requested.
+     * @param {boolean} [unreadOnly=false] - If true, counts only unread notifications; if false, counts all notifications.
+     * @returns {Promise<number>} A promise that resolves with the number of matching notifications.
+     *
+     * @example
+     * const total = await service.getNotificationsCount(123); // all notifications
+     * const unreadCount = await service.getNotificationsCount(123, true); // only unread
+     */
+    async getNotificationsCount(userId: number, unreadOnly: boolean = false): Promise<number> {
+        try {
+            // Формируем условие фильтрации по статусу прочтения
+            const whereClause: any = { userId: userId };
+            if (unreadOnly) {
+                whereClause.read = false; // только непрочитанные
+            }
+            // если unreadOnly = false — получаем ВСЕ записи (и прочитанные, и нет)
+
+            // Получаем все user-notification связи
+            const userNotifications = await this.adminizer.modelHandler.model.get('usernotificationap')["_find"]({
+                where: whereClause
+            }, { populate: [['notificationId', {}]] });
+
+            if (userNotifications.length === 0) return 0;
+
+            // Фильтруем по классу уведомлений через notificationId
+            const validNotificationIds = userNotifications
+                .map((un: any) => un.notificationId.id)
+                .filter((id: any) => id != null);
+
+            if (validNotificationIds.length === 0) return 0;
+
+            // Пересчитываем только те, у которых notificationClass совпадает
+            return await this.adminizer.modelHandler.model.get('notificationap')["_count"]({
+                id: validNotificationIds,
+                notificationClass: this.notificationClass
+            });
+        } catch (error) {
+            Adminizer.log.error(`Error counting ${unreadOnly ? 'unread' : 'all'} notifications:`, error);
+            return 0;
+        }
+    }
+
+    /**
+     * Convenience method to get the number of unread notifications for a user.
+     * Equivalent to calling getNotificationsCount(userId, true).
+     *
+     * @param {number} userId - The ID of the user.
+     * @returns {Promise<number>} A promise that resolves with the number of unread notifications.
+     *
+     * @example
+     * const unread = await service.getUnreadNotificationsCount(123);
+     */
+    async getUnreadNotificationsCount(userId: number): Promise<number> {
+        return this.getNotificationsCount(userId, true);
+    }
 }
