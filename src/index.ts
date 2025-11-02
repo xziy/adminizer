@@ -11,6 +11,7 @@ export * from  "./lib/catalog/AbstractCatalog"
 export * from "./lib/catalog/Navigation"
 export * from "./lib/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
+export * from "./controllers/media-manager/mediaManagerAdapter"
 export * from "./interfaces/adminpanelConfig";
 export * from "./interfaces/types";
 export * from "./interfaces/MaaterialIcons"
