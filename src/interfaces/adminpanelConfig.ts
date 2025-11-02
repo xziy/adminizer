@@ -57,6 +57,7 @@ export type FieldsTypes =
     "table" |
     "geojson" |
     "mediamanager" |
+    "single-file" |
 
     /**
      * it will be needed only for polygon data

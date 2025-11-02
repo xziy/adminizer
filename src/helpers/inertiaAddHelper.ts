@@ -31,6 +31,7 @@ export type PropsFieldType =
     | 'association'
     | 'textarea'
     | 'mediamanager'
+    | 'single-file'
     | 'checkbox'
     | ControlType
 
@@ -168,7 +169,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             options = getControlsOptions(fieldConfig, req, fieldType as ControlType, 'leaflet')
         }
 
-        if (type === 'mediamanager') {
+        if (type === 'mediamanager' || type === 'single-file') {
             const mConfig = field.config as BaseFieldConfig
             const mOptions = mConfig?.options as MediaManagerOptionsField
 
@@ -176,7 +177,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             if (!mediaManager) {
                 options = {}
             } else {
-                fieldType = 'mediamanager'
+                fieldType = type
                 options = (field.config as BaseFieldConfig).options
             }
         }

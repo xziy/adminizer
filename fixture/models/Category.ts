@@ -18,6 +18,9 @@ const Category = Waterline.Collection.extend({
         },
         mediamanager_two: {
             type: "json"
+        },
+        single_file: {
+            type: "json"
         }
     }
 });

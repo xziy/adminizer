@@ -418,9 +418,18 @@ const models: AdminpanelConfig["models"] = {
                     }
                 }
             },
+            single_file: {
+                type: 'single-file',
+                title: 'Single file',
+                options: {
+                    id: 'default',
+                    group: 'single-file',
+                    accept: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+                }
+            }
         },
         add: true,
-        edit: false,
+        edit: true,
         view: true,
         remove: false
     },
