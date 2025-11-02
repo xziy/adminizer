@@ -277,9 +277,10 @@ const FieldRenderer: FC<{
                 )
             }
         case 'mediamanager':
+        case 'single-file':
             return (
                 <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange}
-                           config={{...field.options}}/>
+                           config={{...field.options}} type={field.type}/>
             )
         default:
             return (
