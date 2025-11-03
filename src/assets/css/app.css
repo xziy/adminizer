@@ -161,6 +161,34 @@
     @apply brightness-75 pointer-events-none;
 }
 
+[data-sidebar="content"] {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sidebar-border) var(--sidebar);
+}
+
+[data-sidebar="content"]::-webkit-scrollbar {
+    width: 0.625rem;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-track {
+    background: var(--sidebar);
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background-color: var(--sidebar-border);
+    border: 0.125rem solid var(--sidebar);
+    border-radius: 9999px;
+}
+
+.dark [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background-color: var(--sidebar-border);
+    border-color: var(--sidebar);
+}
+
+.dark [data-sidebar="content"] {
+    scrollbar-color: var(--sidebar-border) var(--sidebar);
+}
+
 .widget-flexible--flex {
     animation: tilt-shaking 0.3s ease-in-out;
 }
