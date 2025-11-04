@@ -78,6 +78,7 @@ const ListTable = () => {
     // Инициализация состояний из URL при загрузке
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search)
+        console.log(page.props)
         setSearchValue(searchParams.get('globalSearch') || '')
         setShowSearch(!!searchParams.get('globalSearch'))
         setCurrentPage(parseInt(searchParams.get('page') || '1'))
