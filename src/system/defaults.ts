@@ -2,7 +2,6 @@
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {FileStorageHelper} from "../helpers/fileStorageHelper";
 import timezones from "../lib/timezones";
-import {NavigationAP} from "../models/NavigationAP";
 import addUser from "../controllers/addUser.js";
 import editUser from "../controllers/editUser.js";
 import addGroup from "../controllers/addGroup.js";
