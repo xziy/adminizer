@@ -6,6 +6,34 @@ import { Knex } from "knex";
  *         notificationap, usernotificationap, navigationap, groupapuserap
  */
 export async function up(knex: Knex): Promise<void> {
+  // Helper to get the correct default timestamp based on database client
+  const getDefaultTimestamp = () => {
+    const client = knex.client.config.client;
+    if (client === 'pg' || client === 'postgresql') {
+      return knex.raw('CURRENT_TIMESTAMP');
+    } else if (client === 'sqlite3') {
+      return knex.raw("(datetime('now'))");
+    } else if (client === 'mysql' || client === 'mysql2') {
+      return knex.raw('CURRENT_TIMESTAMP');
+    }
+    return knex.fn.now();
+  };
+
+  // Helper to get UUID default based on database client
+  const getUuidDefault = () => {
+    const client = knex.client.config.client;
+    if (client === 'pg' || client === 'postgresql') {
+      return knex.raw('gen_random_uuid()');
+    } else if (client === 'sqlite3') {
+      // SQLite doesn't have native UUID, will need to handle in application
+      return undefined;
+    }
+    return knex.raw('UUID()');
+  };
+
+  const defaultTimestamp = getDefaultTimestamp();
+  const uuidDefault = getUuidDefault();
+
   // userap
   await knex.schema.createTable("userap", (table) => {
     table.increments("id").primary().notNullable();
@@ -22,8 +50,8 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean("isAdministrator");
     table.json("widgets");
     table.boolean("isConfirmed");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // groupap
@@ -32,13 +60,17 @@ export async function up(knex: Knex): Promise<void> {
     table.string("name").unique();
     table.string("description");
     table.json("tokens");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // mediamanagerap (self-ref via parentId)
   await knex.schema.createTable("mediamanagerap", (table) => {
-    table.uuid("id").primary().notNullable().defaultTo(knex.raw("gen_random_uuid()"));
+    if (uuidDefault) {
+      table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
+    } else {
+      table.uuid("id").primary().notNullable();
+    }
     table.uuid("parentId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
     table.string("mimeType");
     table.string("path");
@@ -47,32 +79,40 @@ export async function up(knex: Knex): Promise<void> {
     table.string("tag");
     table.string("url");
     table.string("filename");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // mediamanagermetaap (belongsTo mediamanagerap via parentId)
   await knex.schema.createTable("mediamanagermetaap", (table) => {
-    table.uuid("id").primary().notNullable().defaultTo(knex.raw("gen_random_uuid()"));
+    if (uuidDefault) {
+      table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
+    } else {
+      table.uuid("id").primary().notNullable();
+    }
     table.string("key");
     table.json("value");
     table.boolean("isPublic");
     table.uuid("parentId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // mediamanagerassociationsap (belongsTo mediamanagerap via fileId)
   await knex.schema.createTable("mediamanagerassociationsap", (table) => {
-    table.uuid("id").primary().notNullable().defaultTo(knex.raw("gen_random_uuid()"));
+    if (uuidDefault) {
+      table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
+    } else {
+      table.uuid("id").primary().notNullable();
+    }
     table.string("mediaManagerId");
     table.json("model");
     table.json("modelId");
     table.string("widgetName");
     table.integer("sortOrder");
     table.uuid("fileId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // notificationap
@@ -83,8 +123,8 @@ export async function up(knex: Knex): Promise<void> {
     table.string("notificationClass");
     table.string("channel");
     table.json("metadata");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // usernotificationap (FK to notificationap via column notificationIdId)
@@ -93,8 +133,8 @@ export async function up(knex: Knex): Promise<void> {
     table.integer("userId");
     table.integer("notificationIdId").nullable().references("id").inTable("notificationap").onDelete("SET NULL");
     table.boolean("read");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // navigationap
@@ -102,16 +142,16 @@ export async function up(knex: Knex): Promise<void> {
     table.increments("id").primary().notNullable();
     table.string("label").unique();
     table.json("tree");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
   // M:N join: GroupAP <-> UserAP via "groupapuserap"
   await knex.schema.createTable("groupapuserap", (table) => {
     table.integer("UserAPId").notNullable().references("id").inTable("userap").onDelete("CASCADE");
     table.integer("GroupAPId").notNullable().references("id").inTable("groupap").onDelete("CASCADE");
-    table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now());
-    table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now());
+    table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
+    table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.primary(["UserAPId", "GroupAPId"]);
   });
 }
