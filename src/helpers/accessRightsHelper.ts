@@ -1,108 +1,108 @@
-import { UserAP } from "models/UserAP";
-import { AccessRightsToken } from "../interfaces/types";
-import { Adminizer } from "../lib/Adminizer";
-import { GroupAP } from "models/GroupAP";
-import { bool } from "sharp";
+import {UserAP} from "models/UserAP";
+import {AccessRightsToken} from "../interfaces/types";
+import {Adminizer} from "../lib/Adminizer";
+import {GroupAP} from "models/GroupAP";
+import {bool} from "sharp";
 
 export class AccessRightsHelper {
 
-	private _tokens: AccessRightsToken[] = [];
-	public adminizer: Adminizer;
+    private _tokens: AccessRightsToken[] = [];
+    public adminizer: Adminizer;
 
-	constructor(adminizer: Adminizer) {
-		this.adminizer = adminizer;
-	}
+    constructor(adminizer: Adminizer) {
+        this.adminizer = adminizer;
+    }
 
-	public registerToken(accessRightsToken: AccessRightsToken): void {
-		accessRightsToken.id = accessRightsToken.id.toLowerCase()
-		if (!accessRightsToken.id || !accessRightsToken.name || !accessRightsToken.description || !accessRightsToken.department) {
-			throw new Error("Adminpanel > Can not register token: Missed one or more required parameters");
-		}
+    public registerToken(accessRightsToken: AccessRightsToken): void {
+        accessRightsToken.id = accessRightsToken.id.toLowerCase()
+        if (!accessRightsToken.id || !accessRightsToken.name || !accessRightsToken.description || !accessRightsToken.department) {
+            throw new Error("Adminpanel > Can not register token: Missed one or more required parameters");
+        }
 
-		for (let i = 0; i < this._tokens.length; i++) {
-			if (this._tokens[i].id === accessRightsToken.id) {
-				this._tokens.splice(i, 1);
-				break;
-			}
-		}
-		this._tokens.push(accessRightsToken);
-	}
+        for (let i = 0; i < this._tokens.length; i++) {
+            if (this._tokens[i].id === accessRightsToken.id) {
+                this._tokens.splice(i, 1);
+                break;
+            }
+        }
+        this._tokens.push(accessRightsToken);
+    }
 
-	public registerTokens(accessRightsTokens: AccessRightsToken[]): void {
-		for (let token of accessRightsTokens) {
-			this.registerToken(token);
-		}
-	}
+    public registerTokens(accessRightsTokens: AccessRightsToken[]): void {
+        for (let token of accessRightsTokens) {
+            this.registerToken(token);
+        }
+    }
 
-	public getTokens(): AccessRightsToken[] {
-		return this._tokens;
-	}
+    public getTokens(): AccessRightsToken[] {
+        return this._tokens;
+    }
 
-	public getTokensByDepartment(department: string): AccessRightsToken[] {
-		return this._tokens.filter((token) => token.department === department);
-	}
+    public getTokensByDepartment(department: string): AccessRightsToken[] {
+        return this._tokens.filter((token) => token.department === department);
+    }
 
-	public getAllDepartments(): string[] {
-		return this._tokens
-			.map((token) => token.department)
-			.filter((item, pos, self) => self.indexOf(item) === pos);
-	}
+    public getAllDepartments(): string[] {
+        return this._tokens
+            .map((token) => token.department)
+            .filter((item, pos, self) => self.indexOf(item) === pos);
+    }
 
-	public enoughPermissions(tokens: string[], user: UserAP): boolean {
-		if (user.isAdministrator) {
-			return true;
-		}
+    public enoughPermissions(tokens: string[], user: UserAP): boolean {
+        if (user.isAdministrator) {
+            return true;
+        }
 
-		if (!tokens.length) {
-			return false;
-		}
+        if (!tokens.length) {
+            return false;
+        }
 
-		return tokens.some((token) => this.hasPermission(token, user));
-	}
+        return tokens.some((token) => this.hasPermission(token, user));
+    }
 
-	public hasPermission(tokenId: string, user: UserAP): boolean {
-		if(!tokenId) {
-			Adminizer.log.warn(
-				`AccessRightsHelper > hasPermission no tokenId: ${tokenId}`
-			)
-			return false
-		} 
-		tokenId = tokenId.toLowerCase()
-		if (!this.adminizer.config.auth.enable) {
-			return true;
-		}
+    public hasPermission(tokenId: string, user: UserAP): boolean {
+        if (!this.adminizer.config.auth.enable) {
+            return true;
+        }
 
-		if (user.isAdministrator) {
-			return true;
-		}
-		const tokenIsValid = this._tokens.some((token) => token.id === tokenId);
+        if (user.isAdministrator) {
+            return true;
+        }
 
-		if (!tokenIsValid) {
-			Adminizer.log.error("Adminpanel > Token is not valid", tokenId, user.login);
-			return false;
-		}
-		if(!user.groups){
-			Adminizer.log.error('User has no groups')
-			return false
-		}
-		return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
-	}
+        tokenId = tokenId.toLowerCase()
+        if (!tokenId) {
+            Adminizer.log.warn(
+                `AccessRightsHelper > hasPermission no tokenId: ${tokenId}`
+            )
+            return false
+        }
+        const tokenIsValid = this._tokens.some((token) => token.id === tokenId);
+
+        if (!tokenIsValid) {
+            Adminizer.log.error("Adminpanel > Token is not valid", tokenId, user.login);
+            return false;
+        }
+        if (!user.groups) {
+            Adminizer.log.error('User has no groups')
+            return false
+        }
+        return user.groups.some((group: GroupAP) => group.tokens?.includes(tokenId));
+    }
 }
 
 
-
 export class GroupsAccessRightsHelper {
-  static hasAccess(
-    user: UserAP,
-    groupsAccessRights?: string[]
-  ): boolean {
-    const userGroups = user.groups?.map(group => group.name.toLowerCase());
+    static hasAccess(
+        user: UserAP,
+        groupsAccessRights?: string[]
+    ): boolean {
+        const userGroups = user.groups?.map(group => group.name.toLowerCase());
 
-    if (groupsAccessRights) {
-      const allowedGroups = groupsAccessRights.map(item => item.toLowerCase());
-      return userGroups?.some(group => allowedGroups.includes(group)) ?? false;
-    } else {
-      return true
+        if (groupsAccessRights) {
+            const allowedGroups = groupsAccessRights.map(item => item.toLowerCase());
+            return userGroups?.some(group => allowedGroups.includes(group)) ?? false;
+        } else {
+            return true
+        }
     }
-  }
 }
