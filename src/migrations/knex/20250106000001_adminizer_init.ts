@@ -71,7 +71,7 @@ export async function up(knex: Knex): Promise<void> {
     } else {
       table.uuid("id").primary().notNullable();
     }
-    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
+    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap");
     table.string("mimeType");
     table.string("path");
     table.integer("size");
@@ -93,7 +93,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string("key");
     table.json("value");
     table.boolean("isPublic");
-    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
+    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
@@ -110,7 +110,7 @@ export async function up(knex: Knex): Promise<void> {
     table.json("modelId");
     table.string("widgetName");
     table.integer("sortOrder");
-    table.uuid("fileId").nullable().references("id").inTable("mediamanagerap").onDelete("SET NULL");
+    table.uuid("fileId").nullable().references("id").inTable("mediamanagerap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
@@ -131,7 +131,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("usernotificationap", (table) => {
     table.increments("id").primary().notNullable();
     table.integer("userId");
-    table.integer("notificationIdId").nullable().references("id").inTable("notificationap").onDelete("SET NULL");
+    table.integer("notificationIdId").nullable().references("id").inTable("notificationap");
     table.boolean("read");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
@@ -148,8 +148,8 @@ export async function up(knex: Knex): Promise<void> {
 
   // M:N join: GroupAP <-> UserAP via "groupapuserap"
   await knex.schema.createTable("groupapuserap", (table) => {
-    table.integer("UserAPId").notNullable().references("id").inTable("userap").onDelete("CASCADE");
-    table.integer("GroupAPId").notNullable().references("id").inTable("groupap").onDelete("CASCADE");
+    table.integer("UserAPId").notNullable().references("id").inTable("userap");
+    table.integer("GroupAPId").notNullable().references("id").inTable("groupap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.primary(["UserAPId", "GroupAPId"]);
