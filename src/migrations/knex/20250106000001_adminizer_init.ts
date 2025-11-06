@@ -146,18 +146,20 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
-  // M:N join: GroupAP <-> UserAP via "groupapuserap"
-  await knex.schema.createTable("groupapuserap", (table) => {
-    table.integer("UserAPId").notNullable().references("id").inTable("userap");
-    table.integer("GroupAPId").notNullable().references("id").inTable("groupap");
+  // M:N join: GroupAP <-> UserAP via "groupap_users__userap_groups"
+  // Waterline naming convention: {model1}_{collection1}__{model2}_{collection2}
+  // GroupAP.users -> UserAP.groups => groupap_users__userap_groups
+  await knex.schema.createTable("groupap_users__userap_groups", (table) => {
+    table.increments("id").primary().notNullable();
+    table.integer("groupap_users").notNullable().references("id").inTable("userap");
+    table.integer("userap_groups").notNullable().references("id").inTable("groupap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
-    table.primary(["UserAPId", "GroupAPId"]);
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists("groupapuserap");
+  await knex.schema.dropTableIfExists("groupap_users__userap_groups");
   await knex.schema.dropTableIfExists("usernotificationap");
   await knex.schema.dropTableIfExists("mediamanagermetaap");
   await knex.schema.dropTableIfExists("mediamanagerassociationsap");
