@@ -95,7 +95,8 @@ export class MediaManagerAdapter {
             "No variants found": "",
             "Actions": "",
             "Yes": "",
-            "No": ""
+            "No": "",
+            'File type are not supported': ""
         };
 
         return Object.fromEntries(

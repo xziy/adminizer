@@ -78,6 +78,7 @@ const ListTable = () => {
     // Инициализация состояний из URL при загрузке
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search)
+        console.log(page.props)
         setSearchValue(searchParams.get('globalSearch') || '')
         setShowSearch(!!searchParams.get('globalSearch'))
         setCurrentPage(parseInt(searchParams.get('page') || '1'))
@@ -98,7 +99,6 @@ const ListTable = () => {
         // fix menu after deletion and redirect
         document.body.removeAttribute('style')
     }, [data])
-
 
 
     const pagination = useMemo(() => {
@@ -230,74 +230,81 @@ const ListTable = () => {
                 cell: ({row}) => {
                     return (
                         <div className="text-center">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild className="cursor-pointer">
-                                    <Button variant="outline" size="icon">
-                                        <BetweenHorizontalStart/>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-46" side="right" align="start">
-                                    <DropdownMenuGroup>
-                                        {page.props.header.crudActions?.editTitle && (
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href={`${page.props.header.entity.uri}/edit/${row.original.id}`} onClick={() => {
-                                                    localStorage.setItem('backUrl', window.location.pathname + window.location.search)
-                                                }}>
-                                                    <Icon iconNode={Pencil}/>
-                                                    {page.props.header.crudActions.editTitle}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        )}
-                                        {page.props.header.crudActions?.viewsTitle && (
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <Link href={`${page.props.header.entity.uri}/view/${row.original.id}`}>
-                                                    <Icon iconNode={Eye}/>
-                                                    {page.props.header.crudActions.viewsTitle}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        )}
-                                        {page.props.header.crudActions?.deleteTitle && (
-                                            <DropdownMenuItem asChild className="cursor-pointer">
-                                                <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
-                                                             delModal={page.props.header.delModal}
-                                                             btnCLass="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start"
-                                                             link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
-                                            </DropdownMenuItem>
-                                        )}
-                                    </DropdownMenuGroup>
-                                    {page.props.header.inlineActions && page.props.header.inlineActions.length > 0 && (
-                                        <>
-                                            <DropdownMenuSeparator/>
-                                            {page.props.header.inlineActions.map((action: Action) => (
-                                                <DropdownMenuItem
-                                                    key={action.id}
-                                                    asChild
-                                                    className="cursor-pointer"
-                                                >
-                                                    {action.type === 'blank' ? (
-                                                        <a target="_blank"
-                                                           href={action.link}
-                                                        >
-                                                            {action.icon && <MaterialIcon name={action.icon}
-                                                                                          className="!text-[18px] mr-2"/>}
-                                                            <span>{action.title}</span>
-                                                        </a>
-                                                    ) : (
-                                                        <Link
-                                                            href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
-                                                        >
-                                                            {action.icon && <MaterialIcon name={action.icon}
-                                                                                          className="!text-[18px] mr-2"/>}
-                                                            <span>{action.title}</span>
-                                                        </Link>
-                                                    )}
-
+                            {(['deleteTitle', 'viewsTitle', 'editTitle'] as const).some(key =>
+                                    page.props.header.crudActions?.[key] && page.props.header.crudActions?.[key].trim() !== ''
+                                ) &&
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild className="cursor-pointer">
+                                        <Button variant="outline" size="icon">
+                                            <BetweenHorizontalStart/>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-46" side="right" align="start">
+                                        <DropdownMenuGroup>
+                                            {page.props.header.crudActions?.editTitle && (
+                                                <DropdownMenuItem asChild className="cursor-pointer">
+                                                    <Link
+                                                        href={`${page.props.header.entity.uri}/edit/${row.original.id}`}
+                                                        onClick={() => {
+                                                            localStorage.setItem('backUrl', window.location.pathname + window.location.search)
+                                                        }}>
+                                                        <Icon iconNode={Pencil}/>
+                                                        {page.props.header.crudActions.editTitle}
+                                                    </Link>
                                                 </DropdownMenuItem>
-                                            ))}
-                                        </>
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                                            )}
+                                            {page.props.header.crudActions?.viewsTitle && (
+                                                <DropdownMenuItem asChild className="cursor-pointer">
+                                                    <Link
+                                                        href={`${page.props.header.entity.uri}/view/${row.original.id}`}>
+                                                        <Icon iconNode={Eye}/>
+                                                        {page.props.header.crudActions.viewsTitle}
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {page.props.header.crudActions?.deleteTitle && (
+                                                <DropdownMenuItem asChild className="cursor-pointer">
+                                                    <DeleteModal btnTitle={page.props.header.crudActions.deleteTitle}
+                                                                 delModal={page.props.header.delModal}
+                                                                 btnCLass="font-normal text-destructive hover:text-destructive w-full cursor-pointer justify-start"
+                                                                 link={`${page.props.header.entity.uri}/remove/${row.original.id}?referTo=${encodeURIComponent(window.location.search)}`}/>
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuGroup>
+                                        {page.props.header.inlineActions && page.props.header.inlineActions.length > 0 && (
+                                            <>
+                                                <DropdownMenuSeparator/>
+                                                {page.props.header.inlineActions.map((action: Action) => (
+                                                    <DropdownMenuItem
+                                                        key={action.id}
+                                                        asChild
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {action.type === 'blank' ? (
+                                                            <a target="_blank"
+                                                               href={action.link}
+                                                            >
+                                                                {action.icon && <MaterialIcon name={action.icon}
+                                                                                              className="!text-[18px] mr-2"/>}
+                                                                <span>{action.title}</span>
+                                                            </a>
+                                                        ) : (
+                                                            <Link
+                                                                href={`${action.link}/${row.original.id}?id=${row.original.id}&entity=${page.props.header.entity.name}`}
+                                                            >
+                                                                {action.icon && <MaterialIcon name={action.icon}
+                                                                                              className="!text-[18px] mr-2"/>}
+                                                                <span>{action.title}</span>
+                                                            </Link>
+                                                        )}
+
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            }
                         </div>
                     )
                 }

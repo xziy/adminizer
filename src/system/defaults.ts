@@ -2,7 +2,10 @@
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {FileStorageHelper} from "../helpers/fileStorageHelper";
 import timezones from "../lib/timezones";
-import {NavigationAP} from "../models/NavigationAP";
+import addUser from "../controllers/addUser.js";
+import editUser from "../controllers/editUser.js";
+import addGroup from "../controllers/addGroup.js";
+import editGroup from "../controllers/editGroup.js";
 
 /**
  * Default admin config
@@ -45,10 +48,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addUser"
+                controller: addUser
             },
             edit: {
-                controller: "../controllers/editUser"
+                controller: editUser
             },
             fields: {
                 login: {
@@ -90,10 +93,10 @@ let adminpanelConfig: AdminpanelConfig = {
                 section: "System"
             },
             add: {
-                controller: "../controllers/addGroup"
+                controller: addGroup
             },
             edit: {
-                controller: "../controllers/editGroup"
+                controller: editGroup
             },
             list: {
                 fields: {
@@ -159,6 +162,11 @@ let adminpanelConfig: AdminpanelConfig = {
         enabled: false,
         defaultModel: 'dummy',
         models: ['dummy']
+    },
+    cors: {
+        enabled: false,
+        origin: 'http://localhost:8080',
+        path: 'api/*'
     },
     mediamanager: {
         fileStoragePath: '.tmp/public',

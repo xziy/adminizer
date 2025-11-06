@@ -6,6 +6,11 @@ import {Adminizer} from "lib/Adminizer";
 import {GroupAP} from "models/GroupAP";
 import {UserAP} from "models/UserAP";
 
+/**
+ * Controller function type - async function that handles requests and returns a response
+ */
+export type ControllerFunction = (req: ReqType, res: ResType) => Promise<any>
+
 export type AdminpanelIcon = MaterialIcon
 export type FieldsTypes =
     "string" |
@@ -52,6 +57,7 @@ export type FieldsTypes =
     "table" |
     "geojson" |
     "mediamanager" |
+    "single-file" |
 
     /**
      * it will be needed only for polygon data
@@ -253,12 +259,22 @@ export interface AdminpanelConfig {
 
     notifications?: {
         enabled: boolean
+        enableGeneral?: boolean
+        initTab?: string
     }
     aiAssistant?: {
         enabled: boolean
         defaultModel?: string
         models?: string[]
     }
+    cors?: {
+        enabled: boolean;
+        origin: string[] | string;
+        path: string
+        credentials?: boolean;
+        methods?: string[];
+        allowedHeaders?: string[];
+    };
 }
 
 export interface ModelConfig {
@@ -435,7 +451,8 @@ export interface TuiEditorFieldConfig extends BaseFieldConfig {
 export interface MediaManagerOptionsField {
     id: 'default' | string
     group: string,
-    accept: string []
+    accept: string [],
+    initTab?: 'tile-image' | 'table-video' | 'table-text' | 'table-application' | 'table-all' | 'tile-all'
     config?: Record<string, any>
 }
 
@@ -509,8 +526,9 @@ export interface CreateUpdateConfig {
     entityModifier?: <T>(fieldData: T) => T
     /**
      * You can change standard controller for any entity by this property
+     * Can be either a string path (for dynamic import) or a controller function
      * */
-    controller?: string
+    controller?: string | ControllerFunction
 }
 
 export interface HrefConfig {

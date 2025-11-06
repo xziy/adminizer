@@ -1,5 +1,5 @@
 import {RequestHandler, Response, Request} from 'express';
-import { randomBytes } from 'crypto';
+import {randomBytes} from 'crypto';
 
 type props = Record<string | number | symbol, unknown>;
 
@@ -44,27 +44,33 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
         html,
         flashMessages,
         enableReload = false,
-        csrf = { enabled: false }, // by default disabled
+        csrf = {enabled: false}, // by default disabled
     }) {
     return (req: ReqType, res, next) => {
 
         if (csrf.enabled) {
-            const csrfToken = randomBytes(32).toString('hex');
+            const isApiRoute = isApiRequest(req);
 
-            res.cookie('XSRF-TOKEN', csrfToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production' && process.env.CSRF_COOKIE_INSECURE !== '1',
-                sameSite: 'lax',
-            });
+            if (!isApiRoute) {
+                const csrfToken = randomBytes(32).toString('hex');
 
-            // Check CSRF token for non-GET requests
-            if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-                const csrfCookie = req.cookies['XSRF-TOKEN'];
-                const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
+                res.cookie('XSRF-TOKEN', csrfToken, {
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production' && process.env.CSRF_COOKIE_INSECURE !== '1',
+                    sameSite: 'lax',
+                });
 
-                if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
-                    res.status(403).send({ message: 'Invalid CSRF token' });
-                    return
+                // Проверяем CSRF только для не-GET запросов И не-API routes
+                if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+                    const csrfCookie = req.cookies['XSRF-TOKEN'];
+                    const csrfHeader = req.headers[csrf.headerName || 'x-xsrf-token'];
+
+                    if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+                        return res.status(403).json({
+                            message: 'Invalid CSRF token',
+                            type: 'csrf_error'
+                        });
+                    }
                 }
             }
         }
@@ -147,6 +153,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
                 _page.props = propsRecord;
 
                 if (req.headers[headers.xInertia]) {
+
                     res
                         .status(_statusCode)
                         .set({
@@ -185,4 +192,23 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
         return next();
     };
 };
+
+// Вспомогательная функция для определения API routes
+function isApiRequest(req: ReqType): boolean {
+    const adminizer = req.adminizer;
+
+    if (!adminizer?.config?.cors?.enabled) {
+        return false;
+    }
+
+    const corsConfig = adminizer.config.cors;
+    const routePrefix = adminizer.config.routePrefix || '';
+
+    // Создаем базовый путь для API
+    const apiBasePath = `${routePrefix}/${corsConfig.path?.replace('*', '')}`;
+
+    // Проверяем начинается ли путь с API base path
+    return req.path.startsWith(apiBasePath);
+}
+
 export default inertiaExpressAdapter;

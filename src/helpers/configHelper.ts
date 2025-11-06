@@ -1,6 +1,7 @@
 import {AdminpanelConfig, BaseFieldConfig, ModelConfig} from "../interfaces/adminpanelConfig";
 import {Attribute} from "../lib/model/AbstractModel";
 import {Adminizer} from "../lib/Adminizer";
+import {getDefaultConfig} from "../system/defaults";
 
 export class ConfigHelper {
 
@@ -29,7 +30,7 @@ export class ConfigHelper {
    * Get configured `identifierField` from adminpanel configuration.
    *
    * If not configured and model passed try to guess it using `primaryKey` field in model.
-   * If system couldn't guess will return 'id`.
+   * If system couldn't guess will return 'id'.
    * Model could be object or just name (string).
    *
    * **Warning** If you will pass record - method will return 'id'
@@ -142,6 +143,51 @@ export class ConfigHelper {
     }
 
     return false;
+  }
+
+  /**
+   * Normalizes the entire adminpanel configuration.
+   * Merges custom config with default config and handles normalization.
+   *
+   * @param config The custom config object
+   * @returns The normalized and merged config
+   */
+  public static normalizeConfig(config: AdminpanelConfig): AdminpanelConfig {
+    const defaultConfig = getDefaultConfig();
+
+    const {
+        forms: configForms = {} as AdminpanelConfig['forms'],
+        ...restConfig
+    } = config;
+
+    const {
+        forms: defaultForms = {} as AdminpanelConfig['forms'],
+    } = defaultConfig;
+
+    const mergedConfig = {
+        ...defaultConfig,
+        ...restConfig,
+        models: {
+            ...defaultConfig.models,
+            ...config.models
+        },
+        forms: {
+            path: configForms.path ?? defaultForms.path,
+            data: {
+                ...defaultForms.data,
+                ...configForms.data
+            },
+            get: configForms.get ?? defaultForms.get,
+            set: configForms.set ?? defaultForms.set
+        }
+    };
+
+    // Normalize auth config if it's a boolean
+    if (typeof mergedConfig.auth === 'boolean') {
+        mergedConfig.auth = { enable: mergedConfig.auth };
+    }
+
+    return mergedConfig;
   }
 }
 

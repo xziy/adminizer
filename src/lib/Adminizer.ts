@@ -41,6 +41,7 @@ import {bindAiAssistant} from "../system/bindAiAssistant";
 import {INotification} from "../interfaces/types";
 import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
 import {StorageServices} from "./catalog/Navigation";
+import {bindCors} from "../system/bindCors";
 
 export class Adminizer {
     // Preconfigures
@@ -176,52 +177,29 @@ export class Adminizer {
     }
 
     public async init(config: AdminpanelConfig) {
-        // set cookie parser
-        this.app.use(cookieParser());
-
         if (!config || Object.keys(config).length === 0) {
             Adminizer.log.warn(`Adminizer init > Adminizer config is emtpy`)
         }
+
+        if (this.config && Object.keys(this.config).length > 0) {
+            throw new Error("Config has already been initialized");
+        }
+
+        // Normalize and merge config
+        this.config = ConfigHelper.normalizeConfig(config);
+
+        // Bind cors
+        bindCors(this)
+
+        // set cookie parser
+        this.app.use(cookieParser());
+
 
         // Set vite middleware
         const isViteDev = process.env.VITE_ENV === "dev";
         if (isViteDev) await this.viteMiddleware()
 
         this.emitter.emit('adminizer:init');
-
-        if (this.config && Object.keys(this.config).length > 0) {
-            throw new Error("Config has already been initialized");
-        }
-
-        // Merge custom config with default, additionally merge models
-        const defaultConfig = getDefaultConfig();
-
-        const {
-            forms: configForms = {} as AdminpanelConfig['forms'],
-            ...restConfig
-        } = config;
-
-        const {
-            forms: defaultForms = {} as AdminpanelConfig['forms'],
-        } = defaultConfig;
-
-        this.config = {
-            ...defaultConfig,
-            ...restConfig,
-            models: {
-                ...defaultConfig.models,
-                ...config.models
-            },
-            forms: {
-                path: configForms.path ?? defaultForms.path,
-                data: {
-                    ...defaultForms.data,
-                    ...configForms.data
-                },
-                get: configForms.get ?? defaultForms.get,
-                set: configForms.set ?? defaultForms.set
-            }
-        };
 
 
         this.modelHandler = new ModelHandler();
@@ -317,22 +295,6 @@ export class Adminizer {
         } else {
             return Promise.resolve(false)
         }
-    }
-
-    // Хелпер для CRUD системных событий
-    public async logSystemCreatedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logCreatedEvent(title, message, metadata);
-    }
-
-    public async logSystemUpdatedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logUpdatedEvent(title, message, metadata);
-    }
-
-    public async logSystemDeletedEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-        return systemNotificationService.logDeletedEvent(title, message, metadata);
     }
 
     public get emitter(): EventEmitter {

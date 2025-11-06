@@ -17,6 +17,7 @@ import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
 import {OpenAiDataAgentService} from "./helpers/ai/OpenAiDataAgentService";
+import cors from 'cors';
 
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
 
@@ -44,6 +45,7 @@ import {ActionOne, ActionTwo} from "./widgets/Actions";
 import {TestCatalog} from "./virtual-catalog/virtualCatalog";
 import express from "express";
 import cookieParser from "cookie-parser";
+import {corsApi} from "./cors-api/api";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -142,7 +144,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     // Add custom module
     adminizer.emitter.on('adminizer:loaded', () => {
         let policies: MiddlewareType[] = adminizer.config.policies;
-        const module = (req: ReqType, res: ResType) => {
+        const module = async (req: ReqType, res: ResType) => {
             if (req.adminizer.config.auth.enable) {
                 if (!req.user) {
                     return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
@@ -153,12 +155,14 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
             const isDev = process.env.NODE_ENV === 'development';
             const moduleComponent = isDev ? '/modules/test/ComponentB.tsx' : `${adminizer.config.routePrefix}/assets/modules/ComponentB.es.js`;
-
+            const users = await req.adminizer.modelHandler.model.get('userap')["_find"]({})
             return req.Inertia.render({
                 component: 'module', // required
                 props: {
                     moduleComponent: moduleComponent, // required
-                    message: 'Hello from Adminizer',
+                    data:{
+                        users: users,
+                    }
                     // ...{menu: {test: '12'}}
                     // other props
                 }
@@ -166,13 +170,24 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         }
 
-        adminizer.app.all(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
+        adminizer.app.get(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
+        adminizer.app.post(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, async (req: ReqType, res: ResType) => {
+            await sleep(1000);
+            res.json({
+                test: req.body
+            })
+        }));
     });
 
     // add custom control wysiwyg
     adminizer.emitter.on('adminizer:loaded', () => {
         adminizer.controlsHandler.add(new ReactQuill(adminizer))
     })
+
+    // Test cors
+    adminizer.emitter.on('adminizer:loaded', () => {
+        corsApi(adminizer)
+    });
 
     try {
 

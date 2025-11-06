@@ -30,6 +30,7 @@ export default class Router {
      * The idea is that all methods within the first 3 seconds after start call this method, and as soon as all have been loaded, the loading will be blocked
      */
     static async bind(adminizer: Adminizer): Promise<void> {
+
         if (this.onlyOnce) {
             Adminizer.log.error(`This method allowed for run only one time`);
             return;
@@ -86,7 +87,9 @@ export default class Router {
          * */
         adminizer.app.all(`${adminizer.config.routePrefix}/form/:slug`, adminizer.policyManager.bindPolicies(policies, _form));
 
-        // Create a base entity route
+        /**
+         *  Create a base entity route
+         */
         let baseRoute = `${adminizer.config.routePrefix}/:entityType(form|model)/:entityName`;
 
         /**
@@ -131,38 +134,37 @@ export default class Router {
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/stream`,
+                `${adminizer.config.routePrefix}/notifications/api/stream`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsStream)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/get-classes`,
+                `${adminizer.config.routePrefix}/notifications/api/get-classes`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationClasses)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications/:notificationClass`,
+                `${adminizer.config.routePrefix}/notifications/api/:notificationClass`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getNotificationsByClass)
             );
 
             adminizer.app.get(
-                `${adminizer.config.routePrefix}/api/notifications`,
+                `${adminizer.config.routePrefix}/notifications/api`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.getUserNotifications)
             );
 
-
             adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/:notificationClass/:id/read`,
+                `${adminizer.config.routePrefix}/notifications/api/:notificationClass/:id/read`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAsRead)
             );
 
             adminizer.app.put(
-                `${adminizer.config.routePrefix}/api/notifications/read-all`,
+                `${adminizer.config.routePrefix}/notifications/api/read-all`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.markAllAsRead)
             );
 
             adminizer.app.post(
-                `${adminizer.config.routePrefix}/api/notifications/search`,
+                `${adminizer.config.routePrefix}/notifications/api/search`,
                 adminizer.policyManager.bindPolicies(policies, NotificationController.search)
             );
         }
@@ -215,8 +217,14 @@ export default class Router {
                     if (modelConfig.add) {
                         let addHandler = modelConfig.add as CreateUpdateConfig;
                         if (addHandler.controller) {
-                            let controller = await import(addHandler.controller);
-                            adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            if (typeof addHandler.controller === 'string') {
+                                // Dynamic import for string paths
+                                let controller = await import(addHandler.controller);
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            } else {
+                                // Direct function reference (controller function matches middleware signature)
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, addHandler.controller as any));
+                            }
                         } else {
                             adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/add`, adminizer.policyManager.bindPolicies(policies, _add));
                         }
@@ -229,8 +237,14 @@ export default class Router {
                     if (modelConfig.edit) {
                         let editHandler = modelConfig.edit as CreateUpdateConfig;
                         if (editHandler.controller) {
-                            let controller = await import(editHandler.controller);
-                            adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            if (typeof editHandler.controller === 'string') {
+                                // Dynamic import for string paths
+                                let controller = await import(editHandler.controller);
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, controller.default));
+                            } else {
+                                // Direct function reference (controller function matches middleware signature)
+                                adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, editHandler.controller as any));
+                            }
                         } else {
                             adminizer.app.all(`${adminizer.config.routePrefix}/model/${model}/edit/:id`, adminizer.policyManager.bindPolicies(policies, _edit));
                         }

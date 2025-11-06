@@ -204,7 +204,7 @@ export class TestCatalog extends AbstractCatalog {
 
 export class TestGroup extends AbstractGroup<TestItem> {
     adminizer: Adminizer
-    name: string = "Test Group";
+    name: string = "Group (custom view)";
     allowedRoot: boolean = true;
     actionHandlers: ActionHandler[] = []
 
@@ -299,7 +299,7 @@ class TestItemM extends AbstractItem<TestItem> {
     type: string = 'model.link';
     model: string = 'category';
     adminizer: Adminizer;
-    name: string = 'Category';
+    name: string = 'Category model link';
     allowedRoot: boolean = true;
     icon: string = 'file_present';
 
@@ -426,7 +426,7 @@ class TestItemModel extends AbstractItem<TestItem> {
     type: string = 'model';
     model: string = 'test';
     adminizer: Adminizer;
-    name: string = 'Test Item Model';
+    name: string = 'Direct Item Model';
     allowedRoot: boolean = true;
     icon: string = 'file_present';
 

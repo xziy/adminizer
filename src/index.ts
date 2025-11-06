@@ -11,6 +11,7 @@ export * from  "./lib/catalog/AbstractCatalog"
 export * from "./lib/catalog/Navigation"
 export * from "./lib/catalog/CatalogHandler";
 export * from "./lib/media-manager/MediaManagerHandler";
+export * from "./controllers/media-manager/mediaManagerAdapter"
 export * from "./interfaces/adminpanelConfig";
 export * from "./interfaces/types";
 export * from "./interfaces/MaaterialIcons"
@@ -25,5 +26,8 @@ export * from "./models/MediaManagerAP"
 export * from "./models/MediaManagerAssociationsAP"
 export * from "./models/MediaManagerMetaAP"
 export * from "./models/NavigationAP"
-export * from "./migrations"
+export * from "./migrations/index"
 export * from "./system/bindNavigation"
+export * from "./lib/helper/jwt"
+export * from "./lib/notifications/AbstractNotificationService"
+export * from "./lib/POWCaptcha"

@@ -67,6 +67,7 @@ export class ImageItem extends File<MediaManagerItem> {
     }
 
     public async upload(file: UploaderFile, filename: string, origFileName: string, group: string): Promise<MediaManagerItem[]> {
+
         // TODO refactor CRUD functions for DataAccessor usage
         let parent: MediaManagerItem = await this.adminizer.modelHandler.model.get(this.model)["_create"]({
             parent: null,
@@ -83,7 +84,7 @@ export class ImageItem extends File<MediaManagerItem> {
         await this.addFileMeta(file.path, parent.id)
 
         // create file variants
-        if (Object.keys(this.imageSizes).length) {
+        if (Object.keys(this.imageSizes).length && file.mimetype !== 'image/svg+xml') {
             await this.createVariants(file, parent, filename, group);
         }
 
@@ -318,7 +319,6 @@ export class ApplicationItem extends TextItem {
 export class VideoItem extends TextItem {
     public type: MediaFileType = "video";
 }
-
 
 async function beforeDestroy(adminizer: Adminizer, criteria: { where: object }) {
     // TODO refactor CRUD functions for DataAccessor usage

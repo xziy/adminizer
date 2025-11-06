@@ -59,7 +59,6 @@ const models: AdminpanelConfig["models"] = {
                 type: 'self',
                 title: 'Form example',
                 icon: 'payment',
-                accessRightsToken: 'read-example-form'
             },
             {
                 id: '3',
@@ -67,7 +66,6 @@ const models: AdminpanelConfig["models"] = {
                 type: 'blank',
                 title: 'Form example from file Form example from file',
                 icon: 'touch_app',
-                accessRightsToken: 'read-exampleFromFile-form'
             }
         ],
         fields: {
@@ -105,7 +103,16 @@ const models: AdminpanelConfig["models"] = {
             select: {
                 title: 'Select',
                 type: "select",
-                isIn: ['one', 'two', 'three']
+                isIn: {
+                    decrease: 'Уменьшение баллов',
+                    increase: 'Увеличение баллов',
+                    none: 'Без изменений'
+                },
+                // isIn: [
+                //     "decrease",
+                //     "increase",
+                //     "none",
+                // ],
             },
             date: {
                 title: 'Date',
@@ -391,7 +398,7 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: "default", // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'banner',
-                    accept: ['image/jpeg, image/png']
+                    accept: ['image/svg+xml']
                 }
             },
             mediamanager_two: {
@@ -400,17 +407,31 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default', // 'default' is default instance (src/lib/mediamanager/DefaultMediaManager)
                     group: 'avatars',
+                    initTab: 'table-application',
                     accept: ['image/jpeg']
                 },
                 displayModifier: function (data: any) {
-                    if (data.length) {
+                    if (data?.length) {
                         return `<img width="100px" height="100px" style="margin: 0 auto" src="${routePrefix}/get-thumbs?id=${data[0].id}&managerId=default"/>`;
                     } else {
                         return `<p>No Image</p>`;
                     }
                 }
             },
-        }
+            single_file: {
+                type: 'single-file',
+                title: 'Single file',
+                options: {
+                    id: 'default',
+                    group: 'single-file',
+                    accept: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+                }
+            }
+        },
+        add: true,
+        edit: true,
+        view: true,
+        remove: false
     },
     TestCatalog: {
         title: '',
@@ -443,7 +464,14 @@ const config: AdminpanelConfig = {
         },
     },
     notifications: {
-        enabled: true
+        enabled: true,
+        enableGeneral: true,
+        initTab: 'general',
+    },
+    cors: {
+        enabled: false,
+        origin: 'http://localhost:8080',
+        path: 'api/*'
     },
     aiAssistant: {
         enabled: true,
@@ -511,7 +539,8 @@ const config: AdminpanelConfig = {
                     options: {
                         id: "default",
                         group: 'form_global_images',
-                        accept: ['image/jpeg, image/png']
+                        initTab: "table-application",
+                        accept: ["application/pdf", "application/msword"]
                     },
                     value: null
                 },
@@ -750,7 +779,7 @@ const config: AdminpanelConfig = {
     },
     translation: {
         locales: ['en', 'ru', 'de', 'ua'],
-        path: 'config/locales', // relative path to translations directory
+        //path: 'fixture/locales', // relative path to translations directory
         defaultLocale: 'en'
     },
     models: models,

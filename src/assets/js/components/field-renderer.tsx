@@ -89,7 +89,10 @@ const FieldRenderer: FC<{
     }, [onChange, field.name])
 
     const handleMediaChange = useCallback((mediaList: Media[]) => {
-        const transformedData = mediaList.map(media => ({ id: media.id, url: media.url }))
+        const transformedData = mediaList.map(media => (
+            {
+                id: media.id, url: media.url, mimeType: media.mimeType, filename: media.filename
+            }))
         onChange(field.name, transformedData)
     }, [onChange, field.name])
 
@@ -156,10 +159,13 @@ const FieldRenderer: FC<{
                     <SelectTrigger className="w-full cursor-pointer min-h-10 scroll-pt-30 scroll-mt-30" id={field.name}>
                         <SelectValue placeholder=""/>
                     </SelectTrigger>
-                    <SelectContent>
-                        {(field.isIn ?? []).map((option) => (
-                            <SelectItem value={option} key={option}>
-                                {option}
+                    <SelectContent className="z-[9999999]">
+                        {(Array.isArray(field.isIn)
+                                ? field.isIn.map(value => [value, value]) // если массив — используем значение и отображаемое значение одинаковыми
+                                : Object.entries(field.isIn as object) // если объект — получаем пары [ключ, отображаемое значение]
+                        ).map(([key, value]) => (
+                            <SelectItem value={String(key)} key={String(key)}>
+                                {String(value)}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -229,7 +235,8 @@ const FieldRenderer: FC<{
             if (field.options?.name === 'jsoneditor') {
                 return (
                     <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
-                                    onChange={handleJSONChange} {...field.options?.config} disabled={processing || field.disabled}
+                                    onChange={handleJSONChange} {...field.options?.config}
+                                    disabled={processing || field.disabled}
                     />
                 )
             } else {
@@ -270,8 +277,10 @@ const FieldRenderer: FC<{
                 )
             }
         case 'mediamanager':
+        case 'single-file':
             return (
-                <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange} config={{...field.options}}/>
+                <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange}
+                           config={{...field.options}} type={field.type}/>
             )
         default:
             return (

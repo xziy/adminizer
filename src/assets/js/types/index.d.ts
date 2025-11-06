@@ -111,7 +111,7 @@ export interface Field {
     value: FieldValue;
     disabled?: boolean;
     required?: boolean;
-    isIn?: string[];
+    isIn?: string[] | object;
     options?: any;
 }
 

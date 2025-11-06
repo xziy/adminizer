@@ -37,6 +37,7 @@ import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
 import MediaDialogStack from "@/components/media-manager/components/MediaDialogStack.tsx";
 import {Media} from "@/types";
 import axios from "axios";
+import DropZone from "@/components/media-manager/components/DropZone.tsx";
 
 interface Props {
     layout: Layout;
@@ -44,7 +45,9 @@ interface Props {
         id: string
         group: string
         accept: string[]
+        initTab?: string
     }
+    type: string
     onChange?: (media: Media[]) => void
     value?: Media[]
 }
@@ -52,6 +55,7 @@ interface Props {
 type MediaManagerContextType = {
     uploadUrl: string
     config?: Record<string, any>
+    initTab: string
     managerId: string
     group: string
     accept: string[]
@@ -66,6 +70,7 @@ type MediaManagerContextType = {
 export const MediaManagerContext = createContext<MediaManagerContextType>({
     uploadUrl: '',
     config: {},
+    initTab: '',
     managerId: '',
     group: '',
     accept: [],
@@ -107,7 +112,7 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-const MediaManager = ({layout, config, onChange, value}: Props) => {
+const MediaManager = ({layout, config, type, onChange, value}: Props) => {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [items, setItems] = useState<Media[]>(value || []);
     const activeIndex = activeId !== null ? items.findIndex(item => item.id === activeId) : -1;
@@ -116,7 +121,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
     );
 
-    const [messages, setMessages] = useState({})
+    const [messages, setMessages] = useState<Record<string, string>>({})
 
     const uploadUrl = `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`;
 
@@ -138,6 +143,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
     }, []);
 
     const addMediaWithCallback = useCallback((newMedia: Media) => {
+        console.log(newMedia)
         setItems((prev) => {
             const newItems = [...prev, newMedia];
             if (onChange) onChange(newItems);
@@ -160,6 +166,7 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
         group: config.group,
         accept: config.accept,
         messages: messages,
+        initTab: config.initTab ?? 'tile-all',
         config: {},
         addMedia: (media) => addMediaWithCallback(media),
         removeMedia: (media) => removeMediaWithCallback(media),
@@ -209,61 +216,113 @@ const MediaManager = ({layout, config, onChange, value}: Props) => {
 
         setActiveId(null);
     }
+
+    const openFile = (media: Media) => {
+        const url = window.bindPublic ? `/public${media.url}` : media.url;
+        window.open(url, "_blank")?.focus();
+    }
     return (
         <MediaManagerContext.Provider value={contextValue}>
-            <div>
-                <Button size="icon" variant="ghost" onClick={(e) => {
-                    e.preventDefault()
-                    dialogRef.current?.open()
-                }}>
-                    <Grid2x2Plus className="size-7 text-chart-2"/>
-                </Button>
-                <DndContext
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDragCancel={handleDragCancel}
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    measuring={measuring}
-                >
-                    <SortableContext items={items.map(item => item.id)}>
-                        <ul className={cn(styles.Pages, styles[layout])}>
-                            {items.map((media, index) => (
-                                <SortablePage
-                                    id={media.id}
-                                    key={media.id}
-                                    index={index}
-                                    url={contextValue.imageUrl(media)}
+            {type === 'single-file' ? (
+                items.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                            <Button variant="destructive" onClick={(e) => {
+                                e.stopPropagation()
+                                e.preventDefault()
+                                setItems(prev => {
+                                    const newItems = prev.filter(item => item.id !== items[0].id);
+                                    if (onChange) {
+                                        setTimeout(() => {
+                                            onChange(newItems)
+                                        }, 100)
+                                    }
+                                    return newItems;
+                                });
+                            }}>{messages["Delete"]}</Button>
+                            <Button variant="default" onClick={(e) => {
+                                e.stopPropagation()
+                                e.preventDefault()
+                                openFile(items[0])
+                            }}>{messages["View"]}</Button>
+                        </div>
+                        <div className="relative size-[150px] rounded-[5px] overflow-hidden">
+                            <img src={contextValue.imageUrl(items[0])} className="absolute top-0 left-0 w-full h-full object-cover"/>
+                            {!items[0].mimeType?.startsWith('image/') && (
+                                <div className="text-center absolute inset-x-0 bottom-0 break-words text-white text-sm font-medium bg-black/75 h-[40%] rounded-b-[5px] p-2">
+                                    {items[0].filename}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <DropZone
+                        key="main-dropzone"
+                        messages={messages}
+                        callback={(media) => {
+                            addMediaWithCallback(media)
+                        }}
+                    />
+                )
+            ) : (
+                <div>
+                    <Button size="icon" variant="ghost" onClick={(e) => {
+                        e.preventDefault()
+                        dialogRef.current?.open()
+                    }}>
+                        <Grid2x2Plus className="size-7 text-chart-2"/>
+                    </Button>
+                    <DndContext
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDragCancel={handleDragCancel}
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        measuring={measuring}
+                    >
+                        <SortableContext items={items.map(item => item.id)}>
+                            <ul className={cn(styles.Pages, styles[layout])}>
+                                {items.map((media, index) => (
+                                    <SortablePage
+                                        id={media.id}
+                                        key={media.id}
+                                        index={index}
+                                        url={contextValue.imageUrl(media)}
+                                        fileName={media.filename ?? ''}
+                                        mimeType={media.mimeType ?? ''}
+                                        layout={layout}
+                                        activeIndex={activeIndex}
+                                        onRemove={() => {
+                                            setItems(prev => {
+                                                const newItems = prev.filter(item => item.id !== media.id);
+                                                if (onChange) {
+                                                    setTimeout(() => {
+                                                        onChange(newItems)
+                                                    }, 100)
+                                                }
+                                                return newItems;
+                                            });
+                                        }}
+                                    />
+                                ))}
+                            </ul>
+                        </SortableContext>
+                        <DragOverlay dropAnimation={dropAnimation}>
+                            {activeId != null ? (
+                                <PageOverlay
+                                    id={activeId}
                                     layout={layout}
-                                    activeIndex={activeIndex}
-                                    onRemove={() => {
-                                        setItems(prev => {
-                                            const newItems = prev.filter(item => item.id !== media.id);
-                                            if (onChange) {
-                                                setTimeout(() => {
-                                                    onChange(newItems)
-                                                }, 100)
-                                            }
-                                            return newItems;
-                                        });
-                                    }}
+                                    items={items}
+                                    url={activeMedia ? contextValue.imageUrl(activeMedia) : ''}
+                                    fileName={activeMedia?.filename ? activeMedia.filename ?? '' : ''}
+                                    mimeType={activeMedia?.mimeType ? activeMedia.mimeType ?? '' : ''}
                                 />
-                            ))}
-                        </ul>
-                    </SortableContext>
-                    <DragOverlay dropAnimation={dropAnimation}>
-                        {activeId != null ? (
-                            <PageOverlay
-                                id={activeId}
-                                layout={layout}
-                                items={items}
-                                url={activeMedia ? contextValue.imageUrl(activeMedia) : ''}
-                            />
-                        ) : null}
-                    </DragOverlay>
-                </DndContext>
-                <MediaDialogStack dialogRef={dialogRef}/>
-            </div>
+                            ) : null}
+                        </DragOverlay>
+                    </DndContext>
+                    <MediaDialogStack dialogRef={dialogRef}/>
+                </div>
+            )}
         </MediaManagerContext.Provider>
     );
 }

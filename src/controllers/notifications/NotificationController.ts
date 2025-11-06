@@ -71,11 +71,16 @@ export class NotificationController {
             const userClients = service.getUserClients(req.user.id);
 
             if (userClients.size > 0) {
-                activeServices.push(service.notificationClass);
+                activeServices.push({
+                    displayName: req.i18n.__(service.displayName),
+                    notificationClass: service.notificationClass,
+                });
             }
         }
-
-        return res.json(activeServices)
+        return res.json({
+            activeServices: activeServices,
+            initTab: req.adminizer.config?.notifications?.initTab || null
+        })
     }
 
     // Единый SSE endpoint для всех уведомлений
@@ -181,7 +186,7 @@ export class NotificationController {
     }
 
     // API для получения уведомлений по классу
-    static async getNotificationsByClass(req: ReqType, res: ResType): Promise<void> {
+    static async getNotificationsByClass(req: ReqType, res: ResType) {
         NotificationController.checkNotifPermission(req, res)
 
         try {
@@ -195,10 +200,12 @@ export class NotificationController {
             );
 
             if (!hasPermission) {
-                res.status(403).json({error: 'Forbidden'});
-                return;
+                return res.status(403).json({error: 'Forbidden'});
             }
             const service = req.adminizer.notificationHandler.getService(notificationClass);
+
+            if(!service) return  res.json({})
+
             const notifications = await service.getNotifications(
                 req.user?.id,
                 Number(limit),
@@ -206,10 +213,10 @@ export class NotificationController {
                 unreadOnly === 'true'
             );
 
-            res.json(notifications);
+            return res.json(notifications);
         } catch (error) {
             Adminizer.log.error('Error getting notifications:', error);
-            res.status(500).json({error: 'Internal server error'});
+            return  res.status(500).json({error: 'Internal server error'});
         }
     }
 

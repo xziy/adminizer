@@ -20,6 +20,10 @@ export type FieldValue = string | boolean | number | Date | any[] | Content;
 
 
 const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
+    if (!field || typeof field !== 'object' || !field.label) {
+        console.error('Invalid field for LabelRenderer:', field);
+        return null;
+    }
     return (
         <div className="flex gap-3">
             <Label htmlFor={`${field.type}-${field.name}`}>{field.label}</Label>
@@ -50,6 +54,10 @@ const LazyField: FC<{
     notFound?: string
     search?: string
 }> = memo(({field, value, onChange, processing, notFound, search}) => {
+    if (!field || typeof field !== 'object' || !field.name || !field.type) {
+        console.error('Invalid field for LazyField:', field);
+        return <div className="text-red-500">Error: Invalid field data</div>;
+    }
     const [ref, inView] = useInView({
         triggerOnce: true,
         rootMargin: '100px 0px',
@@ -85,6 +93,7 @@ const AddForm: FC<{
     ({page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable}) => {
 
         const {fields, btnBack, view, notFound} = page.props;
+
         const {
             data,
             setData,
@@ -92,7 +101,7 @@ const AddForm: FC<{
             processing,
             transform
         } = useForm<Record<string, any>>({
-            ...Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])),
+            ...Object.fromEntries((fields || []).map(field => [field.name, field.value ?? undefined])),
             jsonPopupCatalog: catalog
         });
         const [catalogProcessing, setCatalogProcessing] = useState(false)
@@ -103,17 +112,39 @@ const AddForm: FC<{
         useEffect(() => {
             setNavTargetBlank(openNewWindow ?? false);
             resetFormErrors();
+
+            // Populate form state; use a safe fallback when fields is not an array
             setData({
-                ...Object.fromEntries(fields.map(field => [field.name, field.value ?? undefined])),
+                ...Object.fromEntries((fields || []).map(field => [field.name, field.value ?? undefined])),
                 jsonPopupCatalog: catalog
             });
-            return () => resetFormErrors();
-        }, [fields, catalog, openNewWindow]);
 
+            return () => resetFormErrors();
+        }, [fields, catalog, openNewWindow, setData]);
+
+        // Callbacks/hooks that must run on every render (to keep hook order stable)
         const handleFieldChange = useCallback((fieldName: string, value: FieldValue) => {
             // @ts-ignore
             setData(fieldName, value);
-        }, []);
+        }, [setData]);
+
+        // Validation and informative early returns (hooks have already been initialized above)
+        if (!Array.isArray(fields)) {
+            console.error('Fields is not an array:', fields);
+            return <div className="p-4 text-red-500">Error: Fields data is invalid</div>;
+        }
+
+        if (fields.length === 0) {
+            console.warn('Fields array is empty');
+            return <div className="p-4 text-gray-500">No fields to display</div>;
+        }
+
+        // Check each field for required properties
+        const invalidFields = fields.filter(field => !field || typeof field !== 'object' || !field.name || !field.type || !field.label);
+        if (invalidFields.length > 0) {
+            console.error('Invalid fields found:', invalidFields);
+            return <div className="p-4 text-red-500">Error: Some fields are missing required properties (name, type, label)</div>;
+        }
 
         const submit: FormEventHandler = async (e) => {
             e.preventDefault();

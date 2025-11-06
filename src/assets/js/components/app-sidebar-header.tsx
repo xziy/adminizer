@@ -24,11 +24,15 @@ export function AppSidebarHeader({breadcrumbs = []}: { breadcrumbs?: BreadcrumbI
                     <AiAssistantToggle/>
                     <ThemeSwitcher/>
                     {page.props.notifications && (
-                        tabs.length > 0 ?
-                            <NotificationCenter/> :
+                        tabs === null ? (
                             <div className="w-[40px] flex-none flex justify-center">
                                 <LoaderCircle className="size-4 animate-spin"/>
                             </div>
+                        ) : (
+                            tabs.length ? (
+                                <NotificationCenter/>
+                            ) : null
+                        )
                     )}
                     <NavUser/>
                 </div>

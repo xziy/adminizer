@@ -75,6 +75,14 @@ export default async function bindAccessRights(adminizer: Adminizer) {
         description: "Access to widgets", department: "Widgets"
     });
 
+    // Allow access login
+    adminizer.accessRightsHelper.registerToken({
+        id: 'access-to-adminpanel',
+        name: "Allowed log in",
+        description: "Are users allowed to log in to the admin panel?",
+        department: "Admin panel"
+    });
+
     // Default user group
     if (adminizer.config.registration && adminizer.config.registration.enable) {
         // TODO refactor CRUD functions for DataAccessor usage
