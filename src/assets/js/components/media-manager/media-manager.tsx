@@ -61,6 +61,7 @@ type MediaManagerContextType = {
     accept: string[]
     messages: Record<string, string>
     addMedia: (media: Media) => void
+    removeMedia: (media: Media) => void
     imageUrl: (media: Media) => string
     checkMedia: (media: Media) => boolean
     onChange?: (media: Media[]) => void
@@ -75,6 +76,7 @@ export const MediaManagerContext = createContext<MediaManagerContextType>({
     accept: [],
     messages: {},
     addMedia: (_media) => console.warn('addMedia not implemented'),
+    removeMedia: (_media: Media) => console.warn('removeMedia not implemented'),
     imageUrl: (_media: Media) => {
         return ''
     },
@@ -150,6 +152,13 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
 
     }, [onChange]);
 
+    const removeMediaWithCallback = useCallback((media: Media) => {
+        setItems(prev => {
+            const newItems = prev.filter(item => item.id !== media.id);
+            if (onChange) onChange(newItems);
+            return newItems;
+        });
+    }, [onChange]);
 
     const contextValue: MediaManagerContextType = {
         uploadUrl: uploadUrl,
@@ -160,6 +169,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
         initTab: config.initTab ?? 'tile-all',
         config: {},
         addMedia: (media) => addMediaWithCallback(media),
+        removeMedia: (media) => removeMediaWithCallback(media),
         imageUrl: (media: Media) => {
             if (media.mimeType && media.mimeType.split("/")[0] === 'image') {
                 return `${window.routePrefix}/get-thumbs?id=${media.id}&managerId=${config.id}`;
