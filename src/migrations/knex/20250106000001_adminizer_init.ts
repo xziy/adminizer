@@ -64,14 +64,14 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
-  // mediamanagerap (self-ref via parentId)
+  // mediamanagerap (self-ref via parent)
   await knex.schema.createTable("mediamanagerap", (table) => {
     if (uuidDefault) {
       table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
     } else {
       table.uuid("id").primary().notNullable();
     }
-    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap");
+    table.uuid("parent").nullable().references("id").inTable("mediamanagerap");
     table.string("mimeType");
     table.string("path");
     table.integer("size");
@@ -83,7 +83,7 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
-  // mediamanagermetaap (belongsTo mediamanagerap via parentId)
+  // mediamanagermetaap (belongsTo mediamanagerap via parent)
   await knex.schema.createTable("mediamanagermetaap", (table) => {
     if (uuidDefault) {
       table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
@@ -93,12 +93,12 @@ export async function up(knex: Knex): Promise<void> {
     table.string("key");
     table.json("value");
     table.boolean("isPublic");
-    table.uuid("parentId").nullable().references("id").inTable("mediamanagerap");
+    table.uuid("parent").nullable().references("id").inTable("mediamanagerap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
 
-  // mediamanagerassociationsap (belongsTo mediamanagerap via fileId)
+  // mediamanagerassociationsap (belongsTo mediamanagerap via file)
   await knex.schema.createTable("mediamanagerassociationsap", (table) => {
     if (uuidDefault) {
       table.uuid("id").primary().notNullable().defaultTo(uuidDefault);
@@ -110,7 +110,7 @@ export async function up(knex: Knex): Promise<void> {
     table.json("modelId");
     table.string("widgetName");
     table.integer("sortOrder");
-    table.uuid("fileId").nullable().references("id").inTable("mediamanagerap");
+    table.uuid("file").nullable().references("id").inTable("mediamanagerap");
     table.timestamp("createdAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
     table.timestamp("updatedAt", { useTz: false }).notNullable().defaultTo(defaultTimestamp);
   });
