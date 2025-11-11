@@ -21,9 +21,8 @@ export function NavMain({items = []}: { items: NavItem[] }) {
         const init: Record<string, boolean> = {};
         items.forEach(item => {
             const section = item.section || 'Platform';
-            if (!(section in init)) {
-                init[section] = true;
-            }
+            // Инициализируем все группы как закрытые
+            init[section] = false;
         });
         return init;
     });
@@ -44,8 +43,17 @@ export function NavMain({items = []}: { items: NavItem[] }) {
         return acc;
     }, {});
 
+    // Function to check if a menu item should be active
+    const isActiveItem = (itemLink: string) => {
+        const currentUrl = normalizeUrl(page.url);
+        const normalizedItemLink = normalizeUrl(itemLink);
+
+        // Check for exact match or if current URL starts with the item's URL
+        return currentUrl === normalizedItemLink ||
+            currentUrl.startsWith(`${normalizedItemLink}/`);
+    };
     // Menu entry component for individual items
-    const MenuEntry = ({item}: {item: NavItem}) => (
+    const MenuEntry = ({item}: { item: NavItem }) => (
         item.actions?.length > 0 ? (
             <Collapsible
                 key={item.title}
@@ -113,49 +121,54 @@ export function NavMain({items = []}: { items: NavItem[] }) {
         )
     );
 
-    // Function to check if a menu item should be active
-    const isActiveItem = (itemLink: string) => {
-        const currentUrl = normalizeUrl(page.url);
-        const normalizedItemLink = normalizeUrl(itemLink);
 
-        // Check for exact match or if current URL starts with the item's URL
-        return currentUrl === normalizedItemLink ||
-            currentUrl.startsWith(`${normalizedItemLink}/`);
-    };
     return (
         <>
-            {Object.entries(groupedItems).map(([section, itemsInSection]) => (
-                <SidebarGroup key={section} className="px-2 py-0">
-                    <SidebarGroupLabel
-                        asChild
-                        className="cursor-pointer"
-                        onClick={() =>
-                            setOpenGroups(prev => ({
-                                ...prev,
-                                [section]: !prev[section],
-                            }))
-                        }
-                    >
-                        <div className="flex items-center gap-1">
-                            <ChevronRight
-                                className={`transform transition-transform duration-200 ${
-                                    openGroups[section] ? 'rotate-90' : ''
-                                }`}
-                            />
-                            <span>{section}</span>
-                        </div>
-                    </SidebarGroupLabel>
-                    {openGroups[section] && (
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {itemsInSection.map(item => (
-                                    <MenuEntry item={item} key={item.id || item.title} />
-                                ))}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    )}
-                </SidebarGroup>
-            ))}
+            {Object.entries(groupedItems).map(([section, itemsInSection]) => {
+                // Проверяем, есть ли активный элемент в этой группе
+                const isAnyItemActive = itemsInSection.some(item => {
+                    if (item.actions?.length > 0) {
+                        return item.actions.some(subItem => isActiveItem(subItem.link));
+                    }
+                    return isActiveItem(item.link);
+                });
+
+                // Автоматически открываем группу, если есть активный пункт
+                const isOpen = openGroups[section] || isAnyItemActive;
+
+                return (
+                    <SidebarGroup key={section} className="px-2 py-0">
+                        <SidebarGroupLabel
+                            asChild
+                            className="cursor-pointer"
+                            onClick={() =>
+                                setOpenGroups(prev => ({
+                                    ...prev,
+                                    [section]: !prev[section],
+                                }))
+                            }
+                        >
+                            <div className="flex items-center gap-1">
+                                <ChevronRight
+                                    className={`transform transition-transform duration-200 ${
+                                        isOpen ? 'rotate-90' : ''
+                                    }`}
+                                />
+                                <span>{section}</span>
+                            </div>
+                        </SidebarGroupLabel>
+                        {isOpen && (
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {itemsInSection.map(item => (
+                                        <MenuEntry item={item} key={item.id || item.title}/>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        )}
+                    </SidebarGroup>
+                );
+            })}
         </>
     );
 }
