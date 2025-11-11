@@ -46,6 +46,7 @@ interface Props {
         group: string
         accept: string[]
         initTab?: string
+        onlyView?: boolean
     }
     type: string
     onChange?: (media: Media[]) => void
@@ -227,7 +228,9 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                 items.length > 0 ? (
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2">
-                            <Button variant="destructive" onClick={(e) => {
+                            <Button variant="destructive"
+                                    disabled={config.onlyView ?? false}
+                                    onClick={(e) => {
                                 e.stopPropagation()
                                 e.preventDefault()
                                 setItems(prev => {
