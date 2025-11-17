@@ -10,9 +10,13 @@ export default {
         type: "string"
     },
     model: {
-        type: "json"
+        type: "string"
     },
     modelId: {
+        /**
+         * type: "json"
+         * is a generic type for any model id, type parsing should be done by specific model
+         */
         type: "json"
     },
     widgetName: {
