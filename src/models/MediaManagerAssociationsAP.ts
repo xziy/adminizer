@@ -13,11 +13,7 @@ export default {
         type: "string"
     },
     modelId: {
-        /**
-         * type: "json"
-         * is a generic type for any model id, type parsing should be done by specific model
-         */
-        type: "json"
+        type: "number"
     },
     widgetName: {
         type: "string"
@@ -41,8 +37,8 @@ export default {
 export interface MediaManagerAssociationsAP {
     id: string;
     mediaManagerId?: string;
-    model?: Record<string, unknown>;
-    modelId?: Record<string, unknown>;
+    model?: string;
+    modelId?: number;
     widgetName?: string;
     sortOrder?: number;
     file?: MediaManagerAP;

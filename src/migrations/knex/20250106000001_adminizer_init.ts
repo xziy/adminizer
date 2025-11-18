@@ -106,8 +106,8 @@ export async function up(knex: Knex): Promise<void> {
       table.uuid("id").primary().notNullable();
     }
     table.string("mediaManagerId");
-    table.json("model");
-    table.json("modelId");
+    table.string("model");
+    table.integer("modelId");
     table.string("widgetName");
     table.integer("sortOrder");
     table.uuid("file").nullable().references("id").inTable("mediamanagerap");
