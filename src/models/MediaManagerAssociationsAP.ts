@@ -10,10 +10,10 @@ export default {
         type: "string"
     },
     model: {
-        type: "json"
+        type: "string"
     },
     modelId: {
-        type: "json"
+        type: "number"
     },
     widgetName: {
         type: "string"
@@ -37,8 +37,8 @@ export default {
 export interface MediaManagerAssociationsAP {
     id: string;
     mediaManagerId?: string;
-    model?: Record<string, unknown>;
-    modelId?: Record<string, unknown>;
+    model?: string;
+    modelId?: number;
     widgetName?: string;
     sortOrder?: number;
     file?: MediaManagerAP;

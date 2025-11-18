@@ -454,6 +454,7 @@ export interface MediaManagerOptionsField {
     accept: string [],
     initTab?: 'tile-image' | 'table-video' | 'table-text' | 'table-application' | 'table-all' | 'tile-all'
     config?: Record<string, any>
+    onlyView?: boolean
 }
 
 interface RangeType {

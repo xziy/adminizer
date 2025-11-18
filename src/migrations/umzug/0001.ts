@@ -72,8 +72,8 @@ export async function up({ context }: Ctx): Promise<void> {
   await context.createTable("mediamanagerassociationsap", {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true, allowNull: false },
     mediaManagerId: { type: DataTypes.STRING },
-    model: { type: DataTypes.JSON },
-    modelId: { type: DataTypes.JSON },
+    model: { type: DataTypes.STRING },
+    modelId: { type: DataTypes.INTEGER },
     widgetName: { type: DataTypes.STRING },
     sortOrder: { type: DataTypes.INTEGER },
     fileId: { type: DataTypes.UUID, allowNull: true, references: { model: "mediamanagerap", key: "id" } },

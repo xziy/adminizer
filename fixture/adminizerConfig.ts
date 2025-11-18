@@ -424,8 +424,9 @@ const models: AdminpanelConfig["models"] = {
                 options: {
                     id: 'default',
                     group: 'single-file',
-                    accept: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-                }
+                    accept: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+                    onlyView: true
+                },
             }
         },
         add: true,

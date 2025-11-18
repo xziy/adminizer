@@ -100,7 +100,7 @@ export default async function list(req: ReqType, res: ResType) {
             props: {
                 header: header,
                 columns: columns,
-                data: data,
+                data: data ?? [],
             }
         });
     }, dataAccessor)
