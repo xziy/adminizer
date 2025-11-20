@@ -228,21 +228,22 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                 items.length > 0 ? (
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2">
-                            <Button variant="destructive"
-                                    disabled={config.onlyView ?? false}
-                                    onClick={(e) => {
-                                e.stopPropagation()
-                                e.preventDefault()
-                                setItems(prev => {
-                                    const newItems = prev.filter(item => item.id !== items[0].id);
-                                    if (onChange) {
-                                        setTimeout(() => {
-                                            onChange(newItems)
-                                        }, 100)
-                                    }
-                                    return newItems;
-                                });
-                            }}>{messages["Delete"]}</Button>
+                            {!config.onlyView &&
+                                <Button variant="destructive"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                            setItems(prev => {
+                                                const newItems = prev.filter(item => item.id !== items[0].id);
+                                                if (onChange) {
+                                                    setTimeout(() => {
+                                                        onChange(newItems)
+                                                    }, 100)
+                                                }
+                                                return newItems;
+                                            });
+                                        }}>{messages["Delete"]}</Button>
+                            }
                             <Button variant="default" onClick={(e) => {
                                 e.stopPropagation()
                                 e.preventDefault()
@@ -250,9 +251,11 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                             }}>{messages["View"]}</Button>
                         </div>
                         <div className="relative size-[150px] rounded-[5px] overflow-hidden">
-                            <img src={contextValue.imageUrl(items[0])} className="absolute top-0 left-0 w-full h-full object-cover"/>
+                            <img src={contextValue.imageUrl(items[0])}
+                                 className="absolute top-0 left-0 w-full h-full object-cover"/>
                             {!items[0].mimeType?.startsWith('image/') && (
-                                <div className="text-center absolute inset-x-0 bottom-0 break-words text-white text-sm font-medium bg-black/75 h-[40%] rounded-b-[5px] p-2">
+                                <div
+                                    className="text-center absolute inset-x-0 bottom-0 break-words text-white text-sm font-medium bg-black/75 h-[40%] rounded-b-[5px] p-2">
                                     {items[0].filename}
                                 </div>
                             )}
