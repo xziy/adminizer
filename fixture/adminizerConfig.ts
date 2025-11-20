@@ -229,13 +229,15 @@ const models: AdminpanelConfig["models"] = {
                 title: 'Test one association',
                 displayModifier: function (data) {
                     return data?.title;
-                }
+                },
+                disabled: true
             },
             tests: {
                 title: 'One to many association',
                 displayModifier: function (data) {
                     return data?.title;
-                }
+                },
+                disabled: true
             },
         },
         list: {
