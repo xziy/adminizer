@@ -175,6 +175,7 @@ export class ImageItem extends File<MediaManagerItem> {
         });
     }
 
+    // TODO  {where: {isPublic: true}, sort: "id ASC"} ???
     public async getMeta(id: string,): Promise<{ key: string; value: string }[]> {
         // TODO refactor CRUD functions for DataAccessor usage
         return ((await this.adminizer.modelHandler.model.get(this.model)["_find"]({
