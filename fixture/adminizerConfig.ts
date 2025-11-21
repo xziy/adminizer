@@ -472,9 +472,14 @@ const config: AdminpanelConfig = {
         initTab: 'general',
     },
     cors: {
-        enabled: false,
-        origin: 'http://localhost:8080',
+        enabled: true,
+        origin: 'http://localhost:3000',
         path: 'api/*'
+    },
+    aiAssistant: {
+        enabled: (process.env.ENABLE_AI_ASSISTANT ?? "true") === 'true',
+        defaultModel: 'openai-data',
+        models: ['openai-data', 'dummy'],
     },
     routePrefix: routePrefix,
     // routePrefix: "/admin",

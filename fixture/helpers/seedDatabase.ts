@@ -27,21 +27,26 @@ export async function seedDatabase(
 
   // ------------------ Groups ------------------ //
   const groupNames = [
-    { name: 'Admins', description: 'System administrators' },
-    { name: 'Users', description: 'Registered users', tokens: 
+    { name: 'Admins', description: 'System administrators', tokens: [
+      'ai-assistant-dummy',
+      'ai-assistant-openai',
+    ] },
+    { name: 'Users', description: 'Registered users', tokens:
       [
         "create-test-model",
         "read-test-model",
         "update-test-model",
         "delete-test-model",
 
-         "create-example-model",
-         "read-example-model",
-         "update-example-model",
-        
-         "read-jsonschema-model",
-        ] 
-      },
+        "create-example-model",
+        "read-example-model",
+        "update-example-model",
+
+        "read-jsonschema-model",
+        "ai-assistant-dummy",
+        "ai-assistant-openai",
+      ]
+    },
     { name: 'Guests', description: 'Guest access' },
   ];
 
@@ -67,6 +72,7 @@ export async function seedDatabase(
     { login: 'admin', password: 'admin', fullName: 'Admin User', isAdministrator: true },
     { login: 'user2', password: 'user2', fullName: 'User Two' },
     { login: 'user3', password: 'user3', fullName: 'User Three', isConfirmed: true },
+    { login: 'openai', password: 'openai', fullName: 'OpenAI Agent', isAdministrator: true, isConfirmed: true },
   ];
 
   for (const u of users) {

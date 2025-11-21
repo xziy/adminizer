@@ -1,3 +1,7 @@
+// Load environment variables from .env file
+import dotenv from 'dotenv';
+dotenv.config();
+
 import {Adminizer} from "../dist";
 import {bindNavigation} from "../dist";
 import http from 'http';
@@ -12,6 +16,7 @@ import CategoryWaterline from "./models/Category";
 import adminpanelConfig from "./adminizerConfig";
 import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
 import {sendNotificationsWithDelay} from "./helpers/notifications";
+// OpenAiDataAgentService is imported dynamically only when AI assistant is enabled
 import cors from 'cors';
 
 import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
@@ -187,6 +192,28 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     try {
 
         await adminizer.init(adminpanelConfig as unknown as AdminpanelConfig)
+
+        if (adminizer.config.aiAssistant?.enabled) {
+            // Dynamic import to avoid loading OpenAI dependencies when AI assistant is disabled
+            const {OpenAiDataAgentService} = await import("./helpers/ai/OpenAiDataAgentService");
+            const openAiAgent = new OpenAiDataAgentService(adminizer);
+            if (openAiAgent.isEnabled()) {
+                adminizer.aiAssistantHandler!.registerModel(openAiAgent);
+
+                if (adminizer.config.aiAssistant) {
+                    const declaredModels = new Set(adminizer.config.aiAssistant.models ?? []);
+                    declaredModels.add(openAiAgent.id);
+                    adminizer.config.aiAssistant.models = Array.from(declaredModels);
+
+                    if (!adminizer.config.aiAssistant.defaultModel || adminizer.config.aiAssistant.defaultModel === 'dummy') {
+                        adminizer.config.aiAssistant.defaultModel = openAiAgent.id;
+                    }
+                }
+                console.log(`[fixture] OpenAI data agent successfully registered with ID: ${openAiAgent.id}`);
+            } else {
+                Adminizer.log.warn('[fixture] Skipping OpenAI data agent registration because OPENAI_API_KEY is missing.');
+            }
+        }
 
         adminizer.widgetHandler.add(new SwitcherOne());
         adminizer.widgetHandler.add(new SwitcherTwo());
