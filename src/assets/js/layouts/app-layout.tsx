@@ -14,15 +14,11 @@ interface AppLayoutProps {
 const AppLayout = memo(({children, className, breadcrumbs, ...props}: AppLayoutProps) => {
     return (
         <NotificationProvider>
-            <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
-                {children}
-            </AppLayoutTemplate>
             <AiAssistantProvider>
-                <AiAssistantViewport>
-                    <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
-                        {children}
-                    </AppLayoutTemplate>
-                </AiAssistantViewport>
+                <AppLayoutTemplate breadcrumbs={breadcrumbs} className={className} {...props}>
+                    {children}
+                </AppLayoutTemplate>
+                <AiAssistantViewport />
             </AiAssistantProvider>
         </NotificationProvider>
     )
