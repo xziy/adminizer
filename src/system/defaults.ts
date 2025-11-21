@@ -158,6 +158,11 @@ let adminpanelConfig: AdminpanelConfig = {
     notifications: {
         enabled: false
     },
+    aiAssistant: {
+        enabled: false,
+        defaultModel: 'dummy',
+        models: ['dummy']
+    },
     cors: {
         enabled: false,
         origin: 'http://localhost:8080',

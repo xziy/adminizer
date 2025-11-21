@@ -42,6 +42,10 @@ export interface SharedData {
     flash: Record<FlashMessages, string>;
     auth: Auth;
     notifications: boolean;
+    aiAssistant?: {
+        enabled: boolean;
+        defaultModel: string | null;
+    };
     [key: string]: unknown;
 }
 
@@ -92,6 +96,10 @@ declare global {
     interface Window {
         routePrefix: string;
         bindPublic: boolean;
+        __adminizerAiAssistantState__?: {
+            isOpen: boolean;
+            activeModel?: string;
+        };
     }
 }
 

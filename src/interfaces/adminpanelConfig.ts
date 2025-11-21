@@ -262,7 +262,11 @@ export interface AdminpanelConfig {
         enableGeneral?: boolean
         initTab?: string
     }
-
+    aiAssistant?: {
+        enabled: boolean
+        defaultModel?: string
+        models?: string[]
+    }
     cors?: {
         enabled: boolean;
         origin: string[] | string;
