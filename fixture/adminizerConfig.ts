@@ -694,6 +694,13 @@ const config: AdminpanelConfig = {
                 link: `${routePrefix}/catalog/test-catalog`,
                 title: 'Test Catalog',
                 icon: 'bug_report'
+            },
+            {
+                id: '6',
+                link: '/',
+                type: 'blank',
+                title: 'Main Site',
+                icon: 'home'
             }
         ]
     },

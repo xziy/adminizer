@@ -14,7 +14,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { registerUIComponents } from "./ui-globals";
 import * as LucideReact from 'lucide-react'
-const { createInertiaApp } = InertiajsReact;
+const { createInertiaApp, router } = InertiajsReact;
 window.React = React;
 window.ReactDOM = ReactDOM;
 //@ts-ignore
@@ -37,6 +37,39 @@ export async function resolvePageComponent<T>(path: string | string[], pages: Re
     }
     throw new Error(`Page not found: ${path}`);
 }
+
+// Prevent Inertia from opening iframe for non-Inertia responses
+// When server returns non-Inertia response (HTML redirect), do full page reload instead
+let isNavigating = false;
+
+router.on('navigate', (event) => {
+    isNavigating = true;
+})
+
+router.on('finish', (event) => {
+    isNavigating = false;
+})
+
+// Intercept iframe creation by Inertia
+const originalCreateElement = document.createElement.bind(document);
+document.createElement = function(tagName: string, options?: any) {
+    const element = originalCreateElement(tagName, options);
+    
+    // If Inertia tries to create an iframe during navigation, prevent it and reload page
+    if (tagName.toLowerCase() === 'iframe' && isNavigating) {
+        console.warn('[Adminizer] Prevented iframe creation, forcing full page reload');
+        
+        // Do full page reload instead of iframe
+        setTimeout(() => {
+            window.location.reload();
+        }, 0);
+        
+        // Return a dummy element that won't be used
+        return originalCreateElement('div');
+    }
+    
+    return element;
+};
 
 createInertiaApp({
     title: (title) => `${title}`,
