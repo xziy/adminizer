@@ -48,7 +48,7 @@ const inertiaExpressAdapter: (options: Options) => RequestHandler = function (
     }) {
     return (req: ReqType, res, next) => {
 
-        if (csrf.enabled) {
+        if (csrf.enabled && !res.locals.skipCsrf) {
             const isApiRoute = isApiRequest(req);
 
             if (!isApiRoute) {
