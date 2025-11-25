@@ -183,13 +183,46 @@ export class WidgetHandler {
 
         if (!user || !user.widgets || user.widgets.widgets.length === 0) {
             if (this.adminizer.config.dashboard && typeof this.adminizer.config.dashboard !== "boolean" && this.adminizer.config.dashboard.defaultWidgets) {
-                let defaultWidgets = this.adminizer.config.dashboard.defaultWidgets;
+                const defaultWidgets = this.adminizer.config.dashboard.defaultWidgets;
                 result.widgets = await this.getAll(user, i18n);
+
+                const addedWidgets: WidgetConfig[] = [];
+                let x = 0, y = 0;
+
+                // Mark default widgets as added and collect them
                 result.widgets.forEach(widget => {
                     if (defaultWidgets.includes(widget.id.split("__")[0])) {
                         widget.added = true;
+                        addedWidgets.push(widget);
                     }
                 });
+
+                // Generate layout for all breakpoints
+                addedWidgets.forEach(widget => {
+                    const w = widget.size?.w || 1;
+                    const h = widget.size?.h || 1;
+                    const layoutItem: WidgetLayoutItem = { x, y, w, h, i: widget.id, id: widget.id };
+
+                    result.layout.lg.push(layoutItem);
+                    result.layout.md.push(layoutItem);
+                    result.layout.sm.push({ ...layoutItem, w: Math.min(w, 4) });
+                    result.layout.xs.push({ ...layoutItem, w: Math.min(w, 3) });
+                    result.layout.xxs.push({ ...layoutItem, w: 2 });
+
+                    x += w;
+                    if (x >= 12) {
+                        x = 0;
+                        y += h;
+                    }
+                });
+
+                // Save to database
+                if (addedWidgets.length > 0) {
+                    await this.setWidgetsDB(user.id, {
+                        widgets: addedWidgets,
+                        layout: result.layout as any
+                    }, false);
+                }
             }
         } else {
             result.widgets = user.widgets.widgets;

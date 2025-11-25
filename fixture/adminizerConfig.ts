@@ -1,4 +1,4 @@
-import {AdminpanelConfig} from "../dist";
+import { AdminpanelConfig } from "../dist";
 
 const routePrefix = "/adminizer";
 
@@ -173,12 +173,12 @@ const models: AdminpanelConfig["models"] = {
                 type: 'table',
                 options: {
                     config: {
-                        dataSchema: {name: null, footage: null, price: null},
+                        dataSchema: { name: null, footage: null, price: null },
                         colHeaders: ['One', 'Two', 'Three'],
                         columns: [
-                            {data: 'name'},
-                            {data: 'footage'},
-                            {data: 'price'}
+                            { data: 'name' },
+                            { data: 'footage' },
+                            { data: 'price' }
                         ],
                     }
                 },
@@ -491,7 +491,18 @@ const config: AdminpanelConfig = {
         defaultUserGroup: "guest",
         confirmationRequired: false
     },
-    dashboard: true,
+    dashboard: {
+        // Widgets are initialized and configured in local_modules/core/lib/adminpanel/widgets
+        // defaultWidgets will be populated by core module
+        defaultWidgets: [
+            'action_one',
+            'info_one',
+            'siteLinks',
+            'site_custom',
+            'site_switcher'
+        ],
+        autoloadWidgetsPath: 'fixture/widgets'
+    },
     navigation: {
         items: [
             {
