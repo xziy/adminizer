@@ -1,4 +1,4 @@
-import {Widget, WidgetLayoutItem} from "@/types";
+import { Widget, WidgetLayoutItem } from "@/types";
 import axios from "axios";
 
 export interface WidgetsLayouts {
@@ -49,35 +49,81 @@ export async function initializeWidgets(): Promise<{
             xs: [],
             xxs: []
         };
+        const defaultWidgetIds = widgetsDBResponse.data?.widgetsDB?.defaultWidgets as string[] ?? [];
 
         const widgetsResponse = await axios.get(`${window.routePrefix}/widgets-get-all`);
         const allWidgets = widgetsResponse.data.widgets as Widget[];
 
-        const dbWidgetIds = widgetsDB.map(w => w.id).sort();
-        const storedWidgetIds = storedWidgets.map(w => w.id).sort();
-
-        // Check if the widget IDs in the database and localStorage match
-        const idsMatch =
-            dbWidgetIds.length === storedWidgetIds.length &&
-            dbWidgetIds.every((id, index) => id === storedWidgetIds[index]);
+        // Check if user has saved widgets in database (no defaultWidgetIds means user has saved widgets)
+        const hasSavedWidgets = widgetsDB.length > 0 && widgetsDB.some(w => w.added === true) && defaultWidgetIds.length === 0;
 
         let finalWidgetsDB = widgetsDB;
         let finalLayoutDB = layoutDB;
 
-        if (idsMatch && storedWidgets.length > 0) {
-            finalWidgetsDB = storedWidgets;
-            finalLayoutDB = storedLayout;
-        } else {
+        // If using default widgets, generate layout on frontend
+        if (!hasSavedWidgets && defaultWidgetIds.length > 0) {
+            const addedWidgets: Widget[] = [];
+            let x = 0, y = 0;
+
+            // Mark default widgets as added
+            allWidgets.forEach(widget => {
+                if (defaultWidgetIds.includes(widget.id.split("__")[0])) {
+                    widget.added = true;
+                    addedWidgets.push(widget);
+                }
+            });
+
+            // Generate layout for all breakpoints
+            const generatedLayout: WidgetsLayouts = { lg: [], md: [], sm: [], xs: [], xxs: [] };
+
+            addedWidgets.forEach(widget => {
+                const w = widget.size?.w || 1;
+                const h = widget.size?.h || 1;
+                const layoutItem: WidgetLayoutItem = { x, y, w, h, i: widget.id, id: widget.id };
+
+                generatedLayout.lg.push(layoutItem);
+                generatedLayout.md.push(layoutItem);
+                generatedLayout.sm.push({ ...layoutItem, w: Math.min(w, 4) });
+                generatedLayout.xs.push({ ...layoutItem, w: Math.min(w, 3) });
+                generatedLayout.xxs.push({ ...layoutItem, w: 2 });
+
+                x += w;
+                if (x >= 12) {
+                    x = 0;
+                    y += h;
+                }
+            });
+
+            finalWidgetsDB = addedWidgets;
+            finalLayoutDB = generatedLayout;
+
+            // Clear localStorage when using defaults
+            localStorage.removeItem('widgetsData');
+        } else if (hasSavedWidgets && storedData) {
+            // Only use localStorage if user has saved widgets in database
+            const dbWidgetIds = widgetsDB.map(w => w.id).sort();
+            const storedWidgetIds = storedWidgets.map(w => w.id).sort();
+
+            const idsMatch =
+                dbWidgetIds.length === storedWidgetIds.length &&
+                dbWidgetIds.every((id, index) => id === storedWidgetIds[index]);
+
+            if (idsMatch && storedWidgets.length > 0) {
+                finalWidgetsDB = storedWidgets;
+                finalLayoutDB = storedLayout;
+            }
+
+            // Update localStorage with current data
             const dataToStore = {
-                widgets: widgetsDB,
-                layout: layoutDB
+                widgets: finalWidgetsDB,
+                layout: finalLayoutDB
             };
             localStorage.setItem('widgetsData', JSON.stringify(dataToStore));
         }
 
         const initWidgets = allWidgets.map(widget => {
             const findItem = finalWidgetsDB.find((e: any) => e.id === widget.id);
-            return findItem && findItem.added ? {...widget, added: true} : widget;
+            return findItem && findItem.added ? { ...widget, added: true } : widget;
         });
 
         return {

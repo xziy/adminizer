@@ -168,10 +168,14 @@ export class WidgetHandler {
 
     public async getWidgetsDB(id: number, auth: boolean, i18n: I18n): Promise<{
         widgets: WidgetConfig[],
-        layout: WidgetsLayouts
+        layout: WidgetsLayouts,
+        defaultWidgets?: string[]
     }> {
         let user: UserAP;
-        let result: { widgets: WidgetConfig[], layout: WidgetsLayouts } = { widgets: [], layout: { lg: [], md: [], sm: [], xs: [], xxs: [] } };
+        let result: { widgets: WidgetConfig[], layout: WidgetsLayouts, defaultWidgets?: string[] } = {
+            widgets: [],
+            layout: { lg: [], md: [], sm: [], xs: [], xxs: [] }
+        };
 
         if (!auth) {
             // TODO refactor CRUD functions for DataAccessor usage
@@ -182,41 +186,14 @@ export class WidgetHandler {
         }
 
         if (!user || !user.widgets || user.widgets.widgets.length === 0) {
+            // User has no saved widgets - return all widgets with default widget IDs
+            result.widgets = await this.getAll(user, i18n);
+
             if (this.adminizer.config.dashboard && typeof this.adminizer.config.dashboard !== "boolean" && this.adminizer.config.dashboard.defaultWidgets) {
-                const defaultWidgets = this.adminizer.config.dashboard.defaultWidgets;
-                result.widgets = await this.getAll(user, i18n);
-
-                const addedWidgets: WidgetConfig[] = [];
-                let x = 0, y = 0;
-
-                // Mark default widgets as added and collect them
-                result.widgets.forEach(widget => {
-                    if (defaultWidgets.includes(widget.id.split("__")[0])) {
-                        widget.added = true;
-                        addedWidgets.push(widget);
-                    }
-                });
-
-                // Generate layout for all breakpoints
-                addedWidgets.forEach(widget => {
-                    const w = widget.size?.w || 1;
-                    const h = widget.size?.h || 1;
-                    const layoutItem: WidgetLayoutItem = { x, y, w, h, i: widget.id, id: widget.id };
-
-                    result.layout.lg.push(layoutItem);
-                    result.layout.md.push(layoutItem);
-                    result.layout.sm.push({ ...layoutItem, w: Math.min(w, 4) });
-                    result.layout.xs.push({ ...layoutItem, w: Math.min(w, 3) });
-                    result.layout.xxs.push({ ...layoutItem, w: 2 });
-
-                    x += w;
-                    if (x >= 12) {
-                        x = 0;
-                        y += h;
-                    }
-                });
+                result.defaultWidgets = this.adminizer.config.dashboard.defaultWidgets;
             }
         } else {
+            // User has saved widgets - return them
             result.widgets = user.widgets.widgets;
             result.layout = user.widgets.layout;
         }
