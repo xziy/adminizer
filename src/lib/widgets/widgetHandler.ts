@@ -215,14 +215,6 @@ export class WidgetHandler {
                         y += h;
                     }
                 });
-
-                // Save to database
-                if (addedWidgets.length > 0) {
-                    await this.setWidgetsDB(user.id, {
-                        widgets: addedWidgets,
-                        layout: result.layout as any
-                    }, false);
-                }
             }
         } else {
             result.widgets = user.widgets.widgets;
