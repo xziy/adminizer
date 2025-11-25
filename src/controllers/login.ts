@@ -34,10 +34,17 @@ export default async function login(req: ReqType, res: ResType) {
                 if (req.user.isAdministrator) {
                     req.session.userPretended = user;
 
-                    // return res.sendStatus(200);
-                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
+                    // Force full page reload after pretend
+                    if (req.headers['x-inertia']) {
+                        return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                    }
+                    return res.redirect(`${req.adminizer.config.routePrefix}/`);
                 }
-                return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
+                
+                if (req.headers['x-inertia']) {
+                    return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                }
+                return res.redirect(`${req.adminizer.config.routePrefix}/`);
             }
 
             // Verify CAPTCHA solution if enabled
@@ -74,7 +81,14 @@ export default async function login(req: ReqType, res: ResType) {
                         path: '/',
                         maxAge: 60 * 60 * 24 * 7 * 2,
                     }));
-                    return req.Inertia.redirect(`${req.adminizer.config.routePrefix}`);
+                    
+                    // Force full page reload after login to prevent iframe issues
+                    if (req.headers['x-inertia']) {
+                        // If it's an Inertia request, send 409 to force full page reload
+                        return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                    }
+                    
+                    return res.redirect(`${req.adminizer.config.routePrefix}/`);
                 } else {
                     return inertiaAdminMessage(req, "Wrong password", 'password');
                 }
@@ -100,7 +114,12 @@ export default async function login(req: ReqType, res: ResType) {
     } else if (req.originalUrl.indexOf("logout") >= 0) {
         if (req.session.userPretended && req.session.userPretended.id && req.user && req.user.id) {
             delete (req.session.userPretended);
-            return req.Inertia.redirect(`${req.adminizer.config.routePrefix}/`);
+            
+            // Force full page reload after unpretend
+            if (req.headers['x-inertia']) {
+                return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+            }
+            return res.redirect(`${req.adminizer.config.routePrefix}/`);
         }
         req.user = undefined;
         res.setHeader('Set-Cookie', serialize('adminizer_jwt', '', {
@@ -109,7 +128,12 @@ export default async function login(req: ReqType, res: ResType) {
             path: '/',
             expires: new Date(0),
         }));
-        req.Inertia.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
+        
+        // Force full page reload after logout
+        if (req.headers['x-inertia']) {
+            return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/model/userap/login`}).end();
+        }
+        return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }
     return res.status(404);
 }

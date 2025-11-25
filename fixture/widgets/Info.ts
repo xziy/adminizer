@@ -1,14 +1,16 @@
-import {InfoBase} from "../../dist";
+import { InfoBase } from "../../dist";
 
 export class InfoOne extends InfoBase {
-    icon?: string;
-    declare public backgroundCSS: string;
-	public size: { h: number; w: number; } = {h: 3, w: 2};
+	icon?: string;
+	declare public backgroundCSS: string;
+	public size: { h: number; w: number; } = { h: 3, w: 2 };
 	readonly id: string = 'info_one';
 	readonly department: string = 'test';
 	readonly description: string = 'Info widget One'
 	readonly name: string = 'Info One';
 	readonly widgetType = "info";
+	readonly link: string = '/adminizer/catalog/navigation/header';
+	readonly linkType: 'self' | 'blank' = 'self';
 
 	private info: string = 'Lorem ipsum'
 
@@ -19,7 +21,7 @@ export class InfoOne extends InfoBase {
 }
 
 export class InfoTwo extends InfoBase {
-    icon?: string;
+	icon?: string;
 	readonly id: string = 'info_two';
 	readonly department: string = 'test';
 	readonly description: string = 'Info widget Two'
@@ -39,8 +41,8 @@ export class InfoTwo extends InfoBase {
 }
 
 export class Info3 extends InfoBase {
-    icon?: string;
-    declare public backgroundCSS: string;
+	icon?: string;
+	declare public backgroundCSS: string;
 	readonly id: string = 'info_3';
 	readonly department: string = 'test';
 	readonly description: string = 'Info widget 3'
@@ -59,7 +61,7 @@ export class Info3 extends InfoBase {
 }
 
 export class Info4 extends InfoBase {
-    icon?: string;
+	icon?: string;
 	readonly id: string = 'info_4';
 	readonly department: string = 'test';
 	readonly description: string = 'Info widget 4'

@@ -1,13 +1,13 @@
-import {SwitchBase} from "./abstractSwitch";
-import {InfoBase} from "./abstractInfo";
-import {ActionBase} from "./abstractAction";
-import {LinkBase} from "./abstractLink";
-import {CustomBase} from "./abstractCustom";
-import {AdminpanelIcon} from "../../interfaces/adminpanelConfig";
-import {Adminizer} from "../Adminizer";
-import {UserAP} from "models/UserAP";
+import { SwitchBase } from "./abstractSwitch";
+import { InfoBase } from "./abstractInfo";
+import { ActionBase } from "./abstractAction";
+import { LinkBase } from "./abstractLink";
+import { CustomBase } from "./abstractCustom";
+import { AdminpanelIcon } from "../../interfaces/adminpanelConfig";
+import { Adminizer } from "../Adminizer";
+import { UserAP } from "models/UserAP";
 import * as process from "node:process";
-import {I18n} from "../I18n";
+import { I18n } from "../I18n";
 
 export type WidgetType = (SwitchBase | InfoBase | ActionBase | LinkBase | CustomBase);
 
@@ -109,7 +109,9 @@ export class WidgetHandler {
                             icon: widget.icon as AdminpanelIcon,
                             name: i18n.__(widget.name),
                             backgroundCSS: widget.backgroundCSS ?? null,
-                            size: widget.size ?? null
+                            size: widget.size ?? null,
+                            link: widget.link,
+                            linkType: widget.linkType
                         })
                     }
                 } else if (widget.widgetType === 'action') {
@@ -169,14 +171,14 @@ export class WidgetHandler {
         layout: WidgetsLayouts
     }> {
         let user: UserAP;
-        let result: { widgets: WidgetConfig[], layout: WidgetsLayouts } = {widgets: [], layout: {lg: [], md: [], sm: [], xs: [], xxs: []}};
+        let result: { widgets: WidgetConfig[], layout: WidgetsLayouts } = { widgets: [], layout: { lg: [], md: [], sm: [], xs: [], xxs: [] } };
 
         if (!auth) {
             // TODO refactor CRUD functions for DataAccessor usage
-            user = await this.adminizer.modelHandler.model.get("UserAP")?.["_findOne"]({login: this.adminizer.config.administrator?.login ?? 'admin'});
+            user = await this.adminizer.modelHandler.model.get("UserAP")?.["_findOne"]({ login: this.adminizer.config.administrator?.login ?? 'admin' });
         } else {
             // TODO refactor CRUD functions for DataAccessor usage
-            user = await this.adminizer.modelHandler.model.get("UserAP")?.["_findOne"]({id: id});
+            user = await this.adminizer.modelHandler.model.get("UserAP")?.["_findOne"]({ id: id });
         }
 
         if (!user || !user.widgets || user.widgets.widgets.length === 0) {
@@ -191,7 +193,7 @@ export class WidgetHandler {
             }
         } else {
             result.widgets = user.widgets.widgets;
-            result.layout =  user.widgets.layout;
+            result.layout = user.widgets.layout;
         }
 
         return result;
@@ -204,11 +206,11 @@ export class WidgetHandler {
     }, auth: boolean): Promise<number> {
         if (!auth) {
             // TODO refactor CRUD functions for DataAccessor usage
-            let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({login: this.adminizer.config.administrator?.login ?? 'admin'}, {widgets: body})
+            let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ login: this.adminizer.config.administrator?.login ?? 'admin' }, { widgets: body })
             return updatedUser.id
         } else {
             // TODO refactor CRUD functions for DataAccessor usage
-            let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({id: id}, {widgets: body})
+            let updatedUser: UserAP = await this.adminizer.modelHandler.model.get("UserAP")?.["_updateOne"]({ id: id }, { widgets: body })
             return updatedUser.id
         }
 

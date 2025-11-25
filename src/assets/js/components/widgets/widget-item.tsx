@@ -1,11 +1,11 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from "axios";
-import {getDefaultColorByID} from "./colorPallete.ts";
-import {Widget as WidgetData} from "@/types";
+import { getDefaultColorByID } from "./colorPallete.ts";
+import { Widget as WidgetData } from "@/types";
 import MaterialIcon from "@/components/material-icon.tsx";
-import {router} from "@inertiajs/react";
-import {ComponentType} from "@/pages/module.tsx";
-import {LoaderCircle} from "lucide-react";
+import { router } from "@inertiajs/react";
+import { ComponentType } from "@/pages/module.tsx";
+import { LoaderCircle } from "lucide-react";
 
 type WidgetType = 'info' | 'switcher' | 'action' | 'link' | 'custom' | undefined;
 
@@ -25,7 +25,7 @@ interface WidgetState {
     scriptUrl: string
 }
 
-const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
+const WidgetItem: React.FC<WidgetProps> = ({ widgets, draggable, ID }) => {
     const [widgetType, setWidgetType] = useState<WidgetType>(undefined);
     const [widgetState, setWidgetState] = useState<WidgetState>({
         name: null,
@@ -79,7 +79,7 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     const getInfo = async (api: string) => {
         try {
             const response = await axios.get(api);
-            setWidgetState((prev) => ({...prev, info: response.data}));
+            setWidgetState((prev) => ({ ...prev, info: response.data }));
         } catch (error) {
             console.error('Error fetching widget info:', error);
         }
@@ -88,7 +88,7 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     const getState = async (api: string) => {
         try {
             const response = await axios.get(api);
-            setWidgetState((prev) => ({...prev, state: response.data.state}));
+            setWidgetState((prev) => ({ ...prev, state: response.data.state }));
         } catch (error) {
             console.error('Error fetching widget state:', error);
         }
@@ -108,7 +108,7 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     const handleSwitcherWidget = async (api: string) => {
         try {
             const response = await axios.post(api);
-            setWidgetState((prev) => ({...prev, state: response.data.state}));
+            setWidgetState((prev) => ({ ...prev, state: response.data.state }));
         } catch (error) {
             console.error('Error switching widget state:', error);
         }
@@ -123,7 +123,11 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     };
 
     const widgetAction = async () => {
-        if (!widgetType || widgetType === 'info' || draggable) return;
+        if (!widgetType || draggable) return;
+
+        // Check if info widget has a link
+        const widget = widgets.find((e) => e.id === ID);
+        if (widgetType === 'info' && !widget?.link) return;
 
         const widgetElement = widgetRef.current;
         if (!widgetElement) return;
@@ -134,6 +138,7 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
             const api = widgets.find((e) => e.id === ID)?.api;
 
             switch (widgetType) {
+                case 'info':
                 case 'link':
                     handleLinkWidget();
                     break;
@@ -153,7 +158,9 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
 
     const getWidgetClass = (): string => {
         if (draggable) return 'widget-flexible--flex';
-        return widgetType === 'info' ? '' : 'cursor-pointer hover:brightness-110';
+        const widget = widgets.find((e) => e.id === ID);
+        const hasLink = widgetType === 'info' && widget?.link;
+        return (widgetType !== 'info' || hasLink) ? 'cursor-pointer hover:brightness-110' : '';
     };
 
     const renderWidgetContent = () => {
@@ -170,15 +177,15 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
     return (
         <>
             {widgetType === 'custom' ? (
-                <div className="flex justify-center items-center w-full h-full rounded-md border" style={{backgroundColor: widgetState.backgroundColor}}>
+                <div className="flex justify-center items-center w-full h-full rounded-md border" style={{ backgroundColor: widgetState.backgroundColor }}>
                     {Component ||
-                        <LoaderCircle className="size-10 animate-spin text-neutral-500"/>}
+                        <LoaderCircle className="size-10 animate-spin text-neutral-500" />}
                 </div>
             ) : (
                 <div
                     id={ID}
                     className={`transition rounded-md birder w-full h-full ${getWidgetClass()}`}
-                    style={{backgroundColor: widgetState.backgroundColor}}
+                    style={{ backgroundColor: widgetState.backgroundColor }}
                     onClick={widgetAction}
                     ref={widgetRef}
                 >
@@ -190,8 +197,8 @@ const WidgetItem: React.FC<WidgetProps> = ({widgets, draggable, ID}) => {
                         <div className="flex items-end justify-between gap-5">
                             {renderWidgetContent()}
                             <span className="admin-widgets__icon">
-                        <MaterialIcon name={widgetState.icon}/>
-                    </span>
+                                <MaterialIcon name={widgetState.icon} />
+                            </span>
                         </div>
                     </div>
                 </div>
