@@ -472,12 +472,13 @@ const config: AdminpanelConfig = {
         initTab: 'general',
     },
     cors: {
-        enabled: true,
+        enabled: false,
         origin: 'http://localhost:3000',
         path: 'api/*'
     },
     aiAssistant: {
-        enabled: (process.env.ENABLE_AI_ASSISTANT ?? "true") === 'true',
+        // enabled: (process.env.ENABLE_AI_ASSISTANT ?? "true") === 'true',
+        enabled: false,
         defaultModel: 'openai-data',
         models: ['openai-data', 'dummy'],
     },
