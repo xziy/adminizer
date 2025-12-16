@@ -134,13 +134,13 @@ export class NotificationController {
             service.addClient(clientId, sendEvent, req.user);
 
             // Для системного сервиса добавляем клиента в CRUD каналы
-            if (service.notificationClass === 'system') {
-                const systemService = service as SystemNotificationService;
-                // Добавляем клиента в основные CRUD каналы с указанием userId
-                ['created', 'updated', 'deleted', 'system'].forEach(channel => {
-                    systemService.addClientToChannel(clientId, channel, req.user.id);
-                });
-            }
+            // if (service.notificationClass === 'system') {
+            //     const systemService = service as SystemNotificationService;
+            //     // Добавляем клиента в основные CRUD каналы с указанием userId
+            //     ['created', 'updated', 'deleted', 'system'].forEach(channel => {
+            //         systemService.addClientToChannel(clientId, channel, req.user.id);
+            //     });
+            // }
         });
 
         // Отправляем приветственное сообщение
@@ -159,12 +159,12 @@ export class NotificationController {
                 service.removeClient(clientId);
 
                 // Для системного сервиса удаляем из всех каналов
-                if (service.notificationClass === 'system') {
-                    const systemService = service as SystemNotificationService;
-                    if (systemService.removeClientFromAllChannels) {
-                        systemService.removeClientFromAllChannels(clientId, req.user.id);
-                    }
-                }
+                // if (service.notificationClass === 'system') {
+                //     const systemService = service as SystemNotificationService;
+                //     if (systemService.removeClientFromAllChannels) {
+                //         systemService.removeClientFromAllChannels(clientId, req.user.id);
+                //     }
+                // }
             });
             res.end();
         });

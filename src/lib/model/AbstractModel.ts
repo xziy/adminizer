@@ -143,14 +143,14 @@ export abstract class AbstractModel<T> {
         }
 
         // log system event notification
-        await dataAccessor.adminizer.logSystemEvent(
-            eventType,
-            message,
-            {
-                changes: formattedChanges,
-                summary
-            }
-        );
+        // await dataAccessor.adminizer.logSystemEvent(
+        //     eventType,
+        //     message,
+        //     {
+        //         changes: formattedChanges,
+        //         summary
+        //     }
+        // );
     }
 
     public async create(data: T, dataAccessor: DataAccessor): Promise<Partial<T>> {

@@ -8,8 +8,8 @@ export async function bindNotifications(adminizer: Adminizer): Promise<void> {
     adminizer.notificationHandler = new NotificationHandler();
 
     // Регистрируем сервисы
-    const systemService = new SystemNotificationService(adminizer);
-    adminizer.notificationHandler.registerService(systemService);
+    // const systemService = new SystemNotificationService(adminizer);
+    // adminizer.notificationHandler.registerService(systemService);
 
     if (adminizer.config.notifications.enableGeneral) {
         const generalService = new GeneralNotificationService(adminizer);
