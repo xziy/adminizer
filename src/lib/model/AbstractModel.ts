@@ -119,9 +119,11 @@ export abstract class AbstractModel<T> {
         oldRecord: Partial<T>,
         newRecord: Partial<T>
     ): Promise<void> {
+        if(!dataAccessor.adminizer.config.history?.enabled) return;
+
         let formattedChanges: any[] = [];
         let summary = '';
-
+        
         switch (eventType) {
             case 'Created':
                 const cleanNewRecord = sanitizeForDiff(newRecord);

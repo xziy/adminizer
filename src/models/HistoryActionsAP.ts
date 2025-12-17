@@ -18,6 +18,12 @@ export default {
     data: {
         type: "json",
     },
+    diff: {
+        type: "json",
+    },
+    meta: {
+        type: "string",
+    },
     createdAt: {
         type: 'number',
         autoCreatedAt: true

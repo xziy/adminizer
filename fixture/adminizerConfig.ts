@@ -471,6 +471,9 @@ const config: AdminpanelConfig = {
         enableGeneral: true,
         initTab: 'general',
     },
+    history: {
+        enabled: true,
+    },
     cors: {
         enabled: false,
         origin: 'http://localhost:3000',

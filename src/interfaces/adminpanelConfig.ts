@@ -275,6 +275,10 @@ export interface AdminpanelConfig {
         methods?: string[];
         allowedHeaders?: string[];
     };
+    history?: {
+        enabled: boolean,
+        adapter?: string
+    }
 }
 
 export interface ModelConfig {

@@ -42,6 +42,8 @@ import {INotification} from "../interfaces/types";
 import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
 import {StorageServices} from "./catalog/Navigation";
 import {bindCors} from "../system/bindCors";
+import { HistoryHandler } from "./history-actions/HistoryHandler";
+import bindHistory from "../system/bindHistory";
 
 export class Adminizer {
     // Preconfigures
@@ -61,6 +63,7 @@ export class Adminizer {
     configHelper: ConfigHelper
     menuHelper: MenuHelper
     notificationHandler!: NotificationHandler;
+    historyHandler!: HistoryHandler;
     aiAssistantHandler?: AiAssistantHandler;
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
@@ -267,6 +270,8 @@ export class Adminizer {
         if (this.config.notifications.enabled) await bindNotifications(this);
 
         if (this.config.aiAssistant?.enabled) await bindAiAssistant(this);
+
+        await bindHistory(this)
 
         await Router.bind(this); // must be after binding policies and req/res functions
 
