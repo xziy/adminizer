@@ -22,5 +22,5 @@ export abstract class AbstractHistoryAdapter {
     }
 
     public abstract getHistory(): Promise<any>
-    public abstract setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt">): Promise<any>
+    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt">): Promise<any>
 }

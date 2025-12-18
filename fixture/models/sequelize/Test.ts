@@ -26,9 +26,11 @@ export class Test extends Model<
     InferCreationAttributes<Test>
 > {
     @PrimaryKey
-    @AutoIncrement
-    @Column(DataType.INTEGER)
-    declare id: CreationOptional<number>;
+    @Column({
+        type: DataType.UUID,
+        defaultValue: DataType.UUIDV4,
+    })
+    declare id: string;
 
     @Column({type: DataType.STRING, allowNull: false})
     declare title: string;

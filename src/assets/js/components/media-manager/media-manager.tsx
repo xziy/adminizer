@@ -49,6 +49,7 @@ interface Props {
         onlyView?: boolean
     }
     type: string
+    name: string
     onChange?: (media: Media[]) => void
     value?: Media[]
 }
@@ -113,7 +114,7 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-const MediaManager = ({layout, config, type, onChange, value}: Props) => {
+const MediaManager = ({layout, config, type, onChange, value, name}: Props) => {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [items, setItems] = useState<Media[]>(value || []);
     const activeIndex = activeId !== null ? items.findIndex(item => item.id === activeId) : -1;
@@ -263,8 +264,9 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                     </div>
                 ) : (
                     <DropZone
-                        key="main-dropzone"
+                        key={`single-dropzone-${name}`}
                         messages={messages}
+                        name={name}
                         callback={(media) => {
                             addMediaWithCallback(media)
                         }}
@@ -326,7 +328,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                             ) : null}
                         </DragOverlay>
                     </DndContext>
-                    <MediaDialogStack dialogRef={dialogRef}/>
+                    <MediaDialogStack dialogRef={dialogRef} name={name}/>
                 </div>
             )}
         </MediaManagerContext.Provider>

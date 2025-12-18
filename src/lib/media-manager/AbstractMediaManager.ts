@@ -279,7 +279,7 @@ export abstract class AbstractMediaManager {
         /**
          * widget Id in the model in which the mediafile was added
          */
-        modelId: number,
+        modelId: number | string,
         widgetName: string
     ): Promise<void>;
 

@@ -9,10 +9,11 @@ import ImageCropper from "@/components/media-manager/components/ImageCropper.tsx
 import MediaVariants from "@/components/media-manager/components/MediaVariants.tsx";
 
 interface MediaDialogStackProps {
-    dialogRef: RefObject<any>;
+    dialogRef: RefObject<any>
+    name: string
 }
 
-const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
+const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef, name}) => {
     const galleryRef = useRef<GalleryRef>(null);
     const [media, setMedia] = useState<Media | null>(null);
     const {uploadUrl, group, messages} = useContext(MediaManagerContext);
@@ -56,6 +57,7 @@ const MediaDialogStack: FC<MediaDialogStackProps> = ({dialogRef}) => {
                         <div className="h-full overflow-y-auto mt-5 pr-5">
                             <DropZone
                                 key="main-dropzone"
+                                name={name}
                                 messages={messages}
                                 callback={(media) => {
                                     galleryRef.current?.pushMediaItem(media)

@@ -5,7 +5,7 @@ export default {
         primaryKey: true
     },
     modelId: {
-        type: "number",
+        type: "string",
         required: true
     },
     modelName: {
@@ -42,7 +42,8 @@ export interface HistoryActionsAP {
     modelId: number,
     modelName: string,
     action: string,
-    data: any,
+    diff: any,
+    meta: string,
     createdAt: number,
     updatedAt: number,
     preview: boolean

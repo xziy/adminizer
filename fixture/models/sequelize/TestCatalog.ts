@@ -15,9 +15,11 @@ export class TestCatalog extends Model<
 > {
 
     @PrimaryKey
-    @AutoIncrement
-    @Column(DataType.INTEGER)
-    declare id: number;
+    @Column({
+        type: DataType.UUID,
+        defaultValue: DataType.UUIDV4,
+    })
+    declare id: string;
 
     @Column(DataType.JSON)
     declare tree: object;

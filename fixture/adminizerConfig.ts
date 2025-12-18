@@ -473,6 +473,7 @@ const config: AdminpanelConfig = {
     },
     history: {
         enabled: true,
+        adapter: "default"
     },
     cors: {
         enabled: false,

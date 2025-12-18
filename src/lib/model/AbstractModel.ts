@@ -2,6 +2,7 @@ import {DataAccessor} from "../DataAccessor";
 import Waterline from "waterline";
 import {formatChanges, sanitizeForDiff} from "../../helpers/diffHelpers";
 import {diff} from "deep-object-diff";
+import { HistoryActionsAP } from "../../models/HistoryActionsAP";
 
 export interface Attribute {
     type: 'association' | 'association-many' | 'number' | 'json' | 'string' | 'boolean' | 'ref';
@@ -109,6 +110,14 @@ export abstract class AbstractModel<T> {
         };
     }
 
+    private async setHistory(dataAccessor: DataAccessor, data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt">){
+        if(!dataAccessor.adminizer.config.history?.enabled) return;
+
+        const adapter = dataAccessor.adminizer.config.history?.adapter ?? 'default';
+        const historyAdapter = dataAccessor.adminizer.historyHandler.get(adapter);
+        historyAdapter.setHistory(data)
+    }
+
     /**
      * Log system event with diff
      */
@@ -153,12 +162,22 @@ export abstract class AbstractModel<T> {
         //         summary
         //     }
         // );
+
+        // this.setHistory(dataAccessor, {
+        //     modelId: 0,
+        //     modelName: "",
+        //     action: "",
+        //     diff: undefined,
+        //     meta: "",
+        //     preview: false
+        // })
+        
     }
 
     public async create(data: T, dataAccessor: DataAccessor): Promise<Partial<T>> {
         let _data = await dataAccessor.setUserRelationAccess(dataAccessor.process(data));
         let record = await this._create(_data);
-
+    
         // Log creation event
         await this.logSystemEvent(
             dataAccessor,

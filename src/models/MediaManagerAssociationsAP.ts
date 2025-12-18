@@ -1,4 +1,4 @@
-import {MediaManagerAP} from "./MediaManagerAP";
+import { MediaManagerAP } from "./MediaManagerAP";
 
 export default {
     id: {
@@ -13,7 +13,7 @@ export default {
         type: "string"
     },
     modelId: {
-        type: "number"
+        type: "string" // ✅ Изменено: поддержка строк и чисел через приведение к строке
     },
     widgetName: {
         type: "string"
@@ -32,13 +32,13 @@ export default {
         type: 'number',
         autoUpdatedAt: true
     }
-}
+};
 
 export interface MediaManagerAssociationsAP {
     id: string;
     mediaManagerId?: string;
     model?: string;
-    modelId?: number;
+    modelId?: string; // ✅ Изменено: string вместо number
     widgetName?: string;
     sortOrder?: number;
     file?: MediaManagerAP;
