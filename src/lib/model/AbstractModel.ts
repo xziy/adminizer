@@ -115,7 +115,7 @@ export abstract class AbstractModel<T> {
 
         const adapter = dataAccessor.adminizer.config.history?.adapter ?? 'default';
         const historyAdapter = dataAccessor.adminizer.historyHandler.get(adapter);
-        historyAdapter.setHistory(data)
+        await historyAdapter.setHistory(data)
     }
 
     /**
@@ -152,25 +152,18 @@ export abstract class AbstractModel<T> {
                 summary = `Deleted ${formattedChanges.length} fields`;
                 break;
         }
+        
+        const record = eventType === 'Deleted' ? oldRecord : newRecord;
 
-        // log system event notification
-        // await dataAccessor.adminizer.logSystemEvent(
-        //     eventType,
-        //     message,
-        //     {
-        //         changes: formattedChanges,
-        //         summary
-        //     }
-        // );
-
-        // this.setHistory(dataAccessor, {
-        //     modelId: 0,
-        //     modelName: "",
-        //     action: "",
-        //     diff: undefined,
-        //     meta: "",
-        //     preview: false
-        // })
+        this.setHistory(dataAccessor, {
+            modelId: record[this.primaryKey as keyof T] as string | number,
+            modelName: dataAccessor.entity.name.toLocaleLowerCase(),
+            action: eventType.toLocaleLowerCase(),
+            data: record,
+            diff: formattedChanges,
+            meta: message,
+            preview: false
+        })
         
     }
 
@@ -182,10 +175,9 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Created',
-            // @ts-ignore
-            `user ${dataAccessor.user.login} create ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
+            `user ${dataAccessor.user.login} create ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
             {},
-            _data
+            record
         );
 
         return dataAccessor.process(record);
@@ -225,8 +217,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Updated',
-            // @ts-ignore
-            `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
+            `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
             oldRecord,
             record
         );
@@ -251,8 +242,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Updated',
-                    // @ts-ignore
-                    `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
+                    `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
                     oldRecord,
                     record
                 );
@@ -281,8 +271,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Deleted',
-            //@ts-ignore
-            `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
+            `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
             oldRecord,
             {}
         );
@@ -306,8 +295,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Deleted',
-                    //@ts-ignore
-                    `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as string]}`,
+                    `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
                     oldRecord,
                     {}
                 );

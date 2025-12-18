@@ -14,8 +14,10 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
     public getHistory(): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    public setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt">): Promise<any> {
-        throw new Error("Method not implemented.");
+    public async setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt">): Promise<any> {
+        console.log(data);
+        
+        return
     }
     
 }

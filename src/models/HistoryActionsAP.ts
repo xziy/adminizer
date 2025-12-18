@@ -39,9 +39,10 @@ export default {
 
 export interface HistoryActionsAP {
     id: number,
-    modelId: number,
+    modelId: number | string,
     modelName: string,
     action: string,
+    data: any,
     diff: any,
     meta: string,
     createdAt: number,

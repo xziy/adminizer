@@ -434,7 +434,7 @@ const models: AdminpanelConfig["models"] = {
         add: true,
         edit: true,
         view: true,
-        remove: false
+        remove: true
     },
     TestCatalog: {
         title: '',
