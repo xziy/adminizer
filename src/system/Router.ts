@@ -21,6 +21,7 @@ import {Adminizer} from "../lib/Adminizer";
 import timezones from "../controllers/timezones";
 import {NotificationController} from "../controllers/notifications/NotificationController";
 import {AiAssistantController} from "../controllers/ai/AiAssistantController";
+import { HistoryController } from "../controllers/history-actions/HistoryController";
 
 export default class Router {
 
@@ -168,6 +169,18 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, NotificationController.search)
             );
         }
+
+        /**
+         * History-actions
+         */
+        if(adminizer.config.history?.enabled){
+            adminizer.app.post(
+                `${adminizer.config.routePrefix}/history/get-model-history`,
+                adminizer.policyManager.bindPolicies(policies, HistoryController.getModelHistory)
+            );
+        }
+
+
         if (adminizer.config.aiAssistant?.enabled) {
             adminizer.app.get(
                 `${adminizer.config.routePrefix}/api/ai-assistant/models`,

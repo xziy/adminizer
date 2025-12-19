@@ -110,7 +110,7 @@ export abstract class AbstractModel<T> {
         };
     }
 
-    private async setHistory(dataAccessor: DataAccessor, data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt">){
+    private async setHistory(dataAccessor: DataAccessor, data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">){
         if(!dataAccessor.adminizer.config.history?.enabled) return;
 
         const adapter = dataAccessor.adminizer.config.history?.adapter ?? 'default';

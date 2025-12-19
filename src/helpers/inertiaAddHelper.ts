@@ -50,6 +50,7 @@ interface FieldProps extends Record<string | number | symbol, unknown> {
         title: string;
     },
     postLink: string,
+    model: string
 }
 
 export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number | string[]>, view: boolean = false) {
@@ -69,6 +70,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
             title: req.i18n.__('Save')
         },
         postLink: record ? `${entity.uri}/edit/${record.id}` : `${entity.uri}/add`,
+        model: entity.name.toLocaleLowerCase()
     }
     props.actions = inertiaActionsHelper(actionType, entity, req)
 

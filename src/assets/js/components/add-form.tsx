@@ -95,8 +95,8 @@ const AddForm: FC<{
 }> =
     ({ page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable }) => {
 
-        const { fields, btnBack, view, notFound } = page.props;
-
+        const { fields, btnBack, view, edit, notFound, model } = page.props;
+                
         const {
             data,
             setData,
@@ -260,23 +260,23 @@ const AddForm: FC<{
                                     </div>
                                 </>
                             }
-                            <div className="flex gap-2 justify-center">
+                            <div className={`flex gap-2 ${(edit || view) ? 'justify-center' : 'justify-start'}`}>
                                 <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                                     {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                     {page.props.btnSave.title}
                                 </Button>
-                                <Button variant="outline" className="w-fit"
+                                {(edit || view) && <Button variant="outline" className="w-fit"
                                     onClick={(e) => {
                                         e.preventDefault()
                                         dialogRef.current?.open()
                                     }}
-                                >History</Button>
+                                >History</Button>}
                             </div>
                         </div>
                     </div>
                 </form>
-                <HistoryDialogStack dialogRef={dialogRef} />
+                {(edit || view) && <HistoryDialogStack dialogRef={dialogRef} modelName={model} modelId={fields.find(e => e.name === 'id')?.value} />}
             </div>
         );
     };

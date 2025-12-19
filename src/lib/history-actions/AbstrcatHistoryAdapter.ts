@@ -21,6 +21,6 @@ export abstract class AbstractHistoryAdapter {
         }, 100)
     }
 
-    public abstract getHistory(): Promise<any>
-    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt">): Promise<any>
+    public abstract getHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
+    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
 }

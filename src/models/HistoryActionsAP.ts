@@ -24,6 +24,9 @@ export default {
     meta: {
         type: "string",
     },
+    isCurrent: {
+        type: 'boolean',
+    },
     createdAt: {
         type: 'number',
         autoCreatedAt: true
@@ -45,6 +48,7 @@ export interface HistoryActionsAP {
     data: any,
     diff: any,
     meta: string,
+    isCurrent: boolean,
     createdAt: number,
     updatedAt: number,
     preview: boolean

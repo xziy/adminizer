@@ -271,7 +271,7 @@ export class Adminizer {
 
         if (this.config.aiAssistant?.enabled) await bindAiAssistant(this);
 
-        await bindHistory(this)
+        if (this.config.history?.enabled) await bindHistory(this)
 
         await Router.bind(this); // must be after binding policies and req/res functions
 
