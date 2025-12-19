@@ -3,7 +3,7 @@
  *
  * @constructor
  */
-import { UserAP } from "models/UserAP";
+import { UserAP } from "../models/UserAP";
 import { ActionType, AdminpanelConfig, HrefConfig, ModelConfig } from "../interfaces/adminpanelConfig";
 import { GroupsAccessRightsHelper } from "./accessRightsHelper";
 

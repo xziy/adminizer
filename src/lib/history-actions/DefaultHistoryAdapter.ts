@@ -14,7 +14,7 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
     }
 
     public getHistory(): Promise<any> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve, reject) => resolve(true));
     }
     public async setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt">): Promise<any> {
         await this.adminizer.modelHandler.model.get(this.model)["_create"](data)

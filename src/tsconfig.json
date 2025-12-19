@@ -16,7 +16,7 @@
 		"noImplicitReturns": true,
 		"lib": ["dom", "esnext"],
 		"rootDir": "./",
-		"baseUrl": "./",
+		// "baseUrl": "./",
 		"outDir": "../dist",
 	},
 	"ts-node": {

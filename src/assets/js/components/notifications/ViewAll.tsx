@@ -1,15 +1,14 @@
-import {SharedData} from "@/types";
-import {router, usePage} from "@inertiajs/react";
-import {useCallback, useEffect, useRef, useState} from "react";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {LoaderCircle} from "lucide-react";
+import { SharedData } from "@/types";
+import { router, usePage } from "@inertiajs/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { LoaderCircle } from "lucide-react";
 import General from "@/components/notifications/General.tsx";
-import System from "@/components/notifications/System.tsx";
-import {useNotifications} from '@/contexts/NotificationContext';
-import {INotification} from '../../../../interfaces/types';
-import {Button} from "@/components/ui/button.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {debounce} from "lodash-es";
+import { useNotifications } from '@/contexts/NotificationContext';
+import { INotification } from '../../../../interfaces/types';
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { debounce } from "lodash-es";
 
 interface NotificationProps extends SharedData {
     title: string
@@ -83,7 +82,7 @@ const ViewAll = () => {
     }, [allNotifications, activeTab]);
 
     const handleTabChange = async (tab: string) => {
-        router.get(page.url, {type: tab}, {
+        router.get(page.url, { type: tab }, {
             preserveState: true,
             preserveScroll: true,
             replace: true
@@ -126,26 +125,18 @@ const ViewAll = () => {
         setLoadingMore(false)
     }, [hasMore, localLoading, activeTab, paginateNotifications]);
 
-    const renderContent = (viewType: string) => {
+    const renderContent = () => {
         if (localLoading) {
-            return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin"/>;
+            return <LoaderCircle className="mx-auto mt-14 size-8 animate-spin" />;
         }
         if (!localLoading && filteredNotifications.length > 0) {
-            return viewType === 'system'
-                ? <System notifications={filteredNotifications}
-                          onMarkAsRead={handleMarkAsRead}
-                          loadingMore={loadingMore}
-                          messages={messages}
-                          onLoadMore={handleLoadMore}
-                          hasMore={hasMore}
-                />
-                : <General notifications={filteredNotifications}
-                           onMarkAsRead={handleMarkAsRead}
-                           onLoadMore={handleLoadMore}
-                           messages={messages}
-                           loadingMore={loadingMore}
-                           hasMore={hasMore}
-                />;
+            return <General notifications={filteredNotifications}
+                onMarkAsRead={handleMarkAsRead}
+                onLoadMore={handleLoadMore}
+                messages={messages}
+                loadingMore={loadingMore}
+                hasMore={hasMore}
+            />
         } else {
             return <div className="text-center font-medium mt-8">No notifications found</div>;
         }
@@ -183,7 +174,7 @@ const ViewAll = () => {
                         className="w-[200px] p-2 border rounded"
                     />
                     <div className="flex items-center gap-2">
-                        {readLoading && <LoaderCircle className="size-6 animate-spin"/>}
+                        {readLoading && <LoaderCircle className="size-6 animate-spin" />}
                         <Button variant="green" size="sm" onClick={markAllRead}>{messages["Make all read"]}</Button>
                     </div>
                 </div>
@@ -203,7 +194,9 @@ const ViewAll = () => {
                     ))}
                 </TabsList>
                 {tabs?.map(tab => (
-                    <TabsContent key={tab.notificationClass} value={tab.notificationClass}>{renderContent(tab.notificationClass)}</TabsContent>
+                    <TabsContent key={tab.notificationClass} value={tab.notificationClass}>{
+                        renderContent()
+                    }</TabsContent>
                 ))}
             </Tabs>
         </div>

@@ -6,8 +6,8 @@ import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import inertiaAddHelper from "../helpers/inertiaAddHelper";
 import {FieldsHelper} from "../helpers/fieldsHelper";
-import {UserAP} from "models/UserAP";
-import {GroupAP} from "models/GroupAP";
+import {UserAP} from "../models/UserAP";
+import {GroupAP} from "../models/GroupAP";
 import {BaseFieldConfig, MediaManagerOptionsField} from "../interfaces/adminpanelConfig";
 import {getRelationsMediaManager} from "../lib/media-manager/helpers/MediaManagerHelper";
 

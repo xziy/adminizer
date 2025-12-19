@@ -12,8 +12,8 @@ import {
 import {Field, Fields} from "../helpers/fieldsHelper";
 import {ControllerHelper} from "../helpers/controllerHelper";
 import {Adminizer} from "./Adminizer";
-import { GroupAP } from "models/GroupAP";
-import { UserAP } from "models/UserAP";
+import { GroupAP } from "../models/GroupAP";
+import { UserAP } from "../models/UserAP";
 import { isObject } from "../helpers/JsUtils";
 
 export class DataAccessor {

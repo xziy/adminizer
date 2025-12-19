@@ -4,8 +4,8 @@ import multer from "multer";
 import {I18n} from "../lib/I18n";
 import {Inertia} from "../lib/inertia/inertiaAdapter";
 import {Flash} from "../lib/inertia/flash";
-import { UserAP } from "models/UserAP";
-import { GroupAP } from "models/GroupAP";
+import { UserAP } from "../models/UserAP";
+import { GroupAP } from "../models/GroupAP";
 
 declare global {
 	/** @deprecated use import from TS model decalration */

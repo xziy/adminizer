@@ -5,7 +5,7 @@ import { LinkBase } from "./abstractLink";
 import { CustomBase } from "./abstractCustom";
 import { AdminpanelIcon } from "../../interfaces/adminpanelConfig";
 import { Adminizer } from "../Adminizer";
-import { UserAP } from "models/UserAP";
+import { UserAP } from "../../models/UserAP";
 import * as process from "node:process";
 import { I18n } from "../I18n";
 

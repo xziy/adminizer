@@ -1,25 +1,28 @@
-import {type FC, useCallback, FormEventHandler, memo, useEffect, useState} from 'react';
-import {Link, useForm} from "@inertiajs/react";
-import {Info, LoaderCircle, MoveLeft} from "lucide-react";
-import {Field} from '@/types';
-import {Button} from "@/components/ui/button.tsx";
-import {Icon} from "@/components/icon.tsx";
-import {Label} from "@/components/ui/label.tsx";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
-import {type Content} from "vanilla-jsoneditor";
+import { type FC, useCallback, FormEventHandler, memo, useEffect, useState, useRef } from 'react';
+import { Link, useForm } from "@inertiajs/react";
+import { Info, LoaderCircle, MoveLeft } from "lucide-react";
+import { Field } from '@/types';
+import { Button } from "@/components/ui/button.tsx";
+import { Icon } from "@/components/icon.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.tsx";
+import { type Content } from "vanilla-jsoneditor";
 import FieldRenderer from "@/components/field-renderer.tsx";
-import {useInView} from 'react-intersection-observer';
-import {Skeleton} from "@/components/ui/skeleton.tsx";
-import {getFieldError, hasFormErrors, resetFormErrors} from '@/hooks/form-state';
+import { useInView } from 'react-intersection-observer';
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { getFieldError, hasFormErrors, resetFormErrors } from '@/hooks/form-state';
 import InputError from "@/components/input-error.tsx";
-import {AddProps} from '@/pages/add';
+import { AddProps } from '@/pages/add';
 import axios from "axios";
-import {Checkbox} from "@/components/ui/checkbox.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { DialogStackHandle } from '@/components/ui/dialog-stack';
+import HistoryDialogStack from '@/components/history/HistoryDialogStack';
+
 
 export type FieldValue = string | boolean | number | Date | any[] | Content;
 
 
-const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
+const LabelRenderer: FC<{ field: Field }> = memo(({ field }) => {
     if (!field || typeof field !== 'object' || !field.label) {
         console.error('Invalid field for LabelRenderer:', field);
         return null;
@@ -36,7 +39,7 @@ const LabelRenderer: FC<{ field: Field }> = memo(({field}) => {
                                 className="text-primary w-5 h-5 cursor-pointer"
                             />
                         </TooltipTrigger>
-                        <TooltipContent align="center" side="top" className="z-[1002]">
+                        <TooltipContent align="center" side="top" className="z-1002">
                             <p>{field.tooltip}</p>
                         </TooltipContent>
                     </Tooltip>
@@ -53,7 +56,7 @@ const LazyField: FC<{
     processing: boolean;
     notFound?: string
     search?: string
-}> = memo(({field, value, onChange, processing, notFound, search}) => {
+}> = memo(({ field, value, onChange, processing, notFound, search }) => {
     if (!field || typeof field !== 'object' || !field.name || !field.type) {
         console.error('Invalid field for LazyField:', field);
         return <div className="text-red-500">Error: Invalid field data</div>;
@@ -74,7 +77,7 @@ const LazyField: FC<{
                     search={search}
                     processing={processing}
                 />
-            ) : <Skeleton className="w-full h-[250px] rounded-sm"/>}
+            ) : <Skeleton className="w-full h-[250px] rounded-sm" />}
         </div>
     );
 });
@@ -90,9 +93,9 @@ const AddForm: FC<{
     visibleLable?: string,
     isNavigation?: boolean
 }> =
-    ({page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable}) => {
+    ({ page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable }) => {
 
-        const {fields, btnBack, view, notFound} = page.props;
+        const { fields, btnBack, view, notFound } = page.props;
 
         const {
             data,
@@ -107,6 +110,8 @@ const AddForm: FC<{
         const [catalogProcessing, setCatalogProcessing] = useState(false)
         const [navTargetBlank, setNavTargetBlank] = useState(openNewWindow ?? false)
         const [navVisible, setNavVisible] = useState(DnavVisible ?? false)
+        const dialogRef = useRef<DialogStackHandle>(null);
+
 
         // Forcibly updating data when changing passes
         useEffect(() => {
@@ -178,14 +183,14 @@ const AddForm: FC<{
                     <div className="w-full sticky z-[1001] py-4 pb-8 top-0 h-fit bg-background flex gap-4">
                         <Button className="w-fit" asChild>
                             <Link href={btnBack.link} preserveScroll={true}>
-                                <Icon iconNode={MoveLeft}/>
+                                <Icon iconNode={MoveLeft} />
                                 {btnBack.title}
                             </Link>
                         </Button>
                         <Button variant="green" type="submit" className="w-fit lg:hidden"
-                                form="addUserForm"
-                                disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
-                            {catalogProcessing || processing && <LoaderCircle className="h-4 w-4 animate-spin"/>}
+                            form="addUserForm"
+                            disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
+                            {catalogProcessing || processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             {page.props.btnSave.title}
                         </Button>
                     </div>
@@ -196,15 +201,15 @@ const AddForm: FC<{
                     className={view ? 'cursor-not-allowed' : ''}
                 >
                     <div
-                        className={`grid lg:grid-cols-[1fr_150px] gap-4 max-w-[1144px] pb-8 ${catalog ? 'lg:grid-cols-[1fr_200px]' : 'lg:grid-cols-[1fr_150px]'}`}>
+                        className={`grid gap-4 max-w-286 pb-8 lg:grid-cols-[1fr_200px]`}>
                         <div className="flex flex-col gap-10">
                             {fields.map((field) => (
                                 <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`}
-                                     key={field.name}>
+                                    key={field.name}>
                                     {field.type === "markdown" || field.type === "table" || field.type === "jsonEditor" || field.type === "codeEditor" || field.type === "geoJson" ?
                                         <>
-                                            <LabelRenderer field={field}/>
-                                            <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
+                                            <LabelRenderer field={field} />
+                                            <InputError message={getFieldError(`${field.type}-${field.name}`)} />
                                             <LazyField
                                                 field={field}
                                                 value={data[field.name]}
@@ -216,8 +221,8 @@ const AddForm: FC<{
                                         </>
                                         :
                                         <>
-                                            <LabelRenderer field={field}/>
-                                            <InputError message={getFieldError(`${field.type}-${field.name}`)}/>
+                                            <LabelRenderer field={field} />
+                                            <InputError message={getFieldError(`${field.type}-${field.name}`)} />
                                             <FieldRenderer
                                                 field={field}
                                                 value={data[field.name]}
@@ -255,14 +260,23 @@ const AddForm: FC<{
                                     </div>
                                 </>
                             }
-                            <Button variant="green" type="submit" className="w-fit"
+                            <div className="flex gap-2 justify-center">
+                                <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
-                                {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                                {page.props.btnSave.title}
-                            </Button>
+                                    {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                    {page.props.btnSave.title}
+                                </Button>
+                                <Button variant="outline" className="w-fit"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        dialogRef.current?.open()
+                                    }}
+                                >History</Button>
+                            </div>
                         </div>
                     </div>
                 </form>
+                <HistoryDialogStack dialogRef={dialogRef} />
             </div>
         );
     };

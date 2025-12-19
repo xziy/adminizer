@@ -1,7 +1,7 @@
-import {UserAP} from "models/UserAP";
+import {UserAP} from "../models/UserAP";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
-import {GroupAP} from "models/GroupAP";
+import {GroupAP} from "../models/GroupAP";
 import {bool} from "sharp";
 
 export class AccessRightsHelper {

@@ -1,10 +1,10 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {GridSettings as HandsontableSettings} from "handsontable/settings";
-import {Actions} from "helpers/inertiaActionsHelper";
-import {Adminizer} from "lib/Adminizer";
-import {GroupAP} from "models/GroupAP";
-import {UserAP} from "models/UserAP";
+import {Actions} from "../helpers/inertiaActionsHelper";
+import {Adminizer} from "../lib/Adminizer";
+import {GroupAP} from "../models/GroupAP";
+import {UserAP} from "../models/UserAP";
 
 /**
  * Controller function type - async function that handles requests and returns a response

@@ -1,18 +1,15 @@
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Eye, Braces} from "lucide-react";
+import {Eye} from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {INotification} from "../../../../interfaces/types.ts";
-import {DiffViewer} from "@/components/notifications/DiffViewer.tsx";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
 import {NotificationProps} from "@/types";
 import {debounce} from 'lodash';
 
 interface NotificationTableProps extends NotificationProps {
     loadingMore: boolean
     messages: Record<string, string>
-    showDiff?: boolean;
 }
 
 export const NotificationTable = (
@@ -23,13 +20,10 @@ export const NotificationTable = (
         loadingMore,
         messages,
         hasMore = false,
-        showDiff = false
     }: NotificationTableProps) => {
     const tableContent = useRef<HTMLTableElement>(null);
     const loadingRef = useRef(false);
     const [uniqueNotifications, setUniqueNotifications] = useState<INotification[]>([]);
-    const [diffOpen, setDiffOpen] = useState(false);
-    const [diffItem, setDiffItem] = useState<any>(null);
 
 
     const debouncedLoadMore = useRef(
@@ -103,19 +97,18 @@ export const NotificationTable = (
             <Table wrapperHeight="max-h-[70vh]" ref={tableContent} className={`${loadingMore ? 'opacity-40' : ''}`}>
                 <TableHeader className="sticky top-0 bg-background shadow z-1">
                     <TableRow
-                        className={`grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
+                        className={`grid grid-cols-[50px_1fr_2fr_200px]`}>
                         <TableHead className="p-2 text-left"></TableHead>
                         <TableHead className="p-2 text-left">{messages["Title"]}</TableHead>
                         <TableHead className="p-2 text-left">{messages["Message"]}</TableHead>
                         <TableHead className="p-2 text-left">{messages["Date"]}</TableHead>
-                        {showDiff && <TableHead className="p-2 text-left">{messages["Diff"]}</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {uniqueNotifications.map((notification) => (
                         <TableRow key={notification.id}
-                                  className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''} grid ${showDiff ? 'grid-cols-[50px_1fr_2fr_200px_50px]' : 'grid-cols-[50px_1fr_2fr_200px]'}`}>
-                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'} pt-2.5`}>
+                                  className={`${!notification.read ? 'bg-chart-1/20 hover:bg-chart-1/20' : ''} grid grid-cols-[50px_1fr_2fr_200px]`}>
+                            <TableCell className={`p-2 self-start pt-2.5`}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon"
@@ -129,57 +122,29 @@ export const NotificationTable = (
                                     </TooltipContent>
                                 </Tooltip>
                             </TableCell>
-                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'} font-medium`}>
+                            <TableCell className={`p-2 self-start font-medium`}>
                                 {notification.title}
                             </TableCell>
                             <TableCell
-                                className={`p-2 ${showDiff ? 'self-center' : 'self-start'} whitespace-break-spaces`}>
+                                className={`p-2 self-start whitespace-break-spaces`}>
                                 <div className="max-w-[500px] whitespace-break-spaces">
                                     {notification.message}
                                 </div>
                             </TableCell>
-                            <TableCell className={`p-2 ${showDiff ? 'self-center' : 'self-start'}`}>
+                            <TableCell className={`p-2 self-start`}>
                                 {new Date(notification.createdAt).toLocaleString()}
                             </TableCell>
-                            {showDiff && notification.metadata?.changes && (
-                                <TableCell className="p-2 align-top">
-                                    <Button variant="green" size="sm" onClick={() => {
-                                        setDiffItem(notification.metadata?.changes);
-                                        setDiffOpen(true);
-                                    }}>
-                                        <Braces/>
-                                    </Button>
-                                </TableCell>
-                            )}
                         </TableRow>
                     ))}
                     <TableRow>
                         {!hasMore && (
-                            <TableCell colSpan={showDiff ? 5 : 4}>
+                            <TableCell colSpan={4}>
                                 <div className="text-center py-2 font-medium">{messages["The end of the list has been reached"]}</div>
                             </TableCell>
                         )}
                     </TableRow>
                 </TableBody>
             </Table>
-
-            {showDiff && (
-                <Dialog open={diffOpen} onOpenChange={(open) => {
-                    setDiffOpen(open);
-                    if (!open) {
-                        setTimeout(() => {
-                            document.body.removeAttribute('style');
-                        }, 300);
-                    }
-                }}>
-                    <DialogContent className="z-[1022] sm:max-w-[60vw]">
-                        <DialogHeader>
-                            <DialogTitle>Diff</DialogTitle>
-                        </DialogHeader>
-                        <DiffViewer changes={diffItem} className="max-h-[80vh] overflow-auto sm:max-w-[60vw] w-full"/>
-                    </DialogContent>
-                </Dialog>
-            )}
         </div>
     );
 };
