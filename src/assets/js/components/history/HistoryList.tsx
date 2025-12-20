@@ -10,7 +10,7 @@ import { DiffViewer } from "@/components/history/DiffViewer";
 interface HistoryListProps {
     modelName: string,
     modelId: number | string
-    handleWatchHistory: (id: string | number) => void,
+    handleWatchHistory: (data: Record<string, any>) => void
 }
 
 const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHistory }) => {
@@ -39,9 +39,26 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
         fetchData();
     }, [modelName, modelId]);
 
-    const watchHistory = (id: string | number) => {
-        console.log(id);
-        handleWatchHistory(id)
+    const watchHistory = async (id: string | number) => {
+        try {
+            const res = await axios.post(`${window.routePrefix}/history/get-model-fields`, {
+                historyId: id
+            })
+            if (res.data.data) {
+                setHistory((prev) => {
+                    return prev.map((item) => {
+                        return {
+                            ...item,
+                            isCurrent: item.id === id
+                        };
+                    });
+                });
+
+                handleWatchHistory(res.data.data);
+            }
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     return (

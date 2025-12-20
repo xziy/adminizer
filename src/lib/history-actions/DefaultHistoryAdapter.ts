@@ -39,4 +39,9 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
             Adminizer.log.error('Eror saving history', e)
         }
     }
+
+    public async getModelFieldsHistory(historyId: number): Promise<Record<string, any>> {
+        const history = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({id: historyId})
+        return history.data;
+    }
 }

@@ -281,8 +281,10 @@ const AddForm: FC<{
                     dialogRef={dialogRef}
                     modelName={model}
                     modelId={fields.find(e => e.name === 'id')?.value}
-                    callback={() => {
-                        setFields([])
+                    callback={(data) => {
+                        for (const key of Object.keys(data)) {
+                            setData(key, data[key]);                            
+                        }                        
                     }}
                 />}
             </div>

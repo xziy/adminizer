@@ -5,22 +5,22 @@ import _edit from "../controllers/edit";
 import _add from "../controllers/add";
 import _view from "../controllers/view";
 import _remove from "../controllers/remove";
-import {ckEditorUpload} from "../controllers/ckeditorUpload";
+import { ckEditorUpload } from "../controllers/ckeditorUpload";
 import _form from "../controllers/form";
-import {CreateUpdateConfig} from "../interfaces/adminpanelConfig";
-import {widgetSwitchController} from "../controllers/widgets/switch";
+import { CreateUpdateConfig } from "../interfaces/adminpanelConfig";
+import { widgetSwitchController } from "../controllers/widgets/switch";
 import _getAllWidgets from "../controllers/getAllWidgets";
 import _widgetsDB from "../controllers/widgetsDB";
-import {widgetInfoController} from '../controllers/widgets/Info';
-import {widgetActionController} from '../controllers/widgets/Action';
-import {widgetCustomController} from "../controllers/widgets/Custom";
-import {catalogController} from "../controllers/catalog/Catalog";
-import {mediaManagerController} from "../controllers/media-manager/mediaManagerApi";
-import {thumbController} from "../controllers/media-manager/ThumbController";
-import {Adminizer} from "../lib/Adminizer";
+import { widgetInfoController } from '../controllers/widgets/Info';
+import { widgetActionController } from '../controllers/widgets/Action';
+import { widgetCustomController } from "../controllers/widgets/Custom";
+import { catalogController } from "../controllers/catalog/Catalog";
+import { mediaManagerController } from "../controllers/media-manager/mediaManagerApi";
+import { thumbController } from "../controllers/media-manager/ThumbController";
+import { Adminizer } from "../lib/Adminizer";
 import timezones from "../controllers/timezones";
-import {NotificationController} from "../controllers/notifications/NotificationController";
-import {AiAssistantController} from "../controllers/ai/AiAssistantController";
+import { NotificationController } from "../controllers/notifications/NotificationController";
+import { AiAssistantController } from "../controllers/ai/AiAssistantController";
 import { HistoryController } from "../controllers/history-actions/HistoryController";
 
 export default class Router {
@@ -173,11 +173,15 @@ export default class Router {
         /**
          * History-actions
          */
-        if(adminizer.config.history?.enabled){
+        if (adminizer.config.history?.enabled) {
             adminizer.app.post(
                 `${adminizer.config.routePrefix}/history/get-model-history`,
                 adminizer.policyManager.bindPolicies(policies, HistoryController.getModelHistory)
             );
+            adminizer.app.post(
+                `${adminizer.config.routePrefix}/history/get-model-fields`,
+                adminizer.policyManager.bindPolicies(policies, HistoryController.getModelFieldsHistory)
+            )
         }
 
 
