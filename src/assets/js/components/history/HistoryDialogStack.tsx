@@ -6,15 +6,16 @@ interface HistoryDialogStackProps {
     dialogRef: RefObject<any>
     modelId: string | number
     modelName: string
+    callback: (id: string | number) => void
 }
 
-const HistoryDialogStack: FC<HistoryDialogStackProps> = ({ dialogRef, modelId, modelName }) => {
+const HistoryDialogStack: FC<HistoryDialogStackProps> = ({ dialogRef, modelId, modelName, callback }) => {
     return (
         <DialogStack ref={dialogRef}>
             <DialogStackOverlay />
             <DialogStackBody>
                 <DialogStackContent>
-                    <HistoryList modelId={modelId} modelName={modelName} />
+                    <HistoryList modelId={modelId} modelName={modelName} handleWatchHistory={callback}/>
                 </DialogStackContent>
             </DialogStackBody>
         </DialogStack>

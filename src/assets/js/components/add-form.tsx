@@ -95,8 +95,9 @@ const AddForm: FC<{
 }> =
     ({ page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable }) => {
 
-        const { fields, btnBack, view, edit, notFound, model } = page.props;
-                
+        const { btnBack, view, edit, notFound, model } = page.props;
+        const [fields, setFields] = useState(page.props.fields);
+
         const {
             data,
             setData,
@@ -276,7 +277,14 @@ const AddForm: FC<{
                         </div>
                     </div>
                 </form>
-                {(edit || view) && <HistoryDialogStack dialogRef={dialogRef} modelName={model} modelId={fields.find(e => e.name === 'id')?.value} />}
+                {(edit || view) && <HistoryDialogStack
+                    dialogRef={dialogRef}
+                    modelName={model}
+                    modelId={fields.find(e => e.name === 'id')?.value}
+                    callback={() => {
+                        setFields([])
+                    }}
+                />}
             </div>
         );
     };

@@ -10,9 +10,10 @@ import { DiffViewer } from "@/components/history/DiffViewer";
 interface HistoryListProps {
     modelName: string,
     modelId: number | string
+    handleWatchHistory: (id: string | number) => void,
 }
 
-const HistoryList: FC<HistoryListProps> = ({ modelName, modelId }) => {
+const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHistory }) => {
     const [history, setHistory] = useState<HistoryActionsAP[]>([]);
     const [diffOpen, setDiffOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<any>(null);
@@ -37,6 +38,11 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId }) => {
         };
         fetchData();
     }, [modelName, modelId]);
+
+    const watchHistory = (id: string | number) => {
+        console.log(id);
+        handleWatchHistory(id)
+    };
 
     return (
         <div className="relative h-full">
@@ -84,7 +90,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId }) => {
                                         {item.isCurrent ? (
                                             <span className="font-medium">Current</span>
                                         ) : (
-                                            <Button variant="outline" size="sm">Watch</Button>
+                                            <Button variant="outline" size="sm" onClick={() => watchHistory(item.id)}>Watch</Button>
                                         )}
                                     </TableCell>
                                 </TableRow>

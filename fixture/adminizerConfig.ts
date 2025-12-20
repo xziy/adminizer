@@ -392,7 +392,9 @@ const models: AdminpanelConfig["models"] = {
         model: 'category',
         icon: 'category',
         fields: {
-            createdAt: false,
+            createdAt: {
+                title: 'Created at',
+            },
             updatedAt: false,
             mediamanager_one: {
                 title: 'Images 1',
