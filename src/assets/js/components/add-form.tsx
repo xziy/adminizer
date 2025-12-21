@@ -95,8 +95,7 @@ const AddForm: FC<{
 }> =
     ({ page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable }) => {
 
-        const { btnBack, view, edit, notFound, model } = page.props;
-        const [fields, setFields] = useState(page.props.fields);
+        const { btnBack, view, edit, history, notFound, model, fields } = page.props;
 
         const {
             data,
@@ -261,13 +260,13 @@ const AddForm: FC<{
                                     </div>
                                 </>
                             }
-                            <div className={`flex gap-2 ${(edit || view) ? 'justify-center' : 'justify-start'}`}>
+                            <div className={`flex gap-2 ${(history && (edit || view)) ? 'justify-center' : 'justify-start'}`}>
                                 <Button variant="green" type="submit" className="w-fit"
                                     disabled={catalogProcessing || processing || page.props.view || hasFormErrors()}>
                                     {(catalogProcessing || processing) && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                     {page.props.btnSave.title}
                                 </Button>
-                                {(edit || view) && <Button variant="outline" className="w-fit"
+                                {(history && (edit || view)) && <Button variant="outline" className="w-fit"
                                     onClick={(e) => {
                                         e.preventDefault()
                                         dialogRef.current?.open()
@@ -277,7 +276,7 @@ const AddForm: FC<{
                         </div>
                     </div>
                 </form>
-                {(edit || view) && <HistoryDialogStack
+                {(history && (edit || view)) && <HistoryDialogStack
                     dialogRef={dialogRef}
                     modelName={model}
                     modelId={fields.find(e => e.name === 'id')?.value}

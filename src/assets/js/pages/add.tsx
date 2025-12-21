@@ -19,6 +19,7 @@ export interface AddProps {
     fields: Field[];
     edit: boolean;
     view: boolean;
+    history: boolean;
     btnSave: {
         title: string;
     },
