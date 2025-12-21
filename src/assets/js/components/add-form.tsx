@@ -113,7 +113,7 @@ const AddForm: FC<{
         const dialogRef = useRef<DialogStackHandle>(null);
 
         useEffect(() => {
-            localStorage.removeItem('currentHistoryView')            
+            localStorage.removeItem('currentHistoryView')
         }, [])
         // Forcibly updating data when changing passes
         useEffect(() => {
@@ -122,9 +122,16 @@ const AddForm: FC<{
 
             // Populate form state; use a safe fallback when fields is not an array
             setData({
-                ...Object.fromEntries((fields || []).map(field => [field.name, field.value ?? undefined])),
+                ...Object.fromEntries(
+                    (fields || []).map(field => [
+                        field.name,
+                        (field.type === 'mediamanager' || field.type === 'single-file') && (field.value === null || field.value === undefined)
+                            ? []
+                            : field.value
+                    ])
+                ),
                 jsonPopupCatalog: catalog
-            });
+            });           
 
             return () => resetFormErrors();
         }, [fields, catalog, openNewWindow, setData]);
@@ -284,9 +291,9 @@ const AddForm: FC<{
                     modelId={fields.find(e => e.name === 'id')?.value}
                     callback={(data) => {
                         for (const key of Object.keys(data)) {
-                            setData(key, data[key]);                            
-                        }            
-                        dialogRef.current?.close()            
+                            setData(key, data[key]);
+                        }
+                        dialogRef.current?.close()
                     }}
                 />}
             </div>

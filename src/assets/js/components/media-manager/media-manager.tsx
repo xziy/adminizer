@@ -134,6 +134,7 @@ const MediaManager = ({ layout, config, type, onChange, value, name }: Props) =>
         }
     }, [value]);
 
+
     useEffect(() => {
         const initLocales = async () => {
             try {
@@ -152,7 +153,6 @@ const MediaManager = ({ layout, config, type, onChange, value, name }: Props) =>
     }, []);
 
     const addMediaWithCallback = useCallback((newMedia: Media) => {
-        console.log(newMedia)
         setItems((prev) => {
             const newItems = [...prev, newMedia];
             if (onChange) onChange(newItems);
