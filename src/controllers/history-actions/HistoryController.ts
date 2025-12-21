@@ -23,7 +23,7 @@ export class HistoryController {
 
         const adapter = HistoryController.getAdapter(req);
         return res.json({
-            data: await adapter.getHistory(modelId, modelName)
+            data: await adapter.getAllHistory(modelId, modelName)
         });
     }
 
@@ -49,7 +49,7 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         return res.json({
-            data: await adapter.getModelFieldsHistory(+historyId, req.user)
+            data: await adapter.getModelHistory(+historyId, req.user)
         })
     }
 

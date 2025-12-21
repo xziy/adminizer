@@ -112,7 +112,9 @@ const AddForm: FC<{
         const [navVisible, setNavVisible] = useState(DnavVisible ?? false)
         const dialogRef = useRef<DialogStackHandle>(null);
 
-
+        useEffect(() => {
+            localStorage.removeItem('currentHistoryView')            
+        }, [])
         // Forcibly updating data when changing passes
         useEffect(() => {
             setNavTargetBlank(openNewWindow ?? false);
@@ -283,7 +285,8 @@ const AddForm: FC<{
                     callback={(data) => {
                         for (const key of Object.keys(data)) {
                             setData(key, data[key]);                            
-                        }                        
+                        }            
+                        dialogRef.current?.close()            
                     }}
                 />}
             </div>

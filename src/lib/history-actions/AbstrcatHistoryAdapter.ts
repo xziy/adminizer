@@ -7,6 +7,9 @@ import { Entity } from "../../interfaces/types";
 import { ModelAnyInstance } from "../model/AbstractModel";
 import { isObject } from "../../helpers/JsUtils";
 import { DataAccessor } from "../DataAccessor";
+import { BaseFieldConfig, MediaManagerOptionsField } from "../../interfaces/adminpanelConfig";
+import { getRelationsMediaManager } from "../media-manager/helpers/MediaManagerHelper";
+import { MediaManagerWidgetData } from "../media-manager/AbstractMediaManager";
 
 export abstract class AbstractHistoryAdapter {
     public abstract id: string
@@ -29,9 +32,42 @@ export abstract class AbstractHistoryAdapter {
         }, 100)
     }
 
-    public abstract getHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
+    public abstract getAllHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
     public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
-    public abstract getModelFieldsHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
+    public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
+
+    protected async getModelFieldsHistory(history: HistoryActionsAP, user: UserAP): Promise<Record<string, any>> {
+        const entity = this.findEntityObject(history)
+        const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
+        let fields = dataAccessor.getFieldsConfig();
+        fields = await this.loadAssociations(fields, user, "edit");
+
+        let data: Record<string, any> = {}
+        for (const field of Object.keys(fields)) {
+            const fieldConfigConfig = fields[field].config as BaseFieldConfig;
+            if (fieldConfigConfig.type === 'mediamanager') {
+                const mediaManager = this.adminizer.mediaManagerHandler.get((fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default")
+                data[field] = []
+                if (history.data[field]) {
+                    for (const file of history.data[field]) {
+                        const media = await mediaManager.getFile(file.mimeType, file.id)
+                        data[field].push({
+                            id: media.id,
+                            mimeType: media.mimeType,
+                            filename: media.filename,
+                            url: media.url,
+                            variants: []
+                        })
+                    }
+                }
+
+            } else {
+                data[field] = history.data[field]
+            }
+        }
+        
+        return data;
+    }
 
     protected findEntityObject(history: HistoryActionsAP): Entity {
         const entityName = history.modelName;

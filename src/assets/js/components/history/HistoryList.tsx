@@ -17,7 +17,9 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
     const [history, setHistory] = useState<HistoryActionsAP[]>([]);
     const [diffOpen, setDiffOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<any>(null);
-    const [loading, setLoading] = useState<boolean>(true); // Добавляем состояние загрузки
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const storageKey = 'currentHistoryView';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,15 +46,17 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
             const res = await axios.post(`${window.routePrefix}/history/get-model-fields`, {
                 historyId: id
             })
+            
             if (res.data.data) {
-                setHistory((prev) => {
-                    return prev.map((item) => {
-                        return {
-                            ...item,
-                            isCurrent: item.id === id
-                        };
-                    });
-                });
+                localStorage.setItem(storageKey, id.toString());
+                // setHistory((prev) => {
+                //     return prev.map((item) => {
+                //         return {
+                //             ...item,
+                //             isCurrent: item.id === id
+                //         };
+                //     });
+                // });
 
                 handleWatchHistory(res.data.data);
             }
@@ -60,6 +64,14 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
             console.log(e);
         }
     };
+
+    const isCurrent = (item: HistoryActionsAP) => {
+    const localCurrentId = localStorage.getItem(storageKey);
+    if (localCurrentId) {
+        return localCurrentId === item.id.toString();
+    }
+    return item.isCurrent;
+};
 
     return (
         <div className="relative h-full">
@@ -104,7 +116,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                                         </Button>
                                     </TableCell>
                                     <TableCell className="p-2 align-middle text-center">
-                                        {item.isCurrent ? (
+                                        {isCurrent(item) ? (
                                             <span className="font-medium">Current</span>
                                         ) : (
                                             <Button variant="outline" size="sm" onClick={() => watchHistory(item.id)}>Watch</Button>
