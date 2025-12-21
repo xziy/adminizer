@@ -49,7 +49,7 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         return res.json({
-            data: await adapter.getModelFieldsHistory(+historyId)
+            data: await adapter.getModelFieldsHistory(+historyId, req.user)
         })
     }
 

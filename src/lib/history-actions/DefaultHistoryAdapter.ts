@@ -1,15 +1,17 @@
 import { HistoryActionsAP } from "../../models/HistoryActionsAP";
+import { UserAP } from "../../models/UserAP";
 import { Adminizer } from "../Adminizer";
+import { DataAccessor } from "../DataAccessor";
 import { AbstractHistoryAdapter } from "./AbstrcatHistoryAdapter";
 
 export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
     public id: string = 'default';
     public model: string = 'historyactionsap';
-    protected readonly adminizer: Adminizer;
+    
 
     constructor(adminizer: Adminizer) {
         super(adminizer);
-        this.adminizer = adminizer;
+        
     }
 
     public async getHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]> {
@@ -40,8 +42,18 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
         }
     }
 
-    public async getModelFieldsHistory(historyId: number): Promise<Record<string, any>> {
-        const history = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({id: historyId})
-        return history.data;
+    public async getModelFieldsHistory(historyId: number, user: UserAP): Promise<Record<string, any>> {
+        const history = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ id: historyId })
+        const entity = this.findEntityObject(history)
+        const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
+        let fields = dataAccessor.getFieldsConfig();
+        fields = await this.loadAssociations(fields, user, "edit");
+
+        let data: Record<string, any> = {}
+        for (const field of Object.keys(fields)) {
+            data[field] = history.data[field]
+        }
+        
+        return data;
     }
 }
