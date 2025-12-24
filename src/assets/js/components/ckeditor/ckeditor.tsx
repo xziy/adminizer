@@ -103,6 +103,10 @@ export default function AdminCKEditor({initialValue, onChange, options, disabled
         return () => setIsLayoutReady(false);
     }, []);
 
+    useEffect(() => {
+        console.log(initialValue);
+        
+    }, [initialValue])
 
     const editorConfig = useMemo<EditorConfig>((): EditorConfig => {
         if (!isLayoutReady) {

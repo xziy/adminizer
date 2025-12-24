@@ -284,7 +284,7 @@ export function getControl(req: ReqType, type: ControlType, name: string | undef
     return control;
 }
 
-function setAssociationValues(field: Field, value: string[]) {
+export function setAssociationValues(field: Field, value: string[]) {
     let options = []
     let initValue: string[] = []
     const config = field.config

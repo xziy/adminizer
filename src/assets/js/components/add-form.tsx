@@ -115,6 +115,12 @@ const AddForm: FC<{
         useEffect(() => {
             localStorage.removeItem('currentHistoryView')
         }, [])
+
+        // useEffect(() => {
+        //     console.log(data);
+            
+        // }, [data])
+
         // Forcibly updating data when changing passes
         useEffect(() => {
             setNavTargetBlank(openNewWindow ?? false);

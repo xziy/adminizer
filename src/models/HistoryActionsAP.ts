@@ -15,6 +15,7 @@ export default {
     action: {
         type: "string",
     },
+    // here stored raw data foreach history-action better to store as incremental binary data
     data: {
         type: "json",
     },

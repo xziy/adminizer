@@ -10,6 +10,7 @@ import { DataAccessor } from "../DataAccessor";
 import { BaseFieldConfig, MediaManagerOptionsField } from "../../interfaces/adminpanelConfig";
 import { getRelationsMediaManager } from "../media-manager/helpers/MediaManagerHelper";
 import { MediaManagerWidgetData } from "../media-manager/AbstractMediaManager";
+import { setAssociationValues } from "../../helpers/inertiaAddHelper";
 
 export abstract class AbstractHistoryAdapter {
     public abstract id: string
@@ -61,11 +62,16 @@ export abstract class AbstractHistoryAdapter {
                     }
                 }
 
+            } else if (fieldConfigConfig.type === 'color') {
+                data[field] = history.data[field] ? history.data[field] : '#000000'
+            } else if (fieldConfigConfig.type === 'association' || fieldConfigConfig.type === 'association-many') {
+                const {initValue} = setAssociationValues(fields[field], history.data[field])
+                data[field] = initValue
             } else {
                 data[field] = history.data[field]
             }
         }
-        
+
         return data;
     }
 
@@ -91,7 +97,7 @@ export abstract class AbstractHistoryAdapter {
 
     protected async loadAssociations(fields: Fields, user: UserAP, action?: ActionType): Promise<Fields> {
 
-        let loadAssoc = async function (key: string, action?: ActionType) {
+        let loadAssoc = async (key: string, action?: ActionType) => {
             let fieldConfigConfig = fields[key].config as Field["config"];
             if (!isObject(fieldConfigConfig)) {
                 throw 'type error: fieldConfigConfig should be normalized'
