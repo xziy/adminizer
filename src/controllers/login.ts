@@ -1,10 +1,10 @@
-import {POWCaptcha} from "../lib/POWCaptcha";
+import { POWCaptcha } from "../lib/POWCaptcha";
 import passwordHash from "password-hash";
-import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
-import {Adminizer} from "../lib/Adminizer";
-import {signUser} from "../lib/helper/jwt";
-import {serialize} from "cookie";
-import {UserAP} from "models/UserAP";
+import { inertiaLoginHelper } from "../helpers/inertiaAutHelper";
+import { Adminizer } from "../lib/Adminizer";
+import { signUser } from "../lib/helper/jwt";
+import { serialize } from "cookie";
+import { UserAP } from "models/UserAP";
 
 
 export default async function login(req: ReqType, res: ResType) {
@@ -22,9 +22,9 @@ export default async function login(req: ReqType, res: ResType) {
             let user: UserAP;
             try {
                 // TODO refactor CRUD functions for DataAccessor usage
-                user = await req.adminizer.modelHandler.model.get("UserAP")["_findOne"]({login: login});
+                user = await req.adminizer.modelHandler.model.get("UserAP")["_findOne"]({ login: login });
             } catch (e) {
-                return res.status(500).send({error: e.message || 'Internal Server Error'});
+                return res.status(500).send({ error: e.message || 'Internal Server Error' });
             }
 
             if (req.body.pretend) {
@@ -36,13 +36,13 @@ export default async function login(req: ReqType, res: ResType) {
 
                     // Force full page reload after pretend
                     if (req.headers['x-inertia']) {
-                        return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                        return res.writeHead(409, { 'x-inertia-location': `${req.adminizer.config.routePrefix}/` }).end();
                     }
                     return res.redirect(`${req.adminizer.config.routePrefix}/`);
                 }
-                
+
                 if (req.headers['x-inertia']) {
-                    return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                    return res.writeHead(409, { 'x-inertia-location': `${req.adminizer.config.routePrefix}/` }).end();
                 }
                 return res.redirect(`${req.adminizer.config.routePrefix}/`);
             }
@@ -70,24 +70,28 @@ export default async function login(req: ReqType, res: ResType) {
                         return inertiaAdminMessage(req, "Profile expired, contact the administrator", 'captchaSolution');
                     }
 
-                    if(!req.adminizer.accessRightsHelper.hasPermission('access-to-adminpanel', user)){
+                    if (!req.adminizer.accessRightsHelper.hasPermission('access-to-adminpanel', user)) {
                         return inertiaAdminMessage(req, "The user is not allowed to enter, please contact the administrator", 'captchaSolution');
                     }
 
-                    const token = signUser(user, req.adminizer.jwtSecret);
+                    const token = signUser({
+                        id: user.id,
+                        login: user.login,
+                        isAdministrator: user.isAdministrator,
+                    }, req.adminizer.jwtSecret);
                     res.setHeader('Set-Cookie', serialize('adminizer_jwt', token, {
                         httpOnly: true,
                         sameSite: 'lax',
                         path: '/',
                         maxAge: 60 * 60 * 24 * 7 * 2,
                     }));
-                    
+
                     // Force full page reload after login to prevent iframe issues
                     if (req.headers['x-inertia']) {
                         // If it's an Inertia request, send 409 to force full page reload
-                        return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                        return res.writeHead(409, { 'x-inertia-location': `${req.adminizer.config.routePrefix}/` }).end();
                     }
-                    
+
                     return res.redirect(`${req.adminizer.config.routePrefix}/`);
                 } else {
                     return inertiaAdminMessage(req, "Wrong password", 'password');
@@ -114,10 +118,10 @@ export default async function login(req: ReqType, res: ResType) {
     } else if (req.originalUrl.indexOf("logout") >= 0) {
         if (req.session.userPretended && req.session.userPretended.id && req.user && req.user.id) {
             delete (req.session.userPretended);
-            
+
             // Force full page reload after unpretend
             if (req.headers['x-inertia']) {
-                return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/`}).end();
+                return res.writeHead(409, { 'x-inertia-location': `${req.adminizer.config.routePrefix}/` }).end();
             }
             return res.redirect(`${req.adminizer.config.routePrefix}/`);
         }
@@ -128,10 +132,10 @@ export default async function login(req: ReqType, res: ResType) {
             path: '/',
             expires: new Date(0),
         }));
-        
+
         // Force full page reload after logout
         if (req.headers['x-inertia']) {
-            return res.writeHead(409, {'x-inertia-location': `${req.adminizer.config.routePrefix}/model/userap/login`}).end();
+            return res.writeHead(409, { 'x-inertia-location': `${req.adminizer.config.routePrefix}/model/userap/login` }).end();
         }
         return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
     }
