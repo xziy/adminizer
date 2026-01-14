@@ -125,7 +125,7 @@ const AddForm: FC<{
         useEffect(() => {
             setNavTargetBlank(openNewWindow ?? false);
             resetFormErrors();
-
+            
             // Populate form state; use a safe fallback when fields is not an array
             setData({
                 ...Object.fromEntries(

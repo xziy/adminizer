@@ -28,7 +28,7 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Recor
     useEffect(()=>{
        if(refEditor.current){
            refEditor.current.updateProps({
-               content: {json: props.content}
+               content: props.content ? {json: props.content} : props.json ? {json: props.json} : undefined
            })
        }
        

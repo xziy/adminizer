@@ -124,7 +124,7 @@ export abstract class AbstractModel<T> {
     private async logSystemEvent(
         dataAccessor: DataAccessor,
         eventType: 'Created' | 'Updated' | 'Deleted',
-        message: string,
+        who: string,
         oldRecord: Partial<T>,
         newRecord: Partial<T>
     ): Promise<void> {
@@ -161,7 +161,7 @@ export abstract class AbstractModel<T> {
             action: eventType.toLocaleLowerCase(),
             data: record,
             diff: formattedChanges,
-            meta: message,
+            meta: who,
             preview: false
         })
         
@@ -175,7 +175,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Created',
-            `user ${dataAccessor.user.login} create ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
+            dataAccessor.user.login,
             {},
             record
         );
@@ -217,7 +217,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Updated',
-            `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
+            dataAccessor.user.login,
             oldRecord,
             record
         );
@@ -242,7 +242,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Updated',
-                    `user ${dataAccessor.user.login} update ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
+                    dataAccessor.user.login,
                     oldRecord,
                     record
                 );
@@ -271,7 +271,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Deleted',
-            `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
+            dataAccessor.user.login,
             oldRecord,
             {}
         );
@@ -295,7 +295,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Deleted',
-                    `user ${dataAccessor.user.login} delete ${dataAccessor.entity.name} ${record[this.primaryKey as keyof T]}`,
+                    dataAccessor.user.login,
                     oldRecord,
                     {}
                 );

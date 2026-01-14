@@ -81,7 +81,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                         <TableRow>
                             <TableHead className="p-2 text-left">Date</TableHead>
                             <TableHead className="p-2 text-left">Event</TableHead>
-                            <TableHead className="p-2 text-left">Info</TableHead>
+                            <TableHead className="p-2 text-left">Who</TableHead>
                             <TableHead className="p-2 text-left">Diff</TableHead>
                             <TableHead className="p-2 text-left"></TableHead>
                         </TableRow>
@@ -103,7 +103,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                                         {item.action}
                                     </TableCell>
                                     <TableCell className="p-2 self-start pt-2.5 max-w-[250px] whitespace-break-spaces">
-                                        <div className="max-w-[500px] whitespace-break-spaces">
+                                        <div className="max-w-[500px] whitespace-break-spaces font-medium text-chart-3">
                                             {item.meta}
                                         </div>
                                     </TableCell>
