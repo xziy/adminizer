@@ -65,8 +65,8 @@ export abstract class AbstractHistoryAdapter {
             } else if (fieldConfigConfig.type === 'color') {
                 data[field] = history.data[field] ? history.data[field] : '#000000'
             } else if (fieldConfigConfig.type === 'association' || fieldConfigConfig.type === 'association-many') {
-                const {initValue} = setAssociationValues(fields[field], history.data[field])
-                data[field] = initValue
+                const { initValue } = setAssociationValues(fields[field], history.data[field])
+                data[field] = await this.getModelRelationsHistory(fields[field].model.model ?? fields[field].model.collection, initValue)
             } else {
                 data[field] = history.data[field]
             }
@@ -74,6 +74,18 @@ export abstract class AbstractHistoryAdapter {
 
         return data;
     }
+
+    protected async getModelRelationsHistory<T extends string | number>(model: string, ids: T[]): Promise<T[]> {
+        const data: T[] = [];
+        for (const id of ids) {
+            const record = await this.adminizer.modelHandler.model.get(model.toLowerCase())["_findOne"]({ id });
+            if (record) {
+                data.push(id);
+            }
+        }
+        return data;
+    }
+
 
     protected findEntityObject(history: HistoryActionsAP): Entity {
         const entityName = history.modelName;

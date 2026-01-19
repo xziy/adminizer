@@ -16,7 +16,7 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
     public async getAllHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]> {
         return await this.adminizer.modelHandler.model.get(this.model)["_find"]({
             where: { modelName: modelName, modelId: String(modelId) },
-            sort: "createdAt DESC"
+            sort: "createdAt ASC"
         })
     }
     public async setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt">): Promise<void> {
