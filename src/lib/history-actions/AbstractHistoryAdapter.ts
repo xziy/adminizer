@@ -33,7 +33,8 @@ export abstract class AbstractHistoryAdapter {
         }, 100)
     }
 
-    public abstract getAllHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
+    public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
+    public abstract getAllHistory(modelName: string, all: boolean): Promise<HistoryActionsAP[]>
     public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
     public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
 

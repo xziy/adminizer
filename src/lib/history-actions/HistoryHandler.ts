@@ -1,5 +1,5 @@
 import { Adminizer } from "../Adminizer";
-import { AbstractHistoryAdapter } from "./AbstrcatHistoryAdapter";
+import { AbstractHistoryAdapter } from "./AbstractHistoryAdapter";
 
 export class HistoryHandler {
     private adapters: AbstractHistoryAdapter[] = [];
