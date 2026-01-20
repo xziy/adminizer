@@ -1,5 +1,6 @@
 import { AbstractHistoryAdapter } from "../../lib/history-actions/AbstractHistoryAdapter";
-const excludedModels = [
+
+const excludedModels = new Set([
     'HistoryActionsAP',
     'MediaManagerAP',
     'MediaManagerAssociationsAP',
@@ -7,15 +8,15 @@ const excludedModels = [
     'NavigationAP',
     'NotificationAP',
     'UserNotificationAP',
-]
+]);
 export class HistoryController {
 
-    static async index(req: ReqType, res: ResType) {
-        if (!HistoryController.checkHistoryPermission(req, res)) return false
+    static async index(req: ReqType, res: ResType): Promise<any> {
+        if (!HistoryController.checkHistoryPermission(req, res)) return
 
         if (req.method.toUpperCase() === 'GET') {
             const models = req.adminizer.modelHandler.all
-                .filter(model => !excludedModels.includes(model.modelname))
+                .filter(model => !excludedModels.has(model.modelname))
                 .map(model => model.modelname);
 
             return req.Inertia.render({
@@ -40,11 +41,11 @@ export class HistoryController {
             }
         }
 
-        return res.status(405)
+        return res.status(405).end()
     }
 
-    static async getModelHistoryList(req: ReqType, res: ResType) {
-        if (!HistoryController.checkHistoryPermission(req, res)) return false
+    static async getModelHistoryList(req: ReqType, res: ResType): Promise<any> {
+        if (!HistoryController.checkHistoryPermission(req, res)) return
         const { model } = req.body
         
         if (!model) {
@@ -64,8 +65,8 @@ export class HistoryController {
 
     }
 
-    static async getModelHistory(req: ReqType, res: ResType) {
-        if (!HistoryController.checkHistoryPermission(req, res)) return false
+    static async getModelHistory(req: ReqType, res: ResType): Promise<any> {
+        if (!HistoryController.checkHistoryPermission(req, res)) return
 
         const { modelId, modelName } = req.body;
 
@@ -86,8 +87,8 @@ export class HistoryController {
         }
     }
 
-    static async getModelFieldsHistory(req: ReqType, res: ResType) {
-        if (!HistoryController.checkHistoryPermission(req, res)) return false
+    static async getModelFieldsHistory(req: ReqType, res: ResType): Promise<any> {
+        if (!HistoryController.checkHistoryPermission(req, res)) return
 
         const { historyId } = req.body;
 
@@ -114,7 +115,7 @@ export class HistoryController {
         return req.adminizer.historyHandler.get(adapter);
     }
 
-    private static checkHistoryPermission(req: ReqType, res: ResType) {
+    private static checkHistoryPermission(req: ReqType, res: ResType): boolean {
         if (!req.adminizer?.historyHandler) {
             res.status(401).json({ error: 'History system not initialized' });
             return false
