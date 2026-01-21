@@ -12,6 +12,18 @@ import { getRelationsMediaManager } from "../media-manager/helpers/MediaManagerH
 import { MediaManagerWidgetData } from "../media-manager/AbstractMediaManager";
 import { setAssociationValues } from "../../helpers/inertiaAddHelper";
 
+const excludedModels = new Set([
+    'HistoryActionsAP',
+    'MediaManagerAP',
+    'MediaManagerAssociationsAP',
+    'MediaManagerMetaAP',
+    'NavigationAP',
+    'NotificationAP',
+    'UserNotificationAP',
+    'UserAP',
+    'GroupAP'
+]);
+
 export abstract class AbstractHistoryAdapter {
     public abstract id: string
     public abstract model: string;
@@ -34,9 +46,15 @@ export abstract class AbstractHistoryAdapter {
     }
 
     public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
-    public abstract getAllHistory(modelName: string, all: boolean): Promise<HistoryActionsAP[]>
+    public abstract getAllHistory(modelName: string): Promise<HistoryActionsAP[]>
     public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
     public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
+
+    public getModels(): string[] {
+        return this.adminizer.modelHandler.all
+            .filter(model => !excludedModels.has(model.modelname))
+            .map(model => model.modelname);
+    }
 
     protected async getModelFieldsHistory(history: HistoryActionsAP, user: UserAP): Promise<Record<string, any>> {
         const entity = this.findEntityObject(history)

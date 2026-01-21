@@ -1,23 +1,13 @@
 import { AbstractHistoryAdapter } from "../../lib/history-actions/AbstractHistoryAdapter";
 
-const excludedModels = new Set([
-    'HistoryActionsAP',
-    'MediaManagerAP',
-    'MediaManagerAssociationsAP',
-    'MediaManagerMetaAP',
-    'NavigationAP',
-    'NotificationAP',
-    'UserNotificationAP',
-]);
 export class HistoryController {
 
     static async index(req: ReqType, res: ResType): Promise<any> {
         if (!HistoryController.checkHistoryPermission(req, res)) return
+        const adapter = HistoryController.getAdapter(req);
 
         if (req.method.toUpperCase() === 'GET') {
-            const models = req.adminizer.modelHandler.all
-                .filter(model => !excludedModels.has(model.modelname))
-                .map(model => model.modelname);
+            const models = adapter.getModels();
 
             return req.Inertia.render({
                 component: 'history',
@@ -29,10 +19,9 @@ export class HistoryController {
         }
 
         if (req.method.toUpperCase() === 'POST') {
-            const adapter = HistoryController.getAdapter(req);
 
             try {
-                const data = await adapter.getAllHistory('', true)
+                const data = await adapter.getAllHistory('')
                 return res.json({ data: data })
             } catch (e) {
                 return res.status(500).json({
@@ -47,7 +36,7 @@ export class HistoryController {
     static async getModelHistoryList(req: ReqType, res: ResType): Promise<any> {
         if (!HistoryController.checkHistoryPermission(req, res)) return
         const { model } = req.body
-        
+
         if (!model) {
             return res.status(400).json({ error: 'Model parameter is required' });
         }
@@ -55,7 +44,7 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         try {
-            const data = await adapter.getAllHistory(model.toLowerCase(), false)
+            const data = await adapter.getAllHistory(model.toLowerCase())
             return res.json({ data: data })
         } catch (e) {
             return res.status(500).json({

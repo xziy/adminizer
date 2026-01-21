@@ -25,13 +25,13 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
         }
     }
 
-    public async getAllHistory(modelName: string, all: boolean): Promise<HistoryActionsAP[]> {
+    public async getAllHistory(modelName: string): Promise<HistoryActionsAP[]> {
         try {
             return await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-                where: all ? {} : { modelName: modelName },
+                where: !modelName ? {} : { modelName: modelName },
                 sort: "createdAt DESC"
             })
-
+            
         } catch (e) {
             Adminizer.log.error('Eror getting history', e)
             throw new Error("Eror getting history");
