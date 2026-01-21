@@ -72,7 +72,7 @@ const ViewAll = () => {
                         <div key={model}>
                             <Button
                                 variant={activeModel === model ? 'default' : 'outline'}
-                                className="border-1"
+                                className="border-1 capitalize"
                                 onClick={async () => {
                                     setActiveModel(model)
                                     await changeModel(model)

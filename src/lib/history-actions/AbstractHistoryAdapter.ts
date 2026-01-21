@@ -12,6 +12,10 @@ import { getRelationsMediaManager } from "../media-manager/helpers/MediaManagerH
 import { MediaManagerWidgetData } from "../media-manager/AbstractMediaManager";
 import { setAssociationValues } from "../../helpers/inertiaAddHelper";
 
+/**
+ * Set of model names that are excluded from history tracking.
+ * These models are internal or administrative and should not appear in user-accessible history.
+ */
 const excludedModels = new Set([
     'HistoryActionsAP',
     'MediaManagerAP',
@@ -24,15 +28,48 @@ const excludedModels = new Set([
     'GroupAP'
 ]);
 
+/**
+ * Abstract base class for handling history operations in the AdminPanel.
+ * Provides common methods and structure for retrieving, filtering, and formatting historical data.
+ * Subclasses must implement model-specific logic for persistence and retrieval.
+ *
+ * @abstract
+ */
 export abstract class AbstractHistoryAdapter {
-    public abstract id: string
+    /**
+     * Unique identifier for this history adapter instance.
+     * Used for access rights registration and identification.
+     */
+    public abstract id: string;
+
+    /**
+     * Model name associated with this history adapter.
+     * Refers to the underlying database model that stores history records.
+     */
     public abstract model: string;
+
+    /**
+     * Reference to the main Adminizer instance.
+     * Provides access to models, configuration, access rights, and services.
+     */
     protected adminizer: Adminizer;
 
+    /**
+     * Constructs a new history adapter and binds access rights.
+     *
+     * @param adminizer - The main Adminizer instance.
+     */
     protected constructor(adminizer: Adminizer) {
-        this._bindAccessRight(adminizer)
+        this._bindAccessRight(adminizer);
     }
 
+    /**
+     * Registers access rights for this history adapter.
+     * Called during construction with a slight delay to ensure Adminizer is ready.
+     *
+     * @param adminizer - The Adminizer instance to bind to.
+     * @private
+     */
     private _bindAccessRight(adminizer: Adminizer) {
         this.adminizer = adminizer;
         setTimeout(() => {
@@ -42,86 +79,154 @@ export abstract class AbstractHistoryAdapter {
                 description: `Access to history for ${this.id}`,
                 department: 'history-actions',
             });
-        }, 100)
+        }, 100);
     }
 
-    public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
-    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
-    public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
-    public abstract getAllHistory(user: UserAP, modelName?: string): Promise<Record<string, any>>
+    /**
+     * Retrieves all history records for a specific model instance.
+     *
+     * @param modelId - ID of the model instance.
+     * @param modelName - Name of the model.
+     * @returns Promise resolving to an array of history records.
+     */
+    public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>;
 
-    public async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
+    /**
+     * Saves a new history record.
+     *
+     * @param data - History data excluding auto-generated fields (`id`, `createdAt`, `updatedAt`, `isCurrent`).
+     * @returns Promise resolving when the record is saved.
+     */
+    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>;
+
+    /**
+     * Retrieves detailed history data for a specific history record.
+     * Processes field values based on their type (e.g., media manager, associations).
+     *
+     * @param historyId - ID of the history record.
+     * @param user - User requesting the data (used for access control).
+     * @returns Promise resolving to formatted history data.
+     */
+    public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>;
+
+    /**
+     * Retrieves all accessible history records for a user.
+     *
+     * @param user - User requesting the data.
+     * @param modelName - Optional model name to filter results.
+     * @returns Promise resolving to a record of history data.
+     */
+    public abstract getAllHistory(user: UserAP, modelName?: string): Promise<Record<string, any>>;
+
+    /**
+     * Gets a list of models for which the user has update permissions.
+     * Excludes internal models defined in `excludedModels`.
+     *
+     * @param user - User whose permissions are checked.
+     * @returns Array of model names (in lowercase) the user can access.
+     */
+    public getModels(user: UserAP): string[] {
+        const models = this.adminizer.modelHandler.all
+            .filter(model => !excludedModels.has(model.modelname))
+            .map(model => model.modelname.toLowerCase());
+        
+        const accessModels: string[] = [];
+        for (const model of models) {
+            const access = this.adminizer.accessRightsHelper.enoughPermissions([
+                `update-${model}-model`
+            ], user);
+            if (access) accessModels.push(model);
+        }
+        
+        return accessModels;
+    }
+    
+    /**
+     * Filters history records based on user permissions and checks if the associated model records exist.
+     *
+     * @param history - Array of raw history records.
+     * @param user - User requesting the data.
+     * @returns Promise resolving to filtered history records the user can access.
+     * @protected
+     */
+    protected async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
         try {
             let accessHistory: HistoryActionsAP[] = [];
+            const accessModels = this.getModels(user);
             for (const historyRecord of history) {
-                const entity = this.findEntityObject(historyRecord)
+                if (!accessModels.includes(historyRecord.modelName)) {
+                    continue;
+                }
+                const entity = this.findEntityObject(historyRecord);
                 const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
                 const modelRecord = await entity.model.findOne({ id: historyRecord.modelId }, dataAccessor);
-                if (modelRecord) accessHistory.push(historyRecord)
+                if (modelRecord) accessHistory.push(historyRecord);
             }
 
             return accessHistory;
 
         } catch (e) {
-            Adminizer.log.error('Eror getting history', e)
+            Adminizer.log.error('Eror getting history', e);
             throw new Error("Eror getting history");
         }
     }
-
-    public getModels(user: UserAP): string[] {
-        const models = this.adminizer.modelHandler.all
-            .filter(model => !excludedModels.has(model.modelname))
-            .map(model => model.modelname);
-
-        const accessModels: string[] = []
-        for (const model of models) {
-            const access = this.adminizer.accessRightsHelper.enoughPermissions([
-                `update-${model}-model`
-            ], user)
-            if (access) accessModels.push(model)
-        }
-
-        return accessModels;
-    }
-
+    
+    /**
+     * Formats a single history record for frontend consumption.
+     * Processes field types such as media manager, color, and associations.
+     *
+     * @param history - The history record to process.
+     * @param user - User requesting the data.
+     * @returns Promise resolving to formatted data object.
+     * @protected
+     */
     protected async _getModelHistory(history: HistoryActionsAP, user: UserAP): Promise<Record<string, any>> {
-        const entity = this.findEntityObject(history)
+        const entity = this.findEntityObject(history);
         const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
         let fields = dataAccessor.getFieldsConfig();
         fields = await this.loadAssociations(fields, user, "edit");
 
-        let data: Record<string, any> = {}
+        let data: Record<string, any> = {};
         for (const field of Object.keys(fields)) {
             const fieldConfigConfig = fields[field].config as BaseFieldConfig;
             if (fieldConfigConfig.type === 'mediamanager') {
-                const mediaManager = this.adminizer.mediaManagerHandler.get((fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default")
-                data[field] = []
+                const mediaManager = this.adminizer.mediaManagerHandler.get((fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default");
+                data[field] = [];
                 if (history.data[field]) {
                     for (const file of history.data[field]) {
-                        const media = await mediaManager.getFile(file.mimeType, file.id)
+                        const media = await mediaManager.getFile(file.mimeType, file.id);
                         data[field].push({
                             id: media.id,
                             mimeType: media.mimeType,
                             filename: media.filename,
                             url: media.url,
                             variants: []
-                        })
+                        });
                     }
                 }
 
             } else if (fieldConfigConfig.type === 'color') {
-                data[field] = history.data[field] ? history.data[field] : '#000000'
+                data[field] = history.data[field] ? history.data[field] : '#000000';
             } else if (fieldConfigConfig.type === 'association' || fieldConfigConfig.type === 'association-many') {
-                const { initValue } = setAssociationValues(fields[field], history.data[field])
-                data[field] = await this.getModelRelationsHistory(fields[field].model.model ?? fields[field].model.collection, initValue)
+                const { initValue } = setAssociationValues(fields[field], history.data[field]);
+                data[field] = await this.getModelRelationsHistory(fields[field].model.model ?? fields[field].model.collection, initValue);
             } else {
-                data[field] = history.data[field]
+                data[field] = history.data[field];
             }
         }
 
         return data;
     }
 
+    /**
+     * Filters related model IDs to only those that exist in the database.
+     *
+     * @param model - Name of the related model.
+     * @param ids - Array of IDs to validate.
+     * @returns Promise resolving to array of existing IDs.
+     * @protected
+     * @template T - Type of the ID (string or number).
+     */
     protected async getModelRelationsHistory<T extends string | number>(model: string, ids: T[]): Promise<T[]> {
         const data: T[] = [];
         for (const id of ids) {
@@ -133,7 +238,14 @@ export abstract class AbstractHistoryAdapter {
         return data;
     }
 
-
+    /**
+     * Constructs an Entity object from a history record.
+     * Used to access model configuration and instance.
+     *
+     * @param history - The history record.
+     * @returns Entity object with name, URI, type, model instance, and config.
+     * @protected
+     */
     protected findEntityObject(history: HistoryActionsAP): Entity {
         const entityName = history.modelName;
         const entityType = "model";
@@ -154,12 +266,22 @@ export abstract class AbstractHistoryAdapter {
         return entity;
     }
 
+    /**
+     * Loads associated records for association-type fields.
+     * Populates `records` array in field config for widget rendering.
+     *
+     * @param fields - Fields configuration to process.
+     * @param user - User requesting data.
+     * @param action - Optional action type (e.g., "view", "edit").
+     * @returns Promise resolving to updated fields with loaded associations.
+     * @protected
+     */
     protected async loadAssociations(fields: Fields, user: UserAP, action?: ActionType): Promise<Fields> {
 
         let loadAssoc = async (key: string, action?: ActionType) => {
             let fieldConfigConfig = fields[key].config as Field["config"];
             if (!isObject(fieldConfigConfig)) {
-                throw 'type error: fieldConfigConfig should be normalized'
+                throw 'type error: fieldConfigConfig should be normalized';
             }
             if (fieldConfigConfig.type !== 'association' && fieldConfigConfig.type !== 'association-many') {
                 return;
@@ -190,7 +312,7 @@ export abstract class AbstractHistoryAdapter {
                 let dataAccessor = new DataAccessor(this.adminizer, user, entity, "view");
                 list = await Model.find({}, dataAccessor);
             } catch (e) {
-                Adminizer.log.error(e)
+                Adminizer.log.error(e);
                 throw new Error("FieldsHelper > loadAssociations error");
             }
 
@@ -206,6 +328,6 @@ export abstract class AbstractHistoryAdapter {
             }
         }
 
-        return fields
+        return fields;
     }
 }
