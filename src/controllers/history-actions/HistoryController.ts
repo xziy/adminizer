@@ -7,7 +7,7 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         if (req.method.toUpperCase() === 'GET') {
-            const models = adapter.getModels();
+            const models = adapter.getModels(req.user);
 
             return req.Inertia.render({
                 component: 'history',
@@ -21,7 +21,7 @@ export class HistoryController {
         if (req.method.toUpperCase() === 'POST') {
 
             try {
-                const data = await adapter.getAllHistory('')
+                const data = await adapter.getAllHistory(req.user)
                 return res.json({ data: data })
             } catch (e) {
                 return res.status(500).json({
@@ -44,7 +44,7 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         try {
-            const data = await adapter.getAllHistory(model.toLowerCase())
+            const data = await adapter.getAllHistory(req.user, model.toLowerCase())
             return res.json({ data: data })
         } catch (e) {
             return res.status(500).json({

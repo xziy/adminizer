@@ -89,7 +89,7 @@ export default async function list(req: ReqType, res: ResType) {
         search: {value: globalSearch, regex: false}
     };
 
-
+    
     const nodeTable = new NodeTable(RequestBody, entity.model, fields);
     await nodeTable.output((err: Error, data: NodeOutput) => {
         if (err) {
@@ -103,8 +103,7 @@ export default async function list(req: ReqType, res: ResType) {
                 data: data ?? [],
             }
         });
-    }, dataAccessor)
-    ;
+    }, dataAccessor);
 }
 
 function setColumns(

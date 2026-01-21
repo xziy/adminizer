@@ -46,17 +46,45 @@ export abstract class AbstractHistoryAdapter {
     }
 
     public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>
-    public abstract getAllHistory(modelName: string): Promise<HistoryActionsAP[]>
     public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>
     public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>
+    public abstract getAllHistory(user: UserAP, modelName?: string): Promise<Record<string, any>>
 
-    public getModels(): string[] {
-        return this.adminizer.modelHandler.all
-            .filter(model => !excludedModels.has(model.modelname))
-            .map(model => model.modelname);
+    public async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
+        try {
+            let accessHistory: HistoryActionsAP[] = [];
+            for (const historyRecord of history) {
+                const entity = this.findEntityObject(historyRecord)
+                const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
+                const modelRecord = await entity.model.findOne({ id: historyRecord.modelId }, dataAccessor);
+                if (modelRecord) accessHistory.push(historyRecord)
+            }
+
+            return accessHistory;
+
+        } catch (e) {
+            Adminizer.log.error('Eror getting history', e)
+            throw new Error("Eror getting history");
+        }
     }
 
-    protected async getModelFieldsHistory(history: HistoryActionsAP, user: UserAP): Promise<Record<string, any>> {
+    public getModels(user: UserAP): string[] {
+        const models = this.adminizer.modelHandler.all
+            .filter(model => !excludedModels.has(model.modelname))
+            .map(model => model.modelname);
+
+        const accessModels: string[] = []
+        for (const model of models) {
+            const access = this.adminizer.accessRightsHelper.enoughPermissions([
+                `update-${model}-model`
+            ], user)
+            if (access) accessModels.push(model)
+        }
+
+        return accessModels;
+    }
+
+    protected async _getModelHistory(history: HistoryActionsAP, user: UserAP): Promise<Record<string, any>> {
         const entity = this.findEntityObject(history)
         const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
         let fields = dataAccessor.getFieldsConfig();
