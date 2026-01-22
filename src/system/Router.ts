@@ -183,10 +183,6 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, HistoryController.index)
             )
             adminizer.app.post(
-                `${adminizer.config.routePrefix}/history/view-all/model`,
-                adminizer.policyManager.bindPolicies(policies, HistoryController.getModelHistoryList)
-            )
-            adminizer.app.post(
                 `${adminizer.config.routePrefix}/history/get-model-history`,
                 adminizer.policyManager.bindPolicies(policies, HistoryController.getModelHistory)
             );

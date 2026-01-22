@@ -19,10 +19,10 @@ export class HistoryController {
         }
 
         if (req.method.toUpperCase() === 'POST') {
+            const { model, limit, offset: skip } = req.body
 
             try {
-                const data = await adapter.getAllHistory(req.user)
-                return res.json({ data: data })
+                return res.json({ ...await adapter.getAllHistory(req.user, limit, skip, model.toLowerCase()) })
             } catch (e) {
                 return res.status(500).json({
                     error: 'Failed to load history. Please try again later or contact support.'
@@ -33,26 +33,6 @@ export class HistoryController {
         return res.status(405).end()
     }
 
-    static async getModelHistoryList(req: ReqType, res: ResType): Promise<any> {
-        if (!HistoryController.checkHistoryPermission(req, res)) return
-        const { model } = req.body
-
-        if (!model) {
-            return res.status(400).json({ error: 'Model parameter is required' });
-        }
-
-        const adapter = HistoryController.getAdapter(req);
-
-        try {
-            const data = await adapter.getAllHistory(req.user, model.toLowerCase())
-            return res.json({ data: data })
-        } catch (e) {
-            return res.status(500).json({
-                error: 'Failed to load history. Please try again later or contact support.'
-            });
-        }
-
-    }
 
     static async getModelHistory(req: ReqType, res: ResType): Promise<any> {
         if (!HistoryController.checkHistoryPermission(req, res)) return
@@ -90,7 +70,7 @@ export class HistoryController {
 
         try {
             const data = await adapter.getModelHistory(+historyId, req.user)
-            return res.json({ data: data })
+            return res.json({ data })
         } catch (e) {
             return res.status(500).json({
                 error: 'Failed to load history. Please try again later or contact support.'

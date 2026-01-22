@@ -86,6 +86,15 @@ export abstract class AbstractHistoryAdapter {
     public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>;
 
     /**
+     * Retrieves all accessible history records for a user.
+     *
+     * @param user - User requesting the data.
+     * @param modelName - Optional model name to filter results.
+     * @returns Promise resolving to a record of history data.
+     */
+    public abstract getAllHistory(user: UserAP, limit?: number, offset?: number, modelName?: string): Promise<{data: HistoryActionsAP[], total: number}>;
+
+    /**
      * Saves a new history record.
      *
      * @param data - History data excluding auto-generated fields (`id`, `createdAt`, `updatedAt`, `isCurrent`).
@@ -102,15 +111,6 @@ export abstract class AbstractHistoryAdapter {
      * @returns Promise resolving to formatted history data.
      */
     public abstract getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>>;
-
-    /**
-     * Retrieves all accessible history records for a user.
-     *
-     * @param user - User requesting the data.
-     * @param modelName - Optional model name to filter results.
-     * @returns Promise resolving to a record of history data.
-     */
-    public abstract getAllHistory(user: UserAP, modelName?: string): Promise<Record<string, any>>;
 
     /**
      * Gets a list of models for which the user has update permissions.
