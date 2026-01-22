@@ -1,10 +1,10 @@
-import {AbstractAdapter, AbstractModel, ModelAttributes} from "../AbstractModel";
-import {v4 as uuid} from "uuid";
-import {FindOptions} from "../AbstractModel";
-import Waterline, {Config} from "waterline";
+import { AbstractAdapter, AbstractModel, ModelAttributes } from "../AbstractModel";
+import { v4 as uuid } from "uuid";
+import { FindOptions } from "../AbstractModel";
+import Waterline, { Config } from "waterline";
 import path from "node:path";
 import fs from "fs";
-import {pathToFileURL} from "url";
+import { pathToFileURL } from "url";
 
 export class WaterlineModel<T> extends AbstractModel<T> {
     private model: any;
@@ -206,6 +206,14 @@ export class WaterlineAdapter extends AbstractAdapter {
                 if (attributes[key].unique) {
                     attributes[key].autoMigrations.unique = true;
                     delete attributes[key].unique;
+                }
+            });
+            
+            // Convert date and datetime fields to ref
+            Object.keys(attributes).forEach((key) => {
+                const attr = attributes[key];
+                if (attr.type === 'datetime' || attr.type === 'date') {
+                    attr.type = 'ref';
                 }
             });
 

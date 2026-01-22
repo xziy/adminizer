@@ -43,12 +43,6 @@ export abstract class AbstractHistoryAdapter {
     public abstract id: string;
 
     /**
-     * Model name associated with this history adapter.
-     * Refers to the underlying database model that stores history records.
-     */
-    public abstract model: string;
-
-    /**
      * Reference to the main Adminizer instance.
      * Provides access to models, configuration, access rights, and services.
      */

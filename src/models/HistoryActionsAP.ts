@@ -29,11 +29,11 @@ export default {
         type: 'boolean',
     },
     createdAt: {
-        type: 'number',
+        type: 'datetime',
         autoCreatedAt: true
     },
     updatedAt: {
-        type: 'number',
+        type: 'datetime',
         autoUpdatedAt: true
     },
     preview: {

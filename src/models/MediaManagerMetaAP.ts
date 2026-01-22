@@ -19,11 +19,11 @@ export default {
         model: "MediaManagerAP"
     },
     createdAt: {
-        type: 'number',
+        type: 'datetime',
         autoCreatedAt: true
     },
     updatedAt: {
-        type: 'number',
+        type: 'datetime',
         autoUpdatedAt: true
     }
 }

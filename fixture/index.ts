@@ -172,7 +172,12 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         adminizer.app.get(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
         adminizer.app.post(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, async (req: ReqType, res: ResType) => {
-            await sleep(1000);
+            adminizer.sendNotification({
+                title: "Test notification",
+                message: req.body.message,
+                notificationClass: 'general',
+                channel: ''
+            })
             res.json({
                 test: req.body
             })
