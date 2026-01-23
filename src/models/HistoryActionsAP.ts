@@ -22,7 +22,7 @@ export default {
     diff: {
         type: "json",
     },
-    meta: {
+    userName: {
         type: "string",
     },
     isCurrent: {
@@ -48,7 +48,7 @@ export interface HistoryActionsAP {
     action: string,
     data: any,
     diff: any,
-    meta: string,
+    userName: string,
     isCurrent: boolean,
     createdAt: number,
     updatedAt: number,

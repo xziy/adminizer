@@ -104,7 +104,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                                     </TableCell>
                                     <TableCell className="p-2 self-start pt-2.5 max-w-[250px] whitespace-break-spaces">
                                         <div className="max-w-[500px] whitespace-break-spaces font-medium text-chart-3">
-                                            {item.meta}
+                                            {item.userName}
                                         </div>
                                     </TableCell>
                                     <TableCell className="p-2 align-middle">

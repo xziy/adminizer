@@ -124,7 +124,7 @@ export abstract class AbstractModel<T> {
     private async logSystemEvent(
         dataAccessor: DataAccessor,
         eventType: 'Created' | 'Updated' | 'Deleted',
-        who: string,
+        userName: string,
         oldRecord: Partial<T>,
         newRecord: Partial<T>
     ): Promise<void> {
@@ -161,7 +161,7 @@ export abstract class AbstractModel<T> {
             action: eventType.toLocaleLowerCase(),
             data: record,
             diff: formattedChanges,
-            meta: who,
+            userName: userName,
             preview: false
         })
         

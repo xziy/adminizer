@@ -92,7 +92,7 @@ export abstract class AbstractHistoryAdapter {
      * @param modelName - Optional model name to filter results.
      * @returns Promise resolving to a record of history data.
      */
-    public abstract getAllHistory(user: UserAP, limit?: number, offset?: number, modelName?: string): Promise<{data: HistoryActionsAP[], total: number}>;
+    public abstract getAllHistory(user: UserAP, forUserName: string, modelName: string, limit?: number, offset?: number): Promise<{data: HistoryActionsAP[], total: number}>;
 
     /**
      * Saves a new history record.

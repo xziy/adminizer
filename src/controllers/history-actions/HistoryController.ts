@@ -1,4 +1,6 @@
+import { Adminizer } from "../../lib/Adminizer";
 import { AbstractHistoryAdapter } from "../../lib/history-actions/AbstractHistoryAdapter";
+import { UserAP } from "../../models/UserAP";
 
 export class HistoryController {
 
@@ -8,22 +10,28 @@ export class HistoryController {
 
         if (req.method.toUpperCase() === 'GET') {
             const models = adapter.getModels(req.user);
+            const users = await req.adminizer.modelHandler.model.get('userap')['_find']({}) as UserAP[]
 
             return req.Inertia.render({
                 component: 'history',
                 props: {
                     title: req.i18n.__('History'),
-                    models: models
+                    models,
+                    users: users.map((user: any) => ({
+                        name: user.login
+                    }))
                 }
             });
         }
 
         if (req.method.toUpperCase() === 'POST') {
-            const { model, limit, offset: skip } = req.body
+            const { model, limit, user, offset: skip } = req.body
 
             try {
-                return res.json({ ...await adapter.getAllHistory(req.user, limit, skip, model.toLowerCase()) })
+                return res.json({ ...await adapter.getAllHistory(req.user, user, model.toLowerCase(), limit, skip) })
             } catch (e) {
+                Adminizer.logger.error(e)
+
                 return res.status(500).json({
                     error: 'Failed to load history. Please try again later or contact support.'
                 });
@@ -50,6 +58,7 @@ export class HistoryController {
             const data = await adapter.getAllModelHistory(modelId, modelName);
             return res.json({ data });
         } catch (e) {
+            Adminizer.logger.error(e)
             return res.status(500).json({
                 error: 'Failed to load history. Please try again later or contact support.'
             });

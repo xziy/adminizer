@@ -13,10 +13,15 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
 
     }
 
-    public async getAllHistory(user: UserAP, limit: number = 15, skip: number = 0, modelName?: string): Promise<{ data: HistoryActionsAP[], total: number }> {
-        
+    public async getAllHistory(user: UserAP, forUserName: string, modelName: string, limit: number = 15, skip: number = 0): Promise<{ data: HistoryActionsAP[], total: number }> {
+        const query = modelName === 'all' && forUserName === 'all' ? {} :
+            {
+                ...(modelName !== 'all' ? { modelName } : {}),
+                ...(forUserName !== 'all' ? { userName: forUserName } : {})
+            }
+
         const history = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-            where: modelName === 'all' ? {} : { modelName: modelName },
+            where: query,
             sort: "createdAt DESC",
             limit,
             skip
@@ -24,7 +29,7 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
 
         return {
             data: await this._getAllHistory(history, user),
-            total: await this.adminizer.modelHandler.model.get(this.model)["_count"]({ where: modelName === 'all' ? {} : { modelName: modelName } })
+            total: await this.adminizer.modelHandler.model.get(this.model)["_count"]({ where: query })
         }
     }
 
