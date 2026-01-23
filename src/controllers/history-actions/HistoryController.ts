@@ -17,7 +17,7 @@ export class HistoryController {
                 props: {
                     title: req.i18n.__('History'),
                     models,
-                    users: users.map((user: any) => ({
+                    users: users.map((user: UserAP) => ({
                         name: user.login
                     }))
                 }
