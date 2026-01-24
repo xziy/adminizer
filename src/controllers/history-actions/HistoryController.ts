@@ -10,7 +10,12 @@ export class HistoryController {
 
         if (req.method.toUpperCase() === 'GET') {
             const models = adapter.getModels(req.user);
-            const users = await req.adminizer.modelHandler.model.get('userap')['_find']({}) as UserAP[]
+            let users: UserAP[] = []
+            const access = req.adminizer.accessRightsHelper.enoughPermissions([
+                `user-history-${adapter.id}`
+            ], req.user);
+
+            if(access) users = await req.adminizer.modelHandler.model.get('userap')['_find']({}) as UserAP[]
 
             return req.Inertia.render({
                 component: 'history',
@@ -55,7 +60,7 @@ export class HistoryController {
 
         const adapter = HistoryController.getAdapter(req);
         try {
-            const data = await adapter.getAllModelHistory(modelId, modelName);
+            const data = await adapter.getAllModelHistory(modelId, modelName, req.user);
             return res.json({ data });
         } catch (e) {
             Adminizer.logger.error(e)

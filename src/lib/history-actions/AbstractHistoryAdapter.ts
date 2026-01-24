@@ -8,8 +8,6 @@ import { ModelAnyInstance } from "../model/AbstractModel";
 import { isObject } from "../../helpers/JsUtils";
 import { DataAccessor } from "../DataAccessor";
 import { BaseFieldConfig, MediaManagerOptionsField } from "../../interfaces/adminpanelConfig";
-import { getRelationsMediaManager } from "../media-manager/helpers/MediaManagerHelper";
-import { MediaManagerWidgetData } from "../media-manager/AbstractMediaManager";
 import { setAssociationValues } from "../../helpers/inertiaAddHelper";
 
 /**
@@ -67,12 +65,20 @@ export abstract class AbstractHistoryAdapter {
     private _bindAccessRight(adminizer: Adminizer) {
         this.adminizer = adminizer;
         setTimeout(() => {
-            adminizer.accessRightsHelper.registerToken({
-                id: `history-${this.id}`,
-                name: this.id,
-                description: `Access to history for ${this.id}`,
-                department: 'history-actions',
-            });
+            adminizer.accessRightsHelper.registerTokens([
+                {
+                    id: `history-${this.id}`,
+                    name: this.id,
+                    description: `Access to history for ${this.id}`,
+                    department: 'History actions',
+                },
+                {
+                    id: `user-history-${this.id}`,
+                    name: 'Access to user history',
+                    description: `Access to user history for ${this.id}`,
+                    department: 'History actions',
+                },
+            ]);
         }, 100);
     }
 
@@ -83,7 +89,7 @@ export abstract class AbstractHistoryAdapter {
      * @param modelName - Name of the model.
      * @returns Promise resolving to an array of history records.
      */
-    public abstract getAllModelHistory(modelId: string | number, modelName: string): Promise<HistoryActionsAP[]>;
+    public abstract getAllModelHistory(modelId: string | number, modelName: string, user: UserAP): Promise<HistoryActionsAP[]>;
 
     /**
      * Retrieves all accessible history records for a user.
@@ -92,7 +98,7 @@ export abstract class AbstractHistoryAdapter {
      * @param modelName - Optional model name to filter results.
      * @returns Promise resolving to a record of history data.
      */
-    public abstract getAllHistory(user: UserAP, forUserName: string, modelName: string, limit?: number, offset?: number): Promise<{data: HistoryActionsAP[], total: number}>;
+    public abstract getAllHistory(user: UserAP, forUserName: string, modelName: string, limit?: number, offset?: number): Promise<{ data: HistoryActionsAP[]}>;
 
     /**
      * Saves a new history record.
@@ -100,7 +106,7 @@ export abstract class AbstractHistoryAdapter {
      * @param data - History data excluding auto-generated fields (`id`, `createdAt`, `updatedAt`, `isCurrent`).
      * @returns Promise resolving when the record is saved.
      */
-    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">): Promise<void>;
+    public abstract setHistory(data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent" | "user"> & { user: string | number }): Promise<void>;
 
     /**
      * Retrieves detailed history data for a specific history record.
@@ -123,18 +129,32 @@ export abstract class AbstractHistoryAdapter {
         const models = this.adminizer.modelHandler.all
             .filter(model => !excludedModels.has(model.modelname))
             .map(model => model.modelname.toLowerCase());
-        
+
         const accessModels: string[] = [];
         for (const model of models) {
             const access = this.adminizer.accessRightsHelper.enoughPermissions([
-                `update-${model}-model`
+                `update-${model}-model`,
+                `read-${model}-model`
             ], user);
             if (access) accessModels.push(model);
         }
-        
+
         return accessModels;
     }
-    
+
+    protected async _getAllModelHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
+        const accessUser = this.adminizer.accessRightsHelper.enoughPermissions([
+                `user-history-${this.id}`
+            ], user);
+
+            if (!accessUser) {
+                history = history.filter((historyRecord) => {
+                    return historyRecord.user.id === user.id;
+                });
+            }
+            return history;
+    }
+
     /**
      * Filters history records based on user permissions and checks if the associated model records exist.
      *
@@ -147,14 +167,39 @@ export abstract class AbstractHistoryAdapter {
         try {
             let accessHistory: HistoryActionsAP[] = [];
             const accessModels = this.getModels(user);
+            const accessUser = this.adminizer.accessRightsHelper.enoughPermissions([
+                `user-history-${this.id}`
+            ], user);
+
+            if (!accessUser) {
+                history = history.filter((historyRecord) => {
+                    return historyRecord.user.id === user.id;
+                });
+            }
             for (const historyRecord of history) {
                 if (!accessModels.includes(historyRecord.modelName)) {
                     continue;
                 }
-                const entity = this.findEntityObject(historyRecord);
-                const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
-                const modelRecord = await entity.model.findOne({ id: historyRecord.modelId }, dataAccessor);
-                if (modelRecord) accessHistory.push(historyRecord);
+                let access = false
+                switch (historyRecord.action) {
+                    case "updated":
+                        access = this.adminizer.accessRightsHelper.enoughPermissions([
+                            `update-${historyRecord.modelName}-model`,
+                            `read-${historyRecord.modelName}-model`
+                        ], user);
+                        if (access) accessHistory.push(historyRecord);
+                        break;
+                    case "deleted":
+                        access = this.adminizer.accessRightsHelper.enoughPermissions([
+                            `delete-${historyRecord.modelName}-model`
+                        ], user);
+                        if (access) accessHistory.push(historyRecord);
+                        break;
+                    default:
+                        accessHistory.push(historyRecord);
+                        break;
+                }
+
             }
 
             return accessHistory;
@@ -164,7 +209,7 @@ export abstract class AbstractHistoryAdapter {
             throw new Error("Eror getting history");
         }
     }
-    
+
     /**
      * Formats a single history record for frontend consumption.
      * Processes field types such as media manager, color, and associations.

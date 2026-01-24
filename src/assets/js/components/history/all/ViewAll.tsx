@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Braces, LoaderCircle } from "lucide-react";
-import { HistoryActionsAP } from "src/models/HistoryActionsAP";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { HistoryItem } from "@/components/history/HistoryList";
 
 interface HistoryProps extends SharedData {
     title: string,
@@ -20,7 +20,7 @@ interface HistoryProps extends SharedData {
 
 const ViewAll = () => {
     const page = usePage<HistoryProps>();
-    const [history, setHistory] = useState<HistoryActionsAP[]>([])
+    const [history, setHistory] = useState<HistoryItem[]>([])
     // const [diffItem, setDiffItem] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [activeModel, setActiveModel] = useState<string>('all')
@@ -43,16 +43,14 @@ const ViewAll = () => {
             });
 
             const data = res.data.data;
-            const total = res.data.total;
-
+                        
             if (reset) {
                 setHistory(data);
             } else {
                 setHistory(prev => [...prev, ...data]);
             }
-
-
-            setHasMore(history.length + data.length < total);
+            
+            setHasMore(!(data.length < limit));
             setOffset(offset);
         } catch (e) {
             console.error(e);
@@ -73,10 +71,11 @@ const ViewAll = () => {
         const container = tableContainerRef.current;
         if (!container) return;
 
-        const handleScroll = () => {
+        const handleScroll = async () => {
+
             if (loadingMore || !hasMore) return;
             if (container.scrollHeight - container.scrollTop <= container.clientHeight + 5) {
-                fetchHistory(offset + limit, activeModel);
+                await fetchHistory(offset + limit, activeModel);
             }
         };
 
@@ -91,7 +90,6 @@ const ViewAll = () => {
         setHistory([]);
         setOffset(0);
         setHasMore(true);
-        // await fetchHistory(0, model, true);
         setLoading(false);
     };
 
@@ -126,7 +124,7 @@ const ViewAll = () => {
                         </div>
                     ))}
                 </div>
-                <div className="flex flex-col gap-4 max-w-[250px]">
+                {page.props.users.length > 0 && <div className="flex flex-col gap-4 max-w-[250px]">
                     <Label htmlFor="users">Users</Label>
                     <Select
                         onValueChange={(value: string) => {
@@ -151,75 +149,73 @@ const ViewAll = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
-                <div className="max-h-[60vh] mt-5 pr-5">
-                    <Table wrapperHeight="max-h-[55vh]" ref={tableContainerRef}>
-                        <TableHeader className="sticky top-0 bg-background shadow">
-                            <TableRow>
-                                <TableHead className="p-2 text-left">Date</TableHead>
-                                <TableHead className="p-2 text-left">Model</TableHead>
-                                <TableHead className="p-2 text-left">id</TableHead>
-                                <TableHead className="p-2 text-left">Event</TableHead>
-                                <TableHead className="p-2 text-left">User</TableHead>
-                                <TableHead className="p-2 text-left">Diff</TableHead>
+                </div>}
+                <Table wrapperHeight="max-h-[55vh]" ref={tableContainerRef}>
+                    <TableHeader className="sticky top-0 bg-background shadow">
+                        <TableRow>
+                            <TableHead className="p-2 text-left">Date</TableHead>
+                            <TableHead className="p-2 text-left">Model</TableHead>
+                            <TableHead className="p-2 text-left">id</TableHead>
+                            <TableHead className="p-2 text-left">Event</TableHead>
+                            <TableHead className="p-2 text-left">User</TableHead>
+                            <TableHead className="p-2 text-left">Diff</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {history.map((item) => (
+                            <TableRow key={item.id}>
+                                <TableCell className="p-2 self-start pt-2.5">
+                                    {new Date(item.createdAt).toLocaleString()}
+                                </TableCell>
+                                <TableCell className="p-2 self-start pt-2.5 capitalize">
+                                    {item.modelName}
+                                </TableCell>
+                                <TableCell className="p-2 self-start pt-2.5">
+                                    {item.modelId}
+                                </TableCell>
+                                <TableCell className="p-2 self-start pt-2.5 capitalize">
+                                    {item.action}
+                                </TableCell>
+                                <TableCell className="p-2 self-start pt-2.5 max-w-[250px] whitespace-break-spaces">
+                                    <div className="max-w-[500px] whitespace-break-spaces font-medium text-chart-3">
+                                        {item.user.login}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="p-2 align-middle">
+                                    <Button variant="green" size="sm" onClick={() => {
+                                        // setDiffItem(item.diff);
+                                        // setDiffOpen(true);
+                                    }}>
+                                        <Braces />
+                                    </Button>
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {history.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="p-2 self-start pt-2.5">
-                                        {new Date(item.createdAt).toLocaleString()}
-                                    </TableCell>
-                                    <TableCell className="p-2 self-start pt-2.5 capitalize">
-                                        {item.modelName}
-                                    </TableCell>
-                                    <TableCell className="p-2 self-start pt-2.5">
-                                        {item.modelId}
-                                    </TableCell>
-                                    <TableCell className="p-2 self-start pt-2.5 capitalize">
-                                        {item.action}
-                                    </TableCell>
-                                    <TableCell className="p-2 self-start pt-2.5 max-w-[250px] whitespace-break-spaces">
-                                        <div className="max-w-[500px] whitespace-break-spaces font-medium text-chart-3">
-                                            {item.userName}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="p-2 align-middle">
-                                        <Button variant="green" size="sm" onClick={() => {
-                                            // setDiffItem(item.diff);
-                                            // setDiffOpen(true);
-                                        }}>
-                                            <Braces />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {loadingMore && (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="p-4 text-center">
-                                        <LoaderCircle className="mx-auto size-5 animate-spin" />
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                        ))}
+                        {loadingMore && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="p-4 text-center">
+                                    <LoaderCircle className="mx-auto size-5 animate-spin" />
+                                </TableCell>
+                            </TableRow>
+                        )}
 
-                            {!loadingMore && !hasMore && history.length > 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="p-4 text-center font-medium text-muted-foreground">
-                                        Больше нет данных
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                        {!loadingMore && !hasMore && history.length > 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="p-4 text-center font-medium text-muted-foreground">
+                                    Больше нет данных
+                                </TableCell>
+                            </TableRow>
+                        )}
 
-                            {!loadingMore && !loading && history.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="p-4 text-center font-medium text-muted-foreground">
-                                        Нет записей для отображения
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                        {!loadingMore && !loading && history.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="p-4 text-center font-medium text-muted-foreground">
+                                    Нет записей для отображения
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </div >
     )

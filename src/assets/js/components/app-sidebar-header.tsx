@@ -23,15 +23,16 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 </div>
                 <div className="flex gap-4 items-center">
                     <AiAssistantToggle />
-                    <Link href={`${window.routePrefix}/history/view-all`}>
+                    {page.props.history && <Link href={`${window.routePrefix}/history/view-all`}>
                         <Button
                             variant="ghost"
                             size="icon"
                             className="shrink-0"
                         >
-                            <History/>
+                            <History />
                         </Button>
                     </Link>
+                    }
                     <ThemeSwitcher />
                     {page.props.notifications && (
                         tabs === null ? (

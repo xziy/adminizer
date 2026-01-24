@@ -1,3 +1,5 @@
+import { UserAP } from "./UserAP"
+
 export default {
     id: {
         type: "number",
@@ -22,8 +24,8 @@ export default {
     diff: {
         type: "json",
     },
-    userName: {
-        type: "string",
+    user: {
+        model: 'UserAP'
     },
     isCurrent: {
         type: 'boolean',
@@ -48,7 +50,7 @@ export interface HistoryActionsAP {
     action: string,
     data: any,
     diff: any,
-    userName: string,
+    user: UserAP,
     isCurrent: boolean,
     createdAt: number,
     updatedAt: number,

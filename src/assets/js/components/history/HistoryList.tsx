@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Braces, LoaderCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DiffViewer } from "@/components/history/DiffViewer";
+import { UserAP } from "src/models/UserAP";
 
 interface HistoryListProps {
     modelName: string,
@@ -13,8 +14,12 @@ interface HistoryListProps {
     handleWatchHistory: (data: Record<string, any>) => void
 }
 
+export type HistoryItem = Omit<HistoryActionsAP, 'user'> & {
+    user: UserAP;
+};
+
 const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHistory }) => {
-    const [history, setHistory] = useState<HistoryActionsAP[]>([]);
+    const [history, setHistory] = useState<HistoryItem[]>([]);
     const [diffOpen, setDiffOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -29,6 +34,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                     modelName,
                     modelId
                 });
+                
                 if (res.data.data) {
                     setHistory(res.data.data);
                 }
@@ -49,14 +55,6 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
             
             if (res.data.data) {
                 localStorage.setItem(storageKey, id.toString());
-                // setHistory((prev) => {
-                //     return prev.map((item) => {
-                //         return {
-                //             ...item,
-                //             isCurrent: item.id === id
-                //         };
-                //     });
-                // });
 
                 handleWatchHistory(res.data.data);
             }
@@ -65,7 +63,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
         }
     };
 
-    const isCurrent = (item: HistoryActionsAP) => {
+    const isCurrent = (item: HistoryItem) => {
     const localCurrentId = localStorage.getItem(storageKey);
     if (localCurrentId) {
         return localCurrentId === item.id.toString();
@@ -81,7 +79,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                         <TableRow>
                             <TableHead className="p-2 text-left">Date</TableHead>
                             <TableHead className="p-2 text-left">Event</TableHead>
-                            <TableHead className="p-2 text-left">Who</TableHead>
+                            <TableHead className="p-2 text-left">User</TableHead>
                             <TableHead className="p-2 text-left">Diff</TableHead>
                             <TableHead className="p-2 text-left"></TableHead>
                         </TableRow>
@@ -104,7 +102,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                                     </TableCell>
                                     <TableCell className="p-2 self-start pt-2.5 max-w-[250px] whitespace-break-spaces">
                                         <div className="max-w-[500px] whitespace-break-spaces font-medium text-chart-3">
-                                            {item.userName}
+                                            {item.user.login}
                                         </div>
                                     </TableCell>
                                     <TableCell className="p-2 align-middle">

@@ -38,7 +38,6 @@ export type PropsFieldType =
 interface FieldProps extends Record<string | number | symbol, unknown> {
     edit: boolean;
     view: boolean;
-    history: boolean,
     actions: Actions[],
     notFound: string
     search: string
@@ -59,7 +58,6 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
     let props: FieldProps = {
         edit: !!record,
         view: view,
-        history: req.adminizer.config.history?.enabled ?? false,
         actions: [],
         notFound: req.i18n.__('Not found'),
         search: req.i18n.__('Search'),

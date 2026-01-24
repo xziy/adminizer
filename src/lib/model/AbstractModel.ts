@@ -110,7 +110,7 @@ export abstract class AbstractModel<T> {
         };
     }
 
-    private async setHistory(dataAccessor: DataAccessor, data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent">){
+    private async setHistory(dataAccessor: DataAccessor, data: Omit<HistoryActionsAP, "id" | "createdAt" | "updatedAt" | "isCurrent" | "user"> & {user: string | number}){
         if(!dataAccessor.adminizer.config.history?.enabled) return;
 
         const adapter = dataAccessor.adminizer.config.history?.adapter ?? 'default';
@@ -124,7 +124,7 @@ export abstract class AbstractModel<T> {
     private async logSystemEvent(
         dataAccessor: DataAccessor,
         eventType: 'Created' | 'Updated' | 'Deleted',
-        userName: string,
+        userId: string | number,
         oldRecord: Partial<T>,
         newRecord: Partial<T>
     ): Promise<void> {
@@ -161,7 +161,7 @@ export abstract class AbstractModel<T> {
             action: eventType.toLocaleLowerCase(),
             data: record,
             diff: formattedChanges,
-            userName: userName,
+            user: userId,
             preview: false
         })
         
@@ -175,7 +175,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Created',
-            dataAccessor.user.login,
+            dataAccessor.user.id,
             {},
             record
         );
@@ -217,7 +217,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Updated',
-            dataAccessor.user.login,
+            dataAccessor.user.id,
             oldRecord,
             record
         );
@@ -242,7 +242,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Updated',
-                    dataAccessor.user.login,
+                    dataAccessor.user.id,
                     oldRecord,
                     record
                 );
@@ -271,7 +271,7 @@ export abstract class AbstractModel<T> {
         await this.logSystemEvent(
             dataAccessor,
             'Deleted',
-            dataAccessor.user.login,
+            dataAccessor.user.id,
             oldRecord,
             {}
         );
@@ -295,7 +295,7 @@ export abstract class AbstractModel<T> {
                 await this.logSystemEvent(
                     dataAccessor,
                     'Deleted',
-                    dataAccessor.user.login,
+                    dataAccessor.user.id,
                     oldRecord,
                     {}
                 );
