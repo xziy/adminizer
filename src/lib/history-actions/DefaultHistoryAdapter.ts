@@ -43,17 +43,17 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
                 where: { modelName: modelName, modelId: String(modelId) },
                 sort: "createdAt DESC"
             })
-            return await this._getAllHistory(history, user)
+            return await this._getAllModelHistory(history, user)
         } catch (e) {
             Adminizer.log.error('Eror getting history', e)
             throw new Error("Eror getting history");
         }
     }
 
-    public async getModelHistory(historyId: number, user: UserAP): Promise<Record<string, any>> {
+    public async getModelFieldsHistory(historyId: number, user: UserAP): Promise<Record<string, any>> {
         const history = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({ id: historyId })
 
-        return await this._getModelHistory(history, user)
+        return await this._getModelFieldsHistory(history, user)
     }
 
     public async setHistory(data: Omit<HistoryActionsAP, "createdAt" | "updatedAt" | "user"> & { user: string | number }): Promise<void> {

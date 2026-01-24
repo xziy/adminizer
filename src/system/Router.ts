@@ -184,7 +184,7 @@ export default class Router {
             )
             adminizer.app.post(
                 `${adminizer.config.routePrefix}/history/get-model-history`,
-                adminizer.policyManager.bindPolicies(policies, HistoryController.getModelHistory)
+                adminizer.policyManager.bindPolicies(policies, HistoryController.getAllModelHistory)
             );
             adminizer.app.post(
                 `${adminizer.config.routePrefix}/history/get-model-fields`,
