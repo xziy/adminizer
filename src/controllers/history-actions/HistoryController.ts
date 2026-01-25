@@ -31,10 +31,18 @@ export class HistoryController {
         }
 
         if (req.method.toUpperCase() === 'POST') {
-            const { model, limit, user, offset: skip } = req.body
-
+            const { model, limit, user, from, to, offset: skip } = req.body
+            
             try {
-                return res.json({ ...await adapter.getAllHistory(req.user, user, model.toLowerCase(), limit, skip) })
+                return res.json({
+                    ...await adapter.getAllHistory(
+                        req.user,
+                        user, model.toLowerCase(),
+                        limit,
+                        skip,
+                        from ? new Date(from) : null,
+                        to ? new Date(to) : null)
+                })
             } catch (e) {
                 Adminizer.logger.error(e)
 

@@ -13,25 +13,43 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
 
     }
 
-    public async getAllHistory(user: UserAP, forUserName: string, modelName: string, limit: number = 15, skip: number = 0): Promise<{ data: HistoryActionsAP[]}> {
+    public async getAllHistory(user: UserAP, forUserName: string, modelName: string, limit: number = 15, skip: number = 0, from?: Date, to?: Date): Promise<{ data: HistoryActionsAP[] }> {
+        console.log(from, to);
+
+
         let userId = null
         if (forUserName !== 'all') {
-            userId = (await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ login: forUserName })).id
+            const foundUser = await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ login: forUserName });
+            if (!foundUser) {
+                throw new Error("User not found");
+
+            }
+            userId = foundUser.id;
         }
-        
-        const query = modelName === 'all' && forUserName === 'all' ? {} :
+
+
+
+        const query: any = modelName === 'all' && forUserName === 'all' ? {} :
             {
                 ...(modelName !== 'all' ? { modelName } : {}),
                 ...(forUserName !== 'all' ? { user: userId } : {})
             }
 
+        if (from && to) {
+            query.createdAt = {
+                '>=': from,
+                '<=': to.setHours(23, 59, 59, 999)
+            };
+        }
+        
+        
         const history = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
             where: query,
             sort: "createdAt DESC",
             limit,
             skip
         })
-            
+
         return {
             data: await this._getAllHistory(history, user)
         }

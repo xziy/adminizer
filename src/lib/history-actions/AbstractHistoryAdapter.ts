@@ -14,7 +14,7 @@ import { setAssociationValues } from "../../helpers/inertiaAddHelper";
  * Set of model names that are excluded from history tracking.
  * These models are internal or administrative and should not appear in user-accessible history.
  */
-const excludedModels = new Set([
+const EXCLUDED_MODELS = new Set([
     'HistoryActionsAP',
     'MediaManagerAP',
     'MediaManagerAssociationsAP',
@@ -46,13 +46,21 @@ export abstract class AbstractHistoryAdapter {
      */
     protected adminizer: Adminizer;
 
+    protected excludedModels: Set<string> = EXCLUDED_MODELS;
+
     /**
-     * Constructs a new history adapter and binds access rights.
+     * Constructs a new history adapter and binds access rights. And adds excluded models from config.
      *
      * @param adminizer - The main Adminizer instance.
      */
     protected constructor(adminizer: Adminizer) {
         this._bindAccessRight(adminizer);
+        // Add excluded models from config
+        if(adminizer.config.history.exludeModels){
+            adminizer.config.history.exludeModels.forEach((model: string) => {
+                this.excludedModels.add(model);
+            });
+        }
     }
 
     /**
@@ -98,7 +106,7 @@ export abstract class AbstractHistoryAdapter {
      * @param modelName - Optional model name to filter results.
      * @returns Promise resolving to a record of history data.
      */
-    public abstract getAllHistory(user: UserAP, forUserName: string, modelName: string, limit?: number, offset?: number): Promise<{ data: HistoryActionsAP[] }>;
+    public abstract getAllHistory(user: UserAP, forUserName: string, modelName: string, limit?: number, offset?: number, from?: Date, to?: Date): Promise<{ data: HistoryActionsAP[] }>;
 
     /**
      * Saves a new history record.
@@ -127,7 +135,7 @@ export abstract class AbstractHistoryAdapter {
      */
     public getModels(user: UserAP): string[] {
         const models = this.adminizer.modelHandler.all
-            .filter(model => !excludedModels.has(model.modelname))
+            .filter(model => !this.excludedModels.has(model.modelname))
             .map(model => model.modelname.toLowerCase());
 
         const accessModels: string[] = [];
@@ -165,6 +173,7 @@ export abstract class AbstractHistoryAdapter {
     protected async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
         try {
             let accessHistory: HistoryActionsAP[] = [];
+            const accessModels = this.getModels(user);
             const accessToUsersHistory = this.adminizer.accessRightsHelper.enoughPermissions([
                 `users-history-${this.id}`
             ], user);
@@ -174,13 +183,11 @@ export abstract class AbstractHistoryAdapter {
                     return historyRecord.user.id === user.id;
                 });
             }
+
             for (const historyRecord of history) {
-                const access = this.adminizer.accessRightsHelper.enoughPermissions([
-                    `read-${historyRecord.modelName}-model`
-                ], user);
-
-                if (access) accessHistory.push(historyRecord);
-
+                if (accessModels.includes(historyRecord.modelName)) {
+                    accessHistory.push(historyRecord);
+                }
             }
 
             return accessHistory;

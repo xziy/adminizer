@@ -277,7 +277,8 @@ export interface AdminpanelConfig {
     };
     history?: {
         enabled: boolean,
-        adapter?: string
+        adapter?: string,
+        exludeModels?: string[],
     }
 }
 

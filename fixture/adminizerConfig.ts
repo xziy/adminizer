@@ -475,7 +475,8 @@ const config: AdminpanelConfig = {
     },
     history: {
         enabled: true,
-        adapter: "default"
+        adapter: "default",
+        exludeModels: ["TestCatalog"]
     },
     cors: {
         enabled: false,
