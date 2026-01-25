@@ -11,7 +11,7 @@ import { HistoryItem } from "@/components/history/HistoryList";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { addDays, format } from "date-fns"
+import { format } from "date-fns"
 
 interface HistoryProps extends SharedData {
     title: string,
@@ -81,7 +81,7 @@ const ViewAll = () => {
 
             if (loadingMore || !hasMore) return;
             if (container.scrollHeight - container.scrollTop <= container.clientHeight + 5) {
-                await fetchHistory(offset + limit, activeModel);
+                await fetchHistory(offset + limit, activeModel, selectedUser, false, date);
             }
         };
 
