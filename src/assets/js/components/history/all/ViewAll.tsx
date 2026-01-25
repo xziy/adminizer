@@ -34,12 +34,9 @@ const ViewAll = () => {
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
     const tableContainerRef = useRef<HTMLTableElement>(null);
     const [selectedUser, setSelectedUser] = useState<string>('all');
-    const [date, setDate] = useState<DateRange | undefined>({
-        from: new Date(new Date().getFullYear(), 0, 20),
-        to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
-    })
+    const [date, setDate] = useState<DateRange | undefined>(undefined)
 
-    const fetchHistory = async (offset: number, model: string = 'all', user: string = 'all', reset = false, dateRange?: DateRange) => {
+    const fetchHistory = async (offset: number, model: string = 'all', user: string = 'all', reset = false, dateRange: DateRange | undefined) => {
         setLoadingMore(true);
         try {
             const res = await axios.post(`${window.routePrefix}/history/view-all`, {
@@ -72,7 +69,7 @@ const ViewAll = () => {
         setHistory([]);
         setOffset(0);
         setHasMore(true);
-        fetchHistory(0, activeModel, selectedUser, true);
+        fetchHistory(0, activeModel, selectedUser, true, date);
         setLoading(false);
     }, [activeModel, selectedUser]);
 
@@ -90,7 +87,7 @@ const ViewAll = () => {
 
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [loadingMore, hasMore, offset, limit, activeModel, selectedUser]);
+    }, [loadingMore, hasMore, offset, limit, activeModel, selectedUser, date]);
 
     const handleChange = (model: string, user: string) => {
         setActiveModel(model);
@@ -112,16 +109,13 @@ const ViewAll = () => {
     };
 
     const handleReset = () => {
-        setDate({
-            from: new Date(new Date().getFullYear(), 0, 20),
-            to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
-        });
+        setDate(undefined);
         setLoading(true);
         setHistory([]);
         setOffset(0);
         setHasMore(true);
         setLoading(false);
-        fetchHistory(0, activeModel, selectedUser, true);
+        fetchHistory(0, activeModel, selectedUser, true, undefined);
     };
 
     return (
@@ -224,6 +218,7 @@ const ViewAll = () => {
                                 size="default"
                                 onClick={handleSearch}
                                 className="h-[40px]"
+                                disabled={date === undefined}
                             >
                                 Поиск
                             </Button>
@@ -232,6 +227,7 @@ const ViewAll = () => {
                                 size="default"
                                 onClick={handleReset}
                                 className="h-[40px]"
+                                disabled={date === undefined}
                             >
                                 Сброс
                             </Button>
