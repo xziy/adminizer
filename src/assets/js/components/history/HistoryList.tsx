@@ -16,6 +16,7 @@ interface HistoryListProps {
 
 export type HistoryItem = Omit<HistoryActionsAP, 'user'> & {
     user: UserAP;
+    displayName: string;
 };
 
 const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHistory }) => {

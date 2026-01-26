@@ -6,6 +6,7 @@ const models: AdminpanelConfig["models"] = {
     Test: {
         title: 'Test model',
         model: 'test',
+        displayName: 'title',
         userAccessRelation: 'owner',
         fields: {
             createdAt: false,
@@ -44,6 +45,7 @@ const models: AdminpanelConfig["models"] = {
     Example: {
         title: 'All controls',
         model: 'example',
+        displayName: 'description',
         userAccessRelation: 'owner',
         tools: [
             {
@@ -391,6 +393,7 @@ const models: AdminpanelConfig["models"] = {
         title: 'Category',
         model: 'category',
         icon: 'category',
+        displayName: 'slug',
         fields: {
             createdAt: {
                 title: 'Created at',

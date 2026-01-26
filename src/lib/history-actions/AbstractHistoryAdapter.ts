@@ -11,7 +11,7 @@ import { BaseFieldConfig, MediaManagerOptionsField } from "../../interfaces/admi
 import { setAssociationValues } from "../../helpers/inertiaAddHelper";
 
 /**
- * Set of model names that are excluded from history tracking.
+ * Set of model names excluded from history tracking.
  * These models are internal or administrative and should not appear in user-accessible history.
  */
 const EXCLUDED_MODELS = new Set([
@@ -46,17 +46,21 @@ export abstract class AbstractHistoryAdapter {
      */
     protected adminizer: Adminizer;
 
+     /**
+     * Set of model names to exclude from history tracking.
+     * Includes default internal models and any additional ones from config.
+     */
     protected excludedModels: Set<string> = EXCLUDED_MODELS;
 
     /**
-     * Constructs a new history adapter and binds access rights. And adds excluded models from config.
+     * Constructs a new history adapter, binds access rights, and extends excluded models from configuration.
      *
      * @param adminizer - The main Adminizer instance.
      */
     protected constructor(adminizer: Adminizer) {
         this._bindAccessRight(adminizer);
         // Add excluded models from config
-        if(adminizer.config.history.exludeModels){
+        if (adminizer.config.history.exludeModels) {
             adminizer.config.history.exludeModels.forEach((model: string) => {
                 this.excludedModels.add(model);
             });
@@ -149,6 +153,15 @@ export abstract class AbstractHistoryAdapter {
         return accessModels;
     }
 
+     /**
+     * Filters history records based on user access rights.
+     * If the user lacks "users-history" permission, only their own records are returned.
+     *
+     * @param history - Array of raw history records.
+     * @param user - The user requesting the data.
+     * @returns A promise resolving to filtered history records accessible to the user.
+     * @protected
+     */
     protected async _getAllModelHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
         const accessToUsersHistory = this.adminizer.accessRightsHelper.enoughPermissions([
             `users-history-${this.id}`
@@ -159,18 +172,21 @@ export abstract class AbstractHistoryAdapter {
                 return historyRecord.user.id === user.id;
             });
         }
+
         return history;
     }
 
+    
     /**
-     * Filters history records based on user permissions and checks if the associated model records exist.
+     * Filters and enhances history records with display names based on model configurations.
+     * Ensures only models the user can access are included.
      *
      * @param history - Array of raw history records.
-     * @param user - User requesting the data.
-     * @returns Promise resolving to filtered history records the user can access.
+     * @param user - The user requesting the data.
+     * @returns A promise resolving to enhanced history records with `displayName` property.
      * @protected
      */
-    protected async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
+    protected async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<(HistoryActionsAP & { displayName: string })[]> {
         try {
             let accessHistory: HistoryActionsAP[] = [];
             const accessModels = this.getModels(user);
@@ -190,7 +206,7 @@ export abstract class AbstractHistoryAdapter {
                 }
             }
 
-            return accessHistory;
+            return await this.setModelsDisplayName(accessHistory);
 
         } catch (e) {
             Adminizer.log.error('Eror getting history', e);
@@ -202,7 +218,7 @@ export abstract class AbstractHistoryAdapter {
      * Formats a single history record for frontend consumption.
      * Processes field types such as media manager, color, and associations.
      *
-     * @param history - The history record to process.
+     * @param history - Raw history record.
      * @param user - User requesting the data.
      * @returns Promise resolving to formatted data object.
      * @protected
@@ -243,6 +259,59 @@ export abstract class AbstractHistoryAdapter {
         }
 
         return data;
+    }
+
+     /**
+     * Enhances history records with a human-readable display name based on model configuration.
+     * Falls back to model ID if display name cannot be determined.
+     *
+     * @param history - The history records to enhance.
+     * @returns A promise resolving to an array of records with `displayName` property.
+     * @protected
+     */
+    protected async setModelsDisplayName(history: HistoryActionsAP[]): Promise<(HistoryActionsAP & { displayName: string })[]> {
+        const modifiedHistory: (HistoryActionsAP & { displayName: string })[] = [];
+
+        for (const historyRecord of history) {
+            const entity = this.findEntityObject(historyRecord);
+            const { displayName } = entity.config;
+
+            if (!displayName) {
+                modifiedHistory.push({
+                    ...historyRecord,
+                    displayName: historyRecord.modelId.toString(),
+                });
+                continue;
+            }
+
+            try {
+                const model = this.adminizer.modelHandler.model.get(entity.name);
+                const record = await model["_findOne"]({ id: historyRecord.modelId });
+
+                let displayValue: string;
+
+                if (typeof displayName === 'string') {
+                    displayValue = record ? (record[displayName] ?? historyRecord.modelId.toString()) : historyRecord.modelId.toString();
+                } else if (typeof displayName === 'function') {
+                    const result = await displayName(record);
+                    displayValue = typeof result === 'string' ? result : historyRecord.modelId.toString();
+                } else {
+                    displayValue = historyRecord.modelId.toString();
+                }
+
+                modifiedHistory.push({
+                    ...historyRecord,
+                    displayName: displayValue,
+                });
+            } catch (error) {
+                modifiedHistory.push({
+                    ...historyRecord,
+                    displayName: historyRecord.modelId.toString(),
+                });
+            }
+        }
+
+        return modifiedHistory;
     }
 
     /**

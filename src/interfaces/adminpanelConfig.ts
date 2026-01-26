@@ -289,7 +289,10 @@ export interface ModelConfig {
      * Model name
      * */
     model: string
-
+    /**
+     * Optional display name for history. Should be a attribute of the model, or a function.
+     */
+    displayName?: ((v: any) => Promise<string>) | string
     /**
      * If the field is not definitely, then it will appear in Navbar
      * */

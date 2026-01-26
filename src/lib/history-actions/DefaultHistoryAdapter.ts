@@ -14,9 +14,7 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
     }
 
     public async getAllHistory(user: UserAP, forUserName: string, modelName: string, limit: number = 15, skip: number = 0, from?: Date, to?: Date): Promise<{ data: HistoryActionsAP[] }> {
-        console.log(from, to);
-
-
+      
         let userId = null
         if (forUserName !== 'all') {
             const foundUser = await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ login: forUserName });
@@ -26,8 +24,6 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
             }
             userId = foundUser.id;
         }
-
-
 
         const query: any = modelName === 'all' && forUserName === 'all' ? {} :
             {

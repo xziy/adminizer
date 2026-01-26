@@ -49,7 +49,8 @@ const ViewAll = () => {
             });
 
             const data = res.data.data;
-
+        
+            
             if (reset) {
                 setHistory(data);
             } else {
@@ -239,7 +240,7 @@ const ViewAll = () => {
                         <TableRow>
                             <TableHead className="p-2 text-left">Date</TableHead>
                             <TableHead className="p-2 text-left">Model</TableHead>
-                            <TableHead className="p-2 text-left">id</TableHead>
+                            <TableHead className="p-2 text-left">Name</TableHead>
                             <TableHead className="p-2 text-left">Event</TableHead>
                             <TableHead className="p-2 text-left">User</TableHead>
                             <TableHead className="p-2 text-left">Diff</TableHead>
@@ -255,7 +256,7 @@ const ViewAll = () => {
                                     {item.modelName}
                                 </TableCell>
                                 <TableCell className="p-2 self-start pt-2.5">
-                                    {item.modelId}
+                                    {item.displayName}
                                 </TableCell>
                                 <TableCell className="p-2 self-start pt-2.5 capitalize">
                                     {item.action}
