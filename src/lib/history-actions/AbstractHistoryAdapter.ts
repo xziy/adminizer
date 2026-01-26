@@ -60,8 +60,8 @@ export abstract class AbstractHistoryAdapter {
     protected constructor(adminizer: Adminizer) {
         this._bindAccessRight(adminizer);
         // Add excluded models from config
-        if (adminizer.config.history.exludeModels) {
-            adminizer.config.history.exludeModels.forEach((model: string) => {
+        if (adminizer.config.history.excludeModels) {
+            adminizer.config.history.excludeModels.forEach((model: string) => {
                 this.excludedModels.add(model);
             });
         }
@@ -293,7 +293,7 @@ export abstract class AbstractHistoryAdapter {
                 if (typeof displayName === 'string') {
                     displayValue = record ? (record[displayName] ?? historyRecord.modelId.toString()) : historyRecord.modelId.toString();
                 } else if (typeof displayName === 'function') {
-                    const result = await displayName(record);
+                    const result = displayName(record);
                     displayValue = typeof result === 'string' ? result : historyRecord.modelId.toString();
                 } else {
                     displayValue = historyRecord.modelId.toString();

@@ -393,7 +393,9 @@ const models: AdminpanelConfig["models"] = {
         title: 'Category',
         model: 'category',
         icon: 'category',
-        displayName: 'slug',
+        displayName: (data: any) => {
+            return data?.slug ?? 'no data'
+        },
         fields: {
             createdAt: {
                 title: 'Created at',
@@ -479,7 +481,7 @@ const config: AdminpanelConfig = {
     history: {
         enabled: true,
         adapter: "default",
-        exludeModels: ["TestCatalog"]
+        excludeModels: ["TestCatalog"]
     },
     cors: {
         enabled: false,
