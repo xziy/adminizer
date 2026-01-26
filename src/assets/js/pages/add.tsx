@@ -23,6 +23,9 @@ export interface AddProps {
     btnSave: {
         title: string;
     },
+    btnHistory: {
+        title: string,
+    },
     postLink: string,
     [key: string]: unknown;
     model: string

@@ -95,7 +95,7 @@ const AddForm: FC<{
 }> =
     ({ page, catalog, callback, openNewWindow, openNewWindowLabel, isNavigation, DnavVisible, visibleLable }) => {
 
-        const { btnBack, view, edit, history, notFound, model, fields } = page.props;
+        const { btnBack, btnHistory, view, edit, history, notFound, model, fields } = page.props;
 
         const {
             data,
@@ -216,7 +216,7 @@ const AddForm: FC<{
                     className={view ? 'cursor-not-allowed' : ''}
                 >
                     <div
-                        className={`grid gap-4 max-w-286 pb-8 lg:grid-cols-[1fr_200px]`}>
+                        className={`grid gap-4 max-w-286 pb-8 lg:grid-cols-[1fr_220px]`}>
                         <div className="flex flex-col gap-10">
                             {fields.map((field) => (
                                 <div className={`grid gap-4 w-full ${view ? 'pointer-events-none' : ''}`}
@@ -286,7 +286,7 @@ const AddForm: FC<{
                                         e.preventDefault()
                                         dialogRef.current?.open()
                                     }}
-                                >History</Button>}
+                                >{btnHistory.title}</Button>}
                             </div>
                         </div>
                     </div>

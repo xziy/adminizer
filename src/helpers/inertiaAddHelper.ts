@@ -1,17 +1,17 @@
-import {Entity, PropsField} from "../interfaces/types";
-import inertiaActionsHelper, {Actions} from "./inertiaActionsHelper";
-import {Fields, Field} from "./fieldsHelper";
+import { Entity, PropsField } from "../interfaces/types";
+import inertiaActionsHelper, { Actions } from "./inertiaActionsHelper";
+import { Fields, Field } from "./fieldsHelper";
 import {
     BaseFieldConfig,
     HandsontableOptions, MediaManagerOptionsField,
     TuiEditorOptions,
     WysiwygOptions
 } from "../interfaces/adminpanelConfig";
-import {AbstractControls, ControlType} from "../lib/controls/AbstractControls";
+import { AbstractControls, ControlType } from "../lib/controls/AbstractControls";
 import chalk from "chalk";
-import {ModelAnyField} from "../lib/model/AbstractModel";
-import {isObject} from "./JsUtils";
-import {MediaManagerHandler} from "../lib/media-manager/MediaManagerHandler";
+import { ModelAnyField } from "../lib/model/AbstractModel";
+import { isObject } from "./JsUtils";
+import { MediaManagerHandler } from "../lib/media-manager/MediaManagerHandler";
 
 export type PropsFieldType =
     'text'
@@ -49,8 +49,21 @@ interface FieldProps extends Record<string | number | symbol, unknown> {
     btnSave: {
         title: string;
     },
+    btnHistory: {
+        title: string,
+    },
     postLink: string,
-    model: string
+    model: string,
+    historyTableMessages: Record<string, string>
+}
+
+const historyTableMessages = {
+    "Event": "",
+    "Date": "",
+    "User": "",
+    "Watch": "",
+    "Current": "",
+    "There is no history": ""
 }
 
 export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: Fields, record?: Record<string, string | boolean | number | string[]>, view: boolean = false) {
@@ -69,8 +82,12 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         btnSave: {
             title: req.i18n.__('Save')
         },
+        btnHistory: {
+            title: req.i18n.__('History'),
+        },
         postLink: record ? `${entity.uri}/edit/${record.id}` : `${entity.uri}/add`,
-        model: entity.name.toLocaleLowerCase()
+        model: entity.name.toLocaleLowerCase(),
+        historyTableMessages: Object.fromEntries(Object.keys(historyTableMessages).map(key => [key, req.i18n.__(key)]))
     }
     props.actions = inertiaActionsHelper(actionType, entity, req)
 
@@ -85,7 +102,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         const type = (fieldConfig.type || fieldConfig.type).toLowerCase()
 
         //@ts-ignore TODO: fix model validations
-        const isIn = typeof fieldConfig.isIn === 'object' ? fieldConfig.isIn : (field.model && typeof {...field.model.validations}.isIn === 'object' ? {...field.model.validations}.isIn : [])
+        const isIn = typeof fieldConfig.isIn === 'object' ? fieldConfig.isIn : (field.model && typeof { ...field.model.validations }.isIn === 'object' ? { ...field.model.validations }.isIn : [])
 
         let label = fieldConfig.title ?? ''
         let tooltip = fieldConfig.tooltip ?? ''
@@ -104,7 +121,7 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
         if (['string', 'password', 'date', 'datetime', 'time', 'integer', 'number', 'float', 'email', 'month', 'week', 'range'].includes(type)) {
             fieldType = inputText(type, isIn)
             if (type === 'range') {
-                options = {...fieldConfig.options}
+                options = { ...fieldConfig.options }
                 if ("min" in fieldConfig.options) {
                     value = record ? record[key] : fieldConfig.options.min ? fieldConfig.options.min : 0
                 }
@@ -130,14 +147,14 @@ export default function inertiaAddHelper(req: ReqType, entity: Entity, fields: F
 
         if (type === 'association' || type === 'association-many') {
             fieldType = type === 'association' ? 'association' : 'association-many'
-            const {initValue, initOptions} = setAssociationValues(field, value as string[])
+            const { initValue, initOptions } = setAssociationValues(field, value as string[])
             options = initOptions
             value = initValue
         }
 
         if (type === 'select-many') {
             fieldType = 'select-many'
-            const {initValue, initOptions} = setSelectMany(isIn, value as string[])
+            const { initValue, initOptions } = setSelectMany(isIn, value as string[])
             options = initOptions
             value = initValue
         }
@@ -224,7 +241,7 @@ export function getControlsOptions(fieldConfig: Field["config"], req: ReqType, t
 
         // If items are provided, use them instead of the editor's config
         if ((fieldOptions as WysiwygOptions)?.config?.items && editorName === 'ckeditor') {
-            options.config = {items: (fieldOptions as WysiwygOptions).config.items};
+            options.config = { items: (fieldOptions as WysiwygOptions).config.items };
         }
     }
     return options

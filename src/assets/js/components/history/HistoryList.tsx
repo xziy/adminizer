@@ -7,6 +7,7 @@ import { Braces, LoaderCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DiffViewer } from "@/components/history/DiffViewer";
 import { UserAP } from "src/models/UserAP";
+import { usePage } from "@inertiajs/react";
 
 interface HistoryListProps {
     modelName: string,
@@ -24,9 +25,11 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
     const [diffOpen, setDiffOpen] = useState(false);
     const [diffItem, setDiffItem] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
-
+    const page = usePage<{historyTableMessages: Record<string, string>}>()
     const storageKey = 'currentHistoryView';
 
+    const messages = page.props.historyTableMessages
+    
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true); // Включаем лоадер перед запросом
@@ -78,9 +81,9 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                 <Table wrapperHeight="max-h-full">
                     <TableHeader className="sticky top-0 bg-background shadow">
                         <TableRow>
-                            <TableHead className="p-2 text-left">Date</TableHead>
-                            <TableHead className="p-2 text-left">Event</TableHead>
-                            <TableHead className="p-2 text-left">User</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Date"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Event"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["User"]}</TableHead>
                             <TableHead className="p-2 text-left">Diff</TableHead>
                             <TableHead className="p-2 text-left"></TableHead>
                         </TableRow>
@@ -116,9 +119,9 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                                     </TableCell>
                                     <TableCell className="p-2 align-middle text-center">
                                         {isCurrent(item) ? (
-                                            <span className="font-medium">Current</span>
+                                            <span className="font-medium">{messages["Current"]}</span>
                                         ) : (
-                                            <Button variant="outline" size="sm" onClick={() => watchHistory(item.id)}>Watch</Button>
+                                            <Button variant="outline" size="sm" onClick={() => watchHistory(item.id)}>{messages["Watch"]}</Button>
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -126,7 +129,7 @@ const HistoryList: FC<HistoryListProps> = ({ modelName, modelId, handleWatchHist
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={5} className="p-4 text-center font-medium text-muted-foreground">
-                                    История отсутствует
+                                    {messages["There is no history"]}
                                 </TableCell>
                             </TableRow>
                         )}

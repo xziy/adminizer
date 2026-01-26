@@ -12,20 +12,39 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DiffViewer } from "@/components/history/DiffViewer";
+import { enUS, de, ru, es, fr } from 'date-fns/locale';
 
 interface HistoryProps extends SharedData {
     title: string,
-    models: string[],
+    models: {
+        name: string,
+        title: string
+    }[],
     users: {
         name: string
-    }[]
+    }[],
+    messages: Record<string, string>
 }
+
+const getLocaleFromHTML = () => {
+  const lang = document.documentElement.lang;
+  if (lang?.startsWith('ru')) return ru;
+  if (lang?.startsWith('en')) return enUS;
+  if (lang?.startsWith('de')) return de;
+  if (lang?.startsWith('es')) return es;
+  if (lang?.startsWith('fr')) return fr;
+  // Добавь другие при необходимости
+  return enUS;
+};
 
 
 const ViewAll = () => {
     const page = usePage<HistoryProps>();
     const [history, setHistory] = useState<HistoryItem[]>([])
-    // const [diffItem, setDiffItem] = useState<any>(null);
+    const [diffItem, setDiffItem] = useState<any>(null);
+    const [diffOpen, setDiffOpen] = useState(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [activeModel, setActiveModel] = useState<string>('all')
     const [offset, setOffset] = useState<number>(0);
@@ -35,7 +54,8 @@ const ViewAll = () => {
     const tableContainerRef = useRef<HTMLTableElement>(null);
     const [selectedUser, setSelectedUser] = useState<string>('all');
     const [date, setDate] = useState<DateRange | undefined>(undefined)
-
+    const messages = page.props.messages
+    
     const fetchHistory = async (offset: number, model: string = 'all', user: string = 'all', reset = false, dateRange: DateRange | undefined) => {
         setLoadingMore(true);
         try {
@@ -124,7 +144,7 @@ const ViewAll = () => {
             <div className="flex flex-col gap-4">
                 <h1 className="font-bold text-xl">{page.props.title}</h1>
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="models">Models</Label>
+                    <Label htmlFor="models">{messages["Models"]}</Label>
                     <div className="flex flex-wrap gap-4">
                         <div>
                             <Button
@@ -134,19 +154,19 @@ const ViewAll = () => {
                                     handleChange('all', selectedUser)
                                 }}
                             >
-                                All
+                                {messages["All"]}
                             </Button>
                         </div>
                         {page.props.models.map(model => (
-                            <div key={model}>
+                            <div key={model.name}>
                                 <Button
-                                    variant={activeModel === model ? 'default' : 'outline'}
+                                    variant={activeModel === model.name ? 'default' : 'outline'}
                                     className="border-1 capitalize"
                                     onClick={() => {
-                                        handleChange(model, selectedUser)
+                                        handleChange(model.name, selectedUser)
                                     }}
                                 >
-                                    {model}
+                                    {model.title}
                                 </Button>
                             </div>
                         ))}
@@ -154,7 +174,7 @@ const ViewAll = () => {
                 </div>
                 <div className="flex gap-4">
                     {page.props.users.length > 0 && <div className="flex flex-col grow-1 gap-2 max-w-[250px]">
-                        <Label htmlFor="users">Users</Label>
+                        <Label htmlFor="users">{messages["Users"]}</Label>
                         <Select
                             onValueChange={(value: string) => {
                                 handleChange(
@@ -165,11 +185,11 @@ const ViewAll = () => {
                             value={selectedUser}
                         >
                             <SelectTrigger className="w-full cursor-pointer min-h-10 scroll-pt-30 scroll-mt-30" id="users">
-                                <SelectValue placeholder="Users" />
+                                <SelectValue placeholder={messages["Users"]} />
                             </SelectTrigger>
                             <SelectContent className="z-[9999999]">
                                 <SelectItem value="all" key="all">
-                                    All
+                                    {messages["All"]}
                                 </SelectItem>
                                 {page.props.users.map(user => (
                                     <SelectItem value={String(user.name)} key={String(user.name)}>
@@ -180,7 +200,7 @@ const ViewAll = () => {
                         </Select>
                     </div>}
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="date-picker-range">Date</Label>
+                        <Label htmlFor="date-picker-range">{messages["Date"]}</Label>
                         <div className="flex items-center gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -200,13 +220,14 @@ const ViewAll = () => {
                                                 format(date.from, "LLL dd, y")
                                             )
                                         ) : (
-                                            <span>Pick a date</span>
+                                            <span>{messages["Pick a date"]}</span>
                                         )}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="range"
+                                        locale={getLocaleFromHTML()}
                                         defaultMonth={date?.from}
                                         selected={date}
                                         onSelect={setDate}
@@ -221,7 +242,7 @@ const ViewAll = () => {
                                 className="h-[40px]"
                                 disabled={date === undefined}
                             >
-                                Поиск
+                                {messages["Search"]}
                             </Button>
                             <Button
                                 variant="outline"
@@ -230,7 +251,7 @@ const ViewAll = () => {
                                 className="h-[40px]"
                                 disabled={date === undefined}
                             >
-                                Сброс
+                                {messages["Reset"]}
                             </Button>
                         </div>
                     </div>
@@ -238,12 +259,12 @@ const ViewAll = () => {
                 <Table wrapperHeight="max-h-[55vh]" ref={tableContainerRef}>
                     <TableHeader className="sticky top-0 bg-background shadow">
                         <TableRow>
-                            <TableHead className="p-2 text-left">Date</TableHead>
-                            <TableHead className="p-2 text-left">Model</TableHead>
-                            <TableHead className="p-2 text-left">Name</TableHead>
-                            <TableHead className="p-2 text-left">Event</TableHead>
-                            <TableHead className="p-2 text-left">User</TableHead>
-                            <TableHead className="p-2 text-left">Diff</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Date"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Model"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Name"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Event"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["User"]}</TableHead>
+                            <TableHead className="p-2 text-left">{messages["Diff"]}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -268,8 +289,8 @@ const ViewAll = () => {
                                 </TableCell>
                                 <TableCell className="p-2 align-middle">
                                     <Button variant="green" size="sm" onClick={() => {
-                                        // setDiffItem(item.diff);
-                                        // setDiffOpen(true);
+                                        setDiffItem(item.diff);
+                                        setDiffOpen(true);
                                     }}>
                                         <Braces />
                                     </Button>
@@ -287,7 +308,7 @@ const ViewAll = () => {
                         {!loadingMore && !hasMore && history.length > 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} className="p-4 text-left sm:text-center font-medium text-muted-foreground">
-                                    Больше нет данных
+                                    {messages["The end of the list has been reached"]}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -295,14 +316,30 @@ const ViewAll = () => {
                         {!loadingMore && !loading && history.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} className="p-4 text-left sm:text-center font-medium text-muted-foreground">
-                                    Нет записей для отображения
+                                    {messages["There are no records to display"]}
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
+
+                <Dialog open={diffOpen} onOpenChange={(open) => {
+                    setDiffOpen(open);
+                    if (!open) {
+                        setTimeout(() => {
+                            document.body.removeAttribute('style');
+                        }, 300);
+                    }
+                }}>
+                    <DialogContent className="z-[1022] sm:max-w-[60vw]">
+                        <DialogHeader>
+                            <DialogTitle>Diff</DialogTitle>
+                        </DialogHeader>
+                        <DiffViewer changes={diffItem} className="max-h-[80vh] overflow-auto sm:max-w-[60vw] w-full" />
+                    </DialogContent>
+                </Dialog>
             </div>
-        </div >
+        </div>
     )
 }
 export default ViewAll;

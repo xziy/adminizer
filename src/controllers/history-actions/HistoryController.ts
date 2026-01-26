@@ -9,14 +9,50 @@ export class HistoryController {
         const adapter = HistoryController.getAdapter(req);
 
         if (req.method.toUpperCase() === 'GET') {
-            const models = adapter.getModels(req.user);
+            const rawModels = adapter.getModels(req.user);
             let users: UserAP[] = []
 
             const accessToUsersHistory = req.adminizer.accessRightsHelper.enoughPermissions([
                 `users-history-${adapter.id}`
             ], req.user);
 
-            if(accessToUsersHistory) users = await req.adminizer.modelHandler.model.get('userap')['_find']({}) as UserAP[]
+            if (accessToUsersHistory) users = await req.adminizer.modelHandler.model.get('userap')['_find']({}) as UserAP[]
+
+            // Getting an array of config.models keys in lowercase for comparison
+            const normalizedModelConfig = new Map(
+                Object.entries(req.adminizer.config.models || {}).map(([key, value]) => [
+                    key.toLowerCase(),
+                    value
+                ])
+            );
+
+            // Converting models to { name, title } objects
+            const models = rawModels.map(model => {
+                const normalizedModelName = model.toLowerCase();
+                const configModel = normalizedModelConfig.get(normalizedModelName);
+                const title = configModel?.title ?? model; // если title нет — использовать оригинальное имя
+
+                return {
+                    name: model,
+                    title
+                };
+            });
+
+            const messages = {
+                "Models": "",
+                "All": "",
+                "Users": "",
+                "Date": "",
+                "Pick a date": "",
+                "Search": "",
+                "Reset": "",
+                "Model": "",
+                "Name": "",
+                "Event": "",
+                "User": "",
+                "The end of the list has been reached": "",
+                "There are no records to display": "",
+            };
 
             return req.Inertia.render({
                 component: 'history',
@@ -25,14 +61,15 @@ export class HistoryController {
                     models,
                     users: users.map((user: UserAP) => ({
                         name: user.login
-                    }))
+                    })),
+                    messages: Object.fromEntries(Object.keys(messages).map(key => [key, req.i18n.__(key)]))
                 }
             });
         }
 
         if (req.method.toUpperCase() === 'POST') {
             const { model, limit, user, from, to, offset: skip } = req.body
-            
+
             try {
                 return res.json({
                     ...await adapter.getAllHistory(

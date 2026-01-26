@@ -120,5 +120,17 @@
   "Sizes/Ver": "Sizes/Ver",
   "Locales": "Locales",
   "Leave this field empty if you don't want to change the password": "Оставьте это поле пустым, если не хотите менять пароль",
-  "File type are not supported": "Этот файл не поддерживается"
+  "File type are not supported": "Этот файл не поддерживается",
+  "History": "История",
+	"Models": "Модели",
+	"Users": "Пользователи",
+	"Pick a date": "Выберите даты",
+	"Model": "Модель",
+	"Event": "Событие",
+	"User": "Пользователь",
+	"There are no records to display": "Записи отсутствуют",
+	"Watch": "Смотреть",
+	"Current": "Текущая",
+	"There is no history": "Нет истории",
+  "The end of the list has been reached": "Достигнут конец списка"
 }

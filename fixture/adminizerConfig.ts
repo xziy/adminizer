@@ -390,7 +390,7 @@ const models: AdminpanelConfig["models"] = {
         icon: 'pets'
     },
     Category: {
-        title: 'Category',
+        title: 'Категории',
         model: 'category',
         icon: 'category',
         displayName: (data: any) => {
