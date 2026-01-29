@@ -13,14 +13,21 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
 
     }
 
-    public async getAllHistory(user: UserAP, forUserName: string, modelName: string, limit: number = 15, skip: number = 0, from?: Date, to?: Date): Promise<{ data: HistoryActionsAP[] }> {
-      
-        let userId = null
+    public async getAllHistory(
+        user: UserAP,
+        forUserName: string,
+        modelName: string,
+        limit: number = 15,
+        skip: number = 0,
+        from?: Date,
+        to?: Date
+    ): Promise<{ data: HistoryActionsAP[] }> {
+
+        let userId = null;
         if (forUserName !== 'all') {
             const foundUser = await this.adminizer.modelHandler.model.get('userap')["_findOne"]({ login: forUserName });
             if (!foundUser) {
                 throw new Error("User not found");
-
             }
             userId = foundUser.id;
         }
@@ -29,7 +36,7 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
             {
                 ...(modelName !== 'all' ? { modelName } : {}),
                 ...(forUserName !== 'all' ? { user: userId } : {})
-            }
+            };
 
         if (from && to) {
             query.createdAt = {
@@ -37,18 +44,48 @@ export class DefaultHistoryAdapter extends AbstractHistoryAdapter {
                 '<=': to.setHours(23, 59, 59, 999)
             };
         }
-        
-        
-        const history = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-            where: query,
-            sort: "createdAt DESC",
-            limit,
-            skip
-        })
+
+        let totalFetched = 0;
+        let resultItems: HistoryActionsAP[] = [];
+        let currentSkip = skip;
+
+        // Дозагружаем пока не наберем нужное количество
+        while (resultItems.length < limit) {
+            // Запрашиваем с запасом, чтобы уменьшить количество запросов к БД
+            const fetchLimit = Math.min(limit * 2, 50);
+
+            const history = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
+                where: query,
+                sort: "createdAt DESC",
+                limit: fetchLimit,
+                skip: currentSkip
+            });
+
+            if (history.length === 0) {
+                break; // Больше нет данных
+            }
+
+            const filteredHistory = await this._getAllHistory(history, user);
+
+            // Добавляем отфильтрованные записи к результату
+            for (const item of filteredHistory) {
+                if (resultItems.length < limit) {
+                    resultItems.push(item);
+                }
+            }
+
+            totalFetched += history.length;
+            currentSkip += history.length;
+
+            // Если получили меньше чем запросили, значит в БД кончились данные
+            if (history.length < fetchLimit) {
+                break;
+            }
+        }
 
         return {
-            data: await this._getAllHistory(history, user)
-        }
+            data: resultItems
+        };
     }
 
     public async getAllModelHistory(modelId: string | number, modelName: string, user: UserAP): Promise<HistoryActionsAP[]> {

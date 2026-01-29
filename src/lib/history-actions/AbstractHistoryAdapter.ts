@@ -46,10 +46,10 @@ export abstract class AbstractHistoryAdapter {
      */
     protected adminizer: Adminizer;
 
-     /**
-     * Set of model names to exclude from history tracking.
-     * Includes default internal models and any additional ones from config.
-     */
+    /**
+    * Set of model names to exclude from history tracking.
+    * Includes default internal models and any additional ones from config.
+    */
     protected excludedModels: Set<string> = EXCLUDED_MODELS;
 
     /**
@@ -153,15 +153,15 @@ export abstract class AbstractHistoryAdapter {
         return accessModels;
     }
 
-     /**
-     * Filters history records based on user access rights.
-     * If the user lacks "users-history" permission, only their own records are returned.
-     *
-     * @param history - Array of raw history records.
-     * @param user - The user requesting the data.
-     * @returns A promise resolving to filtered history records accessible to the user.
-     * @protected
-     */
+    /**
+    * Filters history records based on user access rights.
+    * If the user lacks "users-history" permission, only their own records are returned.
+    *
+    * @param history - Array of raw history records.
+    * @param user - The user requesting the data.
+    * @returns A promise resolving to filtered history records accessible to the user.
+    * @protected
+    */
     protected async _getAllModelHistory(history: HistoryActionsAP[], user: UserAP): Promise<HistoryActionsAP[]> {
         const accessToUsersHistory = this.adminizer.accessRightsHelper.enoughPermissions([
             `users-history-${this.id}`
@@ -176,7 +176,7 @@ export abstract class AbstractHistoryAdapter {
         return history;
     }
 
-    
+
     /**
      * Filters and enhances history records with display names based on model configurations.
      * Ensures only models the user can access are included.
@@ -188,29 +188,55 @@ export abstract class AbstractHistoryAdapter {
      */
     protected async _getAllHistory(history: HistoryActionsAP[], user: UserAP): Promise<(HistoryActionsAP & { displayName: string })[]> {
         try {
-            let accessHistory: HistoryActionsAP[] = [];
             const accessModels = this.getModels(user);
             const accessToUsersHistory = this.adminizer.accessRightsHelper.enoughPermissions([
                 `users-history-${this.id}`
             ], user);
 
+            let accessHistory: HistoryActionsAP[] = [];
+                        
             if (!accessToUsersHistory) {
                 history = history.filter((historyRecord) => {
+                    console.log(historyRecord.user.id === user.id);
+                    console.log(historyRecord.user.id, user.id);
+                    
                     return historyRecord.user.id === user.id;
                 });
             }
 
+            
             for (const historyRecord of history) {
                 if (accessModels.includes(historyRecord.modelName)) {
                     accessHistory.push(historyRecord);
                 }
             }
 
+            // Группируем записи по модели для оптимизации
+            const fieldsCache = new Map<string, any>();
+
+            for (const historyRecord of accessHistory) {
+                const entity = this.findEntityObject(historyRecord);
+                const modelKey = historyRecord.modelName;
+
+                // Используем кэш, чтобы не создавать DataAccessor для каждой записи
+                if (!fieldsCache.has(modelKey)) {
+                    const dataAccessor = new DataAccessor(this.adminizer, user, entity, "edit");
+                    let fields = dataAccessor.getFieldsConfig();
+                    fields = await this.loadAssociations(fields, user, "edit");
+                    fieldsCache.set(modelKey, fields);
+                }
+
+                const fields = fieldsCache.get(modelKey);
+                historyRecord.diff = historyRecord.diff.filter((item: any) =>
+                    Object.keys(fields).includes(item.field)
+                );
+            }
+
             return await this.setModelsDisplayName(accessHistory);
 
         } catch (e) {
-            Adminizer.log.error('Eror getting history', e);
-            throw new Error("Eror getting history");
+            Adminizer.log.error('Error getting history', e);
+            throw new Error("Error getting history");
         }
     }
 
@@ -261,14 +287,14 @@ export abstract class AbstractHistoryAdapter {
         return data;
     }
 
-     /**
-     * Enhances history records with a human-readable display name based on model configuration.
-     * Falls back to model ID if display name cannot be determined.
-     *
-     * @param history - The history records to enhance.
-     * @returns A promise resolving to an array of records with `displayName` property.
-     * @protected
-     */
+    /**
+    * Enhances history records with a human-readable display name based on model configuration.
+    * Falls back to model ID if display name cannot be determined.
+    *
+    * @param history - The history records to enhance.
+    * @returns A promise resolving to an array of records with `displayName` property.
+    * @protected
+    */
     protected async setModelsDisplayName(history: HistoryActionsAP[]): Promise<(HistoryActionsAP & { displayName: string })[]> {
         const modifiedHistory: (HistoryActionsAP & { displayName: string })[] = [];
 

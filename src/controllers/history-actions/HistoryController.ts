@@ -30,7 +30,7 @@ export class HistoryController {
             const models = rawModels.map(model => {
                 const normalizedModelName = model.toLowerCase();
                 const configModel = normalizedModelConfig.get(normalizedModelName);
-                const title = configModel?.title ?? model; // если title нет — использовать оригинальное имя
+                const title = req.i18n.__(configModel?.title) ?? model; // если title нет — использовать оригинальное имя
 
                 return {
                     name: model,
