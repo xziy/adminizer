@@ -75,7 +75,7 @@ export class NodeTable {
             }
         }
         // Set default order
-        return `${this.model.primaryKey ?? 'id'} DESC`;
+        return `createdAt DESC`;
     }
 
 
@@ -190,6 +190,7 @@ export class NodeTable {
     async output(callback: (err: Error, output: NodeOutput) => void, dataAccessor: DataAccessor): Promise<void> {
         try {
             const queryOptions = await this.buildQuery();
+            
             const totalRecords = await this.model.count({}, dataAccessor);
             const filteredRecords = await this.model.count(queryOptions.where, dataAccessor);
             const data = await this.model.find(queryOptions, dataAccessor);

@@ -42,6 +42,8 @@ import {INotification} from "../interfaces/types";
 import {MediaManagerHandler} from "./media-manager/MediaManagerHandler";
 import {StorageServices} from "./catalog/Navigation";
 import {bindCors} from "../system/bindCors";
+import { HistoryHandler } from "./history-actions/HistoryHandler";
+import bindHistory from "../system/bindHistory";
 
 export class Adminizer {
     // Preconfigures
@@ -61,6 +63,7 @@ export class Adminizer {
     configHelper: ConfigHelper
     menuHelper: MenuHelper
     notificationHandler!: NotificationHandler;
+    historyHandler!: HistoryHandler;
     aiAssistantHandler?: AiAssistantHandler;
     modelHandler!: ModelHandler
     widgetHandler: WidgetHandler
@@ -268,6 +271,8 @@ export class Adminizer {
 
         if (this.config.aiAssistant?.enabled) await bindAiAssistant(this);
 
+        if (this.config.history?.enabled) await bindHistory(this)
+
         await Router.bind(this); // must be after binding policies and req/res functions
 
         /**
@@ -282,16 +287,6 @@ export class Adminizer {
         if (this.config.notifications.enabled) {
             const notificationClass = notification.notificationClass || 'general';
             return this.notificationHandler.dispatchNotification(notificationClass, notification);
-        } else {
-            return Promise.resolve(false)
-        }
-    }
-
-    // Хелпер для системных событий
-    public async logSystemEvent(title: string, message: string, metadata?: any): Promise<boolean> {
-        if (this.config.notifications.enabled) {
-            const systemNotificationService = this.notificationHandler.getService('system') as unknown as SystemNotificationService
-            return systemNotificationService.logSystemEvent(title, message, 'system', metadata);
         } else {
             return Promise.resolve(false)
         }

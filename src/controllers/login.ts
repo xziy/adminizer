@@ -1,10 +1,10 @@
 import { POWCaptcha } from "../lib/POWCaptcha";
 import passwordHash from "password-hash";
-import { inertiaLoginHelper } from "../helpers/inertiaAutHelper";
-import { Adminizer } from "../lib/Adminizer";
-import { signUser } from "../lib/helper/jwt";
-import { serialize } from "cookie";
-import { UserAP } from "models/UserAP";
+import {inertiaLoginHelper} from "../helpers/inertiaAutHelper";
+import {Adminizer} from "../lib/Adminizer";
+import {signUser} from "../lib/helper/jwt";
+import {serialize} from "cookie";
+import {UserAP} from "../models/UserAP";
 
 
 export default async function login(req: ReqType, res: ResType) {

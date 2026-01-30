@@ -7,9 +7,9 @@ import {
     MediaManagerWidgetClientItem,
     SortCriteria,
 } from "./AbstractMediaManager";
-import {getAssociationFieldName, populateVariants} from "./helpers/MediaManagerHelper";
-import {ApplicationItem, ImageItem, TextItem, VideoItem} from "./Items";
-import {Adminizer} from "../Adminizer";
+import { getAssociationFieldName, populateVariants } from "./helpers/MediaManagerHelper";
+import { ApplicationItem, ImageItem, TextItem, VideoItem } from "./Items";
+import { Adminizer } from "../Adminizer";
 
 
 export class DefaultMediaManager extends AbstractMediaManager {
@@ -37,15 +37,15 @@ export class DefaultMediaManager extends AbstractMediaManager {
     }> {
         //TODO refactor CRUD functions for DataAccessor usage
         let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-            where: {parent: null, group: group},
+            where: { parent: null, group: group },
             limit: limit,
             skip: skip,
             sort: sort,
-        }, {populate: [["variants", {sort: sort}], ["meta", {}]]})
+        }, { populate: [["variants", { sort: sort }], ["meta", {}]] })
 
 
         let next = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-            where: {parent: null, group: group},
+            where: { parent: null, group: group },
             limit: limit,
             skip: skip === 0 ? limit : skip + limit,
             sort: sort,
@@ -64,10 +64,10 @@ export class DefaultMediaManager extends AbstractMediaManager {
     public async searchAll(s: string, group: string): Promise<MediaManagerItem[]> {
         //TODO refactor CRUD functions for DataAccessor usage
         let data: MediaManagerItem[] = await this.adminizer.modelHandler.model.get(this.model)["_find"]({
-            where: {filename: {contains: s}, parent: null, group: group},
+            where: { filename: { contains: s }, parent: null, group: group },
             sort: "createdAt DESC",
         }, {
-            populate: [["variants", {sort: "createdAt DESC"}], ["meta", {}]],
+            populate: [["variants", { sort: "createdAt DESC" }], ["meta", {}]],
             // This limitation is made strictly, if your code solves this please make a PR
             limit: 1000
         })
@@ -80,9 +80,25 @@ export class DefaultMediaManager extends AbstractMediaManager {
         return data;
     }
 
-    public async setRelations(data: MediaManagerWidgetData[], model: string, modelId: number, widgetName: string,): Promise<void> {
+    public async setRelations(
+        data: MediaManagerWidgetData[],
+        model: string,
+        modelId: string | number, //Обновлено
+        widgetName: string
+    ): Promise<void> {
+
+        if (modelId == null) {
+            throw new Error("modelId must be a string or number");
+        }
+
+        const modelIdStr = String(modelId); //Нормализуем к строке
+
         let modelAssociations = await this.adminizer.modelHandler.model.get(this.modelAssoc)["_find"]({
-            where: {modelId: +modelId, model: model.toLowerCase(), widgetName: widgetName},
+            where: {
+                modelId: modelIdStr,
+                model: model.toLowerCase(),
+                widgetName: widgetName,
+            },
         });
 
         for (const modelAssociation of modelAssociations) {
@@ -98,7 +114,7 @@ export class DefaultMediaManager extends AbstractMediaManager {
             await this.adminizer.modelHandler.model.get(this.modelAssoc)["_create"]({
                 mediaManagerId: this.id,
                 model: model.toLowerCase(),
-                modelId: +modelId,
+                modelId: modelIdStr, //Сохраняем как строку
                 [fieldName]: widgetItem.id,
                 widgetName: widgetName,
                 sortOrder: key + 1,
@@ -106,19 +122,30 @@ export class DefaultMediaManager extends AbstractMediaManager {
         }
     }
 
-    public async getRelations(model: string, widgetName: string, modelId: string | number): Promise<MediaManagerWidgetClientItem[]> {
+    public async getRelations(
+        model: string,
+        widgetName: string,
+        modelId: string | number
+    ): Promise<MediaManagerWidgetClientItem[]> {
+
+        if (modelId == null) {
+            throw new Error("modelId must be a string or number");
+        }
+
+        const modelIdStr = String(modelId); //Нормализуем к строке
+
         let widgetItems: MediaManagerWidgetClientItem[] = [];
 
         const fieldName = this.adminizer.ormAdapters[0].ormType === 'sequelize' ? 'fileRef' : 'file';
 
-        let files =  await this.adminizer.modelHandler.model.get(this.modelAssoc)['_find']({
+        let files = await this.adminizer.modelHandler.model.get(this.modelAssoc)['_find']({
             where: {
                 model: model.toLowerCase(),
                 widgetName: widgetName,
-                modelId: +modelId
+                modelId: modelIdStr, //Поиск по строке
             },
             sort: "sortOrder ASC"
-        }, {populate: [[fieldName, {}]]})
+        }, { populate: [[fieldName, {}]] });
 
         for (const file of files) {
             widgetItems.push({
@@ -127,8 +154,8 @@ export class DefaultMediaManager extends AbstractMediaManager {
                 filename: file[fieldName].filename,
                 url: file[fieldName].url,
                 variants: []
-            })
+            });
         }
-        return widgetItems
+        return widgetItems;
     }
 }

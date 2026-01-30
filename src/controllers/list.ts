@@ -34,7 +34,7 @@ export default async function list(req: ReqType, res: ResType) {
     }
     const count = req.query.count ? req.query.count.toString() : "5"
 
-    const orderColumn = req.query.column ? req.query.column.toString() : "1" // if no column is set, default to first column
+    const orderColumn = req.query.column ? req.query.column.toString() : undefined // if no column is set, default to first column
     const direction = req.query.direction === "asc" ? 'asc' : "desc"
 
     const globalSearch = req.query.globalSearch ? req.query.globalSearch.toString() : ""
@@ -66,7 +66,7 @@ export default async function list(req: ReqType, res: ResType) {
     }))
 
     const {columns, nodeTreeColumns} = setColumns(fields, orderColumn, direction, searchPairs, req)
-
+    
     const RequestBody = {
         draw: "1",
         start: start,
@@ -89,7 +89,7 @@ export default async function list(req: ReqType, res: ResType) {
         search: {value: globalSearch, regex: false}
     };
 
-
+    
     const nodeTable = new NodeTable(RequestBody, entity.model, fields);
     await nodeTable.output((err: Error, data: NodeOutput) => {
         if (err) {
@@ -103,8 +103,7 @@ export default async function list(req: ReqType, res: ResType) {
                 data: data ?? [],
             }
         });
-    }, dataAccessor)
-    ;
+    }, dataAccessor);
 }
 
 function setColumns(

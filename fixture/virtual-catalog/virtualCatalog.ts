@@ -26,7 +26,8 @@ class TestCatalogStorageService {
 
     protected async initModel() {
         // Direct call by model adapter
-        const model = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({id: 1});
+        const model = await this.adminizer.modelHandler.model.get(this.model)["_findOne"]({});
+        
         if (model) {
             Adminizer.log.info(`Found existing text catalog model`);
             await this.populateFromTree(model.tree);
@@ -120,8 +121,8 @@ class TestCatalogStorageService {
         let tree = await this.buildTree()
         try {
             // Direct call by model adapter
-            await this.adminizer.modelHandler.model.get(this.model)["_update"](
-                {id: 1},
+            await this.adminizer.modelHandler.model.get(this.model)["_updateOne"](
+                {},
                 {tree: tree}
             )
         } catch (e) {

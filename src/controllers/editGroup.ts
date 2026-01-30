@@ -2,8 +2,8 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {AccessRightsToken} from "../interfaces/types";
 import {Adminizer} from "../lib/Adminizer";
 import {inertiaGroupHelper} from "../helpers/inertiaGroupHelper";
-import { UserAP } from "models/UserAP";
-import { GroupAP } from "models/GroupAP";
+import { UserAP } from "../models/UserAP";
+import { GroupAP } from "../models/GroupAP";
 
 export default async function editGroup(req: ReqType, res: ResType) {
 

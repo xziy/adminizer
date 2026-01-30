@@ -1,4 +1,4 @@
-import { GroupAP } from "models/GroupAP";
+import { GroupAP } from "../models/GroupAP";
 import {Adminizer} from "../lib/Adminizer";
 
 export default async function bindAccessRights(adminizer: Adminizer) {

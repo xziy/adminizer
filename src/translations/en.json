@@ -140,5 +140,17 @@
   "Sizes/Ver": "Sizes/Ver",
   "Locales": "Locales",
   "Date": "Date",
-  "File type are not supported": "File type are not supported"
+  "File type are not supported": "File type are not supported",
+  "History": "History",
+	"Models": "Models",
+	"Users": "Users",
+	"Pick a date": "Pick a date",
+	"Model": "Model",
+	"Event": "Event",
+	"User": "User",
+	"There are no records to display": "There are no records to display",
+	"Watch": "Watch",
+	"Current": "Current",
+	"There is no history": "There is no history",
+  "The end of the list has been reached": "The end of the list has been reached"
 }

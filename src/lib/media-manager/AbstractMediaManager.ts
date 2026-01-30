@@ -154,6 +154,8 @@ export abstract class File<T extends MediaManagerItem> {
     public abstract search(s: string, group?: string): Promise<MediaManagerItem[]>;
 
     public abstract getOrigin(id: string): Promise<string>;
+
+    public abstract getFile(id: number): Promise<MediaManagerItem>
 }
 
 /**
@@ -279,7 +281,7 @@ export abstract class AbstractMediaManager {
         /**
          * widget Id in the model in which the mediafile was added
          */
-        modelId: number,
+        modelId: number | string,
         widgetName: string
     ): Promise<void>;
 
@@ -336,6 +338,11 @@ export abstract class AbstractMediaManager {
 
     public getOrigin(id: string) {
         return this.getItemType("image")?.getOrigin(id);
+    }
+
+    public getFile(mimeType: string, id: number){
+        const parts = mimeType.split("/");
+        return this.getItemType(parts[0])?.getFile(id);
     }
 
     /**

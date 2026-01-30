@@ -1,10 +1,10 @@
-import {HotTable, HotColumn} from '@handsontable/react';
-import {registerAllModules} from 'handsontable/registry';
+import { HotTable, HotColumn } from '@handsontable/react';
+import { registerAllModules } from 'handsontable/registry';
 //@ts-ignore
-import {ColumnSettings, GridSettings} from "handsontable/settings";
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {RowObject} from "handsontable/common";
-import {useAppearance} from "@/hooks/use-appearance";
+import { ColumnSettings, GridSettings } from "handsontable/settings";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { RowObject } from "handsontable/common";
+import { useAppearance } from "@/hooks/use-appearance";
 import {
     registerLanguageDictionary,
     deDE,
@@ -54,9 +54,10 @@ interface TableProps {
     disabled?: boolean;
 }
 
-const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
-    const {appearance} = useAppearance()
+const HandsonTable = ({ config, data = [], onChange, disabled }: TableProps) => {
+    const { appearance } = useAppearance()
     const [theme, setTheme] = useState<string>('ht-theme-main')
+    const [visible, setVisible] = useState<boolean>(false)
 
     const handleChange = useCallback((_changes: any[], source: string) => {
         if (source === 'loadData') {
@@ -71,7 +72,8 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
 
         const timer = setTimeout(() => {
             if (hotTableRef.current?.hotInstance) {
-                hotTableRef.current.hotInstance.loadData(data);
+                hotTableRef.current.hotInstance.loadData(data ?? []);
+                setVisible(true)
             }
         }, 100);
 
@@ -88,22 +90,28 @@ const HandsonTable = ({config, data = [], onChange, disabled}: TableProps) => {
 
 
     return (
-        <HotTable
-            className={disabled ? 'pointer-events-none opacity-50' : ''}
-            themeName={theme}
-            language={lang.languageCode}
-            ref={hotTableRef}
-            {...config}
-            afterChange={handleChange}
+        <div
+            style={{
+                opacity: visible ? 1 : 0
+            }}
         >
-            {config.columns.map((item: ColumnSettings) => (
-                <HotColumn
-                    key={item.data}
-                    data={item.data}
-                    {...item}
-                />
-            ))}
-        </HotTable>
+            <HotTable
+                className={disabled ? 'pointer-events-none opacity-50' : ''}
+                themeName={theme}
+                language={lang.languageCode}
+                ref={hotTableRef}
+                {...config}
+                afterChange={handleChange}
+            >
+                {config.columns.map((item: ColumnSettings) => (
+                    <HotColumn
+                        key={item.data}
+                        data={item.data}
+                        {...item}
+                    />
+                ))}
+            </HotTable>
+        </div>
     );
 };
 

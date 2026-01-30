@@ -10,7 +10,7 @@ export class MediaManagerHandler {
 
     public get(id: string): AbstractMediaManager {
         let instance = this.managers.find(e => e.id === id)
-        /**
+        /** 
          * ✨ We magically get one
          */
         if (!instance && (id === 'default' || id === undefined) && this.managers.length === 1) {

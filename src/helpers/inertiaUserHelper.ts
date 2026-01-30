@@ -1,5 +1,5 @@
-import { GroupAP } from "models/GroupAP";
-import { UserAP } from "models/UserAP";
+import { GroupAP } from "../models/GroupAP";
+import { UserAP } from "../models/UserAP";
 import {Entity, PropsField} from "../interfaces/types";
 
 interface listProps extends Record<string | number | symbol, unknown> {

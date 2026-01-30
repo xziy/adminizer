@@ -1,10 +1,8 @@
 import {MaterialIcon} from "./MaaterialIcons";
 import {EditorOptions} from "@toast-ui/editor/types/editor";
 import {GridSettings as HandsontableSettings} from "handsontable/settings";
-import {Actions} from "helpers/inertiaActionsHelper";
-import {Adminizer} from "lib/Adminizer";
-import {GroupAP} from "models/GroupAP";
-import {UserAP} from "models/UserAP";
+import {GroupAP} from "../models/GroupAP";
+import {UserAP} from "../models/UserAP";
 
 /**
  * Controller function type - async function that handles requests and returns a response
@@ -275,6 +273,11 @@ export interface AdminpanelConfig {
         methods?: string[];
         allowedHeaders?: string[];
     };
+    history?: {
+        enabled: boolean,
+        adapter?: string,
+        excludeModels?: string[],
+    }
 }
 
 export interface ModelConfig {
@@ -284,7 +287,10 @@ export interface ModelConfig {
      * Model name
      * */
     model: string
-
+    /**
+     * Optional display name for history. Should be a attribute of the model, or a function.
+     */
+    displayName?: ((v: any) => string) | string
     /**
      * If the field is not definitely, then it will appear in Navbar
      * */

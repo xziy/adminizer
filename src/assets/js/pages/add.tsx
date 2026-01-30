@@ -19,11 +19,16 @@ export interface AddProps {
     fields: Field[];
     edit: boolean;
     view: boolean;
+    history: boolean;
     btnSave: {
         title: string;
     },
+    btnHistory: {
+        title: string,
+    },
     postLink: string,
     [key: string]: unknown;
+    model: string
 }
 const breadcrumbs: BreadcrumbItem[] = [];
 

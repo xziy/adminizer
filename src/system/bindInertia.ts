@@ -1,9 +1,9 @@
 import flash from "../lib/inertia/flash";
-import inertia, {Page} from "../lib/inertia/inertiaAdapter";
+import inertia, { Page } from "../lib/inertia/inertiaAdapter";
 import fs from "fs";
 import path from "node:path";
-import {Adminizer} from "../lib/Adminizer";
-import {InertiaMenuHelper} from "../helpers/inertiaMenuHelper";
+import { Adminizer } from "../lib/Adminizer";
+import { InertiaMenuHelper } from "../helpers/inertiaMenuHelper";
 
 export function bindInertia(adminizer: Adminizer) {
 
@@ -92,11 +92,11 @@ export function bindInertia(adminizer: Adminizer) {
             </head>
         <body>
             <div id="app" data-page='${JSON.stringify(page)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;")}'></div>
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;")}'></div>
         </body>
         </html>
         `;
@@ -159,6 +159,14 @@ export function bindInertia(adminizer: Adminizer) {
                 enabled: req.adminizer.config.aiAssistant?.enabled ?? false,
                 defaultModel: req.adminizer.config.aiAssistant?.defaultModel ?? null,
             },
+            history: req.user
+                ?
+                (req.adminizer.config.history.enabled ? req.adminizer.accessRightsHelper.hasPermission(
+                    `history-${req.adminizer.config.history?.adapter ?? 'default'}`,
+                    req.user
+                ) : false)
+                :
+                false
         });
 
         next();

@@ -1,7 +1,7 @@
 import {generate} from "password-hash";
 import{ inertiaRegisterHelper} from "../helpers/inertiaAutHelper";
-import { UserAP } from "models/UserAP";
-import { GroupAP } from "models/GroupAP";
+import { UserAP } from "../models/UserAP";
+import { GroupAP } from "../models/GroupAP";
 
 export default async function register(req: ReqType, res: ResType) {
     if (!req.adminizer.config.auth.enable || req.adminizer.config.registration?.enable !== true) {

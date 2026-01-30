@@ -2,8 +2,8 @@ import {ControllerHelper} from "../helpers/controllerHelper";
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
 import {inertiaUserHelper} from "../helpers/inertiaUserHelper";
-import { UserAP } from "models/UserAP";
-import { GroupAP } from "models/GroupAP";
+import { UserAP } from "../models/UserAP";
+import { GroupAP } from "../models/GroupAP";
 
 export default async function (req: ReqType, res: ResType) {
     let entity = ControllerHelper.findEntityObject(req);

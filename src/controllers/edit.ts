@@ -18,6 +18,7 @@ export default async function edit(req: ReqType, res: ResType) {
     }
 
     let entity = ControllerHelper.findEntityObject(req);
+    
     if (!entity.model) {
         return res.status(404).send({error: 'Not Found'});
     }
@@ -173,7 +174,7 @@ export default async function edit(req: ReqType, res: ResType) {
     } // END POST
 
     for (const field of Object.keys(fields)) {
-        let fieldConfigConfig = fields[field].config as BaseFieldConfig;
+        const fieldConfigConfig = fields[field].config as BaseFieldConfig;
         if (fieldConfigConfig.type === 'mediamanager') {
             record[field] = await getRelationsMediaManager(req.adminizer, {
                 mediaManagerId: (fieldConfigConfig.options as MediaManagerOptionsField)?.id ?? "default",

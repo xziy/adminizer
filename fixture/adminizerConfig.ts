@@ -6,6 +6,7 @@ const models: AdminpanelConfig["models"] = {
     Test: {
         title: 'Test model',
         model: 'test',
+        displayName: 'title',
         userAccessRelation: 'owner',
         fields: {
             createdAt: false,
@@ -44,6 +45,7 @@ const models: AdminpanelConfig["models"] = {
     Example: {
         title: 'All controls',
         model: 'example',
+        displayName: 'description',
         userAccessRelation: 'owner',
         tools: [
             {
@@ -230,14 +232,14 @@ const models: AdminpanelConfig["models"] = {
                 displayModifier: function (data) {
                     return data?.title;
                 },
-                disabled: true
+                disabled: false
             },
             tests: {
                 title: 'One to many association',
                 displayModifier: function (data) {
                     return data?.title;
                 },
-                disabled: true
+                disabled: false
             },
         },
         list: {
@@ -388,11 +390,16 @@ const models: AdminpanelConfig["models"] = {
         icon: 'pets'
     },
     Category: {
-        title: 'Category',
+        title: 'Категории',
         model: 'category',
         icon: 'category',
+        displayName: (data: any) => {
+            return data?.slug ?? 'no data'
+        },
         fields: {
-            createdAt: false,
+            createdAt: {
+                title: 'Created at',
+            },
             updatedAt: false,
             mediamanager_one: {
                 title: 'Images 1',
@@ -434,7 +441,7 @@ const models: AdminpanelConfig["models"] = {
         add: true,
         edit: true,
         view: true,
-        remove: false
+        remove: true
     },
     TestCatalog: {
         title: '',
@@ -471,13 +478,19 @@ const config: AdminpanelConfig = {
         enableGeneral: true,
         initTab: 'general',
     },
-    cors: {
+    history: {
         enabled: true,
+        adapter: "default",
+        excludeModels: ["TestCatalog"]
+    },
+    cors: {
+        enabled: false,
         origin: 'http://localhost:3000',
         path: 'api/*'
     },
     aiAssistant: {
-        enabled: (process.env.ENABLE_AI_ASSISTANT ?? "true") === 'true',
+        // enabled: (process.env.ENABLE_AI_ASSISTANT ?? "true") === 'true',
+        enabled: false,
         defaultModel: 'openai-data',
         models: ['openai-data', 'dummy'],
     },
@@ -705,13 +718,6 @@ const config: AdminpanelConfig = {
                 link: `${routePrefix}/catalog/test-catalog`,
                 title: 'Test Catalog',
                 icon: 'bug_report'
-            },
-            {
-                id: '6',
-                link: '/',
-                type: 'blank',
-                title: 'Main Site',
-                icon: 'home'
             }
         ]
     },

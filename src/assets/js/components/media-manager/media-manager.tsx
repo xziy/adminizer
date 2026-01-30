@@ -1,4 +1,4 @@
-import {useRef, useState, createContext, useCallback, useEffect} from 'react';
+import { useRef, useState, createContext, useCallback, useEffect } from 'react';
 import {
     closestCenter,
     DndContext,
@@ -24,18 +24,18 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import {CSS, isKeyboardEvent} from '@dnd-kit/utilities';
+import { CSS, isKeyboardEvent } from '@dnd-kit/utilities';
 
-import {Item, Layout, Position} from './Item.tsx';
-import type {Props as PageProps} from './Item.tsx';
+import { Item, Layout, Position } from './Item.tsx';
+import type { Props as PageProps } from './Item.tsx';
 import styles from './Manager.module.css';
 import pageStyles from './Item.module.css';
-import {cn} from "@/lib/utils.ts";
-import {Button} from "@/components/ui/button.tsx";
-import {Grid2x2Plus} from "lucide-react";
-import {DialogStackHandle} from "@/components/ui/dialog-stack.tsx";
+import { cn } from "@/lib/utils.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Grid2x2Plus } from "lucide-react";
+import { DialogStackHandle } from "@/components/ui/dialog-stack.tsx";
 import MediaDialogStack from "@/components/media-manager/components/MediaDialogStack.tsx";
-import {Media} from "@/types";
+import { Media } from "@/types";
 import axios from "axios";
 import DropZone from "@/components/media-manager/components/DropZone.tsx";
 
@@ -49,6 +49,7 @@ interface Props {
         onlyView?: boolean
     }
     type: string
+    name: string
     onChange?: (media: Media[]) => void
     value?: Media[]
 }
@@ -93,9 +94,9 @@ const measuring: MeasuringConfiguration = {
 };
 
 const dropAnimation: DropAnimation = {
-    keyframes({transform}) {
+    keyframes({ transform }) {
         return [
-            {transform: CSS.Transform.toString(transform.initial)},
+            { transform: CSS.Transform.toString(transform.initial) },
             {
                 transform: CSS.Transform.toString({
                     scaleX: 0.98,
@@ -113,18 +114,26 @@ const dropAnimation: DropAnimation = {
     }),
 };
 
-const MediaManager = ({layout, config, type, onChange, value}: Props) => {
+const MediaManager = ({ layout, config, type, onChange, value, name }: Props) => {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [items, setItems] = useState<Media[]>(value || []);
     const activeIndex = activeId !== null ? items.findIndex(item => item.id === activeId) : -1;
     const sensors = useSensors(
         useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
+
 
     const [messages, setMessages] = useState<Record<string, string>>({})
 
     const uploadUrl = `${window.routePrefix}/media-manager-uploader/${config.id ? config.id : 'default'}`;
+
+    useEffect(() => {
+        if (value !== undefined && value !== null) {
+            setItems(value);
+        }
+    }, [value]);
+
 
     useEffect(() => {
         const initLocales = async () => {
@@ -144,7 +153,6 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
     }, []);
 
     const addMediaWithCallback = useCallback((newMedia: Media) => {
-        console.log(newMedia)
         setItems((prev) => {
             const newItems = [...prev, newMedia];
             if (onChange) onChange(newItems);
@@ -190,7 +198,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
 
     const activeMedia = activeId ? items.find(item => item.id === activeId) : null;
 
-    const handleDragStart = ({active}: DragStartEvent) => {
+    const handleDragStart = ({ active }: DragStartEvent) => {
         setActiveId(active.id);
     }
 
@@ -198,7 +206,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
         setActiveId(null);
     }
 
-    const handleDragEnd = ({over}: DragEndEvent) => {
+    const handleDragEnd = ({ over }: DragEndEvent) => {
         if (!over || activeIndex === -1) {
             setActiveId(null);
             return;
@@ -230,19 +238,19 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                         <div className="flex gap-2">
                             {!config.onlyView &&
                                 <Button variant="destructive"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            e.preventDefault()
-                                            setItems(prev => {
-                                                const newItems = prev.filter(item => item.id !== items[0].id);
-                                                if (onChange) {
-                                                    setTimeout(() => {
-                                                        onChange(newItems)
-                                                    }, 100)
-                                                }
-                                                return newItems;
-                                            });
-                                        }}>{messages["Delete"]}</Button>
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        e.preventDefault()
+                                        setItems(prev => {
+                                            const newItems = prev.filter(item => item.id !== items[0].id);
+                                            if (onChange) {
+                                                setTimeout(() => {
+                                                    onChange(newItems)
+                                                }, 100)
+                                            }
+                                            return newItems;
+                                        });
+                                    }}>{messages["Delete"]}</Button>
                             }
                             <Button variant="default" onClick={(e) => {
                                 e.stopPropagation()
@@ -252,7 +260,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                         </div>
                         <div className="relative size-[150px] rounded-[5px] overflow-hidden">
                             <img src={contextValue.imageUrl(items[0])}
-                                 className="absolute top-0 left-0 w-full h-full object-cover"/>
+                                className="absolute top-0 left-0 w-full h-full object-cover" />
                             {!items[0].mimeType?.startsWith('image/') && (
                                 <div
                                     className="text-center absolute inset-x-0 bottom-0 break-words text-white text-sm font-medium bg-black/75 h-[40%] rounded-b-[5px] p-2">
@@ -263,8 +271,9 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                     </div>
                 ) : (
                     <DropZone
-                        key="main-dropzone"
+                        key={`single-dropzone-${name}`}
                         messages={messages}
+                        name={name}
                         callback={(media) => {
                             addMediaWithCallback(media)
                         }}
@@ -276,7 +285,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                         e.preventDefault()
                         dialogRef.current?.open()
                     }}>
-                        <Grid2x2Plus className="size-7 text-chart-2"/>
+                        <Grid2x2Plus className="size-7 text-chart-2" />
                     </Button>
                     <DndContext
                         onDragStart={handleDragStart}
@@ -326,7 +335,7 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
                             ) : null}
                         </DragOverlay>
                     </DndContext>
-                    <MediaDialogStack dialogRef={dialogRef}/>
+                    <MediaDialogStack dialogRef={dialogRef} name={name} />
                 </div>
             )}
         </MediaManagerContext.Provider>
@@ -334,11 +343,11 @@ const MediaManager = ({layout, config, type, onChange, value}: Props) => {
 }
 
 function PageOverlay({
-                         id,
-                         items,
-                         ...props
-                     }: Omit<PageProps, 'index'> & { items: Media[] }) {
-    const {activatorEvent, over} = useDndContext();
+    id,
+    items,
+    ...props
+}: Omit<PageProps, 'index'> & { items: Media[] }) {
+    const { activatorEvent, over } = useDndContext();
     const isKeyboardSorting = isKeyboardEvent(activatorEvent);
 
     const activeIndex = items.findIndex(item => item.id === id);
@@ -362,11 +371,11 @@ function PageOverlay({
 }
 
 function SortablePage({
-                          id,
-                          index,
-                          activeIndex,
-                          ...props
-                      }: PageProps & { index: number; activeIndex: number }) {
+    id,
+    index,
+    activeIndex,
+    ...props
+}: PageProps & { index: number; activeIndex: number }) {
     const {
         attributes,
         listeners,

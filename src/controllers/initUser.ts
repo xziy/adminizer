@@ -1,7 +1,7 @@
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
 import {inertiaInitUserHelper} from "../helpers/inertiaAutHelper";
-import { UserAP } from "models/UserAP";
+import { UserAP } from "../models/UserAP";
 
 export default async function initUser(req: ReqType, res: ResType) {
     if (!req.adminizer.config.auth.enable) {

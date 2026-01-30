@@ -2,10 +2,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import {Adminizer} from "../dist";
-import {bindNavigation} from "../dist";
+import { Adminizer } from "../dist";
+import { bindNavigation } from "../dist";
 import http from 'http';
-import {WaterlineAdapter, WaterlineModel} from "../dist/lib/model/adapter/waterline";
+import { WaterlineAdapter, WaterlineModel } from "../dist/lib/model/adapter/waterline";
 import Waterline from "waterline";
 import waterlineConfig from "./waterlineConfig";
 import ExampleWaterline from "./models/Example";
@@ -14,38 +14,38 @@ import TestCatalogWaterline from "./models/TestCatalog";
 import JsonSchemaWaterline from "./models/JsonSchema";
 import CategoryWaterline from "./models/Category";
 import adminpanelConfig from "./adminizerConfig";
-import {AdminpanelConfig} from "../dist/interfaces/adminpanelConfig";
-import {sendNotificationsWithDelay} from "./helpers/notifications";
+import { AdminpanelConfig } from "../dist/interfaces/adminpanelConfig";
+import { sendNotificationsWithDelay } from "./helpers/notifications";
 // OpenAiDataAgentService is imported dynamically only when AI assistant is enabled
 import cors from 'cors';
 
-import {ReactQuill} from "../modules/controls/wysiwyg/ReactQuill";
+import { ReactQuill } from "../modules/controls/wysiwyg/ReactQuill";
 
 // Waterline imports
-import {Sequelize} from "sequelize-typescript";
+import { Sequelize } from "sequelize-typescript";
 
 // Sequelize imports
 import fs from 'fs/promises';
 import path from 'path';
-import {Example as ExampleSequelize} from "./models/sequelize/Example";
-import {JsonSchema as JsonSchemaSequelize} from "./models/sequelize/JsonSchema";
-import {Test as TestSequelize} from "./models/sequelize/Test";
-import {Category as CategorySequelize} from "./models/sequelize/Category";
-import {TestCatalog as TestCatalogSequelize} from "./models/sequelize/TestCatalog";
-import {SequelizeAdapter} from "../dist/lib/model/adapter/sequelize";
-import {seedDatabase} from "./helpers/seedDatabase";
+import { Example as ExampleSequelize } from "./models/sequelize/Example";
+import { JsonSchema as JsonSchemaSequelize } from "./models/sequelize/JsonSchema";
+import { Test as TestSequelize } from "./models/sequelize/Test";
+import { Category as CategorySequelize } from "./models/sequelize/Category";
+import { TestCatalog as TestCatalogSequelize } from "./models/sequelize/TestCatalog";
+import { SequelizeAdapter } from "../dist/lib/model/adapter/sequelize";
+import { seedDatabase } from "./helpers/seedDatabase";
 
 
 //Widgets imports
-import {SwitcherOne, SwitcherTwo} from "./widgets/Switchers";
-import {SiteLinks} from "./widgets/Links";
-import {InfoOne, Info4, Info3, InfoTwo} from "./widgets/Info";
-import {CustomOne} from "./widgets/Custom";
-import {ActionOne, ActionTwo} from "./widgets/Actions";
-import {TestCatalog} from "./virtual-catalog/virtualCatalog";
+import { SwitcherOne, SwitcherTwo } from "./widgets/Switchers";
+import { SiteLinks } from "./widgets/Links";
+import { InfoOne, Info4, Info3, InfoTwo } from "./widgets/Info";
+import { CustomOne } from "./widgets/Custom";
+import { ActionOne, ActionTwo } from "./widgets/Actions";
+import { TestCatalog } from "./virtual-catalog/virtualCatalog";
 import express from "express";
 import cookieParser from "cookie-parser";
-import {corsApi} from "./cors-api/api";
+import { corsApi } from "./cors-api/api";
 
 process.env.AP_PASSWORD_SALT = "FIXTURE"
 
@@ -74,7 +74,7 @@ if (ormType === "waterline") {
         });
     });
 
-    const waterlineAdapter = new WaterlineAdapter({orm, ontology});
+    const waterlineAdapter = new WaterlineAdapter({ orm, ontology });
     adminizer = new Adminizer([waterlineAdapter]);
     await ormSharedFixtureLift(adminizer);
 
@@ -123,7 +123,7 @@ async function cleanTempFolder() {
     try {
         const stats = await fs.stat(tmpPath);
         if (stats.isDirectory()) {
-            await fs.rm(tmpPath, {recursive: true});
+            await fs.rm(tmpPath, { recursive: true });
             console.log(`Temporary folder ${tmpPath} cleaned successfully`);
         }
     } catch (err) {
@@ -160,7 +160,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
                 component: 'module', // required
                 props: {
                     moduleComponent: moduleComponent, // required
-                    data:{
+                    data: {
                         users: users,
                     }
                     // ...{menu: {test: '12'}}
@@ -172,7 +172,12 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         adminizer.app.get(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, module));
         adminizer.app.post(`${adminizer.config.routePrefix}/module-test`, adminizer.policyManager.bindPolicies(policies, async (req: ReqType, res: ResType) => {
-            await sleep(1000);
+            adminizer.sendNotification({
+                title: "Test notification",
+                message: req.body.message,
+                notificationClass: 'general',
+                channel: ''
+            })
             res.json({
                 test: req.body
             })
@@ -195,7 +200,7 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
 
         if (adminizer.config.aiAssistant?.enabled) {
             // Dynamic import to avoid loading OpenAI dependencies when AI assistant is disabled
-            const {OpenAiDataAgentService} = await import("./helpers/ai/OpenAiDataAgentService");
+            const { OpenAiDataAgentService } = await import("./helpers/ai/OpenAiDataAgentService");
             const openAiAgent = new OpenAiDataAgentService(adminizer);
             if (openAiAgent.isEnabled()) {
                 adminizer.aiAssistantHandler!.registerModel(openAiAgent);
@@ -234,7 +239,6 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
         /** Test notifications */
         //setTimeout(() => sendNotificationsWithDelay(adminizer, {count: 150, onlyGeneral: false, generalRatio: 0.5, delayMs: 300}), 5000); // Начальная задержка 10 секунд
 
-
     } catch (e) {
         console.log(e)
     }
@@ -268,10 +272,10 @@ async function ormSharedFixtureLift(adminizer: Adminizer) {
     // Custom route
     mainApp.get('/nav', async (req, res) => {
         try {
-            let header = await adminizer.modelHandler.model.get('navigationap')["_findOne"]({label: 'header'});
-            res.json({header: header});
+            let header = await adminizer.modelHandler.model.get('navigationap')["_findOne"]({ label: 'header' });
+            res.json({ header: header });
         } catch (error) {
-            res.status(500).json({error: 'Internal server error'});
+            res.status(500).json({ error: 'Internal server error' });
         }
     });
 

@@ -4,7 +4,7 @@ import _initUser from "../controllers/initUser";
 import {AdminpanelConfig} from "../interfaces/adminpanelConfig";
 import {Adminizer} from "../lib/Adminizer";
 import {generate} from "password-hash";
-import { UserAP } from "models/UserAP";
+import { UserAP } from "../models/UserAP";
 
 export default async function bindAuthorization(adminizer: Adminizer) {
 

@@ -24,6 +24,16 @@ export default function VanillaJSONEditor(props: JSONEditorPropsOptional & Recor
             setTheme('');
         }
     }, [appearance]);
+
+    useEffect(()=>{
+       if(refEditor.current){
+           refEditor.current.updateProps({
+               content: props.content ? {json: props.content} : props.json ? {json: props.json} : undefined
+           })
+       }
+       
+    }, [props.content])
+
     useEffect(() => {
         const validator = props.schema ? createAjvValidator({schema: props.schema as JSONSchema}) : undefined;
         const content = props.content ? {json: props.content} : props.json ? {json: props.json} : undefined;

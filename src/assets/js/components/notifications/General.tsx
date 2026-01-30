@@ -10,7 +10,6 @@ const General = ({ notifications, onMarkAsRead, onLoadMore, hasMore, loadingMore
             messages={messages}
             onLoadMore={onLoadMore}
             hasMore={hasMore}
-            showDiff={false}
         />
     );
 };

@@ -21,10 +21,12 @@ import {UserAP} from "../../../src";
   > {
 
   
-    @PrimaryKey
-    @AutoIncrement
-    @Column({ type: DataType.INTEGER })
-    declare id: number;
+   @PrimaryKey
+    @Column({
+        type: DataType.UUID,
+        defaultValue: DataType.UUIDV4,
+    })
+    declare id: string;
   
     @Column(DataType.STRING)
     declare title: string;

@@ -152,7 +152,7 @@ const FieldRenderer: FC<{
             return (
                 <Select
                     onValueChange={handleSelectChange}
-                    defaultValue={value as string ?? ''}
+                    value={value as string ?? ''}
                     disabled={processing || field.disabled}
                     required={field.required}
                 >
@@ -205,10 +205,10 @@ const FieldRenderer: FC<{
                                      onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             }
-        case 'markdown':
+        case 'markdown':                    
             if (field.options?.name === 'toast-ui') {
                 return (
-                    <TuiLazy initialValue={field.value as string ?? ''} options={field.options?.config}
+                    <TuiLazy initialValue={value as string ?? ''} options={field.options?.config}
                              onChange={handleEditorChange} disabled={processing || field.disabled}/>
                 )
             } else {
@@ -232,6 +232,7 @@ const FieldRenderer: FC<{
                 )
             }
         case 'jsonEditor':
+            
             if (field.options?.name === 'jsoneditor') {
                 return (
                     <JsonEditorLazy content={value as Content} name={`${field.type}-${field.name}`}
@@ -278,9 +279,9 @@ const FieldRenderer: FC<{
             }
         case 'mediamanager':
         case 'single-file':
-            return (
+                        return (
                 <MediaLazy layout={Layout.Grid} value={value as Media[]} onChange={handleMediaChange}
-                           config={{...field.options}} type={field.type}/>
+                           config={{...field.options}} type={field.type} name={field.name}/>
             )
         default:
             return (
