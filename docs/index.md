@@ -10,6 +10,7 @@
 * [Model Definitions](Configuration/Models.md)
 * [Field Options](Configuration/Fields.md)
 * [Custom Components](Configuration/CustomComponents.md)
+* [Filter Disable Configuration](Configuration/FilterDisableConfiguration.md) - Enable/disable filters globally or per-model
 
 ## Other
 
