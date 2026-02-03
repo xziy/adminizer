@@ -1,0 +1,1 @@
+export { InlineEditController } from './InlineEditController';

@@ -3,6 +3,37 @@ import { AdminpanelConfig } from "../dist";
 const routePrefix = "/adminizer";
 
 const models: AdminpanelConfig["models"] = {
+    // System models for filter feature
+    FilterAP: {
+        title: 'Filters',
+        model: 'filterap',
+        displayName: 'name',
+        userAccessRelation: 'owner',
+        navbar: {
+            visible: false  // Hide from navigation - managed via API
+        },
+        fields: {
+            createdAt: false,
+            updatedAt: false,
+            conditions: {
+                type: 'json',
+                title: 'Filter Conditions'
+            },
+            groupIds: {
+                type: 'json',
+                title: 'Group IDs'
+            }
+        },
+        icon: 'filter_list'
+    },
+    FilterColumnAP: {
+        title: 'Filter Columns',
+        model: 'filtercolumnap',
+        navbar: {
+            visible: false  // Hide from navigation - managed via API
+        },
+        icon: 'view_column'
+    },
     Test: {
         title: 'Test model',
         model: 'test',

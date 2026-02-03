@@ -22,6 +22,10 @@ import timezones from "../controllers/timezones";
 import { NotificationController } from "../controllers/notifications/NotificationController";
 import { AiAssistantController } from "../controllers/ai/AiAssistantController";
 import { HistoryController } from "../controllers/history-actions/HistoryController";
+import { FilterController } from "../controllers/filters/FilterController";
+import { FilterApiController } from "../controllers/filters/FilterApiController";
+import { ExportController } from "../controllers/export/ExportController";
+import { InlineEditController } from "../controllers/inline-edit/InlineEditController";
 
 export default class Router {
 
@@ -191,6 +195,125 @@ export default class Router {
                 adminizer.policyManager.bindPolicies(policies, HistoryController.getModelFieldsHistory)
             )
         }
+
+        /**
+         * Filters API
+         * CRUD operations for saved filters
+         */
+        // POST must come before GET with :id to match /preview first
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/preview`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.preview)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.list)
+        );
+
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.create)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.get)
+        );
+
+        adminizer.app.patch(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.update)
+        );
+
+        adminizer.app.delete(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.remove)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/:id/count`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.count)
+        );
+
+        // Filter columns management
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/:id/columns`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.getColumns)
+        );
+
+        adminizer.app.put(
+            `${adminizer.config.routePrefix}/filters/:id/columns`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.updateColumns)
+        );
+
+        // Direct link routes (redirect to list with filter applied)
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filter/:id`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.directLink)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filter/by-slug/:slug`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.directLinkBySlug)
+        );
+
+        /**
+         * Export API
+         * Data export in various formats (JSON, CSV, Excel)
+         */
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/export/:modelName`,
+            adminizer.policyManager.bindPolicies(policies, ExportController.export)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/:modelName/json`,
+            adminizer.policyManager.bindPolicies(policies, ExportController.exportJSONEndpoint)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/:modelName/csv`,
+            adminizer.policyManager.bindPolicies(policies, ExportController.exportCSVEndpoint)
+        );
+
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/:modelName/excel`,
+            adminizer.policyManager.bindPolicies(policies, ExportController.exportExcelEndpoint)
+        );
+
+        /**
+         * Inline Edit API
+         * Update records directly from list view
+         */
+
+        // GET inline edit config for model
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/model/:model/inline/config`,
+            adminizer.policyManager.bindPolicies(policies, InlineEditController.getConfig)
+        );
+
+        // PATCH single record inline
+        adminizer.app.patch(
+            `${adminizer.config.routePrefix}/model/:model/inline/:id`,
+            adminizer.policyManager.bindPolicies(policies, InlineEditController.update)
+        );
+
+        // PATCH batch update
+        adminizer.app.patch(
+            `${adminizer.config.routePrefix}/model/:model/inline/batch`,
+            adminizer.policyManager.bindPolicies(policies, InlineEditController.batchUpdate)
+        );
+
+        /**
+         * Filter Public API
+         * Access filter data via API key (no authentication required)
+         * Supports JSON and Atom/RSS formats
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/api/filter/:apiKey`,
+            FilterApiController.getJSON
+        );
 
 
         if (adminizer.config.aiAssistant?.enabled) {

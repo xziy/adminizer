@@ -7,6 +7,7 @@ export * from "./lib/widgets/abstractLink"
 export * from "./lib/widgets/abstractWidgetBase"
 export * from "./lib/widgets/abstractSwitch"
 export * from "./lib/widgets/widgetHandler";
+export * from "./lib/widgets/FilterCounterWidget";
 export * from  "./lib/catalog/AbstractCatalog"
 export * from "./lib/catalog/Navigation"
 export * from "./lib/catalog/CatalogHandler";

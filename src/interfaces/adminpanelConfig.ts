@@ -278,6 +278,35 @@ export interface AdminpanelConfig {
         adapter?: string,
         excludeModels?: string[],
     }
+    /**
+     * Filter system configuration
+     */
+    filters?: {
+        /**
+         * Global enable/disable of the filter system
+         * @default true
+         */
+        enabled?: boolean;
+    }
+    /**
+     * Filter settings for specific models
+     */
+    modelFilters?: {
+        [modelName: string]: {
+            /**
+             * Enable filters for this model
+             * Overrides the global filters.enabled setting
+             * @default undefined (use global setting)
+             */
+            enabled?: boolean;
+
+            /**
+             * Use legacy search instead of filters
+             * @default false
+             */
+            useLegacySearch?: boolean;
+        };
+    };
 }
 
 export interface ModelConfig {
@@ -447,6 +476,32 @@ export interface BaseFieldConfig {
 
     /** show or hode element, default `true` */
     visible?: boolean
+
+    /**
+     * Allow inline editing of this field in list view
+     * When true, the field can be edited directly in the table
+     * @default false
+     */
+    inlineEditable?: boolean
+
+    /**
+     * Validation rules for inline editing
+     * Applied when field is updated via inline edit
+     */
+    inlineValidation?: {
+        /** Minimum length for string fields */
+        minLength?: number
+        /** Maximum length for string fields */
+        maxLength?: number
+        /** Minimum value for number fields */
+        min?: number
+        /** Maximum value for number fields */
+        max?: number
+        /** Regex pattern for validation */
+        pattern?: string
+        /** Custom validation function */
+        validate?: (value: any) => boolean | string
+    }
 }
 
 export interface TuiEditorFieldConfig extends BaseFieldConfig {
