@@ -115,12 +115,12 @@ const ListTable = () => {
         const loadFilters = async () => {
             setFiltersLoading(true)
             try {
+                const axios = (await import('axios')).default
                 const modelName = page.props.header.entity.name
-                const response = await fetch(`/adminizer/filters?modelName=${modelName}&includeSystem=true`)
-                const result = await response.json()
+                const response = await axios.get(`/adminizer/filters?modelName=${modelName}&includeSystem=true`)
                 
-                if (result.success && result.filtersEnabled) {
-                    setFilters(result.data || [])
+                if (response.data.success && response.data.filtersEnabled) {
+                    setFilters(response.data.data || [])
                 }
             } catch (error) {
                 console.error('Failed to load filters:', error)
@@ -280,21 +280,16 @@ const ListTable = () => {
                 ? `/adminizer/filters/${editingFilter.id}` 
                 : '/adminizer/filters'
             
-            const method = isEditing ? 'PATCH' : 'POST'
+            const axios = (await import('axios')).default
+            const method = isEditing ? 'patch' : 'post'
             
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ...filterData,
-                    modelName: page.props.header.entity.name
-                })
+            const response = await axios[method](url, {
+                ...filterData,
+                modelName: page.props.header.entity.name
             })
             
-            if (response.ok) {
-                const result = await response.json()
+            if (response.data?.success) {
+                const result = response.data
                 
                 if (isEditing) {
                     // Обновить в списке
@@ -311,21 +306,19 @@ const ListTable = () => {
                 setShowFilterDialog(false)
                 setEditingFilter(null)
             } else {
-                const error = await response.json()
-                throw new Error(error.error || 'Failed to save filter')
+                throw new Error(response.data?.error || 'Failed to save filter')
             }
         } catch (error: any) {
-            toast.error(error.message || 'Failed to save filter')
+            toast.error(error.response?.data?.error || error.message || 'Failed to save filter')
         }
     }, [editingFilter, page.props.header.entity.name])
 
     const handleDeleteFilter = useCallback(async (filter: SavedFilter) => {
         try {
-            const response = await fetch(`/adminizer/filters/${filter.id}`, {
-                method: 'DELETE'
-            })
+            const axios = (await import('axios')).default
+            const response = await axios.delete(`/adminizer/filters/${filter.id}`)
             
-            if (response.ok) {
+            if (response.data.success) {
                 // Обновить список фильтров
                 setFilters(prev => prev.filter(f => f.id !== filter.id))
                 
@@ -337,12 +330,12 @@ const ListTable = () => {
                 
                 toast.success(`Filter "${filter.name}" deleted`)
             } else {
-                throw new Error('Failed to delete filter')
+                throw new Error(response.data.error || 'Failed to delete filter')
             }
-        } catch (error) {
-            toast.error('Failed to delete filter')
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || error.message || 'Failed to delete filter')
         }
-    }, [currentFilterId])
+    }, [currentFilterId, resetForm])
 
     const handleTogglePin = useCallback(async (filter: SavedFilter) => {
         try {
@@ -497,16 +490,16 @@ const ListTable = () => {
                 }}
                 filter={editingFilter || undefined}
                 modelName={page.props.header.entity.name}
-                fields={Object.values(page.props.columns || {}).map(col => ({
-                    name: col.data,
-                    label: col.title || col.data,
+                fields={Object.entries(page.props.columns || {}).map(([fieldName, col]) => ({
+                    name: fieldName,
+                    label: col.title || fieldName,
                     type: 'string', // Columns не содержит dataType, используем string по умолчанию
                     options: undefined
                 }))}
-                availableColumns={Object.values(page.props.columns || {}).map(col => ({
-                    id: col.data,
-                    name: col.data,
-                    label: col.title || col.data,
+                availableColumns={Object.entries(page.props.columns || {}).map(([fieldName, col]) => ({
+                    id: fieldName,
+                    name: fieldName,
+                    label: col.title || fieldName,
                     type: 'string',
                     visible: true,
                     sortable: col.orderable || false,
