@@ -497,22 +497,20 @@ const ListTable = () => {
                 }}
                 filter={editingFilter || undefined}
                 modelName={page.props.header.entity.name}
-                fields={(page.props.header.columns || []).map(col => ({
-                    id: col.name,
-                    name: col.name,
-                    label: col.label || col.name,
-                    type: col.dataType || 'string',
-                    searchable: col.searchable || false,
-                    values: col.enumValues || []
+                fields={Object.values(page.props.columns || {}).map(col => ({
+                    name: col.data,
+                    label: col.title || col.data,
+                    type: 'string', // Columns не содержит dataType, используем string по умолчанию
+                    options: undefined
                 }))}
-                availableColumns={(page.props.header.columns || []).map(col => ({
-                    id: col.name,
-                    name: col.name,
-                    label: col.label || col.name,
-                    type: col.dataType || 'string',
+                availableColumns={Object.values(page.props.columns || {}).map(col => ({
+                    id: col.data,
+                    name: col.data,
+                    label: col.title || col.data,
+                    type: 'string',
                     visible: true,
-                    sortable: col.sortable || false,
-                    width: col.width || 'auto'
+                    sortable: col.orderable || false,
+                    width: 'auto'
                 }))}
                 isAdmin={true}
                 onSave={handleSaveFilter}

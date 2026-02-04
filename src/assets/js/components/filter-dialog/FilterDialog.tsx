@@ -122,6 +122,7 @@ export function FilterDialog({
     // Reset form when filter changes
     useEffect(() => {
         if (open) {
+            console.log('FilterDialog opened with:', { filter, fields, availableColumns });
             setName(filter?.name || "");
             setDescription(filter?.description || "");
             setVisibility(filter?.visibility || "private");
@@ -132,11 +133,11 @@ export function FilterDialog({
             setSortField(filter?.sort?.field || "");
             setSortDirection(filter?.sort?.direction || "DESC");
             setConditions(filter?.conditions || []);
-            setColumns(filter?.columns || []);
+            setColumns(filter?.columns || availableColumns || []);
             setError(null);
             setActiveTab("conditions");
         }
-    }, [open, filter, setConditions, setColumns]);
+    }, [open, filter, fields, availableColumns, setConditions, setColumns]);
 
     // Auto-generate slug from name
     const handleNameChange = useCallback((newName: string) => {
@@ -261,10 +262,6 @@ export function FilterDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent 
                 className="max-w-4xl max-h-[90vh] flex flex-col"
-                onInteractOutside={(e) => {
-                    // Предотвращаем закрытие диалога при клике вне области
-                    e.preventDefault();
-                }}
             >
                 <DialogHeader>
                     <DialogTitle>
