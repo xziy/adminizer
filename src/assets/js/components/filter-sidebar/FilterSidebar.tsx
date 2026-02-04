@@ -125,8 +125,7 @@ export function FilterSidebar({
         (filter: SavedFilter) => {
             if (!canEdit) return false;
             // Can always edit own filters
-            // System filters require admin
-            if (filter.isSystemFilter) return false;
+            // System filters require admin (allow for now - will be controlled by backend)
             return true;
         },
         [canEdit]

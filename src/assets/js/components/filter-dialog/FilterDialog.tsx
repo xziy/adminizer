@@ -259,7 +259,13 @@ export function FilterDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogContent 
+                className="max-w-4xl max-h-[90vh] flex flex-col"
+                onInteractOutside={(e) => {
+                    // Предотвращаем закрытие диалога при клике вне области
+                    e.preventDefault();
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>
                         {isEditing ? labels.titleEdit : labels.title}

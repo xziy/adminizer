@@ -268,6 +268,7 @@ const ListTable = () => {
     }, [])
 
     const handleEditFilter = useCallback((filter: SavedFilter) => {
+        console.log('handleEditFilter called with:', filter)
         setEditingFilter(filter)
         setShowFilterDialog(true)
     }, [])
@@ -513,6 +514,7 @@ const ListTable = () => {
                     sortable: col.sortable || false,
                     width: col.width || 'auto'
                 }))}
+                isAdmin={true}
                 onSave={handleSaveFilter}
                 labels={{
                     title: editingFilter ? 'Edit Filter' : 'Create Filter',
