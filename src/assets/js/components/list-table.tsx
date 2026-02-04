@@ -4,7 +4,7 @@ import {DataTable} from "@/components/table/data-table"
 import {Link, router, usePage} from "@inertiajs/react";
 import {ColumnDef} from "@tanstack/react-table";
 import {Button} from "@/components/ui/button.tsx";
-import {BetweenHorizontalStart, Eye, Pencil, SquarePlus, Search, RefreshCcw} from "lucide-react";
+import {BetweenHorizontalStart, Eye, Pencil, SquarePlus, Search, RefreshCcw, Filter} from "lucide-react";
 import {Icon} from "@/components/icon.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
 import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
@@ -19,6 +19,9 @@ import DeleteModal from "@/components/modals/del-modal.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {generatePagination} from "@/lib/pagination.ts";
 import PaginationRender from "@/components/pagination-render.tsx";
+import {FilterSidebar} from "@/components/filter-sidebar";
+import {SavedFilter} from "@/components/filter-sidebar/types";
+import {FilterDialog} from "@/components/filter-dialog";
 
 interface Action {
     id: string,
@@ -71,6 +74,14 @@ const ListTable = () => {
     const [count, setCount] = useState('5')
     const [sortColumn, setSortColumn] = useState('1')
     const [sortDirection, setSortDirection] = useState('desc')
+    
+    // Состояния для фильтров
+    const [showFilters, setShowFilters] = useState(false)
+    const [filters, setFilters] = useState<SavedFilter[]>([])
+    const [currentFilterId, setCurrentFilterId] = useState<string | null>(null)
+    const [filtersLoading, setFiltersLoading] = useState(false)
+    const [showFilterDialog, setShowFilterDialog] = useState(false)
+    const [editingFilter, setEditingFilter] = useState<SavedFilter | null>(null)
 
     // Ref для хранения параметров поиска по колонкам
     const queryColumnsRef = useRef<{ key: string, value: string }[]>([])
@@ -85,6 +96,10 @@ const ListTable = () => {
         setCount(searchParams.get('count') || '5')
         setSortColumn(searchParams.get('column') || '1')
         setSortDirection(searchParams.get('direction') || 'desc')
+        
+        // Проверяем активный фильтр
+        const filterId = searchParams.get('filterId')
+        setCurrentFilterId(filterId)
 
         // Инициализация queryColumnsRef из URL
         const searchColumns = searchParams.getAll('searchColumn')
@@ -94,6 +109,28 @@ const ListTable = () => {
             value: searchValues[i]
         }))
     }, [])
+    
+    // Загрузка фильтров для модели
+    useEffect(() => {
+        const loadFilters = async () => {
+            setFiltersLoading(true)
+            try {
+                const modelName = page.props.header.entity.name
+                const response = await fetch(`/adminizer/filters?modelName=${modelName}&includeSystem=true`)
+                const result = await response.json()
+                
+                if (result.success && result.filtersEnabled) {
+                    setFilters(result.data || [])
+                }
+            } catch (error) {
+                console.error('Failed to load filters:', error)
+            } finally {
+                setFiltersLoading(false)
+            }
+        }
+        
+        loadFilters()
+    }, [page.props.header.entity.name])
 
     useEffect(() => {
         // fix menu after deletion and redirect
@@ -201,6 +238,7 @@ const ListTable = () => {
         setCurrentPage(1)
         setSortColumn('1')
         setSortDirection('desc')
+        setCurrentFilterId(null)
 
         router.visit(`${page.props.header.entity.uri}?count=${count}&page=1`, {
             preserveState: true,
@@ -209,6 +247,129 @@ const ListTable = () => {
             onSuccess: () => setLoading(false)
         })
     }
+    
+    // Обработчики для фильтров
+    const handleSelectFilter = useCallback((filter: SavedFilter) => {
+        setCurrentFilterId(filter.id)
+        setCurrentPage(1)
+        setLoading(true)
+        
+        const queryString = `count=${count}&page=1&column=${sortColumn}&direction=${sortDirection}&filterId=${filter.id}`
+        router.visit(`${page.props.header.entity.uri}?${queryString}`, {
+            preserveState: true,
+            only: ['data', 'columns', 'header'],
+            onSuccess: () => setLoading(false)
+        })
+    }, [count, sortColumn, sortDirection, page.props.header.entity.uri])
+
+    const handleCreateFilter = useCallback(() => {
+        setEditingFilter(null)
+        setShowFilterDialog(true)
+    }, [])
+
+    const handleEditFilter = useCallback((filter: SavedFilter) => {
+        setEditingFilter(filter)
+        setShowFilterDialog(true)
+    }, [])
+
+    const handleSaveFilter = useCallback(async (filterData: any) => {
+        try {
+            const isEditing = !!editingFilter
+            const url = isEditing 
+                ? `/adminizer/filters/${editingFilter.id}` 
+                : '/adminizer/filters'
+            
+            const method = isEditing ? 'PATCH' : 'POST'
+            
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...filterData,
+                    modelName: page.props.header.entity.name
+                })
+            })
+            
+            if (response.ok) {
+                const result = await response.json()
+                
+                if (isEditing) {
+                    // Обновить в списке
+                    setFilters(prev => prev.map(f => 
+                        f.id === editingFilter.id ? { ...f, ...result.data } : f
+                    ))
+                    toast.success(`Filter "${filterData.name}" updated`)
+                } else {
+                    // Добавить в список
+                    setFilters(prev => [...prev, result.data])
+                    toast.success(`Filter "${filterData.name}" created`)
+                }
+                
+                setShowFilterDialog(false)
+                setEditingFilter(null)
+            } else {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to save filter')
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to save filter')
+        }
+    }, [editingFilter, page.props.header.entity.name])
+
+    const handleDeleteFilter = useCallback(async (filter: SavedFilter) => {
+        try {
+            const response = await fetch(`/adminizer/filters/${filter.id}`, {
+                method: 'DELETE'
+            })
+            
+            if (response.ok) {
+                // Обновить список фильтров
+                setFilters(prev => prev.filter(f => f.id !== filter.id))
+                
+                // Если удален активный фильтр, сбросить
+                if (currentFilterId === filter.id) {
+                    setCurrentFilterId(null)
+                    resetForm()
+                }
+                
+                toast.success(`Filter "${filter.name}" deleted`)
+            } else {
+                throw new Error('Failed to delete filter')
+            }
+        } catch (error) {
+            toast.error('Failed to delete filter')
+        }
+    }, [currentFilterId])
+
+    const handleTogglePin = useCallback(async (filter: SavedFilter) => {
+        try {
+            const response = await fetch(`/adminizer/filters/${filter.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    isPinned: !filter.isPinned
+                })
+            })
+            
+            if (response.ok) {
+                // Обновить список фильтров
+                setFilters(prev => prev.map(f => 
+                    f.id === filter.id 
+                        ? { ...f, isPinned: !f.isPinned }
+                        : f
+                ))
+                toast.success(filter.isPinned ? 'Filter unpinned' : 'Filter pinned')
+            } else {
+                throw new Error('Failed to update filter')
+            }
+        } catch (error) {
+            toast.error('Failed to update filter')
+        }
+    }, [])
 
     const dynamicColumns = useTableColumns(
         page.props.columns,
@@ -325,7 +486,88 @@ const ListTable = () => {
     return (
         <>
             <Toaster position="top-center" richColors closeButton/>
-            <div className={`flex h-auto flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
+            
+            {/* Filter Dialog */}
+            <FilterDialog
+                open={showFilterDialog}
+                onOpenChange={(open) => {
+                    setShowFilterDialog(open)
+                    if (!open) setEditingFilter(null)
+                }}
+                filter={editingFilter || undefined}
+                modelName={page.props.header.entity.name}
+                fields={(page.props.header.columns || []).map(col => ({
+                    id: col.name,
+                    name: col.name,
+                    label: col.label || col.name,
+                    type: col.dataType || 'string',
+                    searchable: col.searchable || false,
+                    values: col.enumValues || []
+                }))}
+                availableColumns={(page.props.header.columns || []).map(col => ({
+                    id: col.name,
+                    name: col.name,
+                    label: col.label || col.name,
+                    type: col.dataType || 'string',
+                    visible: true,
+                    sortable: col.sortable || false,
+                    width: col.width || 'auto'
+                }))}
+                onSave={handleSaveFilter}
+                labels={{
+                    title: editingFilter ? 'Edit Filter' : 'Create Filter',
+                    nameLabel: 'Filter Name',
+                    namePlaceholder: 'Enter filter name...',
+                    descriptionLabel: 'Description',
+                    descriptionPlaceholder: 'Enter filter description...',
+                    conditionsTab: 'Conditions',
+                    columnsTab: 'Columns', 
+                    settingsTab: 'Settings',
+                    visibilityLabel: 'Visibility',
+                    visibilityOptions: {
+                        private: 'Private',
+                        public: 'Public',
+                        groups: 'Groups',
+                        system: 'System'
+                    },
+                    saveButton: editingFilter ? 'Update Filter' : 'Create Filter',
+                    cancelButton: 'Cancel',
+                    previewButton: 'Preview'
+                }}
+            />
+            
+            <div className="flex h-full">
+                {/* Filter Sidebar */}
+                {showFilters && (
+                    <div className="w-64 border-r border-border bg-background/50 p-4">
+                        <FilterSidebar
+                            filters={filters}
+                            currentFilterId={currentFilterId}
+                            modelName={page.props.header.entity.name}
+                            loading={filtersLoading}
+                            onSelectFilter={handleSelectFilter}
+                            onCreateFilter={handleCreateFilter}
+                            onEditFilter={handleEditFilter}
+                            onDeleteFilter={handleDeleteFilter}
+                            onTogglePin={handleTogglePin}
+                            customLabels={{
+                                title: "Filters",
+                                createFilter: "Create Filter",
+                                searchPlaceholder: "Search filters...",
+                                noFilters: "No filters found",
+                                groups: {
+                                    pinned: "Pinned",
+                                    my: "My Filters", 
+                                    shared: "Shared",
+                                    system: "Auto-generated"
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+                
+                {/* Main Content */}
+                <div className={`flex h-auto flex-1 flex-col gap-4 rounded-xl p-4 ${loading ? 'opacity-50' : ''}`}>
                 <div className="flex gap-2 sticky top-0 z-10 bg-background py-3">
                     {page.props.header.crudActions?.createTitle && (
                         <Button asChild>
@@ -335,6 +577,20 @@ const ListTable = () => {
                             </Link>
                         </Button>
                     )}
+                    <Button
+                        className="transition-none cursor-pointer"
+                        variant={showFilters ? "default" : "outline"}
+                        onClick={() => setShowFilters(!showFilters)}
+                        disabled={filtersLoading}
+                    >
+                        <Icon iconNode={Filter}/>
+                        {showFilters ? "Hide Filters" : "Show Filters"}
+                        {filters.length > 0 && !filtersLoading && (
+                            <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                                {filters.length}
+                            </span>
+                        )}
+                    </Button>
                     <Button
                         className="transition-none cursor-pointer"
                         variant={showSearch ? "destructive" : "outline"}
@@ -424,6 +680,7 @@ const ListTable = () => {
                         {data.data.length > 0 && <PaginationRender pagination={pagination} pageChange={handlePageChange}
                                                                    currentPage={currentPage}/>}
                     </div>
+                </div>
                 </div>
             </div>
         </>

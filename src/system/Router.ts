@@ -206,6 +206,22 @@ export default class Router {
             adminizer.policyManager.bindPolicies(policies, FilterController.preview)
         );
 
+        // Auto-generate filters endpoints (admin only)
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/generate`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.generateAutoFilters)
+        );
+
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/regenerate`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.regenerateAutoFilters)
+        );
+
+        adminizer.app.delete(
+            `${adminizer.config.routePrefix}/filters/auto/:modelName`,
+            adminizer.policyManager.bindPolicies(policies, FilterController.deleteAutoFilters)
+        );
+
         adminizer.app.get(
             `${adminizer.config.routePrefix}/filters`,
             adminizer.policyManager.bindPolicies(policies, FilterController.list)

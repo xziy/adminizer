@@ -1,15 +1,15 @@
 import { Adminizer } from '../Adminizer';
 import { DataAccessor } from '../DataAccessor';
 import { ModernQueryBuilder, QueryParams, QueryResult } from '../query-builder/ModernQueryBuilder';
-import { FilterAP, FilterCondition } from '../../models/FilterAP';
+import { FilterAP, FilterCondition, FilterOperator } from '../../models/FilterAP';
 import { FilterColumnAP } from '../../models/FilterColumnAP';
 import { UserAP } from '../../models/UserAP';
-import { Fields } from '../../helpers/fieldsHelper';
+import { Fields, Field } from '../../helpers/fieldsHelper';
 import { AbstractModel } from '../model/AbstractModel';
 import { FilterMigrator, MigrationResult, CURRENT_FILTER_VERSION } from './FilterMigrator';
 import { ValidationResult } from './ConditionValidator';
 import { Entity } from '../../interfaces/types';
-import { ModelConfig } from '../../interfaces/adminpanelConfig';
+import { ModelConfig, ModelFiltersConfig } from '../../interfaces/adminpanelConfig';
 
 /**
  * FilterService - manages filter operations
@@ -733,6 +733,548 @@ export class FilterService {
         }
 
         return FilterMigrator.sanitizeConditions(conditions, fieldsConfig, options);
+    }
+
+    // ============================================
+    // AUTO-GENERATE FILTERS
+    // ============================================
+
+    /**
+     * Get model filter configuration
+     */
+    getModelFilterConfig(modelName: string): ModelFiltersConfig | undefined {
+        const config = this.adminizer.config as any;
+        return config.modelFilters?.[modelName];
+    }
+
+    /**
+     * Check if auto-generate filters is enabled for a model
+     */
+    isAutoGenerateEnabled(modelName: string): boolean {
+        const modelConfig = this.getModelFilterConfig(modelName);
+        return modelConfig?.autoGenerateFilters === true;
+    }
+
+    /**
+     * Check if a field should be included in auto-generated filters
+     */
+    private shouldIncludeField(
+        fieldName: string,
+        modelConfig: ModelFiltersConfig | undefined
+    ): boolean {
+        // If includeFields is specified, use whitelist mode
+        if (modelConfig?.includeFields?.length) {
+            return modelConfig.includeFields.includes(fieldName);
+        }
+
+        // Default excluded fields (sensitive data)
+        const defaultExcluded = [
+            'password', 'passwordHash', 'hash', 'salt',
+            'apiKey', 'apiSecret', 'token', 'refreshToken',
+            'secret', 'privateKey', 'encryptedPassword'
+        ];
+
+        // Check custom excludeFields
+        const excluded = [
+            ...defaultExcluded,
+            ...(modelConfig?.excludeFields || [])
+        ];
+
+        return !excluded.includes(fieldName);
+    }
+
+    /**
+     * Generate filter definitions based on model fields
+     */
+    private generateFilterDefinitions(
+        modelName: string,
+        fields: Fields,
+        modelConfig: ModelFiltersConfig | undefined
+    ): Array<{
+        name: string;
+        description: string;
+        conditions: FilterCondition[];
+        icon?: string;
+        color?: string;
+    }> {
+        const definitions: Array<{
+            name: string;
+            description: string;
+            conditions: FilterCondition[];
+            icon?: string;
+            color?: string;
+        }> = [];
+
+        const prefix = modelConfig?.autoFilterPrefix ?? 'Auto: ';
+        const modelTitle = this.getModelTitle(modelName);
+
+        // 1. "All" filter (no conditions)
+        definitions.push({
+            name: `${prefix}All ${modelTitle}`,
+            description: `Show all records in ${modelTitle}`,
+            conditions: [],
+            icon: 'list',
+            color: '#6366f1'
+        });
+
+        // 2. Generate field-specific filters
+        for (const [fieldName, field] of Object.entries(fields)) {
+            if (!this.shouldIncludeField(fieldName, modelConfig)) {
+                continue;
+            }
+
+            const fieldConfig = field.config;
+            const fieldType = typeof fieldConfig === 'object' ? fieldConfig.type : undefined;
+            const fieldTitle = typeof fieldConfig === 'object' ? (fieldConfig.title || fieldName) : fieldName;
+
+            // Generate filters based on field type
+            const fieldFilters = this.generateFiltersForFieldType(
+                fieldName,
+                fieldTitle,
+                fieldType,
+                prefix,
+                modelTitle
+            );
+
+            definitions.push(...fieldFilters);
+        }
+
+        return definitions;
+    }
+
+    /**
+     * Generate filter definitions for a specific field type
+     */
+    private generateFiltersForFieldType(
+        fieldName: string,
+        fieldTitle: string,
+        fieldType: string | undefined,
+        prefix: string,
+        modelTitle: string
+    ): Array<{
+        name: string;
+        description: string;
+        conditions: FilterCondition[];
+        icon?: string;
+        color?: string;
+    }> {
+        const filters: Array<{
+            name: string;
+            description: string;
+            conditions: FilterCondition[];
+            icon?: string;
+            color?: string;
+        }> = [];
+
+        switch (fieldType) {
+            case 'boolean':
+                // True filter
+                filters.push({
+                    name: `${prefix}${fieldTitle} = Yes`,
+                    description: `${modelTitle} where ${fieldTitle} is true`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'eq' as FilterOperator,
+                        value: true
+                    }],
+                    icon: 'check_circle',
+                    color: '#22c55e'
+                });
+                // False filter
+                filters.push({
+                    name: `${prefix}${fieldTitle} = No`,
+                    description: `${modelTitle} where ${fieldTitle} is false`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'eq' as FilterOperator,
+                        value: false
+                    }],
+                    icon: 'cancel',
+                    color: '#ef4444'
+                });
+                break;
+
+            case 'date':
+            case 'datetime':
+                // Today
+                filters.push({
+                    name: `${prefix}${fieldTitle} Today`,
+                    description: `${modelTitle} where ${fieldTitle} is today`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'between' as FilterOperator,
+                        value: { start: '$TODAY_START', end: '$TODAY_END' }
+                    }],
+                    icon: 'today',
+                    color: '#3b82f6'
+                });
+                // This week
+                filters.push({
+                    name: `${prefix}${fieldTitle} This Week`,
+                    description: `${modelTitle} where ${fieldTitle} is this week`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'between' as FilterOperator,
+                        value: { start: '$WEEK_START', end: '$WEEK_END' }
+                    }],
+                    icon: 'date_range',
+                    color: '#8b5cf6'
+                });
+                // This month
+                filters.push({
+                    name: `${prefix}${fieldTitle} This Month`,
+                    description: `${modelTitle} where ${fieldTitle} is this month`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'between' as FilterOperator,
+                        value: { start: '$MONTH_START', end: '$MONTH_END' }
+                    }],
+                    icon: 'calendar_month',
+                    color: '#f59e0b'
+                });
+                break;
+
+            case 'integer':
+            case 'number':
+            case 'float':
+                // Is null
+                filters.push({
+                    name: `${prefix}${fieldTitle} Empty`,
+                    description: `${modelTitle} where ${fieldTitle} is empty/null`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'isNull' as FilterOperator,
+                        value: null
+                    }],
+                    icon: 'filter_alt_off',
+                    color: '#64748b'
+                });
+                // Is not null
+                filters.push({
+                    name: `${prefix}${fieldTitle} Has Value`,
+                    description: `${modelTitle} where ${fieldTitle} has a value`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'isNotNull' as FilterOperator,
+                        value: null
+                    }],
+                    icon: 'filter_alt',
+                    color: '#0ea5e9'
+                });
+                break;
+
+            case 'string':
+            case 'text':
+            case 'longtext':
+            case 'mediumtext':
+            case 'email':
+                // Not empty
+                filters.push({
+                    name: `${prefix}${fieldTitle} Not Empty`,
+                    description: `${modelTitle} where ${fieldTitle} is not empty`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'isNotNull' as FilterOperator,
+                        value: null
+                    }],
+                    icon: 'text_fields',
+                    color: '#14b8a6'
+                });
+                // Empty
+                filters.push({
+                    name: `${prefix}${fieldTitle} Empty`,
+                    description: `${modelTitle} where ${fieldTitle} is empty`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'isNull' as FilterOperator,
+                        value: null
+                    }],
+                    icon: 'text_decrease',
+                    color: '#64748b'
+                });
+                break;
+
+            case 'select':
+                // Generate a filter template for select fields
+                // Actual values would need to be populated from field config
+                filters.push({
+                    name: `${prefix}${fieldTitle} Filter`,
+                    description: `Filter ${modelTitle} by ${fieldTitle}`,
+                    conditions: [{
+                        id: crypto.randomUUID(),
+                        field: fieldName,
+                        operator: 'eq' as FilterOperator,
+                        value: '' // Placeholder - user should set value
+                    }],
+                    icon: 'filter_list',
+                    color: '#ec4899'
+                });
+                break;
+
+            default:
+                // For unknown types, create a basic isNotNull filter
+                if (fieldType && !['password', 'binary', 'json', 'jsoneditor', 'object', 'array'].includes(fieldType)) {
+                    filters.push({
+                        name: `${prefix}${fieldTitle} Has Value`,
+                        description: `${modelTitle} where ${fieldTitle} has a value`,
+                        conditions: [{
+                            id: crypto.randomUUID(),
+                            field: fieldName,
+                            operator: 'isNotNull' as FilterOperator,
+                            value: null
+                        }],
+                        icon: 'filter_alt',
+                        color: '#6b7280'
+                    });
+                }
+                break;
+        }
+
+        return filters;
+    }
+
+    /**
+     * Get model title from config or format model name
+     */
+    private getModelTitle(modelName: string): string {
+        const entity = this.getEntityByModelName(modelName);
+        if (entity?.config?.title) {
+            return entity.config.title;
+        }
+        // Convert camelCase/PascalCase to title case
+        return modelName
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+            .trim();
+    }
+
+    /**
+     * Generate and save auto-filters for a model
+     *
+     * @param modelName - Name of the model
+     * @param systemUser - System user to own the filters
+     * @param options - Generation options
+     * @returns Created filters
+     */
+    async generateFiltersForModel(
+        modelName: string,
+        systemUser: UserAP,
+        options: {
+            force?: boolean; // Regenerate even if filters exist
+            dryRun?: boolean; // Don't save, just return definitions
+        } = {}
+    ): Promise<{
+        generated: FilterAP[];
+        skipped: string[];
+        errors: string[];
+    }> {
+        const result: {
+            generated: FilterAP[];
+            skipped: string[];
+            errors: string[];
+        } = {
+            generated: [],
+            skipped: [],
+            errors: []
+        };
+
+        // Check if auto-generate is enabled
+        if (!this.isAutoGenerateEnabled(modelName)) {
+            result.errors.push(`Auto-generate filters is not enabled for model '${modelName}'`);
+            return result;
+        }
+
+        // Get model entity and fields
+        const entity = this.getEntityByModelName(modelName);
+        if (!entity || !entity.model) {
+            result.errors.push(`Model '${modelName}' not found`);
+            return result;
+        }
+
+        // Create DataAccessor to get fields
+        const dataAccessor = new DataAccessor(this.adminizer, systemUser, entity, 'list');
+        const fields = dataAccessor.getFieldsConfig();
+
+        if (!fields || Object.keys(fields).length === 0) {
+            result.errors.push(`No fields found for model '${modelName}'`);
+            return result;
+        }
+
+        // Get model filter config
+        const modelConfig = this.getModelFilterConfig(modelName);
+
+        // Generate filter definitions
+        const definitions = this.generateFilterDefinitions(modelName, fields, modelConfig);
+
+        if (options.dryRun) {
+            // Return definitions without saving
+            for (const def of definitions) {
+                result.generated.push({
+                    id: crypto.randomUUID(),
+                    name: def.name,
+                    description: def.description,
+                    modelName,
+                    slug: this.generateSlugFromName(def.name),
+                    conditions: def.conditions,
+                    visibility: 'system',
+                    owner: systemUser.id,
+                    isSystemFilter: true,
+                    apiEnabled: false,
+                    icon: def.icon,
+                    color: def.color,
+                    version: CURRENT_FILTER_VERSION,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                } as FilterAP);
+            }
+            return result;
+        }
+
+        // Check existing auto-generated filters
+        const existingFilters = await this.getAutoGeneratedFilters(modelName);
+        const existingNames = new Set(existingFilters.map(f => f.name));
+
+        // Create filters
+        for (const def of definitions) {
+            try {
+                // Skip if already exists (unless force)
+                if (!options.force && existingNames.has(def.name)) {
+                    result.skipped.push(def.name);
+                    continue;
+                }
+
+                // Delete existing filter if force regenerate
+                if (options.force) {
+                    const existing = existingFilters.find(f => f.name === def.name);
+                    if (existing) {
+                        await this.deleteFilter(existing.id, systemUser);
+                    }
+                }
+
+                // Create new filter
+                const filter = await this.createFilter({
+                    name: def.name,
+                    description: def.description,
+                    modelName,
+                    slug: this.generateSlugFromName(def.name),
+                    conditions: def.conditions,
+                    visibility: 'system',
+                    isSystemFilter: true,
+                    apiEnabled: false,
+                    icon: def.icon,
+                    color: def.color,
+                    version: CURRENT_FILTER_VERSION
+                }, systemUser);
+
+                result.generated.push(filter);
+            } catch (error: any) {
+                result.errors.push(`Failed to create filter '${def.name}': ${error?.message || error}`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get all auto-generated filters for a model
+     */
+    async getAutoGeneratedFilters(modelName: string): Promise<FilterAP[]> {
+        const filterModel = this.adminizer.modelHandler.model.get('filterap');
+        if (!filterModel) {
+            return [];
+        }
+
+        const filters = await filterModel["_find"]({
+            modelName,
+            isSystemFilter: true,
+            visibility: 'system'
+        }) as FilterAP[];
+
+        return filters;
+    }
+
+    /**
+     * Generate slug from filter name
+     */
+    private generateSlugFromName(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+    }
+
+    /**
+     * Ensure auto-generated filters exist for a model
+     * Called when accessing filters for a model
+     */
+    async ensureAutoFiltersExist(
+        modelName: string,
+        systemUser: UserAP
+    ): Promise<void> {
+        if (!this.isAutoGenerateEnabled(modelName)) {
+            return;
+        }
+
+        const existingFilters = await this.getAutoGeneratedFilters(modelName);
+
+        // If no auto-filters exist, generate them
+        if (existingFilters.length === 0) {
+            try {
+                await this.generateFiltersForModel(modelName, systemUser);
+                Adminizer.log.info(`Auto-generated filters for model '${modelName}'`);
+            } catch (error: any) {
+                Adminizer.log.warn(
+                    `Failed to auto-generate filters for model '${modelName}': ${error?.message || error}`
+                );
+            }
+        }
+    }
+
+    /**
+     * Delete all auto-generated filters for a model
+     */
+    async deleteAutoGeneratedFilters(
+        modelName: string,
+        systemUser: UserAP
+    ): Promise<{ deleted: number; errors: string[] }> {
+        const result = { deleted: 0, errors: [] as string[] };
+
+        const filters = await this.getAutoGeneratedFilters(modelName);
+
+        for (const filter of filters) {
+            try {
+                await this.deleteFilter(filter.id, systemUser);
+                result.deleted++;
+            } catch (error: any) {
+                result.errors.push(`Failed to delete filter '${filter.name}': ${error?.message || error}`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Regenerate all auto-filters for a model
+     */
+    async regenerateAutoFilters(
+        modelName: string,
+        systemUser: UserAP
+    ): Promise<{
+        generated: FilterAP[];
+        skipped: string[];
+        errors: string[];
+    }> {
+        return this.generateFiltersForModel(modelName, systemUser, { force: true });
     }
 }
 

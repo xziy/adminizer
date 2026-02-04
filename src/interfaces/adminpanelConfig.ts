@@ -292,21 +292,62 @@ export interface AdminpanelConfig {
      * Filter settings for specific models
      */
     modelFilters?: {
-        [modelName: string]: {
-            /**
-             * Enable filters for this model
-             * Overrides the global filters.enabled setting
-             * @default undefined (use global setting)
-             */
-            enabled?: boolean;
-
-            /**
-             * Use legacy search instead of filters
-             * @default false
-             */
-            useLegacySearch?: boolean;
-        };
+        [modelName: string]: ModelFiltersConfig;
     };
+}
+
+/**
+ * Filter configuration for a specific model
+ */
+export interface ModelFiltersConfig {
+    /**
+     * Enable filters for this model
+     * Overrides the global filters.enabled setting
+     * @default undefined (use global setting)
+     */
+    enabled?: boolean;
+
+    /**
+     * Use legacy search instead of filters
+     * @default false
+     */
+    useLegacySearch?: boolean;
+
+    /**
+     * Automatically generate basic filters based on model fields
+     * When enabled, the system will create filters like:
+     * - "All {ModelName}" (no conditions)
+     * - Per-field filters for string/text fields (contains search)
+     * - Status/enum filters for boolean and select fields
+     * - Date range filters for date/datetime fields
+     * @default false
+     */
+    autoGenerateFilters?: boolean;
+
+    /**
+     * Fields to exclude from auto-generated filters
+     * @example ['password', 'apiKey', 'token']
+     */
+    excludeFields?: string[];
+
+    /**
+     * Fields to include in auto-generated filters (whitelist mode)
+     * If specified, only these fields will have filters generated
+     * Takes priority over excludeFields
+     */
+    includeFields?: string[];
+
+    /**
+     * Prefix for auto-generated filter names
+     * @default 'Auto: '
+     */
+    autoFilterPrefix?: string;
+
+    /**
+     * Whether auto-generated filters should be visible in UI
+     * @default true
+     */
+    showAutoFilters?: boolean;
 }
 
 export interface ModelConfig {

@@ -843,6 +843,48 @@ const config: AdminpanelConfig = {
     models: models,
     //@ts-ignore
     generator: {},
+    // Filter system configuration
+    filters: {
+        enabled: true
+    },
+    // Auto-generate filters for all models
+    modelFilters: {
+        Test: {
+            enabled: true,
+            autoGenerateFilters: true,
+            excludeFields: ['schema']
+        },
+        Example: {
+            enabled: true,
+            autoGenerateFilters: true,
+            excludeFields: ['json', 'tui', 'code', 'word', 'wysiwyg', 'table']
+        },
+        JsonSchema: {
+            enabled: true,
+            autoGenerateFilters: true
+        },
+        Category: {
+            enabled: true,
+            autoGenerateFilters: true
+        },
+        SubCategory: {
+            enabled: true,
+            autoGenerateFilters: true
+        },
+        UserAP: {
+            enabled: true,
+            autoGenerateFilters: true,
+            excludeFields: ['password', 'passwordHash', 'salt']
+        },
+        GroupAP: {
+            enabled: true,
+            autoGenerateFilters: true
+        },
+        TableModel: {
+            enabled: true,
+            autoGenerateFilters: true
+        }
+    },
     globalSettings: { // Global project settings
         enableMigrations: true
     },
