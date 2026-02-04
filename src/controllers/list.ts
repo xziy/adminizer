@@ -215,7 +215,7 @@ function applyCustomColumns(fields: Fields, columns: FilterColumnAP[]): Fields {
                 // Add custom column properties
                 customWidth: col.width,
                 isEditable: col.isEditable
-            };
+            } as Field;
         }
     }
 
@@ -254,13 +254,13 @@ function buildFiltersFromSearchPairs(
 
         const fieldName = fieldNames[fieldIndex];
         const field = fields[fieldName];
-        const fieldType = field.model?.type;
+        const fieldType = field.model?.type as string | undefined;
 
         // Determine operator based on field type
         let operator: FilterCondition['operator'] = 'like';
         let value: any = pair.value;
 
-        if (fieldType === 'number' || fieldType === 'integer' || fieldType === 'float') {
+        if (fieldType === 'number' || (fieldType as any) === 'integer' || (fieldType as any) === 'float') {
             const numValue = parseFloat(pair.value);
             if (!isNaN(numValue)) {
                 operator = 'eq';
@@ -278,7 +278,7 @@ function buildFiltersFromSearchPairs(
                 continue; // Skip invalid boolean
             }
             operator = 'eq';
-        } else if (fieldType === 'date' || fieldType === 'datetime') {
+        } else if ((fieldType as any) === 'date' || (fieldType as any) === 'datetime') {
             // For dates, use exact match or range
             operator = 'eq';
         }

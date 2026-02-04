@@ -62,7 +62,7 @@ export class FilterController {
      * GET /adminizer/filters
      * List filters for a model
      */
-    static async list(req: ReqType, res: ResType) {
+    static async list(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -146,7 +146,7 @@ export class FilterController {
      * GET /adminizer/filters/:id
      * Get single filter by ID (UUID string)
      */
-    static async get(req: ReqType, res: ResType) {
+    static async get(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -187,7 +187,7 @@ export class FilterController {
      * POST /adminizer/filters/preview
      * Preview filter results WITHOUT saving
      */
-    static async preview(req: ReqType, res: ResType) {
+    static async preview(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -299,7 +299,7 @@ export class FilterController {
      * POST /adminizer/filters
      * Create new filter
      */
-    static async create(req: ReqType, res: ResType) {
+    static async create(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -419,7 +419,7 @@ export class FilterController {
      * PATCH /adminizer/filters/:id
      * Update filter
      */
-    static async update(req: ReqType, res: ResType) {
+    static async update(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -506,7 +506,7 @@ export class FilterController {
      * DELETE /adminizer/filters/:id
      * Delete filter
      */
-    static async remove(req: ReqType, res: ResType) {
+    static async remove(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -548,7 +548,7 @@ export class FilterController {
      * GET /adminizer/filters/:id/count
      * Get result count for dashboard widget
      */
-    static async count(req: ReqType, res: ResType) {
+    static async count(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -610,7 +610,7 @@ export class FilterController {
      * GET /adminizer/filter/:id
      * Direct link - redirect to list with filter applied
      */
-    static async directLink(req: ReqType, res: ResType) {
+    static async directLink(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -649,7 +649,7 @@ export class FilterController {
      * GET /adminizer/filter/by-slug/:slug
      * Direct link by slug - redirect to list with filter applied
      */
-    static async directLinkBySlug(req: ReqType, res: ResType) {
+    static async directLinkBySlug(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -688,7 +688,7 @@ export class FilterController {
      * GET /adminizer/filters/:id/columns
      * Get columns configuration for a filter
      */
-    static async getColumns(req: ReqType, res: ResType) {
+    static async getColumns(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {
@@ -729,7 +729,7 @@ export class FilterController {
      * PUT /adminizer/filters/:id/columns
      * Update columns configuration for a filter (replaces all)
      */
-    static async updateColumns(req: ReqType, res: ResType) {
+    static async updateColumns(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!FilterController.checkAuth(req, res)) return;
 
         try {

@@ -77,10 +77,10 @@ export class FilterCounterWidget extends InfoBase {
     public readonly description: string;
     public readonly icon: MaterialIcon | string;
     public readonly department: string;
-    public readonly backgroundCSS: string;
-    public readonly size: { h: number; w: number } | null;
-    public readonly link: string;
-    public readonly linkType: 'self' | 'blank';
+    declare public readonly backgroundCSS: string;
+    declare public readonly size: { h: number; w: number } | null;
+    declare public readonly link: string;
+    declare public readonly linkType: 'self' | 'blank';
 
     private readonly adminizer: Adminizer;
     private readonly user: UserAP;

@@ -65,7 +65,7 @@ export class InlineEditController {
      * PATCH /adminizer/model/:model/inline/:id
      * Update a single field of a record inline
      */
-    static async update(req: ReqType, res: ResType) {
+    static async update(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!InlineEditController.checkAuth(req, res)) return;
 
         try {
@@ -173,7 +173,7 @@ export class InlineEditController {
      * PATCH /adminizer/model/:model/inline/batch
      * Update multiple records at once
      */
-    static async batchUpdate(req: ReqType, res: ResType) {
+    static async batchUpdate(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!InlineEditController.checkAuth(req, res)) return;
 
         try {
@@ -322,7 +322,7 @@ export class InlineEditController {
      * GET /adminizer/model/:model/inline/config
      * Get inline editing configuration for a model
      */
-    static async getConfig(req: ReqType, res: ResType) {
+    static async getConfig(req: ReqType, res: ResType): Promise<ResType | void> {
         if (!InlineEditController.checkAuth(req, res)) return;
 
         try {

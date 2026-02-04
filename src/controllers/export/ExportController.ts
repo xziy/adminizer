@@ -1,5 +1,6 @@
 import { Adminizer } from '../../lib/Adminizer';
 import { FilterService } from '../../lib/filters/FilterService';
+import { FilterCondition } from '../../models/FilterAP';
 import { ModernQueryBuilder, QueryParams } from '../../lib/query-builder/ModernQueryBuilder';
 import { DataAccessor } from '../../lib/DataAccessor';
 import { Fields } from '../../helpers/fieldsHelper';
@@ -7,6 +8,7 @@ import { FilterAP } from '../../models/FilterAP';
 import { FilterColumnAP } from '../../models/FilterColumnAP';
 import { BaseFieldConfig } from '../../interfaces/adminpanelConfig';
 import { Readable, Transform } from 'stream';
+import { Entity } from '../../interfaces/types';
 
 /**
  * Export format types
@@ -88,14 +90,31 @@ export class ExportController {
                 });
             }
 
-            // Get entity
-            const entity = req.adminizer.modelHandler.get(modelName);
-            if (!entity) {
+            // Get entity config and model
+            const config = req.adminizer.config.models[modelName];
+            if (!config) {
+                return res.status(404).json({
+                    success: false,
+                    error: `Model '${modelName}' not found in config`
+                });
+            }
+
+            const model = req.adminizer.modelHandler.model.get(config.model);
+            if (!model) {
                 return res.status(404).json({
                     success: false,
                     error: `Model '${modelName}' not found`
                 });
             }
+
+            // Create entity object
+            const entity: Entity = {
+                name: modelName,
+                uri: `${req.adminizer.config.routePrefix}/model/${modelName}`,
+                type: 'model',
+                model,
+                config
+            };
 
             // Check permissions
             if (!req.adminizer.accessRightsHelper.hasPermission(`read-${modelName}-model`, req.user)) {
@@ -422,16 +441,18 @@ export class ExportController {
         filter: FilterAP | null,
         limit: number,
         filename: string
-    ) {
+    ): Promise<void> {
         // Try to load exceljs
         let ExcelJS: any;
         try {
+            // @ts-ignore - exceljs is optional dependency
             ExcelJS = await import('exceljs');
         } catch (e) {
-            return res.status(501).json({
+            res.status(501).json({
                 success: false,
                 error: 'Excel export requires the "exceljs" package. Install it with: npm install exceljs'
             });
+            return;
         }
 
         // Create workbook
