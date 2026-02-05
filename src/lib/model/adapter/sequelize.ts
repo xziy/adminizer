@@ -485,7 +485,8 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             limit,
             offset,
             order,
-            include: includes
+            include: includes,
+            attributes: options.select
         });
 
 

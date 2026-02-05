@@ -92,7 +92,8 @@ export class ModernQueryBuilder {
                 where: whereClause,
                 sort: orderClause,
                 limit: params.limit,
-                skip: offset
+                skip: offset,
+                select: params.fields
             }, this.dataAccessor),
             this.model.count({}, this.dataAccessor),
             this.model.count(whereClause, this.dataAccessor)

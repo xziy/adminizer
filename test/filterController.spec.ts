@@ -6,7 +6,9 @@ const createMockRes = () => {
   const res = {
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
-    redirect: vi.fn().mockReturnThis()
+    redirect: vi.fn().mockReturnThis(),
+    setHeader: vi.fn().mockReturnThis(),
+    send: vi.fn().mockReturnThis()
   };
   return res as any;
 };
@@ -132,6 +134,11 @@ describe('FilterController', () => {
       // Test expected behavior
       // In unit test without full mocking, we verify the controller structure
       expect(FilterController.get).toBeDefined();
+    });
+
+    it('has serializeFilterToXml method', () => {
+      expect(FilterController.serializeFilterToXml).toBeDefined();
+      expect(typeof FilterController.serializeFilterToXml).toBe('function');
     });
   });
 

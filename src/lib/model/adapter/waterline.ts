@@ -78,6 +78,10 @@ export class WaterlineModel<T> extends AbstractModel<T> {
             query = await this.populateAll(query, this.model);
         }
 
+        if (options.select && Array.isArray(options.select)) {
+            query = query.select(options.select);
+        }
+
         if (options.limit && typeof options.limit === "number") {
             query = query.limit(options.limit);
         }

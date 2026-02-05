@@ -26,6 +26,7 @@ interface FilterAPAttributes {
   modelName: string;               // Target model name
   slug: string;                    // Unique slug for URL/API
   conditions: FilterCondition[];   // Filter conditions
+  selectedFields?: string[];       // Fields to select from database
   sortField?: string;              // Sort field
   sortDirection?: 'ASC' | 'DESC';  // Sort direction
   visibility: 'private' | 'public' | 'groups' | 'system';
@@ -176,6 +177,47 @@ Filters can be accessed via public API with API keys:
 
 ```
 GET /api/public/filters/:apiKey/data?model=UserAP
+```
+
+### XML Export
+
+Filter configurations can be exported in XML format by setting the `Accept` header:
+
+```
+GET /adminizer/filters/:id
+Accept: application/xml
+```
+
+The XML response includes all filter metadata and conditions in a structured format:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<filter>
+  <id>uuid-string</id>
+  <name>Filter Name</name>
+  <description>Optional description</description>
+  <modelName>UserAP</modelName>
+  <slug>filter-slug</slug>
+  <visibility>private</visibility>
+  <owner>1</owner>
+  <isSystemFilter>false</isSystemFilter>
+  <apiEnabled>true</apiEnabled>
+  <apiKey>generated-api-key</apiKey>
+  <isPinned>false</isPinned>
+  <version>1</version>
+  <createdAt>2024-01-01T00:00:00.000Z</createdAt>
+  <updatedAt>2024-01-01T00:00:00.000Z</updatedAt>
+  <conditions>
+    <condition>
+      <id>condition-uuid</id>
+      <field>name</field>
+      <operator>like</operator>
+      <value>"John"</value>
+    </condition>
+  </conditions>
+  <sortField>name</sortField>
+  <sortDirection>ASC</sortDirection>
+</filter>
 ```
 
 ## Access Control

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import MultiSelect from "@/components/multi-select";
 import {
     Select,
     SelectContent,
@@ -97,6 +98,7 @@ export function FilterDialog({
     const [apiEnabled, setApiEnabled] = useState(false);
     const [sortField, setSortField] = useState<string>("");
     const [sortDirection, setSortDirection] = useState<"ASC" | "DESC">("DESC");
+    const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
     // Filter builder state
     const {
@@ -113,6 +115,19 @@ export function FilterDialog({
         reset: resetColumns,
     } = useColumnSelector(filter?.columns || []);
 
+    const fieldOptions = useMemo(() => {
+        if (availableColumns && availableColumns.length > 0) {
+            return availableColumns.map((field) => ({
+                label: field.label || field.name,
+                value: field.name
+            }));
+        }
+        return fields.map((field) => ({
+            label: field.label || field.name,
+            value: field.name
+        }));
+    }, [availableColumns, fields]);
+
     // UI state
     const [activeTab, setActiveTab] = useState("conditions");
     const [isSaving, setIsSaving] = useState(false);
@@ -123,6 +138,7 @@ export function FilterDialog({
     useEffect(() => {
         if (open) {
             console.log('FilterDialog opened with:', { filter, fields, availableColumns });
+            const allowedFields = new Set(fieldOptions.map((option) => option.value));
             setName(filter?.name || "");
             setDescription(filter?.description || "");
             setVisibility(filter?.visibility || "private");
@@ -134,10 +150,11 @@ export function FilterDialog({
             setSortDirection(filter?.sort?.direction || "DESC");
             setConditions(filter?.conditions || []);
             setColumns(filter?.columns || availableColumns || []);
+            setSelectedFields((filter?.selectedFields || []).filter((field) => allowedFields.has(field)));
             setError(null);
             setActiveTab("conditions");
         }
-    }, [open, filter, fields, availableColumns, setConditions, setColumns]);
+    }, [open, filter, fields, availableColumns, fieldOptions, setConditions, setColumns]);
 
     // Auto-generate slug from name
     const handleNameChange = useCallback((newName: string) => {
@@ -179,6 +196,7 @@ export function FilterDialog({
             modelName,
             conditions: validConditions,
             columns: columns.length > 0 ? columns : undefined,
+            selectedFields,
             visibility,
             sharedGroups: visibility === "groups" ? sharedGroups : undefined,
             slug: slug.trim() || undefined,
@@ -197,6 +215,7 @@ export function FilterDialog({
         modelName,
         getValidConditions,
         columns,
+        selectedFields,
         visibility,
         sharedGroups,
         slug,
@@ -468,6 +487,23 @@ export function FilterDialog({
                                             </Select>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Selected Fields */}
+                                <div className="space-y-2">
+                                    <Label>{labels.selectedFieldsLabel}</Label>
+                                    <MultiSelect
+                                        options={fieldOptions}
+                                        defaultValue={selectedFields}
+                                        onValueChange={setSelectedFields}
+                                        placeholder={labels.selectedFieldsPlaceholder}
+                                        search={labels.selectedFieldsSearch}
+                                        notFound={labels.selectedFieldsEmpty}
+                                        maxCount={6}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        {labels.selectedFieldsHelp}
+                                    </p>
                                 </div>
 
                                 {/* Pin to sidebar */}

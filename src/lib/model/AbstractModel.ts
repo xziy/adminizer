@@ -37,6 +37,7 @@ type PopulateOption = [string, { sort?: string, where?: any }];
 export interface FindOptions {
     populate?: PopulateOption[]
     limit?: number
+    select?: string[]
 }
 
 export abstract class AbstractModel<T> {

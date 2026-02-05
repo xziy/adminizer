@@ -204,7 +204,10 @@ export class FilterApiController {
                 limit,
                 sort: filter.sortField || 'createdAt',
                 sortDirection: filter.sortDirection || 'DESC',
-                filters: filter.conditions || []
+                filters: filter.conditions || [],
+                fields: Array.isArray(filter.selectedFields) && filter.selectedFields.length > 0
+                    ? filter.selectedFields
+                    : undefined
             };
 
             // Execute query

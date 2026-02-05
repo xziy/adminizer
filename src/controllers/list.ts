@@ -35,9 +35,6 @@ export default async function list(req: ReqType, res: ResType) {
     const orderColumn = req.query.column ? req.query.column.toString() : undefined;
     const direction = req.query.direction === "asc" ? 'ASC' : 'DESC';
 
-    // Convert column index to field name
-    const sortField = orderColumn ? getFieldNameByIndex(fields, parseInt(orderColumn, 10)) : undefined;
-
     // Parse global search
     const globalSearch = req.query.globalSearch ? req.query.globalSearch.toString() : "";
 
@@ -97,22 +94,35 @@ export default async function list(req: ReqType, res: ResType) {
         filters = [...savedFilter.conditions];
     }
 
-    // Add column search conditions on top
-    const searchFilters = buildFiltersFromSearchPairs(fields, searchPairs);
-    filters = [...filters, ...searchFilters];
+    const identifierField = entity.config?.identifierField || req.adminizer.config.identifierField || 'id';
+    const selectedFieldNames = normalizeSelectedFields(savedFilter?.selectedFields, fields);
+    const queryFieldNames = addRequiredFields(selectedFieldNames, fields, [identifierField]);
+
+    // Apply selected fields (if provided)
+    let availableFields = fields;
+    if (selectedFieldNames) {
+        availableFields = filterFieldsByNames(fields, selectedFieldNames);
+    }
 
     // Apply custom columns if filter has them
-    let displayFields = fields;
+    let displayFields = availableFields;
     let customColumnsConfig: FilterColumnAP[] | null = null;
 
     if (savedColumns.length > 0) {
         customColumnsConfig = savedColumns;
         // Filter and reorder fields based on custom column configuration
-        displayFields = applyCustomColumns(fields, savedColumns);
+        displayFields = applyCustomColumns(availableFields, savedColumns);
     }
 
     // Prepare columns for frontend
     const columns = setColumns(displayFields, orderColumn, direction.toLowerCase() as 'asc' | 'desc', searchPairs, req);
+
+    // Convert column index to field name based on display fields
+    const sortField = orderColumn ? getFieldNameByIndex(displayFields, parseInt(orderColumn, 10)) : undefined;
+
+    // Add column search conditions on top (use display fields for column index mapping)
+    const searchFilters = buildFiltersFromSearchPairs(displayFields, searchPairs);
+    filters = [...filters, ...searchFilters];
 
     // Determine sort field - prefer URL param, then filter setting
     let effectiveSortField = sortField;
@@ -130,7 +140,8 @@ export default async function list(req: ReqType, res: ResType) {
         sort: effectiveSortField,
         sortDirection: effectiveSortDirection,
         filters,
-        globalSearch: globalSearch || undefined
+        globalSearch: globalSearch || undefined,
+        fields: queryFieldNames
     };
 
     // Execute query using ModernQueryBuilder (use original fields for query, displayFields for output)
@@ -219,6 +230,63 @@ function applyCustomColumns(fields: Fields, columns: FilterColumnAP[]): Fields {
         }
     }
 
+    return result;
+}
+
+/**
+ * Normalize selected fields and ensure required fields are present
+ */
+function normalizeSelectedFields(
+    selectedFields: string[] | undefined,
+    fields: Fields
+): string[] | undefined {
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+        return undefined;
+    }
+
+    const cleanedFields = selectedFields
+        .filter((field) => typeof field === 'string')
+        .map((field) => field.trim())
+        .filter((field) => field.length > 0);
+
+    if (cleanedFields.length === 0) {
+        return undefined;
+    }
+
+    const uniqueFields = Array.from(new Set(cleanedFields));
+    const validFields = uniqueFields.filter((field) => !!fields[field]);
+
+    return validFields.length > 0 ? validFields : undefined;
+}
+
+/**
+ * Ensure required fields are included for query execution
+ */
+function addRequiredFields(
+    selectedFields: string[] | undefined,
+    fields: Fields,
+    requiredFields: string[]
+): string[] | undefined {
+    if (!selectedFields || selectedFields.length === 0) {
+        return undefined;
+    }
+
+    const uniqueFields = Array.from(new Set([...selectedFields, ...requiredFields]));
+    const validFields = uniqueFields.filter((field) => !!fields[field]);
+
+    return validFields.length > 0 ? validFields : undefined;
+}
+
+/**
+ * Filter fields object by allowed field names
+ */
+function filterFieldsByNames(fields: Fields, names: string[]): Fields {
+    const result: Fields = {};
+    for (const name of names) {
+        if (fields[name]) {
+            result[name] = fields[name];
+        }
+    }
     return result;
 }
 

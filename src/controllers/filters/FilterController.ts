@@ -4,6 +4,7 @@ import { ConditionValidator } from '../../lib/filters/ConditionValidator';
 import { ModernQueryBuilder, QueryParams } from '../../lib/query-builder/ModernQueryBuilder';
 import { DataAccessor } from '../../lib/DataAccessor';
 import { ControllerHelper } from '../../helpers/controllerHelper';
+import { Fields } from '../../helpers/fieldsHelper';
 import { FilterAP, FilterCondition } from '../../models/FilterAP';
 import { Entity } from '../../interfaces/types';
 
@@ -175,6 +176,13 @@ export class FilterController {
                 });
             }
 
+            // Check Accept header for XML response
+            const accept = req.headers.accept || '';
+            if (accept.includes('application/xml') || accept.includes('text/xml')) {
+                res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+                return res.send(FilterController.serializeFilterToXml(filter));
+            }
+
             return res.json({
                 success: true,
                 data: filter
@@ -200,6 +208,7 @@ export class FilterController {
             const {
                 modelName,
                 conditions,
+                selectedFields,
                 page = 1,
                 limit = 25,
                 sort,
@@ -233,17 +242,17 @@ export class FilterController {
                 });
             }
 
-            // Validate conditions (including rawSQL protection)
-            if (conditions && conditions.length > 0) {
-                const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
-                const fields = dataAccessor.getFieldsConfig();
-                const fieldsConfig = Object.fromEntries(
-                    Object.entries(fields).map(([key, field]: [string, any]) => [
-                        key,
-                        { type: field.model?.type || 'string' }
-                    ])
-                );
+            // Validate conditions and selected fields
+            const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
+            const fields = dataAccessor.getFieldsConfig();
+            const fieldsConfig = Object.fromEntries(
+                Object.entries(fields).map(([key, field]: [string, any]) => [
+                    key,
+                    { type: field.model?.type || 'string' }
+                ])
+            );
 
+            if (conditions && conditions.length > 0) {
                 const validator = new ConditionValidator(fieldsConfig);
 
                 // Check for rawSQL in conditions (admin-only)
@@ -265,16 +274,24 @@ export class FilterController {
                 }
             }
 
-            // Execute query
-            const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
-            const fields = dataAccessor.getFieldsConfig();
+            const selectedFieldsValidation = FilterController.validateSelectedFields(selectedFields, fields);
+            if (!selectedFieldsValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    error: selectedFieldsValidation.error || 'Invalid selectedFields'
+                });
+            }
 
+            // Execute query
             const queryParams: QueryParams = {
                 page: Math.max(1, page),
                 limit: Math.min(100, Math.max(1, limit)),
                 sort: sort || undefined,
                 sortDirection: sortDirection || 'DESC',
-                filters: conditions || []
+                filters: conditions || [],
+                fields: selectedFieldsValidation.fields && selectedFieldsValidation.fields.length > 0
+                    ? selectedFieldsValidation.fields
+                    : undefined
             };
 
             const queryBuilder = new ModernQueryBuilder(entity.model, fields, dataAccessor);
@@ -315,6 +332,7 @@ export class FilterController {
                 modelName,
                 slug,
                 conditions,
+                selectedFields,
                 sortField,
                 sortDirection,
                 visibility,
@@ -343,6 +361,24 @@ export class FilterController {
                 });
             }
 
+            // Get entity for validation
+            const entity = FilterController.getEntityByModelName(req, modelName);
+            if (!entity || !entity.model) {
+                return res.status(404).json({
+                    success: false,
+                    error: `Model '${modelName}' not found`
+                });
+            }
+
+            const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
+            const fields = dataAccessor.getFieldsConfig();
+            const fieldsConfig = Object.fromEntries(
+                Object.entries(fields).map(([key, field]: [string, any]) => [
+                    key,
+                    { type: field.model?.type || 'string' }
+                ])
+            );
+
             // Validate conditions
             if (conditions && conditions.length > 0) {
                 // Check for rawSQL (admin-only)
@@ -354,29 +390,24 @@ export class FilterController {
                     });
                 }
 
-                // Get entity for validation
-                const entity = FilterController.getEntityByModelName(req, modelName);
-                if (entity && entity.model) {
-                    const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
-                    const fields = dataAccessor.getFieldsConfig();
-                    const fieldsConfig = Object.fromEntries(
-                        Object.entries(fields).map(([key, field]: [string, any]) => [
-                            key,
-                            { type: field.model?.type || 'string' }
-                        ])
-                    );
+                const validator = new ConditionValidator(fieldsConfig);
+                const validation = validator.validate(conditions);
 
-                    const validator = new ConditionValidator(fieldsConfig);
-                    const validation = validator.validate(conditions);
-
-                    if (!validation.valid) {
-                        return res.status(400).json({
-                            success: false,
-                            error: 'Invalid filter conditions',
-                            validation
-                        });
-                    }
+                if (!validation.valid) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Invalid filter conditions',
+                        validation
+                    });
                 }
+            }
+
+            const selectedFieldsValidation = FilterController.validateSelectedFields(selectedFields, fields);
+            if (!selectedFieldsValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    error: selectedFieldsValidation.error || 'Invalid selectedFields'
+                });
             }
 
             // Generate slug if not provided
@@ -392,6 +423,7 @@ export class FilterController {
                 modelName,
                 slug: filterSlug,
                 conditions: conditions || [],
+                selectedFields: selectedFieldsValidation.fields,
                 sortField,
                 sortDirection,
                 visibility: visibility || 'private',
@@ -436,6 +468,7 @@ export class FilterController {
                 description,
                 slug,
                 conditions,
+                selectedFields,
                 sortField,
                 sortDirection,
                 visibility,
@@ -464,6 +497,23 @@ export class FilterController {
                 });
             }
 
+            const entity = FilterController.getEntityByModelName(req, existingFilter.modelName);
+            if (!entity || !entity.model) {
+                return res.status(404).json({
+                    success: false,
+                    error: `Model '${existingFilter.modelName}' not found`
+                });
+            }
+
+            const dataAccessor = new DataAccessor(req.adminizer, req.user, entity, 'list');
+            const fields = dataAccessor.getFieldsConfig();
+            const fieldsConfig = Object.fromEntries(
+                Object.entries(fields).map(([key, field]: [string, any]) => [
+                    key,
+                    { type: field.model?.type || 'string' }
+                ])
+            );
+
             // Validate conditions if provided
             if (conditions && conditions.length > 0) {
                 // Check for rawSQL (admin-only)
@@ -474,6 +524,25 @@ export class FilterController {
                         error: 'Raw SQL conditions are only allowed for administrators'
                     });
                 }
+
+                const validator = new ConditionValidator(fieldsConfig);
+                const validation = validator.validate(conditions);
+
+                if (!validation.valid) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Invalid filter conditions',
+                        validation
+                    });
+                }
+            }
+
+            const selectedFieldsValidation = FilterController.validateSelectedFields(selectedFields, fields);
+            if (!selectedFieldsValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    error: selectedFieldsValidation.error || 'Invalid selectedFields'
+                });
             }
 
             // Build update data
@@ -482,6 +551,7 @@ export class FilterController {
             if (description !== undefined) updateData.description = description;
             if (slug !== undefined) updateData.slug = slug;
             if (conditions !== undefined) updateData.conditions = conditions;
+            if (selectedFields !== undefined) updateData.selectedFields = selectedFieldsValidation.fields;
             if (sortField !== undefined) updateData.sortField = sortField;
             if (sortDirection !== undefined) updateData.sortDirection = sortDirection;
             if (visibility !== undefined) updateData.visibility = visibility;
@@ -804,6 +874,53 @@ export class FilterController {
     }
 
     /**
+     * Validate selected fields against model fields config
+     */
+    private static validateSelectedFields(
+        selectedFields: any,
+        fields: Fields
+    ): { valid: boolean; fields?: string[]; error?: string } {
+        if (selectedFields === undefined) {
+            return { valid: true };
+        }
+
+        if (selectedFields === null) {
+            return { valid: true, fields: [] };
+        }
+
+        if (!Array.isArray(selectedFields)) {
+            return {
+                valid: false,
+                error: 'selectedFields must be an array of field names'
+            };
+        }
+
+        const cleanedFields = selectedFields
+            .filter((field) => typeof field === 'string')
+            .map((field) => field.trim())
+            .filter((field) => field.length > 0);
+
+        if (cleanedFields.length !== selectedFields.length) {
+            return {
+                valid: false,
+                error: 'selectedFields must contain only non-empty strings'
+            };
+        }
+
+        const uniqueFields = Array.from(new Set(cleanedFields));
+        const invalidFields = uniqueFields.filter((field) => !fields[field]);
+
+        if (invalidFields.length > 0) {
+            return {
+                valid: false,
+                error: `Unknown fields in selectedFields: ${invalidFields.join(', ')}`
+            };
+        }
+
+        return { valid: true, fields: uniqueFields };
+    }
+
+    /**
      * Generate unique slug with retry
      */
     private static async generateSlug(
@@ -1006,6 +1123,125 @@ export class FilterController {
                 error: error.message
             });
         }
+    }
+
+    /**
+     * Serialize filter to XML format
+     */
+    private static serializeFilterToXml(filter: FilterAP): string {
+        const escapeXml = (str: string): string => {
+            return str.replace(/[<>&'"]/g, (char) => {
+                switch (char) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case "'": return '&#39;';
+                    case '"': return '&quot;';
+                    default: return char;
+                }
+            });
+        };
+
+        const serializeCondition = (condition: FilterCondition, indent: string = ''): string => {
+            let xml = `${indent}<condition>\n`;
+            xml += `${indent}  <id>${escapeXml(condition.id)}</id>\n`;
+            xml += `${indent}  <field>${escapeXml(condition.field)}</field>\n`;
+            xml += `${indent}  <operator>${escapeXml(condition.operator)}</operator>\n`;
+            xml += `${indent}  <value>${escapeXml(JSON.stringify(condition.value))}</value>\n`;
+            if (condition.logic) {
+                xml += `${indent}  <logic>${escapeXml(condition.logic)}</logic>\n`;
+            }
+            if (condition.relation) {
+                xml += `${indent}  <relation>${escapeXml(condition.relation)}</relation>\n`;
+            }
+            if (condition.relationField) {
+                xml += `${indent}  <relationField>${escapeXml(condition.relationField)}</relationField>\n`;
+            }
+            if (condition.customHandler) {
+                xml += `${indent}  <customHandler>${escapeXml(condition.customHandler)}</customHandler>\n`;
+            }
+            if (condition.customHandlerParams) {
+                xml += `${indent}  <customHandlerParams>${escapeXml(JSON.stringify(condition.customHandlerParams))}</customHandlerParams>\n`;
+            }
+            if (condition.rawSQL) {
+                xml += `${indent}  <rawSQL>${escapeXml(condition.rawSQL)}</rawSQL>\n`;
+            }
+            if (condition.rawSQLParams) {
+                xml += `${indent}  <rawSQLParams>${escapeXml(JSON.stringify(condition.rawSQLParams))}</rawSQLParams>\n`;
+            }
+            if (condition.children && condition.children.length > 0) {
+                xml += `${indent}  <children>\n`;
+                condition.children.forEach(child => {
+                    xml += serializeCondition(child, indent + '    ');
+                });
+                xml += `${indent}  </children>\n`;
+            }
+            xml += `${indent}</condition>\n`;
+            return xml;
+        };
+
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<filter>\n';
+        xml += `  <id>${escapeXml(filter.id)}</id>\n`;
+        xml += `  <name>${escapeXml(filter.name)}</name>\n`;
+        if (filter.description) {
+            xml += `  <description>${escapeXml(filter.description)}</description>\n`;
+        }
+        xml += `  <modelName>${escapeXml(filter.modelName)}</modelName>\n`;
+        xml += `  <slug>${escapeXml(filter.slug)}</slug>\n`;
+        xml += `  <visibility>${escapeXml(filter.visibility)}</visibility>\n`;
+        xml += `  <owner>${filter.owner}</owner>\n`;
+        if (filter.groupIds && filter.groupIds.length > 0) {
+            xml += '  <groupIds>\n';
+            filter.groupIds.forEach(groupId => {
+                xml += `    <groupId>${groupId}</groupId>\n`;
+            });
+            xml += '  </groupIds>\n';
+        }
+        xml += `  <isSystemFilter>${filter.isSystemFilter ? 'true' : 'false'}</isSystemFilter>\n`;
+        xml += `  <apiEnabled>${filter.apiEnabled ? 'true' : 'false'}</apiEnabled>\n`;
+        if (filter.apiKey) {
+            xml += `  <apiKey>${escapeXml(filter.apiKey)}</apiKey>\n`;
+        }
+        if (filter.icon) {
+            xml += `  <icon>${escapeXml(filter.icon)}</icon>\n`;
+        }
+        if (filter.color) {
+            xml += `  <color>${escapeXml(filter.color)}</color>\n`;
+        }
+        xml += `  <isPinned>${filter.isPinned ? 'true' : 'false'}</isPinned>\n`;
+        xml += `  <version>${filter.version}</version>\n`;
+        if (filter.schemaVersion) {
+            xml += `  <schemaVersion>${escapeXml(filter.schemaVersion)}</schemaVersion>\n`;
+        }
+        xml += `  <createdAt>${filter.createdAt.toISOString()}</createdAt>\n`;
+        xml += `  <updatedAt>${filter.updatedAt.toISOString()}</updatedAt>\n`;
+
+        if (filter.conditions && filter.conditions.length > 0) {
+            xml += '  <conditions>\n';
+            filter.conditions.forEach(condition => {
+                xml += serializeCondition(condition, '    ');
+            });
+            xml += '  </conditions>\n';
+        }
+
+        if (filter.selectedFields && filter.selectedFields.length > 0) {
+            xml += '  <selectedFields>\n';
+            filter.selectedFields.forEach(fieldName => {
+                xml += `    <field>${escapeXml(fieldName)}</field>\n`;
+            });
+            xml += '  </selectedFields>\n';
+        }
+
+        if (filter.sortField) {
+            xml += `  <sortField>${escapeXml(filter.sortField)}</sortField>\n`;
+        }
+        if (filter.sortDirection) {
+            xml += `  <sortDirection>${escapeXml(filter.sortDirection)}</sortDirection>\n`;
+        }
+
+        xml += '</filter>\n';
+        return xml;
     }
 }
 

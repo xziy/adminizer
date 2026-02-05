@@ -21,7 +21,7 @@ import {generatePagination} from "@/lib/pagination.ts";
 import PaginationRender from "@/components/pagination-render.tsx";
 import {FilterSidebar} from "@/components/filter-sidebar";
 import {SavedFilter} from "@/components/filter-sidebar/types";
-import {FilterDialog} from "@/components/filter-dialog";
+import {FilterDialog, type FilterDialogFilter} from "@/components/filter-dialog";
 
 interface Action {
     id: string,
@@ -81,7 +81,7 @@ const ListTable = () => {
     const [currentFilterId, setCurrentFilterId] = useState<string | null>(null)
     const [filtersLoading, setFiltersLoading] = useState(false)
     const [showFilterDialog, setShowFilterDialog] = useState(false)
-    const [editingFilter, setEditingFilter] = useState<SavedFilter | null>(null)
+    const [editingFilter, setEditingFilter] = useState<FilterDialogFilter | null>(null)
 
     // Ref для хранения параметров поиска по колонкам
     const queryColumnsRef = useRef<{ key: string, value: string }[]>([])
@@ -267,10 +267,22 @@ const ListTable = () => {
         setShowFilterDialog(true)
     }, [])
 
-    const handleEditFilter = useCallback((filter: SavedFilter) => {
+    const handleEditFilter = useCallback(async (filter: SavedFilter) => {
         console.log('handleEditFilter called with:', filter)
-        setEditingFilter(filter)
+        setEditingFilter(null)
         setShowFilterDialog(true)
+        try {
+            const axios = (await import('axios')).default
+            const response = await axios.get(`/adminizer/filters/${filter.id}`)
+            if (response.data?.success) {
+                setEditingFilter(response.data.data)
+            } else {
+                throw new Error(response.data?.error || 'Failed to load filter')
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || error.message || 'Failed to load filter')
+            setShowFilterDialog(false)
+        }
     }, [])
 
     const handleSaveFilter = useCallback(async (filterData: any) => {

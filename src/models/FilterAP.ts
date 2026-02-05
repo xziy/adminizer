@@ -82,6 +82,9 @@ export default {
     conditions: {
         type: "json"
     },
+    selectedFields: {
+        type: "json"
+    },
     sortField: {
         type: "string"
     },
@@ -151,6 +154,7 @@ export interface FilterAP {
 
     // Filter conditions (JSON)
     conditions: FilterCondition[];
+    selectedFields?: string[];       // Fields to select from database
 
     // Display settings
     sortField?: string;

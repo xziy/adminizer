@@ -43,6 +43,7 @@ export interface FilterDefinition {
     modelName: string;
     description?: string;
     conditions: FilterCondition[];
+    selectedFields?: string[];
     sortField?: string;
     sortDirection?: 'ASC' | 'DESC';
     visibility?: FilterVisibility;
@@ -357,6 +358,14 @@ export class FilterBuilder {
     }
 
     /**
+     * Select specific fields to retrieve from database
+     */
+    selectFields(fields: string[]): FilterBuilder {
+        this.filterData.selectedFields = fields;
+        return this;
+    }
+
+    /**
      * Set as private filter (default)
      */
     asPrivate(): FilterBuilder {
@@ -648,6 +657,11 @@ export class FilterBuilder {
                 // Set sort
                 if (definition.sortField) {
                     builder.sortBy(definition.sortField, definition.sortDirection || 'DESC');
+                }
+
+                // Set selected fields
+                if (definition.selectedFields) {
+                    builder.selectFields(definition.selectedFields);
                 }
 
                 // Set visibility

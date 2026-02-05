@@ -143,7 +143,10 @@ export class FilterService {
             limit: options?.limit || 10,
             sort: options?.sort || filter.sortField || 'createdAt',
             sortDirection: options?.sortDirection || filter.sortDirection || 'DESC',
-            filters: filter.conditions || []
+            filters: filter.conditions || [],
+            fields: Array.isArray(filter.selectedFields) && filter.selectedFields.length > 0
+                ? filter.selectedFields
+                : undefined
         };
 
         // 4. Create QueryBuilder

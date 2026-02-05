@@ -14,6 +14,7 @@ export interface FilterDialogFilter {
     modelName: string;
     conditions: FilterCondition[];
     columns?: ColumnConfig[];
+    selectedFields?: string[];
     visibility: FilterVisibility;
     sharedGroups?: string[];
     slug?: string;
@@ -79,6 +80,11 @@ export interface FilterDialogLabels {
     sortAsc: string;
     sortDesc: string;
     noSort: string;
+    selectedFieldsLabel: string;
+    selectedFieldsPlaceholder: string;
+    selectedFieldsHelp: string;
+    selectedFieldsSearch: string;
+    selectedFieldsEmpty: string;
     save: string;
     cancel: string;
     preview: string;
@@ -116,6 +122,11 @@ export const defaultFilterDialogLabels: FilterDialogLabels = {
     sortAsc: 'Ascending',
     sortDesc: 'Descending',
     noSort: 'No default sort',
+    selectedFieldsLabel: 'Fields to load',
+    selectedFieldsPlaceholder: 'Select fields...',
+    selectedFieldsHelp: 'Leave empty to load all fields',
+    selectedFieldsSearch: 'Search fields...',
+    selectedFieldsEmpty: 'No fields found',
     save: 'Save Filter',
     cancel: 'Cancel',
     preview: 'Preview',
