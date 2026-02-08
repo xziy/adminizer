@@ -17,6 +17,10 @@
 - **`npm run build`**  
   Full build process: copies backend, compiles backend, and builds assets.
 
+## Testing
+- **`npm test`**
+  Runs the full test suite (unit + integration). Filters API integration tests start an in-memory Waterline server and use the `x-test-user` header to emulate users.
+
 ## Module-specific Builds (this is just for tests, as an example, you should create your own commands to build modules)
 - **`npm run build:module`**  
   Builds test modules using a custom Vite config.

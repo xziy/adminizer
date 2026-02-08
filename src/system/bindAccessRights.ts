@@ -83,6 +83,97 @@ export default async function bindAccessRights(adminizer: Adminizer) {
         department: "Admin panel"
     });
 
+    // Filters & Public API tokens
+    const filtersDepartment = "Filters";
+    adminizer.accessRightsHelper.registerToken({
+        id: "create-filter",
+        name: "Create Filter",
+        description: "Allows user to create filters",
+        department: filtersDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "read-filter",
+        name: "Read Filters",
+        description: "Allows user to view filters",
+        department: filtersDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "update-filter",
+        name: "Update Filter",
+        description: "Allows user to update filters",
+        department: filtersDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "delete-filter",
+        name: "Delete Filter",
+        description: "Allows user to delete filters",
+        department: filtersDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "publish-filter",
+        name: "Publish Filter",
+        description: "Allows user to publish filters",
+        department: filtersDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "share-filter",
+        name: "Share Filter",
+        description: "Allows user to share filters",
+        department: filtersDepartment
+    });
+
+    const publicApiDepartment = "Public API";
+    adminizer.accessRightsHelper.registerToken({
+        id: "api-token-create",
+        name: "Create API Token",
+        description: "Allows user to create or regenerate API token",
+        department: publicApiDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "api-public-access",
+        name: "Public API Access",
+        description: "Allows access to public API endpoints",
+        department: publicApiDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "api-token-view",
+        name: "View API Token",
+        description: "Allows user to view API token",
+        department: publicApiDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "api-token-revoke",
+        name: "Revoke API Token",
+        description: "Allows user to revoke API token",
+        department: publicApiDepartment
+    });
+
+    const exportDepartment = "Data Export";
+    adminizer.accessRightsHelper.registerToken({
+        id: "export-json",
+        name: "Export JSON",
+        description: "Allows exporting data to JSON",
+        department: exportDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "export-excel",
+        name: "Export Excel",
+        description: "Allows exporting data to Excel",
+        department: exportDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "export-feed",
+        name: "Export Feed",
+        description: "Allows exporting data to Atom/RSS",
+        department: exportDepartment
+    });
+    adminizer.accessRightsHelper.registerToken({
+        id: "export-bulk",
+        name: "Export Bulk",
+        description: "Allows bulk export operations",
+        department: exportDepartment
+    });
+
     // Default user group
     if (adminizer.config.registration && adminizer.config.registration.enable) {
         // TODO refactor CRUD functions for DataAccessor usage

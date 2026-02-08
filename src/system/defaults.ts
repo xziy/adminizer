@@ -63,6 +63,8 @@ let adminpanelConfig: AdminpanelConfig = {
                 password: {
                     title: 'Password',
                 },
+                apiToken: false,
+                apiTokenCreatedAt: false,
                 isAdministrator: {
                     title: 'is administrator'
                 },
@@ -81,7 +83,9 @@ let adminpanelConfig: AdminpanelConfig = {
                     locale: false,
                     isDeleted: false,
                     isActive: false,
-                    groups: false
+                    groups: false,
+                    apiToken: false,
+                    apiTokenCreatedAt: false
                 }
             }
         },
@@ -103,6 +107,41 @@ let adminpanelConfig: AdminpanelConfig = {
                     createdAt: false,
                     updatedAt: false,
                     id: false,
+                }
+            }
+        },
+        FilterAP: {
+            title: "Filters",
+            model: "filterap",
+            icon: "filter_alt",
+            navbar: {
+                visible: false,
+                section: "System"
+            },
+            userAccessRelation: "owner",
+            list: {
+                fields: {
+                    conditions: false,
+                    groupIds: false,
+                    apiKey: false,
+                    schemaVersion: false,
+                    createdAt: false,
+                    updatedAt: false
+                }
+            }
+        },
+        FilterColumnAP: {
+            title: "Filter Columns",
+            model: "filtercolumnap",
+            icon: "view_column",
+            navbar: {
+                visible: false,
+                section: "System"
+            },
+            list: {
+                fields: {
+                    createdAt: false,
+                    updatedAt: false
                 }
             }
         }
@@ -158,6 +197,7 @@ let adminpanelConfig: AdminpanelConfig = {
     notifications: {
         enabled: false
     },
+    filtersEnabled: true,
     aiAssistant: {
         enabled: false,
         defaultModel: 'dummy',

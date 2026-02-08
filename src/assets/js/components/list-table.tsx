@@ -4,7 +4,7 @@ import {DataTable} from "@/components/table/data-table"
 import {Link, router, usePage} from "@inertiajs/react";
 import {ColumnDef} from "@tanstack/react-table";
 import {Button} from "@/components/ui/button.tsx";
-import {BetweenHorizontalStart, Eye, Pencil, SquarePlus, Search, RefreshCcw} from "lucide-react";
+import {BetweenHorizontalStart, Download, Eye, Pencil, SquarePlus, Search, RefreshCcw} from "lucide-react";
 import {Icon} from "@/components/icon.tsx";
 import MaterialIcon from "@/components/material-icon.tsx";
 import {DropdownMenu} from "@radix-ui/react-dropdown-menu";
@@ -19,6 +19,18 @@ import DeleteModal from "@/components/modals/del-modal.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {generatePagination} from "@/lib/pagination.ts";
 import PaginationRender from "@/components/pagination-render.tsx";
+import FilterMigrationAlert from "@/components/filter-migration-alert";
+import ColumnSelector, { type ColumnConfig, type ColumnFieldInfo } from "@/components/column-selector";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+import axios from "axios";
 
 interface Action {
     id: string,
@@ -35,6 +47,13 @@ interface ExtendedSharedData extends SharedData {
         recordsFiltered: number
     }
     columns: Columns,
+    identifierField?: string,
+    filtersEnabled?: boolean,
+    useLegacySearch?: boolean,
+    appliedFilter?: string,
+    appliedFilterId?: string,
+    filterColumnFields?: ColumnFieldInfo[],
+    filterColumns?: ColumnConfig[],
     header: {
         actions: Action[],
         inlineActions: Action[],
@@ -63,7 +82,17 @@ interface ExtendedSharedData extends SharedData {
 const ListTable = () => {
     const page = usePage<ExtendedSharedData>()
     const data = page.props.data
+    const rowIdKey = page.props.identifierField ?? "id"
+    const appliedFilterId = page.props.appliedFilterId
+    const availableColumnFields = page.props.filterColumnFields ?? []
+    const savedFilterColumns = page.props.filterColumns ?? []
     const [loading, setLoading] = useState(false)
+    const [columnDialogOpen, setColumnDialogOpen] = useState(false)
+    const [columnSaving, setColumnSaving] = useState(false)
+    const [columnDraft, setColumnDraft] = useState<ColumnConfig[]>([])
+    const [tableRows, setTableRows] = useState<any[]>(data.data ?? [])
+    const [exporting, setExporting] = useState(false)
+    const [exportFormat, setExportFormat] = useState<"csv" | "xlsx" | "json">("csv")
     // Состояния для параметров
     const [searchValue, setSearchValue] = useState('')
     const [showSearch, setShowSearch] = useState(false)
@@ -100,6 +129,10 @@ const ListTable = () => {
         document.body.removeAttribute('style')
     }, [data])
 
+    useEffect(() => {
+        setTableRows(data.data ?? [])
+    }, [data.data])
+
 
     const pagination = useMemo(() => {
         return generatePagination(
@@ -109,6 +142,26 @@ const ListTable = () => {
             5
         )
     }, [data.recordsFiltered, count, currentPage, searchValue])
+
+    const defaultColumns = useMemo<ColumnConfig[]>(() => {
+        if (savedFilterColumns.length > 0) {
+            return savedFilterColumns;
+        }
+        return Object.entries(page.props.columns ?? {}).map(([fieldName, config], index) => ({
+            fieldName,
+            order: index,
+            isVisible: true,
+            isEditable: false,
+            width: typeof config?.width === "number" ? config.width : undefined
+        }));
+    }, [page.props.columns, savedFilterColumns])
+
+    useEffect(() => {
+        if (!columnDialogOpen) {
+            return;
+        }
+        setColumnDraft(defaultColumns);
+    }, [columnDialogOpen, defaultColumns])
 
     useEffect(() => {
         if (page.props.flash) {
@@ -210,12 +263,35 @@ const ListTable = () => {
         })
     }
 
+    const handleInlineSave = useCallback(
+        async (recordId: string | number, fieldName: string, value: unknown) => {
+            const endpoint = `${page.props.header.entity.uri}/${recordId}/field/${fieldName}`;
+            const response = await axios.patch(endpoint, { value });
+            if (!response.data?.success) {
+                throw new Error(response.data?.error || "Failed to save");
+            }
+            const updatedValue =
+                response.data?.data?.[fieldName] !== undefined
+                    ? response.data?.data?.[fieldName]
+                    : value;
+            setTableRows((current) =>
+                current.map((row) =>
+                    row?.[rowIdKey] === recordId ? { ...row, [fieldName]: updatedValue } : row
+                )
+            );
+            return updatedValue;
+        },
+        [page.props.header.entity.uri, rowIdKey]
+    );
+
     const dynamicColumns = useTableColumns(
         page.props.columns,
         handleCustomSort,
         handleColumnSearch,
         handleSearch,
-        showSearch
+        showSearch,
+        handleInlineSave,
+        rowIdKey
     );
 
     const tableColumns = useMemo(() => {
@@ -321,6 +397,61 @@ const ListTable = () => {
         dynamicColumns
     ]);
 
+    const handleExport = useCallback(async () => {
+        setExporting(true)
+        try {
+            const query = window.location.search || ""
+            const endpoint = `${window.routePrefix}/export${query}`
+            const payload = {
+                format: exportFormat,
+                modelName: page.props.header.entity.name,
+                filterId: appliedFilterId ?? undefined
+            }
+            const response = await axios.post(endpoint, payload)
+            if (!response.data?.success) {
+                throw new Error(response.data?.error || "Export failed")
+            }
+            const downloadUrl = response.data?.downloadUrl
+            if (downloadUrl) {
+                window.open(downloadUrl, "_blank")
+                toast.success("Export ready")
+            } else {
+                toast.error("Export failed")
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Export failed"
+            toast.error(message)
+        } finally {
+            setExporting(false)
+        }
+    }, [exportFormat, page.props.header.entity.name, appliedFilterId])
+
+    const handleSaveColumns = useCallback(async () => {
+        if (!appliedFilterId) {
+            return;
+        }
+
+        setColumnSaving(true)
+        try {
+            const res = await axios.patch(`${window.routePrefix}/filters/${appliedFilterId}`, {
+                columns: columnDraft
+            })
+            if (res.data?.success) {
+                toast.success("Column layout saved")
+                setColumnDialogOpen(false)
+                router.visit(`${window.location.pathname}${window.location.search}`, {
+                    preserveState: true,
+                    only: ['data', 'columns', 'header']
+                })
+            } else {
+                toast.error(res.data?.error || "Failed to save columns")
+            }
+        } catch (error) {
+            toast.error("Failed to save columns")
+        } finally {
+            setColumnSaving(false)
+        }
+    }, [appliedFilterId, columnDraft])
 
     return (
         <>
@@ -345,6 +476,54 @@ const ListTable = () => {
                         <Icon iconNode={showSearch ? RefreshCcw : Search}/>
                         {showSearch ? page.props.header.resetBtn : page.props.header.searchBtn}
                     </Button>
+                    {page.props.filtersEnabled && appliedFilterId && (
+                        <Dialog open={columnDialogOpen} onOpenChange={setColumnDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline">Columns</Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl">
+                                <DialogHeader>
+                                    <DialogTitle>Customize Columns</DialogTitle>
+                                    <DialogDescription>
+                                        Choose which columns to display for this filter and reorder them.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <ColumnSelector
+                                    availableFields={availableColumnFields}
+                                    selectedColumns={columnDraft}
+                                    onChange={setColumnDraft}
+                                />
+                                <DialogFooter>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setColumnDialogOpen(false)}
+                                        disabled={columnSaving}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleSaveColumns} disabled={columnSaving}>
+                                        {columnSaving ? "Saving..." : "Save columns"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "xlsx" | "json")}>
+                            <SelectTrigger className="w-[110px]">
+                                <SelectValue placeholder={exportFormat}/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="csv">CSV</SelectItem>
+                                <SelectItem value="xlsx">Excel</SelectItem>
+                                <SelectItem value="json">JSON</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" onClick={handleExport} disabled={exporting}>
+                            <Icon iconNode={Download}/>
+                            {exporting ? "Exporting..." : "Export"}
+                        </Button>
+                    </div>
                     {page.props.header.actions.length > 0 && (
                         <>
                             <div className="gap-2 ml-6 hidden lg:flex">
@@ -390,9 +569,20 @@ const ListTable = () => {
                         </>
                     )}
                 </div>
+                {page.props.filtersEnabled && appliedFilterId && (
+                    <FilterMigrationAlert
+                        filterId={appliedFilterId}
+                        onMigrated={() => {
+                            router.visit(`${window.location.pathname}${window.location.search}`, {
+                                preserveState: true,
+                                only: ['data', 'columns', 'header']
+                            })
+                        }}
+                    />
+                )}
                 <DataTable
                     columns={tableColumns}
-                    data={data.data}
+                    data={tableRows}
                     searchValue={searchValue}
                     searchTxt={page.props.header.searchBtn}
                     notFoundContent={page.props.header.notFoundContent}

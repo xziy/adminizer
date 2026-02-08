@@ -1,5 +1,6 @@
 import {WidgetConfig, WidgetsLayouts} from "../lib/widgets/widgetHandler";
 import { GroupAP } from "./GroupAP";
+import type { FilterAP } from "./FilterAP";
 export default {
   id: {
     type: "number",
@@ -46,11 +47,21 @@ export default {
     collection: "GroupAP",
     via: "users"
   },
+  filters: {
+    collection: "FilterAP",
+    via: "owner"
+  },
   widgets: {
     type: "json"
   },
   isConfirmed: {
     type: "boolean"
+  },
+  apiToken: {
+    type: "string"
+  },
+  apiTokenCreatedAt: {
+    type: "datetime"
   }
 }
 
@@ -68,9 +79,12 @@ export interface UserAP {
   isActive?: boolean;
   isAdministrator?: boolean;
   groups?: GroupAP[];
+  filters?: FilterAP[];
   widgets?: {
       widgets: WidgetConfig[],
       layout: WidgetsLayouts
   };
   isConfirmed?: boolean;
+  apiToken?: string;
+  apiTokenCreatedAt?: Date;
 }

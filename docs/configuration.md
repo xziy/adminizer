@@ -73,6 +73,8 @@ Admin panel configuration consist of this options:
 | `identifierField` | Default identifier field into models. This field will be used as identifier. Default: `id`
 | `models`       | Configuration for models. Read below...
 | `showORMtime`     | Set `true` for enable showing fields createdAt and updatedAt in edit and add sections
+| `filtersEnabled`  | Enable or disable filters globally. Default: `true`
+| `modelFilters`    | Per-model filter settings (enable or use legacy search)
 ## Models
 
 Admin panel divided into `models` and this is a main part of configuration.
@@ -88,6 +90,25 @@ It will consist of actions:
 
 Every model configuration should be placed into `models` block into `config/adminpanel.js` file.
 And have a required property `model`.
+
+## Filters
+
+You can control the filter system globally and per model.
+
+```
+module.exports.adminpanel = {
+    filtersEnabled: true,
+    modelFilters: {
+        UserAP: {
+            enabled: false,
+            useLegacySearch: true
+        },
+        OrderAP: {
+            enabled: true
+        }
+    }
+};
+```
 
 ```
 module.exports.adminpanel = {
@@ -174,8 +195,15 @@ fieldName: {
     required: true, // you can mark field required or not
     tooltip: 'tooltip for field', // You can define tooltip for field
     editor: true, // you can add WYSTYG editor for the field in admin panel
+    inlineEditable: true, // enable inline editing for list view
+    inlineEditConfig: {
+        maxLength: 120,
+        confirmChange: true
+    }
 }
 ```
+
+`inlineEditable` enables inline editing for list view cells. Use `inlineEditConfig` to set optional limits (min/max/step for numbers, maxLength/pattern for strings, or confirmChange to require confirmation).
 
 **There are several places for field config definition and an inheritance of field configs.**
 

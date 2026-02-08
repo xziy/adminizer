@@ -97,6 +97,25 @@ Install the `material-icons` package so the CSS can be resolved:
 npm install material-icons --legacy-peer-deps
 ```
 
+### Build/Test Fails Due to Missing Native Optional Dependencies
+
+**Description:**
+
+`npm run build` or `npm test` can fail on Windows with missing module errors for optional native packages, such as:
+
+- `@rollup/rollup-win32-x64-msvc`
+- `lightningcss-win32-x64-msvc`
+- `@tailwindcss/oxide-win32-x64-msvc`
+- `@img/sharp-win32-x64`
+
+**Solution:**
+
+Install the platform-specific optional dependencies:
+
+```
+npm install @rollup/rollup-win32-x64-msvc lightningcss-win32-x64-msvc @tailwindcss/oxide-win32-x64-msvc @img/sharp-win32-x64 --legacy-peer-deps
+```
+
 ### Naming Collision Between Attributes and Associations in Sequelize
 
 **Description:**
@@ -114,5 +133,24 @@ Both an attribute and an association shared the alias `parentNode` in the `Media
 **Solution:**
 
 Rename the association or attribute so that they use unique names. In version 4.2.1, the `parentNode` association has been renamed to `parent` across the related models.
+
+### npm ci Fails Due to Peer Dependency Conflict
+
+**Description:**
+
+Running `npm ci` may fail with a peer dependency conflict similar to:
+
+```
+Could not resolve dependency:
+peer react@"^17.0.1" from @toast-ui/react-editor@3.2.3
+```
+
+**Cause:**
+
+`@toast-ui/react-editor@3.2.3` currently requires React 17, while this project uses React 19. The lockfile is still compatible, but npm strict peer checks will block a clean install.
+
+**Solution:**
+
+Use `npm install --legacy-peer-deps` to bypass strict peer resolution during installation.
 
 

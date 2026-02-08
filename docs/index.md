@@ -27,6 +27,10 @@
 ## 4. Admin Panel Features
 
 * [Admin Controls](Controls.md)
+* [Query Builder](QueryBuilder.md)
+* [Saved Filters API](Filters.md)
+* [Data Export](Export.md)
+* [Public API](PublicApi.md)
 
 ## 5. Access Control
 

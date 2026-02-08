@@ -150,14 +150,15 @@ Content-Type: application/json
 
 ### Игнорирование filterSlug
 
-Если фильтры отключены, параметр `filterSlug` игнорируется:
+Если фильтры отключены, параметры `filter` и `filterSlug` игнорируются:
 
 ```http
 GET /adminizer/users/list?filter=active-users
+GET /adminizer/users/list?filterSlug=active-users
 ```
 
 **Поведение:**
-- ⚠️ `filter=active-users` игнорируется
+- ⚠️ `filter=active-users` или `filterSlug=active-users` игнорируются
 - ✅ Используется legacy global search
 - ✅ Логируется warning: `Filters disabled for model UserAP, ignoring filter slug 'active-users'`
 
@@ -167,13 +168,19 @@ GET /adminizer/users/list?filter=active-users
 
 ### Компонент List.tsx
 
-UI автоматически адаптируется на основе флага `filtersEnabled`:
+UI автоматически адаптируется на основе флагов:
+
+- `filtersEnabled`
+- `useLegacySearch`
+- `appliedFilter` (slug активного фильтра, если он применен)
+
+Пример:
 
 ```tsx
 import { usePage } from '@inertiajs/react';
 
 export default function List() {
-  const { filtersEnabled, useLegacySearch } = usePage().props;
+  const { filtersEnabled, useLegacySearch, appliedFilter } = usePage().props;
   
   return (
     <div className="list-container">

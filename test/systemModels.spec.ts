@@ -47,15 +47,27 @@ describe('System models registration', () => {
       expect(ontology.collections).toHaveProperty('mediamanagerassociationsap');
       expect(ontology.collections).toHaveProperty('mediamanagermetaap');
       expect(ontology.collections).toHaveProperty('navigationap');
+      expect(ontology.collections).toHaveProperty('filterap');
+      expect(ontology.collections).toHaveProperty('filtercolumnap');
     });
 
     it('creates records for system models', async () => {
       const group = await ontology.collections.groupap.create({ name: 'g1' }).fetch();
       const user = await ontology.collections.userap.create({ login: 'u1', fullName: 'User One' }).fetch();
       const nav = await ontology.collections.navigationap.create({ label: 'main', tree: {} }).fetch();
-      const file = await ontology.collections.mediamanagerap.create({ id: 'file-1' }).fetch();
-      const assoc = await ontology.collections.mediamanagerassociationsap.create({ id: 'assoc-1' }).fetch();
-      const meta = await ontology.collections.mediamanagermetaap.create({ id: 'meta-1' }).fetch();
+      const file = await ontology.collections.mediamanagerap.create({}).fetch();
+      const assoc = await ontology.collections.mediamanagerassociationsap.create({}).fetch();
+      const meta = await ontology.collections.mediamanagermetaap.create({}).fetch();
+      const filter = await ontology.collections.filterap.create({
+        name: 'Filter One',
+        modelName: 'UserAP',
+        slug: 'filter-one',
+        owner: user.id
+      }).fetch();
+      const column = await ontology.collections.filtercolumnap.create({
+        filter: filter.id,
+        fieldName: 'login'
+      }).fetch();
 
       expect(group).toHaveProperty('id');
       expect(user).toHaveProperty('id');
@@ -63,6 +75,8 @@ describe('System models registration', () => {
       expect(file).toHaveProperty('id');
       expect(assoc).toHaveProperty('id');
       expect(meta).toHaveProperty('id');
+      expect(filter).toHaveProperty('id');
+      expect(column).toHaveProperty('id');
     });
   });
 
@@ -85,16 +99,37 @@ describe('System models registration', () => {
       expect(orm.models).toHaveProperty('MediaManagerAssociationsAP');
       expect(orm.models).toHaveProperty('MediaManagerMetaAP');
       expect(orm.models).toHaveProperty('NavigationAP');
+      expect(orm.models).toHaveProperty('FilterAP');
+      expect(orm.models).toHaveProperty('FilterColumnAP');
     });
 
     it('creates records for system models', async () => {
-      const { GroupAP, UserAP, NavigationAP, MediaManagerAP, MediaManagerAssociationsAP, MediaManagerMetaAP } = orm.models as any;
+      const {
+        GroupAP,
+        UserAP,
+        NavigationAP,
+        MediaManagerAP,
+        MediaManagerAssociationsAP,
+        MediaManagerMetaAP,
+        FilterAP,
+        FilterColumnAP
+      } = orm.models as any;
       const group = await GroupAP.create({ name: 'g2' });
       const user = await UserAP.create({ login: 'u2', fullName: 'User Two' });
       const nav = await NavigationAP.create({ label: 'nav', tree: {} });
-      const file = await MediaManagerAP.create({ id: 'file-2' });
-      const assoc = await MediaManagerAssociationsAP.create({ id: 'assoc-2' });
-      const meta = await MediaManagerMetaAP.create({ id: 'meta-2' });
+      const file = await MediaManagerAP.create({});
+      const assoc = await MediaManagerAssociationsAP.create({});
+      const meta = await MediaManagerMetaAP.create({});
+      const filter = await FilterAP.create({
+        name: 'Filter Two',
+        modelName: 'UserAP',
+        slug: 'filter-two',
+        ownerId: user.id
+      });
+      const column = await FilterColumnAP.create({
+        filterId: filter.id,
+        fieldName: 'login'
+      });
 
       expect(group.id).toBeDefined();
       expect(user.id).toBeDefined();
@@ -102,6 +137,8 @@ describe('System models registration', () => {
       expect(file.id).toBeDefined();
       expect(assoc.id).toBeDefined();
       expect(meta.id).toBeDefined();
+      expect(filter.id).toBeDefined();
+      expect(column.id).toBeDefined();
     });
   });
 });

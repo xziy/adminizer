@@ -44,6 +44,9 @@ import {StorageServices} from "./catalog/Navigation";
 import {bindCors} from "../system/bindCors";
 import { HistoryHandler } from "./history-actions/HistoryHandler";
 import bindHistory from "../system/bindHistory";
+import { FilterService } from "../helpers/FilterService";
+import { FilterModule } from "./filters";
+import { ExportModule } from "./export";
 
 export class Adminizer {
     // Preconfigures
@@ -72,6 +75,9 @@ export class Adminizer {
     catalogHandler!: CatalogHandler
     mediaManagerHandler!: MediaManagerHandler
     storageServices!: StorageServices
+    filterService!: FilterService;
+    filters!: FilterModule;
+    exportModule!: ExportModule;
 
     // Constants
     jwtSecret: string = process.env.JWT_SECRET ?? uuid()
@@ -229,6 +235,9 @@ export class Adminizer {
         this.catalogHandler = new CatalogHandler();
 
         this.mediaManagerHandler = new MediaManagerHandler();
+        this.filterService = new FilterService(this);
+        this.filters = new FilterModule(this);
+        this.exportModule = new ExportModule(this);
 
         bindExpressUtils(this.app);
         bindReqFunctions(this);

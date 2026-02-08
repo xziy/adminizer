@@ -32,6 +32,14 @@ interface DataTableProps<TData, TValue> {
     searchTxt?: string
 }
 
+const resolveColumnWidth = (value: unknown): number | undefined => {
+    const parsed = typeof value === "number" ? value : Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        return undefined;
+    }
+    return Math.round(parsed);
+};
+
 export function DataTable<TData, TValue>(
     {
         columns,
@@ -90,8 +98,18 @@ export function DataTable<TData, TValue>(
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
+                                const width = resolveColumnWidth(
+                                    (header.column.columnDef.meta as { width?: number } | undefined)?.width
+                                );
                                 return (
-                                    <TableHead key={header.id}>
+                                    <TableHead
+                                        key={header.id}
+                                        style={
+                                            width
+                                                ? { width, minWidth: width, maxWidth: width }
+                                                : undefined
+                                        }
+                                    >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
@@ -111,12 +129,24 @@ export function DataTable<TData, TValue>(
                                 key={row.id}
                                 data-state={row.getIsSelected() && "selected"}
                             >
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}
-                                               className={cell.column.getIndex() === 0 ? "sticky left-0 bg-background" : ""}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
+                                {row.getVisibleCells().map((cell) => {
+                                    const width = resolveColumnWidth(
+                                        (cell.column.columnDef.meta as { width?: number } | undefined)?.width
+                                    );
+                                    return (
+                                        <TableCell
+                                            key={cell.id}
+                                            style={
+                                                width
+                                                    ? { width, minWidth: width, maxWidth: width }
+                                                    : undefined
+                                            }
+                                            className={cell.column.getIndex() === 0 ? "sticky left-0 bg-background" : ""}
+                                        >
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    );
+                                })}
                             </TableRow>
                         ))
                     ) : (

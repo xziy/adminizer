@@ -22,6 +22,31 @@ import timezones from "../controllers/timezones";
 import { NotificationController } from "../controllers/notifications/NotificationController";
 import { AiAssistantController } from "../controllers/ai/AiAssistantController";
 import { HistoryController } from "../controllers/history-actions/HistoryController";
+import filtersList from "../controllers/filters/list";
+import filtersGet from "../controllers/filters/get";
+import filtersPreview from "../controllers/filters/preview";
+import filtersCreate from "../controllers/filters/create";
+import filtersUpdate from "../controllers/filters/update";
+import filtersRemove from "../controllers/filters/remove";
+import filtersCount from "../controllers/filters/count";
+import filtersDirectLink from "../controllers/filters/directLink";
+import filtersValidate from "../controllers/filters/validate";
+import filtersMigrate from "../controllers/filters/migrate";
+import {
+    countRateLimit,
+    createRateLimit,
+    previewRateLimit,
+    publicApiRateLimit
+} from "../lib/filters/middleware/filterRateLimit";
+import inlineEdit, { inlineEditBatch } from "../controllers/inline-edit";
+import exportData, { downloadExport, exportFilterById, listExportFormats } from "../controllers/export";
+import publicApiData from "../controllers/public-api/data";
+import {
+    createApiToken,
+    getApiToken,
+    regenerateApiToken,
+    revokeApiToken
+} from "../controllers/public-api/token";
 
 export default class Router {
 
@@ -216,8 +241,113 @@ export default class Router {
         }
 
         /**
+         * Filters API
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters`,
+            adminizer.policyManager.bindPolicies(policies, filtersList)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/preview`,
+            previewRateLimit,
+            adminizer.policyManager.bindPolicies(policies, filtersPreview)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters`,
+            createRateLimit,
+            adminizer.policyManager.bindPolicies(policies, filtersCreate)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, filtersGet)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/:id/validate`,
+            adminizer.policyManager.bindPolicies(policies, filtersValidate)
+        );
+        adminizer.app.patch(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, filtersUpdate)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/:id/migrate`,
+            adminizer.policyManager.bindPolicies(policies, filtersMigrate)
+        );
+        adminizer.app.delete(
+            `${adminizer.config.routePrefix}/filters/:id`,
+            adminizer.policyManager.bindPolicies(policies, filtersRemove)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/:id/count`,
+            countRateLimit,
+            adminizer.policyManager.bindPolicies(policies, filtersCount)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filter/:id`,
+            adminizer.policyManager.bindPolicies(policies, filtersDirectLink)
+        );
+
+        /**
+         * Export API
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/formats`,
+            adminizer.policyManager.bindPolicies(policies, listExportFormats)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/export`,
+            adminizer.policyManager.bindPolicies(policies, exportData)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/filter/:id/:format`,
+            adminizer.policyManager.bindPolicies(policies, exportFilterById)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/export/download/:filename`,
+            adminizer.policyManager.bindPolicies(policies, downloadExport)
+        );
+
+        /**
+         * Public API Tokens
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/api/user/api-token`,
+            adminizer.policyManager.bindPolicies(policies, getApiToken)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/api/user/api-token`,
+            adminizer.policyManager.bindPolicies(policies, createApiToken)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/api/user/api-token/regenerate`,
+            adminizer.policyManager.bindPolicies(policies, regenerateApiToken)
+        );
+        adminizer.app.delete(
+            `${adminizer.config.routePrefix}/api/user/api-token`,
+            adminizer.policyManager.bindPolicies(policies, revokeApiToken)
+        );
+
+        /**
+         * Public API Data
+         */
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/api/public/:format/:filterId`,
+            publicApiRateLimit,
+            adminizer.policyManager.bindPolicies(policies, publicApiData)
+        );
+
+        /**
          * List of records
          */
+        adminizer.app.patch(
+            `${baseRoute}/batch`,
+            adminizer.policyManager.bindPolicies(policies, inlineEditBatch)
+        );
+        adminizer.app.patch(
+            `${baseRoute}/:id/field/:fieldName`,
+            adminizer.policyManager.bindPolicies(policies, inlineEdit)
+        );
+
         adminizer.app.all(baseRoute, adminizer.policyManager.bindPolicies(policies, _list));
 
         adminizer.app.get(`${adminizer.config.routePrefix}/get-timezones`, adminizer.policyManager.bindPolicies(policies, timezones))

@@ -24,6 +24,16 @@ const Test = Waterline.Collection.extend({
       allowNull: true,
     },
 
+    isActive: {
+      type: "boolean",
+      allowNull: true,
+    },
+
+    status: {
+      type: "string",
+      allowNull: true,
+    },
+
     color: {
       type: "string",
       allowNull: true,

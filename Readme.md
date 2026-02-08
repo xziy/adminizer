@@ -29,6 +29,7 @@ Adminizer allows you to:
 - Read and write data from **any resource model (RM)**.
 - Connect **multiple resource models** across different sources.
 - Flexibly manage **user access rights** for reading and writing data.
+- Expose filter results through a **token-based Public API** (JSON/Atom/RSS).
 - Quickly build **personal dashboards**, admin panels, and **TMDP solutions** for industrial use cases.
 - Easily extend and customize for any project requirements.
 

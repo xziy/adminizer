@@ -215,7 +215,11 @@ export class SequelizeModel<T> extends AbstractModel<T> {
 
 
     _convertCriteriaToSequelize(criteria: any): any {
-        const result: Record<string, any> = {};
+        const result: Record<string | symbol, any> = {};
+
+        if (!criteria || typeof criteria !== "object") {
+            return result;
+        }
 
         for (const key in criteria) {
             const value = criteria[key];
@@ -226,6 +230,22 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             ) {
                 continue;
             }
+
+            const normalizedKey = key.toLowerCase();
+            if (normalizedKey === "and" || normalizedKey === "or") {
+                if (Array.isArray(value)) {
+                    result[normalizedKey === "or" ? Op.or : Op.and] = value.map((entry) =>
+                        this._convertCriteriaToSequelize(entry)
+                    );
+                }
+                continue;
+            }
+
+            if (normalizedKey === "not") {
+                result[Op.not] = this._convertCriteriaToSequelize(value);
+                continue;
+            }
+
             // 🧠 Заменяем ключ на `via`, если это ассоциация
             const attr = this.attributes?.[key];
             let targetKey = key;
@@ -233,50 +253,221 @@ export class SequelizeModel<T> extends AbstractModel<T> {
                 targetKey = attr.via;
             }
 
-            if (value === null) {
-                result[targetKey] = {[Op.is]: null};
-            } else if (Array.isArray(value)) {
-                // ✅ Обработка массивов - используем оператор IN
-                result[targetKey] = {[Op.in]: value};
-            } else if (typeof value === "object" && !Array.isArray(value)) {
-                const operatorEntries = Object.entries(value)
-                    .filter(([_, v]) => v !== undefined && v !== null)
-                    .map(([op, val]) => {
-                        switch (op) {
-                            case "contains":
-                                return [Op.like, `%${val}%`];
-                            case "startsWith":
-                                return [Op.startsWith, val];
-                            case "endsWith":
-                                return [Op.endsWith, val];
-                            case ">":
-                                return [Op.gt, val];
-                            case ">=":
-                                return [Op.gte, val];
-                            case "<":
-                                return [Op.lt, val];
-                            case "<=":
-                                return [Op.lte, val];
-                            case "!=":
-                                return [Op.ne, val];
-                            case "in":
-                                return [Op.in, val];
-                            case "nin":
-                                return [Op.notIn, val];
-                            default:
-                                return [Op.eq, val];
-                        }
-                    });
-
-                if (operatorEntries.length > 0) {
-                    result[targetKey] = Object.fromEntries(operatorEntries);
-                }
-            } else {
-                result[targetKey] = value;
+            const converted = this._convertSingleCriteriaValue(value);
+            if (converted !== undefined) {
+                result[targetKey] = converted;
             }
         }
 
         return result;
+    }
+
+    private _convertSingleCriteriaValue(value: any): any {
+        if (value === null) {
+            return {[Op.is]: null};
+        }
+        if (Array.isArray(value)) {
+            return {[Op.in]: value};
+        }
+        if (typeof value === "object" && value !== null) {
+            const operatorEntries = Object.entries(value)
+                .filter(([_, v]) => v !== undefined && v !== null)
+                .map(([op, val]) => {
+                    switch (op) {
+                        case "contains":
+                            return [Op.like, `%${val}%`];
+                        case "ilike": {
+                            const dialect = this.model.sequelize?.getDialect?.();
+                            return [dialect === "postgres" ? Op.iLike : Op.like, val];
+                        }
+                        case "startsWith":
+                            return [Op.startsWith, val];
+                        case "endsWith":
+                            return [Op.endsWith, val];
+                        case "regexp":
+                            return [Op.regexp, val];
+                        case ">":
+                            return [Op.gt, val];
+                        case ">=":
+                            return [Op.gte, val];
+                        case "<":
+                            return [Op.lt, val];
+                        case "<=":
+                            return [Op.lte, val];
+                        case "!=":
+                            return [Op.ne, val];
+                        case "in":
+                            return [Op.in, val];
+                        case "nin":
+                        case "notIn":
+                            return [Op.notIn, val];
+                        default:
+                            return [Op.eq, val];
+                    }
+                });
+
+            if (operatorEntries.length > 0) {
+                return Object.fromEntries(operatorEntries);
+            }
+        }
+        return value;
+    }
+
+    private _escapeRawSqlValue(value: unknown): string {
+        if (this.model?.sequelize?.escape) {
+            return this.model.sequelize.escape(value as any);
+        }
+
+        if (value === null || value === undefined) {
+            return "NULL";
+        }
+        if (typeof value === "number") {
+            return Number.isFinite(value) ? String(value) : "NULL";
+        }
+        if (typeof value === "boolean") {
+            return value ? "TRUE" : "FALSE";
+        }
+        return `'${String(value).replace(/'/g, "''")}'`;
+    }
+
+    private _interpolateRawSql(sql: string, params: unknown[]): string {
+        if (!params || params.length === 0) {
+            return sql;
+        }
+
+        const escaped = params.map((param) => this._escapeRawSqlValue(param));
+
+        if (/\$\d+/.test(sql)) {
+            let output = sql;
+            escaped.forEach((value, index) => {
+                const token = new RegExp(`\\$${index + 1}\\b`, "g");
+                output = output.replace(token, value);
+            });
+            return output;
+        }
+
+        let paramIndex = 0;
+        return sql.replace(/\?/g, () => {
+            const value = escaped[paramIndex];
+            paramIndex += 1;
+            return value ?? "NULL";
+        });
+    }
+
+    private _buildRawSqlLiteral(rawSql: any): any | null {
+        if (!rawSql || typeof rawSql !== "object") {
+            return null;
+        }
+
+        const sql = String(rawSql.sql ?? rawSql.rawSQL ?? "").trim();
+        if (!sql) {
+            return null;
+        }
+
+        const params = Array.isArray(rawSql.params ?? rawSql.rawSQLParams)
+            ? (rawSql.params ?? rawSql.rawSQLParams)
+            : [];
+
+        const interpolated = this._interpolateRawSql(sql, params);
+        return Sequelize.literal(interpolated);
+    }
+
+    private _convertCriteriaWithRelations(
+        criteria: any,
+        includes: IncludeOptions[]
+    ): any {
+        if (!criteria || typeof criteria !== "object") {
+            return {};
+        }
+
+        const result: Record<string | symbol, any> = {};
+
+        for (const [key, value] of Object.entries(criteria)) {
+            if (
+                value === undefined ||
+                (typeof value === "object" && value !== null && Object.keys(value).length === 0)
+            ) {
+                continue;
+            }
+
+            const normalizedKey = key.toLowerCase();
+
+            if (normalizedKey === "__rawsql") {
+                const literal = this._buildRawSqlLiteral(value);
+                if (literal) {
+                    const existing = result[Op.and];
+                    if (Array.isArray(existing)) {
+                        existing.push(literal);
+                        result[Op.and] = existing;
+                    } else {
+                        result[Op.and] = [literal];
+                    }
+                }
+                continue;
+            }
+
+            if (key === "_relation" && value && typeof value === "object") {
+                const relationName = String((value as any).name || "");
+                const relationField = String((value as any).field || "");
+                const condition = (value as any).condition;
+
+                if (!relationName || !relationField) {
+                    continue;
+                }
+
+                const association = this.model.associations?.[relationName];
+                if (!association) {
+                    continue;
+                }
+
+                const convertedCondition =
+                    this._convertCriteriaToSequelize({[relationField]: condition})[relationField];
+
+                if (convertedCondition !== undefined) {
+                    const relationKey = `$${relationName}.${relationField}$`;
+                    result[relationKey] = convertedCondition;
+                    this._ensureRelationInclude(includes, relationName);
+                }
+                continue;
+            }
+
+            if (normalizedKey === "and" || normalizedKey === "or") {
+                if (Array.isArray(value)) {
+                    result[normalizedKey === "or" ? Op.or : Op.and] = value.map((entry) =>
+                        this._convertCriteriaWithRelations(entry, includes)
+                    );
+                }
+                continue;
+            }
+
+            if (normalizedKey === "not") {
+                result[Op.not] = this._convertCriteriaWithRelations(value, includes);
+                continue;
+            }
+
+            const converted = this._convertCriteriaToSequelize({[key]: value});
+            Object.assign(result, converted);
+        }
+
+        return result;
+    }
+
+    private _ensureRelationInclude(includes: IncludeOptions[], association: string) {
+        if (!association) {
+            return;
+        }
+
+        const alreadyIncluded = includes.some((include) => {
+            if (typeof include !== "object" || include === null) {
+                return false;
+            }
+            const assoc = (include as IncludeOptions).association;
+            return assoc === association;
+        });
+
+        if (!alreadyIncluded) {
+            includes.push({association, required: false});
+        }
     }
 
 
@@ -285,6 +476,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         limit?: number;
         offset?: number;
         order?: any[];
+        include?: IncludeOptions[];
     } {
         // console.debug("WATERLINE CRITERIA (raw):", criteria);
 
@@ -299,9 +491,13 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         // console.debug("WATERLINE CRITERIA: using rawWhere =", rawWhere);
 
 
-        const where = this._convertCriteriaToSequelize(rawWhere);
+        const relationIncludes: IncludeOptions[] = [];
+        const where = this._convertCriteriaWithRelations(rawWhere, relationIncludes);
 
         const result: any = {where};
+        if (relationIncludes.length > 0) {
+            result.include = relationIncludes;
+        }
 
         if (typeof skip === "number") {
             result.offset = skip;
@@ -318,6 +514,38 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         }
 
         return result;
+    }
+
+    private _mergeIncludes(base: IncludeOptions[], extra?: IncludeOptions[]): IncludeOptions[] {
+        if (!extra || extra.length === 0) {
+            return base;
+        }
+
+        const existing = new Set<string>();
+        base.forEach((include) => {
+            if (typeof include === "object" && include !== null) {
+                const assoc = (include as IncludeOptions).association;
+                if (typeof assoc === "string") {
+                    existing.add(assoc);
+                }
+            }
+        });
+
+        extra.forEach((include) => {
+            if (typeof include !== "object" || include === null) {
+                return;
+            }
+            const assoc = (include as IncludeOptions).association;
+            if (typeof assoc !== "string") {
+                return;
+            }
+            if (!existing.has(assoc)) {
+                existing.add(assoc);
+                base.push(include);
+            }
+        });
+
+        return base;
     }
 
     async _assignAssociations(instance: any, assocData: Record<string, any>) {
@@ -434,8 +662,8 @@ export class SequelizeModel<T> extends AbstractModel<T> {
     protected async _findOne(criteria: Partial<T>): Promise<T | null> {
         // console.debug(">> _findOne: входные критерии:", criteria);
 
-        const {where} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
-        const includes = this._buildIncludes();
+        const {where, include} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
+        const includes = this._mergeIncludes(this._buildIncludes(), include);
         // console.debug(">> _findOne: преобразованные where:", where);
         // console.debug(">> _findOne: includes:", includes);
 
@@ -466,10 +694,11 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         const assocNames = Object.keys(this.model.associations);
         // console.debug(">> _find: входные criteria:", criteria, "options:", options);
 
-        const {where, limit, offset, order} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
+        const {where, limit, offset, order, include: relationIncludes} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
         const includes = options.populate
             ? options.populate.map(([field, opts]) => ({association: field, ...opts}))
             : assocNames.map(a => ({association: a}));
+        const mergedIncludes = this._mergeIncludes(includes, relationIncludes);
 
         // console.debug(">> _find: where, limit, offset, order, includes:", {
         //   where,
@@ -485,7 +714,7 @@ export class SequelizeModel<T> extends AbstractModel<T> {
             limit,
             offset,
             order,
-            include: includes
+            include: mergedIncludes
         });
 
 
@@ -661,9 +890,16 @@ export class SequelizeModel<T> extends AbstractModel<T> {
 
     // --- COUNT ---
     protected async _count(criteria: Partial<T> = {}): Promise<number> {
-        const {where} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
+        const {where, include} = this._convertWaterlineCriteriaToSequelizeOptions(criteria);
 
-        const result = await this.model.count({where});
+        const countOptions: Record<string, any> = {where};
+        if (include && include.length > 0) {
+            countOptions.include = include;
+            countOptions.distinct = true;
+            countOptions.col = this.primaryKey;
+        }
+
+        const result = await this.model.count(countOptions);
 
         return result;
     }
@@ -780,6 +1016,11 @@ function generateSequelizeModel(
             attr.defaultValue = DataTypes.UUIDV4;
             delete attr.uuid;
         }
+
+        if (attr.defaultsTo !== undefined && attr.defaultValue === undefined) {
+            attr.defaultValue = attr.defaultsTo;
+        }
+        delete attr.defaultsTo;
 
         if (attr.autoIncrement) {
             attr.autoIncrement = true;

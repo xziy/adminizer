@@ -20,6 +20,19 @@ export interface Columns {
         searchable?: boolean
         direction?: string
         searchColumnValue?: string
+        width?: number
+        type?: string
+        isIn?: Record<string, unknown> | string[]
+        inlineEditable?: boolean
+        required?: boolean
+        inlineEditConfig?: {
+            min?: number
+            max?: number
+            step?: number
+            maxLength?: number
+            pattern?: string
+            confirmChange?: boolean
+        }
     }
 }
 
