@@ -166,6 +166,50 @@ Use these endpoints to pin saved filters into Navigation quick links.
 
 The generated URL targets list pages in the format `/adminizer/model/:modelName?filterSlug=<slug>` and falls back to `filterId` when slug is not available.
 
+## Programmatic Filter Builder (Phase 11 - partial)
+
+Adminizer now includes a fluent programmatic API to compose filter drafts in TypeScript code.
+
+### CriteriaBuilder
+
+Use `CriteriaBuilder` when you need to build `FilterAP.conditions` in code:
+
+```ts
+import { CriteriaBuilder } from "adminizer";
+
+const conditions = new CriteriaBuilder()
+  .where("status", "active")
+  .whereGt("total", 100)
+  .orWhere("priority", "eq", "high")
+  .build();
+```
+
+Supported helpers include: `where`, `whereNot`, `whereGt`, `whereGte`, `whereLt`, `whereLte`, `whereIn`, `whereNotIn`, `whereLike`, `whereILike`, `whereStartsWith`, `whereEndsWith`, `whereBetween`, `whereNull`, `whereNotNull`, `orWhere`, and `notWhere`.
+
+### FilterBuilder
+
+Use `FilterBuilder` to produce a typed draft payload for repository create/update flows:
+
+```ts
+import { CriteriaBuilder, FilterBuilder } from "adminizer";
+
+const criteria = new CriteriaBuilder()
+  .where("status", "active")
+  .whereIn("country", ["US", "DE"]);
+
+const draft = FilterBuilder.create("Active customers", "Customer")
+  .withDescription("Only active customers in key regions")
+  .withCriteria(criteria)
+  .withSort("createdAt", "DESC")
+  .withVisibility("public")
+  .withSelectedFields(["id", "name", "email"])
+  .withAppearance("groups", "#0EA5E9")
+  .withPinned()
+  .build();
+```
+
+The `build()` result is immutable and can be passed directly into `FilterRepository.create` or used as a validated DTO in your own services.
+
 ## System Filters
 
 Set `isSystemFilter: true` to hide a filter from default lists. Use `includeSystem=true` to fetch them via API. System filters can still be accessed by id or used in widgets.
