@@ -157,6 +157,15 @@ If the saved filter no longer matches the current schema, the endpoint returns `
 ### GET `/adminizer/filter/:id`
 Direct link to a filter. Redirects to the list page with `filterId` applied.
 
+### Quick Links API (Phase 9 - partial)
+Use these endpoints to pin saved filters into Navigation quick links.
+
+- `GET /adminizer/filters/quick-links?sectionId=<section>`: list quick links for a navigation section.
+- `POST /adminizer/filters/:id/quick-links`: add a filter as a quick link. Optional body: `sectionId`, `customName`, `icon`.
+- `DELETE /adminizer/filters/:id/quick-links?sectionId=<section>`: remove the quick link for a filter.
+
+The generated URL targets list pages in the format `/adminizer/model/:modelName?filterSlug=<slug>` and falls back to `filterId` when slug is not available.
+
 ## System Filters
 
 Set `isSystemFilter: true` to hide a filter from default lists. Use `includeSystem=true` to fetch them via API. System filters can still be accessed by id or used in widgets.

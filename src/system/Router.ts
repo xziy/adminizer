@@ -32,6 +32,9 @@ import filtersCount from "../controllers/filters/count";
 import filtersDirectLink from "../controllers/filters/directLink";
 import filtersValidate from "../controllers/filters/validate";
 import filtersMigrate from "../controllers/filters/migrate";
+import listFilterQuickLinks from "../controllers/filter-navigation/list";
+import addFilterQuickLink from "../controllers/filter-navigation/create";
+import removeFilterQuickLink from "../controllers/filter-navigation/remove";
 import {
     countRateLimit,
     createRateLimit,
@@ -285,6 +288,18 @@ export default class Router {
         adminizer.app.get(
             `${adminizer.config.routePrefix}/filter/:id`,
             adminizer.policyManager.bindPolicies(policies, filtersDirectLink)
+        );
+        adminizer.app.get(
+            `${adminizer.config.routePrefix}/filters/quick-links`,
+            adminizer.policyManager.bindPolicies(policies, listFilterQuickLinks)
+        );
+        adminizer.app.post(
+            `${adminizer.config.routePrefix}/filters/:id/quick-links`,
+            adminizer.policyManager.bindPolicies(policies, addFilterQuickLink)
+        );
+        adminizer.app.delete(
+            `${adminizer.config.routePrefix}/filters/:id/quick-links`,
+            adminizer.policyManager.bindPolicies(policies, removeFilterQuickLink)
         );
 
         /**
