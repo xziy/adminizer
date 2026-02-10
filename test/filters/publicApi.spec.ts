@@ -40,6 +40,7 @@ describe("Public API", () => {
   let server: import("node:http").Server;
   let baseUrl: string;
   let orm: Waterline.Waterline;
+  let userEntry: ReturnType<typeof resolveModelEntry>;
 
   const jsonRequest = async (
     path: string,
@@ -160,6 +161,17 @@ describe("Public API", () => {
     return record;
   };
 
+  // Update user fields to simulate account status changes.
+  const updateUser = async (id: number | string, changes: Partial<UserAP>) => {
+    const accessor = new DataAccessor(
+      adminizer,
+      systemUser,
+      buildEntity(adminizer, userEntry),
+      "edit"
+    );
+    await userEntry.model.updateOne({ id }, changes as any, accessor);
+  };
+
   beforeAll(async () => {
     orm = new Waterline();
     await WaterlineAdapter.registerSystemModels(orm);
@@ -218,7 +230,7 @@ describe("Public API", () => {
       }
     });
 
-    const userEntry = resolveModelEntry(adminizer, "UserAP");
+    userEntry = resolveModelEntry(adminizer, "UserAP");
     const userAccessor = new DataAccessor(
       adminizer,
       systemUser,
@@ -348,5 +360,72 @@ describe("Public API", () => {
     );
     expect(newTokenResult.response.status).toBe(200);
     expect(newTokenResult.json?.success).toBe(true);
+  });
+
+  it("rejects tokens for inactive users", async () => {
+    // Prepare filter data and a valid token.
+    await seedRecords();
+    const filterRecord = await createFilterRecord(true);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST"
+    });
+    const token = tokenResult.json?.token as string;
+    expect(token).toMatch(/^ap_/);
+
+    // Deactivate the user and assert the token is rejected.
+    await updateUser(users.admin.id, { isActive: false });
+
+    const publicResult = await jsonRequest(
+      `/admin/api/public/json/${filterRecord.id}?token=${token}`
+    );
+    expect(publicResult.response.status).toBe(401);
+
+    // Restore user status for subsequent tests.
+    await updateUser(users.admin.id, { isActive: true });
+  });
+
+  it("sanitizes query params to prevent injection", async () => {
+    // Prepare filter data and a valid token.
+    await seedRecords();
+    const filterRecord = await createFilterRecord(true);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST"
+    });
+    const token = tokenResult.json?.token as string;
+
+    // Attempt injection via sort/globalSearch and assert a safe response.
+    const publicResult = await jsonRequest(
+      `/admin/api/public/json/${filterRecord.id}?token=${token}` +
+        "&sort=title;DROP%20TABLE%20userap" +
+        "&direction=ASC" +
+        "&globalSearch=%27%20OR%201%3D1%20--"
+    );
+
+    expect(publicResult.response.status).toBe(200);
+    expect(publicResult.json?.success).toBe(true);
+    expect(Array.isArray(publicResult.json?.data)).toBe(true);
+  });
+
+  it("rate limits public API requests by token", async () => {
+    // Prepare filter data and a fresh token to isolate rate limit counters.
+    await seedRecords();
+    const filterRecord = await createFilterRecord(true);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token/regenerate", {
+      method: "POST"
+    });
+    const token = tokenResult.json?.token as string;
+    expect(token).toMatch(/^ap_/);
+
+    // Consume the per-token limit and ensure the final request is rejected.
+    let lastResult: Awaited<ReturnType<typeof jsonRequest>> | null = null;
+    for (let i = 0; i < 121; i += 1) {
+      lastResult = await jsonRequest(`/admin/api/public/json/${filterRecord.id}?token=${token}`);
+    }
+
+    expect(lastResult?.response.status).toBe(429);
+    expect(lastResult?.response.headers.get("retry-after")).toBeTruthy();
   });
 });

@@ -15,6 +15,7 @@ type FilterServiceOptions = {
   sortDirection?: QuerySortDirection;
   globalSearch?: string;
   extraFilters?: FilterCondition[];
+  selectFields?: string[];
 };
 
 type ModelConfigEntry = {
@@ -62,7 +63,7 @@ export class FilterService {
     }
     this.assertFilterMatchesModel(filter, dataAccessor, model);
 
-    const queryParams = this.buildQueryParams(filter, options);
+    const queryParams = this.buildQueryParams(filter, options, fields, model.primaryKey);
     const queryBuilder = new ModernQueryBuilder(model, fields, dataAccessor);
 
     return queryBuilder.execute(queryParams);
@@ -89,13 +90,18 @@ export class FilterService {
     }
     this.assertFilterMatchesModel(filter, dataAccessor, model);
 
-    const queryParams = this.buildQueryParams(filter, options);
+    const queryParams = this.buildQueryParams(filter, options, fields, model.primaryKey);
     const queryBuilder = new ModernQueryBuilder(model, fields, dataAccessor);
 
     return queryBuilder.execute(queryParams);
   }
 
-  private buildQueryParams(filter: Partial<FilterAP>, options: FilterServiceOptions): QueryParams {
+  private buildQueryParams(
+    filter: Partial<FilterAP>,
+    options: FilterServiceOptions,
+    fields: Fields,
+    primaryKey?: string
+  ): QueryParams {
     const filters = Array.isArray(filter.conditions) ? filter.conditions : [];
     const extraFilters = Array.isArray(options.extraFilters) ? options.extraFilters : [];
     const mergedFilters = [...filters, ...extraFilters];
@@ -105,6 +111,11 @@ export class FilterService {
       limit: options.limit ?? 10,
       filters: mergedFilters
     };
+    queryParams.selectFields = this.normalizeSelectedFields(
+      options.selectFields ?? filter.selectedFields,
+      fields,
+      primaryKey
+    );
 
     const sortField = options.sort ?? filter.sortField;
     if (sortField) {
@@ -121,6 +132,47 @@ export class FilterService {
     }
 
     return queryParams;
+  }
+
+  private normalizeSelectedFields(
+    selectedFields: unknown,
+    fields: Fields,
+    primaryKey?: string
+  ): string[] | undefined {
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+      return undefined;
+    }
+
+    const normalized = selectedFields
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+
+    if (normalized.length === 0) {
+      return undefined;
+    }
+
+    const allowed = normalized.filter((field) => Boolean(fields?.[field]));
+    if (allowed.length === 0) {
+      return undefined;
+    }
+
+    const unique = new Set<string>();
+    const result: string[] = [];
+
+    if (primaryKey) {
+      const key = String(primaryKey);
+      unique.add(key);
+      result.push(key);
+    }
+
+    allowed.forEach((field) => {
+      if (!unique.has(field)) {
+        unique.add(field);
+        result.push(field);
+      }
+    });
+
+    return result;
   }
 
   private normalizeSortDirection(direction?: string): QuerySortDirection | undefined {

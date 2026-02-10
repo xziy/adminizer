@@ -124,6 +124,7 @@ let adminpanelConfig: AdminpanelConfig = {
                     conditions: false,
                     groupIds: false,
                     apiKey: false,
+                    selectedFields: false,
                     schemaVersion: false,
                     createdAt: false,
                     updatedAt: false

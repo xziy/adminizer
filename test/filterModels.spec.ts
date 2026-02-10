@@ -56,6 +56,7 @@ describe("Filter models", () => {
       }).fetch();
 
       expect(filter.id).toBeDefined();
+      expect(filter.selectedFields).toEqual([]);
       expect(column.id).toBeDefined();
       expect(column.width).toBe(240);
     });
@@ -88,6 +89,7 @@ describe("Filter models", () => {
       expect(filter.apiEnabled).toBe(false);
       expect(filter.version).toBe(1);
       expect(filter.conditions).toEqual([]);
+      expect(filter.selectedFields).toEqual([]);
 
       const column = await FilterColumnAP.create({
         filterId: filter.id,

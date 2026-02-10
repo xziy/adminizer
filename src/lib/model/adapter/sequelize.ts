@@ -708,13 +708,18 @@ export class SequelizeModel<T> extends AbstractModel<T> {
         //   includes,
         // });
 
+        const attributes = Array.isArray(options.select) && options.select.length > 0
+            ? options.select
+            : undefined;
+
         let instances: any[];
         instances = await this.model.findAll({
             where,
             limit,
             offset,
             order,
-            include: mergedIncludes
+            include: mergedIncludes,
+            ...(attributes ? { attributes } : {})
         });
 
 

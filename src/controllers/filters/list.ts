@@ -1,15 +1,18 @@
 ﻿import { resolveModelContext } from "../../lib/filters/utils/modelResolver";
-import { buildModelPermissionToken, ensureAuth, getQueryStringValue, normalizePositiveInt, parseBoolean } from "./helpers";
+import { buildModelPermissionToken, ensureAuth } from "./helpers";
 
 export default async function list(req: ReqType, res: ResType) {
+  // Enforce authentication and read permissions for filter listing.
   const token = buildModelPermissionToken(req.adminizer, "FilterAP", "read");
   if (!ensureAuth(req, res, token)) {
     return res;
   }
 
-  const { repository, config } = req.adminizer.filters;
+  // Resolve filter dependencies for validation and paging.
+  const { repository, config, service } = req.adminizer.filters;
 
-  const modelNameParam = getQueryStringValue(req.query.modelName);
+  // Normalize incoming query parameters.
+  const modelNameParam = service.getQueryStringValue(req.query.modelName);
   if (!config.isFiltersEnabled()) {
     return res.status(403).json({
       success: false,
@@ -29,6 +32,7 @@ export default async function list(req: ReqType, res: ResType) {
 
   if (modelNameParam) {
     try {
+      // Ensure the requested model exists and can be resolved.
       resolveModelContext(req.adminizer, modelNameParam, req.user, "list");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -39,12 +43,14 @@ export default async function list(req: ReqType, res: ResType) {
     }
   }
 
-  const page = normalizePositiveInt(req.query.page, 1);
-  const limit = normalizePositiveInt(req.query.limit, 50, 100);
-  const onlyPinned = parseBoolean(req.query.pinned) === true;
-  const includeSystem = parseBoolean(req.query.includeSystem) === true;
+  // Apply pagination and filter flags.
+  const page = service.normalizePositiveInt(req.query.page, 1);
+  const limit = service.normalizePositiveInt(req.query.limit, 50, 100);
+  const onlyPinned = service.parseBoolean(req.query.pinned) === true;
+  const includeSystem = service.parseBoolean(req.query.includeSystem) === true;
 
   try {
+    // Fetch filter list with applied constraints.
     const result = await repository.findMany(req.user, {
       modelName: modelNameParam,
       onlyPinned,
@@ -64,6 +70,7 @@ export default async function list(req: ReqType, res: ResType) {
       }
     });
   } catch (error) {
+    // Translate repository errors into HTTP responses.
     const message = error instanceof Error ? error.message : String(error);
     return res.status(500).json({ success: false, error: message });
   }

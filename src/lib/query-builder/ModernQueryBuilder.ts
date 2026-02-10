@@ -90,6 +90,7 @@ export interface QueryParams {
   filters?: FilterCondition[];
   globalSearch?: string;
   fields?: string[];
+  selectFields?: string[];
 }
 
 export interface QueryResult<T = Record<string, unknown>> {
@@ -128,6 +129,9 @@ export class ModernQueryBuilder {
     const inMemoryPredicate = this.requiresInMemoryFiltering
       ? this.buildInMemoryPredicate(params)
       : null;
+    const selectFields = this.requiresInMemoryFiltering
+      ? undefined
+      : this.resolveSelectFields(params.selectFields);
 
     if (!this.requiresInMemoryFiltering) {
       const [data, total, filtered] = await Promise.all([
@@ -138,7 +142,8 @@ export class ModernQueryBuilder {
             skip: offset,
             limit: safeLimit
           },
-          this.dataAccessor
+          this.dataAccessor,
+          selectFields ? { select: selectFields } : undefined
         ),
         this.model.count({}, this.dataAccessor),
         this.model.count({ where: whereClause }, this.dataAccessor)
@@ -200,6 +205,9 @@ export class ModernQueryBuilder {
     const inMemoryPredicate = this.requiresInMemoryFiltering
       ? this.buildInMemoryPredicate(params)
       : null;
+    const selectFields = this.requiresInMemoryFiltering
+      ? undefined
+      : this.resolveSelectFields(params.selectFields);
 
     if (!this.requiresInMemoryFiltering) {
       let offset = 0;
@@ -211,7 +219,8 @@ export class ModernQueryBuilder {
             skip: offset,
             limit: chunkSize
           },
-          this.dataAccessor
+          this.dataAccessor,
+          selectFields ? { select: selectFields } : undefined
         );
 
         if (!data || data.length === 0) {
@@ -1717,6 +1726,44 @@ export class ModernQueryBuilder {
     }
 
     return "createdAt";
+  }
+
+  private resolveSelectFields(selectedFields?: string[]): string[] | undefined {
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+      return undefined;
+    }
+
+    const normalized = selectedFields
+      .map((field) => String(field).trim())
+      .filter((field) => field.length > 0);
+
+    if (normalized.length === 0) {
+      return undefined;
+    }
+
+    const allowed = normalized.filter((field) => Boolean(this.fields?.[field]));
+    if (allowed.length === 0) {
+      return undefined;
+    }
+
+    const unique = new Set<string>();
+    const result: string[] = [];
+    const primaryKey = this.model.primaryKey ?? "id";
+
+    if (primaryKey) {
+      const key = String(primaryKey);
+      unique.add(key);
+      result.push(key);
+    }
+
+    allowed.forEach((field) => {
+      if (!unique.has(field)) {
+        unique.add(field);
+        result.push(field);
+      }
+    });
+
+    return result;
   }
 
   private normalizeSortDirection(direction?: QuerySortDirection): QuerySortDirection {

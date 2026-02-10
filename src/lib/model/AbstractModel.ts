@@ -37,6 +37,7 @@ type PopulateOption = [string, { sort?: string, where?: any }];
 export interface FindOptions {
     populate?: PopulateOption[]
     limit?: number
+    select?: string[]
 }
 
 export abstract class AbstractModel<T> {
@@ -190,9 +191,13 @@ export abstract class AbstractModel<T> {
         return record ? dataAccessor.process(record) : null;
     }
 
-    public async find(criteria: Partial<T>, dataAccessor: DataAccessor): Promise<Partial<T>[]> {
+    public async find(
+        criteria: Partial<T>,
+        dataAccessor: DataAccessor,
+        options?: FindOptions
+    ): Promise<Partial<T>[]> {
         criteria = await dataAccessor.sanitizeUserRelationAccess(criteria);
-        let records = await this._find(criteria);
+        let records = await this._find(criteria, options);
         return records.map(record => dataAccessor.process(record));
     }
 

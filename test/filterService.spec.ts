@@ -182,7 +182,8 @@ describe("FilterService", () => {
 
     expect(targetModel.find).toHaveBeenCalledWith(
       { where: expectedWhere, sort: "age DESC", skip: 5, limit: 5 },
-      dataAccessor
+      dataAccessor,
+      undefined
     );
     expect(targetModel.count).toHaveBeenNthCalledWith(1, {}, dataAccessor);
     expect(targetModel.count).toHaveBeenNthCalledWith(2, { where: expectedWhere }, dataAccessor);

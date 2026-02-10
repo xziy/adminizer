@@ -15,7 +15,7 @@ import { randomUUID } from "node:crypto";
 process.env.VITEST = "1";
 process.env.ADMINPANEL_LAZY_GEN_ADMIN_ENABLE = "1";
 
-type TestUserKey = "blocked" | "limited" | "full" | "noexport";
+type TestUserKey = "blocked" | "limited" | "full" | "noexport" | "noread";
 
 let users: Record<TestUserKey, UserAP> = {
   blocked: {
@@ -46,6 +46,14 @@ let users: Record<TestUserKey, UserAP> = {
     id: 4,
     login: "noexport",
     fullName: "No Export",
+    isAdministrator: false,
+    isActive: true,
+    groups: []
+  },
+  noread: {
+    id: 5,
+    login: "noread",
+    fullName: "No Read",
     isAdministrator: false,
     isActive: true,
     groups: []
@@ -289,6 +297,10 @@ describe("Public API permissions", () => {
       { name: "noexport", tokens: ["api-token-create", "api-public-access"] },
       groupAccessor
     );
+    const noReadGroup = await groupEntry.model.create(
+      { name: "noread", tokens: ["api-token-create", "api-public-access", "export-json"] },
+      groupAccessor
+    );
 
     const blockedRecord = await userEntry.model.create(
       { login: "blocked", fullName: "Blocked", isAdministrator: false, isActive: true },
@@ -304,6 +316,10 @@ describe("Public API permissions", () => {
     );
     const noExportRecord = await userEntry.model.create(
       { login: "noexport", fullName: "No Export", isAdministrator: false, isActive: true },
+      userAccessorAdd
+    );
+    const noReadRecord = await userEntry.model.create(
+      { login: "noread", fullName: "No Read", isAdministrator: false, isActive: true },
       userAccessorAdd
     );
 
@@ -327,12 +343,18 @@ describe("Public API permissions", () => {
       { groups: [noExportGroup.id] },
       userAccessorEdit
     );
+    await userEntry.model.updateOne(
+      { id: noReadRecord.id },
+      { groups: [noReadGroup.id] },
+      userAccessorEdit
+    );
 
     users = {
       blocked: (await userEntry.model.findOne({ id: blockedRecord.id }, userAccessorView)) as UserAP,
       limited: (await userEntry.model.findOne({ id: limitedRecord.id }, userAccessorView)) as UserAP,
       full: (await userEntry.model.findOne({ id: fullRecord.id }, userAccessorView)) as UserAP,
-      noexport: (await userEntry.model.findOne({ id: noExportRecord.id }, userAccessorView)) as UserAP
+      noexport: (await userEntry.model.findOne({ id: noExportRecord.id }, userAccessorView)) as UserAP,
+      noread: (await userEntry.model.findOne({ id: noReadRecord.id }, userAccessorView)) as UserAP
     };
 
     server = adminizer.app.listen(0);
@@ -412,6 +434,48 @@ describe("Public API permissions", () => {
     const publicResult = await jsonRequest(
       `/admin/api/public/json/${filterRecord.id}?token=${token}`,
       { user: "noexport" }
+    );
+
+    expect(publicResult.response.status).toBe(403);
+  });
+
+  it("denies access to private filters owned by another user", async () => {
+    // Seed data and create a private filter owned by a different user.
+    await seedRecords();
+    const filterRecord = await createFilterRecord(users.limited.id);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST",
+      user: "full"
+    });
+    expect(tokenResult.response.status).toBe(201);
+    const token = tokenResult.json?.token as string;
+
+    // Attempt to access the private filter with a different user token.
+    const publicResult = await jsonRequest(
+      `/admin/api/public/json/${filterRecord.id}?token=${token}`,
+      { user: "full" }
+    );
+
+    expect(publicResult.response.status).toBe(403);
+  });
+
+  it("denies public API without model read access", async () => {
+    // Seed data and create a filter owned by the restricted user.
+    await seedRecords();
+    const filterRecord = await createFilterRecord(users.noread.id);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST",
+      user: "noread"
+    });
+    expect(tokenResult.response.status).toBe(201);
+    const token = tokenResult.json?.token as string;
+
+    // Access should fail because the user lacks read access to the model.
+    const publicResult = await jsonRequest(
+      `/admin/api/public/json/${filterRecord.id}?token=${token}`,
+      { user: "noread" }
     );
 
     expect(publicResult.response.status).toBe(403);

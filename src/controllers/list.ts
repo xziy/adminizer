@@ -5,16 +5,18 @@ import {inertiaListHelper} from "../helpers/inertiaListHelper";
 import {Field, Fields} from "../helpers/fieldsHelper";
 import {BaseFieldConfig} from "../interfaces/adminpanelConfig";
 import {ModernQueryBuilder, QueryResult, QuerySortDirection} from "../lib/query-builder/ModernQueryBuilder";
-import {FilterAP, FilterCondition} from "../models/FilterAP";
+import {FilterCondition} from "../models/FilterAP";
 import type { FilterColumnAP } from "../models/FilterColumnAP";
 import { AbstractModel } from "../lib/model/AbstractModel";
 
 export default async function list(req: ReqType, res: ResType) {
+    // Resolve the model entry and fail fast when it is missing.
     let entity = ControllerHelper.findEntityObject(req);
     if (!entity.model) {
         return res.status(404).send({error: 'Not Found'});
     }
 
+    // Enforce authentication and model-level read permissions.
     if (req.adminizer.config.auth.enable) {
         if (!req.user) {
             return res.redirect(`${req.adminizer.config.routePrefix}/model/userap/login`);
@@ -23,25 +25,26 @@ export default async function list(req: ReqType, res: ResType) {
         }
     }
 
+    // Build the base list context and configuration dependencies.
     let dataAccessor = new DataAccessor(req.adminizer, req.user, entity, "list");
     const baseFields = dataAccessor.getFieldsConfig();
     const header = inertiaListHelper(entity, req, baseFields)
     const filterModule = req.adminizer.filters;
     const filterConfig = filterModule.config;
+    const filterService = filterModule.service;
     const filtersEnabled = filterConfig.isFiltersEnabledForModel(entity.name);
     const useLegacySearch = !filterConfig.isFiltersEnabled() || filterConfig.shouldUseLegacySearch(entity.name);
-    const page = normalizePositiveInt(req.query.page?.toString(), 1);
-    const count = normalizePositiveInt(req.query.count?.toString(), 5);
+    const page = filterService.normalizePositiveInt(req.query.page, 1);
+    const count = filterService.normalizePositiveInt(req.query.count, 5);
 
-    const orderColumn = getQueryStringValue(req.query.column);
-    const directionParam = getQueryStringValue(req.query.direction)?.toLowerCase();
+    // Normalize sort values for both UI and query-builder usage.
+    const orderColumn = filterService.getQueryStringValue(req.query.column);
+    const directionParam = filterService.getQueryStringValue(req.query.direction)?.toLowerCase();
     const direction = directionParam === "asc" ? "asc" : "desc";
-    const sortDirection: QuerySortDirection | undefined = directionParam
-        ? directionParam === "asc"
-            ? "ASC"
-            : "DESC"
-        : undefined;
+    const sortDirection: QuerySortDirection | undefined =
+        filterService.normalizeSortDirection(directionParam);
 
+    // Read legacy search inputs to build column filters when required.
     const globalSearch = useLegacySearch && req.query.globalSearch ? req.query.globalSearch.toString() : "";
 
     const searchColumns = useLegacySearch && req.query.searchColumn
@@ -56,20 +59,10 @@ export default async function list(req: ReqType, res: ResType) {
             : [req.query.searchColumnValue.toString()]
         : [];
 
-    // Collect {column, value} pairs, removing duplicate columns (leaving the latter)
-    const searchMap = new Map<string, string>();
+    // Build unique column/value pairs used by legacy filtering.
+    const searchPairs = filterService.buildSearchPairs(searchColumns, searchColumnValues);
 
-    for (let i = 0; i < searchColumns.length; i++) {
-        const column = searchColumns[i];
-        const value = searchColumnValues[i] || ""; 
-        searchMap.set(column, value); 
-    }
-
-    const searchPairs = Array.from(searchMap.entries()).map(([column, value]) => ({
-        column,
-        value,
-    }))
-
+    // Create the base list context from the current UI parameters.
     const baseContext = buildListContext(
         baseFields,
         orderColumn,
@@ -81,11 +74,14 @@ export default async function list(req: ReqType, res: ResType) {
         useLegacySearch
     );
     let activeContext = baseContext;
+    // Prepare UI options for column selection.
     const filterColumnFields = buildColumnFieldOptions(baseFields, req);
     let filterColumnsForUi: ColumnConfigPayload[] = [];
-    const filterSlug = getQueryStringValue(req.query.filterSlug ?? req.query.filter);
-    const filterId = getQueryStringValue(req.query.filterId);
+    let filterSelectedFields: string[] = [];
+    const filterSlug = filterService.getQueryStringValue(req.query.filterSlug ?? req.query.filter);
+    const filterId = filterService.getQueryStringValue(req.query.filterId);
 
+    // Initialize the response payload to predictable defaults.
     let data: { data: Record<string, unknown>[]; recordsTotal: number; recordsFiltered: number } = {
         data: [],
         recordsTotal: 0,
@@ -93,6 +89,7 @@ export default async function list(req: ReqType, res: ResType) {
     };
     let appliedFilter: string | undefined;
     let appliedFilterId: string | undefined;
+    // Resolve the identifier field for list rendering.
     const identifierField =
         entity.config?.identifierField
         ?? req.adminizer.config.identifierField
@@ -101,11 +98,13 @@ export default async function list(req: ReqType, res: ResType) {
     try {
         let result: QueryResult<Record<string, unknown>> | undefined;
 
+        // Warn and ignore filter requests when filters are disabled.
         if ((filterSlug || filterId) && !filtersEnabled) {
             const ignored = filterId ?? filterSlug ?? "";
             Adminizer.log.warn(`Filters disabled for model ${entity.name}, ignoring filter '${ignored}'`);
         }
 
+        // Resolve, validate, and execute a saved filter when requested.
         if ((filterSlug || filterId) && filtersEnabled) {
             try {
                 const filter = filterId
@@ -118,7 +117,14 @@ export default async function list(req: ReqType, res: ResType) {
 
                 appliedFilterId = filter.id ? String(filter.id) : undefined;
 
-                assertFilterMatchesModel(filter, dataAccessor, entity.model);
+                const targetNames = filterService.buildTargetNameSet([
+                    dataAccessor?.entity?.name,
+                    dataAccessor?.entity?.config?.model,
+                    entity.model?.modelname,
+                    entity.model?.identity
+                ]);
+                const targetLabel = resolveTargetLabel(dataAccessor, entity.model);
+                filterService.assertFilterMatchesModel(filter, targetNames, targetLabel);
                 filterModule.access.assertCanExecute(filter, req.user);
                 const validation = filterModule.migration.validate(filter);
                 if (!validation.valid) {
@@ -128,45 +134,67 @@ export default async function list(req: ReqType, res: ResType) {
                     throw new Error(`Filter "${filterId ?? filterSlug}" is invalid`);
                 }
 
-                const filterColumns = filter.id
-                    ? await filterModule.repository.findColumns(String(filter.id))
-                    : [];
-                const columnOverrides = buildColumnOverrides(filterColumns);
-                const columnSelection = applyColumnSelection(baseFields, filterColumns);
-                filterColumnsForUi = mapFilterColumns(filterColumns);
-                const filterContext = columnSelection.applied
-                    ? buildListContext(
-                        columnSelection.fields,
-                        orderColumn,
-                        direction,
-                        searchPairs,
-                        req,
-                        entity,
-                        dataAccessor,
-                        useLegacySearch,
-                        columnOverrides
-                    )
-                    : baseContext;
+    const filterColumns = filter.id
+        ? await filterModule.repository.findColumns(String(filter.id))
+        : [];
+    const selectedFields = normalizeSelectedFields(filter.selectedFields);
+    filterSelectedFields = selectedFields;
+    const selectedFieldsForQuery = mergeSelectedFields(selectedFields, [
+        identifierField,
+        entity.model.primaryKey
+    ]);
+    const selectedFieldSelection = applySelectedFields(baseFields, selectedFields);
+    const fieldsForColumns = selectedFieldSelection.applied
+        ? selectedFieldSelection.fields
+        : baseFields;
+    const columnOverrides = buildColumnOverrides(filterColumns);
+    const columnSelection = applyColumnSelection(fieldsForColumns, filterColumns);
+    filterColumnsForUi = mapFilterColumns(filterColumns);
+    const filterContext = columnSelection.applied
+        ? buildListContext(
+            columnSelection.fields,
+            orderColumn,
+            direction,
+            searchPairs,
+            req,
+            entity,
+            dataAccessor,
+            useLegacySearch,
+            columnOverrides
+        )
+        : buildListContext(
+            fieldsForColumns,
+            orderColumn,
+            direction,
+            searchPairs,
+            req,
+            entity,
+            dataAccessor,
+            useLegacySearch,
+            columnOverrides
+        );
 
-                result = await filterModule.execution.executeFilter(
-                    filter,
-                    req.user,
-                    {
-                        page,
-                        limit: count,
-                        sort: filterContext.sortField,
-                        sortDirection,
-                        globalSearch: useLegacySearch ? globalSearch : undefined,
-                        extraFilters: filterContext.columnFilters
-                    }
-                );
-                appliedFilter = filterId ?? filterSlug;
-                activeContext = filterContext;
+    result = await filterModule.execution.executeFilter(
+        filter,
+        req.user,
+        {
+            page,
+            limit: count,
+            sort: filterContext.sortField,
+            sortDirection,
+            globalSearch: useLegacySearch ? globalSearch : undefined,
+            extraFilters: filterContext.columnFilters,
+            selectFields: selectedFieldsForQuery.length > 0 ? selectedFieldsForQuery : undefined
+        }
+    );
+    appliedFilter = filterId ?? filterSlug;
+    activeContext = filterContext;
             } catch (error) {
                 Adminizer.log.error(error);
             }
         }
 
+        // Fallback to base list execution when no filter was applied.
         if (!result) {
             result = await activeContext.queryBuilder.execute({
                 page,
@@ -187,6 +215,7 @@ export default async function list(req: ReqType, res: ResType) {
         Adminizer.log.error(error);
     }
 
+    // Return the list view payload with filter metadata for the UI.
     return req.Inertia.render({
         component: 'list',
         props: {
@@ -199,11 +228,13 @@ export default async function list(req: ReqType, res: ResType) {
             appliedFilter,
             appliedFilterId,
             filterColumnFields,
-            filterColumns: filterColumnsForUi
+            filterColumns: filterColumnsForUi,
+            filterSelectedFields
         }
     });
 }
 
+// Build the column metadata map used by the list UI and legacy searches.
 function setColumns(
     fields: Fields,
     orderColumn: string | undefined,
@@ -212,9 +243,11 @@ function setColumns(
     req: ReqType,
     columnOverrides?: ColumnOverrides
 ) {
+    // Translate field configs into UI-friendly column definitions.
     const columns: Record<string, object> = {};
     let i = 1;
 
+    // Populate columns in field order while applying overrides.
     for (const key of Object.keys(fields)) {
         const field = fields[key] as Field;
         const fieldConfig = (field.config ?? {}) as BaseFieldConfig & { width?: unknown };
@@ -224,7 +257,7 @@ function setColumns(
         const inlineEditable =
             Boolean(rawInlineEditable) && (columnOverrides?.[key]?.isEditable ?? true);
 
-        // Check if this field is searchable
+        // Resolve legacy search values by column index.
         const searchForThisColumn = searchPairs.find(pair => pair.column === String(i));
         const searchValue = searchForThisColumn ? searchForThisColumn.value : "";
         columns[key] = {
@@ -245,158 +278,18 @@ function setColumns(
     return columns;
 }
 
-function getQueryStringValue(value: unknown): string | undefined {
-    if (Array.isArray(value)) {
-        const found = value.map(String).find((item) => item.trim().length > 0);
-        return found ? found.trim() : undefined;
-    }
-    if (typeof value === "string") {
-        const trimmed = value.trim();
-        return trimmed.length > 0 ? trimmed : undefined;
-    }
-    if (value === undefined || value === null) {
-        return undefined;
-    }
-    const stringValue = String(value).trim();
-    return stringValue.length > 0 ? stringValue : undefined;
-}
-
-function normalizePositiveInt(value: string | undefined, fallback: number): number {
-    if (!value) {
-        return fallback;
-    }
-    const parsed = parseInt(value, 10);
-    if (!Number.isFinite(parsed) || parsed < 1) {
-        return fallback;
-    }
-    return parsed;
-}
-
-function resolveSortField(
-    orderColumn: string | undefined,
-    fieldKeys: string[],
-    fields: Fields
-): string | undefined {
-    if (!orderColumn) {
-        return undefined;
-    }
-    if (fields?.[orderColumn]) {
-        return orderColumn;
-    }
-    const parsed = parseInt(orderColumn, 10);
-    if (Number.isFinite(parsed) && parsed > 0 && parsed <= fieldKeys.length) {
-        return fieldKeys[parsed - 1];
-    }
-    return undefined;
-}
-
-function buildColumnFilters(
-    fields: Fields,
-    searchPairs: Array<{ column: string; value: string }>
-): FilterCondition[] {
-    const filters: FilterCondition[] = [];
-    const fieldKeys = Object.keys(fields ?? {});
-
-    searchPairs.forEach((pair, index) => {
-        const rawValue = pair.value?.trim();
-        if (!rawValue) {
-            return;
-        }
-
-        const fieldKey = resolveSortField(pair.column, fieldKeys, fields);
-        if (!fieldKey) {
-            return;
-        }
-
-        const field = fields[fieldKey] as Field;
-        if (!field || !field.model?.type) {
-            return;
-        }
-
-        const fieldType = field.model.type;
-        let operator: FilterCondition["operator"] | null = null;
-        let value: unknown = rawValue;
-
-        if (fieldType === "boolean") {
-            const lower = rawValue.toLowerCase();
-            if (lower !== "true" && lower !== "false") {
-                return;
-            }
-            operator = "eq";
-            value = lower === "true";
-        } else if (fieldType === "number") {
-            if (rawValue.startsWith(">") || rawValue.startsWith("<")) {
-                const parsed = parseFloat(rawValue.slice(1));
-                if (Number.isNaN(parsed)) {
-                    return;
-                }
-                operator = rawValue.startsWith(">") ? "gte" : "lte";
-                value = parsed;
-            } else {
-                const parsed = parseFloat(rawValue);
-                if (Number.isNaN(parsed)) {
-                    return;
-                }
-                operator = "eq";
-                value = parsed;
-            }
-        } else if (fieldType === "string") {
-            operator = "like";
-            value = rawValue;
-        } else {
-            return;
-        }
-
-        filters.push({
-            id: `column-${fieldKey}-${index}`,
-            field: fieldKey,
-            operator,
-            value
-        });
-    });
-
-    return filters;
-}
-
-function assertFilterMatchesModel(
-    filter: Partial<FilterAP>,
+// Build a label used in error messages when a filter targets a different model.
+function resolveTargetLabel(
     dataAccessor: DataAccessor,
     model: AbstractModel<any>
-): void {
-    const filterModelName = String(filter.modelName ?? "").toLowerCase();
-    if (!filterModelName) {
-        return;
-    }
-
-    const targetNames = new Set<string>();
-    if (dataAccessor?.entity?.name) {
-        targetNames.add(String(dataAccessor.entity.name).toLowerCase());
-    }
-    if (dataAccessor?.entity?.config?.model) {
-        targetNames.add(String(dataAccessor.entity.config.model).toLowerCase());
-    }
-    if (model?.modelname) {
-        targetNames.add(String(model.modelname).toLowerCase());
-    }
-    if (model?.identity) {
-        targetNames.add(String(model.identity).toLowerCase());
-    }
-
-    if (targetNames.size === 0 || targetNames.has(filterModelName)) {
-        return;
-    }
-
-    const targetLabel = dataAccessor?.entity?.name
+): string {
+    return dataAccessor?.entity?.name
         ?? dataAccessor?.entity?.config?.model
         ?? model?.modelname
         ?? model?.identity
         ?? "unknown";
-
-    throw new Error(
-        `Filter \"${filter.name ?? filter.id}\" is configured for model \"${filter.modelName}\", not \"${targetLabel}\"`
-    );
 }
-
+// Describe the resolved context used to execute list queries.
 type ListContext = {
     fields: Fields;
     columns: Record<string, object>;
@@ -405,6 +298,7 @@ type ListContext = {
     queryBuilder: ModernQueryBuilder;
 };
 
+// Describe columns that can be selected in the UI.
 type ColumnFieldOption = {
     name: string;
     label: string;
@@ -412,6 +306,7 @@ type ColumnFieldOption = {
     inlineEditable?: boolean;
 };
 
+// Describe the column configuration payload stored with filters.
 type ColumnConfigPayload = {
     fieldName: string;
     order: number;
@@ -420,8 +315,10 @@ type ColumnConfigPayload = {
     width?: number;
 };
 
+// Describe width/editability overrides by field name.
 type ColumnOverrides = Record<string, { width?: number; isEditable?: boolean }>;
 
+// Assemble query context for list rendering and execution.
 function buildListContext(
     fields: Fields,
     orderColumn: string | undefined,
@@ -433,9 +330,13 @@ function buildListContext(
     useLegacySearch: boolean,
     columnOverrides?: ColumnOverrides
 ): ListContext {
+    // Compute column metadata and legacy column filters for the list response.
     const columns = setColumns(fields, orderColumn, direction, searchPairs, req, columnOverrides);
-    const sortField = resolveSortField(orderColumn, Object.keys(fields ?? {}), fields);
-    const columnFilters = useLegacySearch ? buildColumnFilters(fields, searchPairs) : [];
+    const filterService = req.adminizer.filters.service;
+    const sortField = filterService.resolveSortField(orderColumn, Object.keys(fields ?? {}), fields);
+    const columnFilters = useLegacySearch
+        ? filterService.buildLegacyColumnFilters(fields, searchPairs)
+        : [];
     const queryBuilder = new ModernQueryBuilder(entity.model, fields, dataAccessor);
 
     return {
@@ -447,6 +348,7 @@ function buildListContext(
     };
 }
 
+// Apply saved column configuration from a filter to the current fields.
 function applyColumnSelection(
     fields: Fields,
     columns: FilterColumnAP[]
@@ -461,6 +363,7 @@ function applyColumnSelection(
         return orderA - orderB;
     });
 
+    // Keep only visible columns and preserve order.
     const visible = ordered.filter((column) => column.isVisible !== false);
     if (visible.length === 0) {
         return { fields, applied: false };
@@ -498,10 +401,84 @@ function applyColumnSelection(
     return { fields: nextFields, applied: true };
 }
 
+// Normalize selected field lists from filter payloads.
+function normalizeSelectedFields(selectedFields: unknown): string[] {
+    if (!Array.isArray(selectedFields)) {
+        return [];
+    }
+
+    return selectedFields
+        .map((field) => String(field).trim())
+        .filter((field) => field.length > 0);
+}
+
+// Merge explicit field selections with required field names.
+function mergeSelectedFields(selectedFields: string[], requiredFields: Array<string | undefined>): string[] {
+    const merged = new Set<string>();
+
+    requiredFields.forEach((field) => {
+        const normalized = String(field ?? "").trim();
+        if (normalized) {
+            merged.add(normalized);
+        }
+    });
+
+    selectedFields.forEach((field) => {
+        const normalized = String(field ?? "").trim();
+        if (normalized) {
+            merged.add(normalized);
+        }
+    });
+
+    return Array.from(merged);
+}
+
+// Apply selected field constraints to list fields when configured.
+function applySelectedFields(
+    fields: Fields,
+    selectedFields: string[]
+): { fields: Fields; applied: boolean } {
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+        return { fields, applied: false };
+    }
+
+    const nextFields: Fields = {};
+    const missing: string[] = [];
+
+    selectedFields.forEach((fieldName) => {
+        const key = String(fieldName ?? "").trim();
+        if (!key) {
+            return;
+        }
+        const field = fields?.[key];
+        if (!field) {
+            missing.push(key);
+            return;
+        }
+        const fieldConfig = field.config as BaseFieldConfig;
+        if (fieldConfig?.visible === false) {
+            missing.push(key);
+            return;
+        }
+        nextFields[key] = field;
+    });
+
+    if (missing.length > 0) {
+        Adminizer.log.warn(`Filter selectedFields reference unknown fields: ${missing.join(", ")}`);
+    }
+
+    if (Object.keys(nextFields).length === 0) {
+        return { fields, applied: false };
+    }
+
+    return { fields: nextFields, applied: true };
+}
+
 function buildColumnFieldOptions(
     fields: Fields,
     req: ReqType
 ): ColumnFieldOption[] {
+    // Expose only visible fields as selectable columns for the UI.
     if (!fields) {
         return [];
     }
@@ -523,9 +500,11 @@ function buildColumnFieldOptions(
         });
 }
 
+// Define the clamping bounds for user-configured column widths.
 const COLUMN_WIDTH_MIN = 80;
 const COLUMN_WIDTH_MAX = 600;
 
+// Normalize column widths to the allowed list UI range.
 export function normalizeColumnWidth(value: unknown): number | undefined {
     const parsed = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -535,6 +514,7 @@ export function normalizeColumnWidth(value: unknown): number | undefined {
     return Math.min(Math.max(rounded, COLUMN_WIDTH_MIN), COLUMN_WIDTH_MAX);
 }
 
+// Convert stored filter columns to UI-ready overrides.
 export function buildColumnOverrides(columns: FilterColumnAP[]): ColumnOverrides {
     if (!Array.isArray(columns)) {
         return {};
@@ -554,6 +534,7 @@ export function buildColumnOverrides(columns: FilterColumnAP[]): ColumnOverrides
     return overrides;
 }
 
+// Map filter column entities into the API payload for the list UI.
 export function mapFilterColumns(columns: FilterColumnAP[]): ColumnConfigPayload[] {
     if (!Array.isArray(columns)) {
         return [];

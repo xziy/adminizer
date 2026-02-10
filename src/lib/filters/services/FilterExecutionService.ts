@@ -11,6 +11,7 @@ export type FilterExecutionOptions = {
   sortDirection?: QuerySortDirection;
   globalSearch?: string;
   extraFilters?: FilterCondition[];
+  selectFields?: string[];
 };
 
 export class FilterExecutionService {
@@ -66,6 +67,11 @@ export class FilterExecutionService {
     );
 
     const queryParams = this.buildQueryParams(filter, options);
+    queryParams.selectFields = this.normalizeSelectedFields(
+      options.selectFields ?? filter.selectedFields,
+      context.fields,
+      context.entry.model.primaryKey
+    );
     return queryBuilder.execute(queryParams);
   }
 
@@ -104,6 +110,47 @@ export class FilterExecutionService {
     }
 
     return queryParams;
+  }
+
+  private normalizeSelectedFields(
+    selectedFields: unknown,
+    fields: Record<string, unknown>,
+    primaryKey?: string
+  ): string[] | undefined {
+    if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+      return undefined;
+    }
+
+    const normalized = selectedFields
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+
+    if (normalized.length === 0) {
+      return undefined;
+    }
+
+    const allowed = normalized.filter((field) => Boolean(fields?.[field]));
+    if (allowed.length === 0) {
+      return undefined;
+    }
+
+    const unique = new Set<string>();
+    const result: string[] = [];
+
+    if (primaryKey) {
+      const key = String(primaryKey);
+      unique.add(key);
+      result.push(key);
+    }
+
+    allowed.forEach((field) => {
+      if (!unique.has(field)) {
+        unique.add(field);
+        result.push(field);
+      }
+    });
+
+    return result;
   }
 
   private normalizeSortDirection(

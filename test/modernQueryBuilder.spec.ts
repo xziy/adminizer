@@ -591,9 +591,28 @@ describe("ModernQueryBuilder", () => {
     expect(result.pages).toBe(1);
     expect(model.find).toHaveBeenCalledWith(
       { where: {}, sort: "id DESC", skip: 0, limit: 5 },
-      dataAccessor
+      dataAccessor,
+      undefined
     );
     expect(result.data[0].name).toBe("ALICE");
+  });
+
+  it("passes selected fields to model queries", async () => {
+    const model = buildModel();
+    const fields = buildFields();
+    const dataAccessor = buildDataAccessor();
+    const builder = new ModernQueryBuilder(model, fields, dataAccessor);
+
+    model.find.mockResolvedValueOnce([{ id: "1", name: "alice" }]);
+    model.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
+
+    await builder.execute({ page: 1, limit: 5, selectFields: ["name"] });
+
+    expect(model.find).toHaveBeenCalledWith(
+      { where: {}, sort: "id DESC", skip: 0, limit: 5 },
+      dataAccessor,
+      { select: ["id", "name"] }
+    );
   });
 
   it("streams data in chunks", async () => {

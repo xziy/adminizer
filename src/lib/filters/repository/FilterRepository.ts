@@ -26,6 +26,7 @@ export type FilterCreateInput = {
   modelName: string;
   description?: string;
   conditions?: FilterCondition[];
+  selectedFields?: string[];
   sortField?: string;
   sortDirection?: FilterSortDirection;
   visibility?: FilterVisibility;
@@ -375,6 +376,7 @@ export class FilterRepository {
       slug,
       owner: data.owner ?? user.id,
       conditions: Array.isArray(data.conditions) ? data.conditions : [],
+      selectedFields: this.normalizeSelectedFields(data.selectedFields),
       sortDirection: data.sortDirection ?? "ASC",
       visibility: data.visibility ?? "private",
       groupIds: Array.isArray(data.groupIds) ? data.groupIds : [],
@@ -406,6 +408,10 @@ export class FilterRepository {
 
     if (data.conditions && !Array.isArray(data.conditions)) {
       next.conditions = [];
+    }
+
+    if ("selectedFields" in data) {
+      next.selectedFields = this.normalizeSelectedFields(data.selectedFields);
     }
 
     return next;
@@ -518,6 +524,16 @@ export class FilterRepository {
 
   private generateApiKey(): string {
     return randomBytes(32).toString("hex");
+  }
+
+  private normalizeSelectedFields(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    const normalized = value
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+    return Array.from(new Set(normalized));
   }
 
   private createSystemUser(): UserAP {

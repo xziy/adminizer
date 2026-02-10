@@ -83,6 +83,13 @@ Export permissions:
 - `export-json` for JSON
 - `export-feed` for Atom/RSS
 
+## Security Checks
+
+- Tokens are only accepted for active users (`isActive: true`).
+- Filters still enforce visibility (private/public/groups) for the token owner.
+- Model access is validated through standard access rights tokens (for example `read-<model>-model`).
+- Query params like `sort` and `globalSearch` are sanitized and validated against model fields.
+
 ## Rate Limiting
 
 Public API requests are limited to 120 requests per minute by default. The limiter keys by token if provided, otherwise by IP. Exceeding the limit returns `429` with a `Retry-After` header.

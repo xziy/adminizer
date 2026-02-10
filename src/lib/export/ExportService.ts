@@ -1,6 +1,6 @@
 import path from "node:path";
 import { Adminizer } from "../Adminizer";
-import { ModernQueryBuilder, QueryParams, QuerySortDirection } from "../query-builder/ModernQueryBuilder";
+import { ModernQueryBuilder, QueryParams } from "../query-builder/ModernQueryBuilder";
 import { resolveModelContext } from "../filters/utils/modelResolver";
 import type { Fields } from "../../helpers/fieldsHelper";
 import type { BaseFieldConfig } from "../../interfaces/adminpanelConfig";
@@ -13,7 +13,6 @@ import { CsvExporter } from "./formatters/CsvExporter";
 import { ExcelExporter } from "./formatters/ExcelExporter";
 import type {
   ExportColumn,
-  ExportColumnSearch,
   ExportFormat,
   ExportPayload,
   ExportRequest,
@@ -21,6 +20,7 @@ import type {
 } from "./types";
 import { AbstractExporter } from "./formatters/AbstractExporter";
 
+// Capture resolved export data needed by formatters and streaming.
 type ExportContext = {
   modelName: string;
   filter?: Partial<FilterAP>;
@@ -31,6 +31,7 @@ type ExportContext = {
   baseFileName: string;
 };
 
+// Clamp exported column widths to the same bounds as list configuration.
 const COLUMN_WIDTH_MIN = 80;
 const COLUMN_WIDTH_MAX = 600;
 
@@ -48,14 +49,17 @@ export class ExportService {
     ]);
   }
 
+  // List all export formats supported by the service.
   getAvailableFormats(): ExportFormat[] {
     return Array.from(this.exporters.keys());
   }
 
+  // Resolve a content type based on the export format.
   getContentType(format: ExportFormat): string | undefined {
     return this.exporters.get(format)?.getContentType();
   }
 
+  // Enqueue a background export job when a queue is configured.
   enqueue(
     request: ExportRequest,
     user: UserAP,
@@ -67,11 +71,13 @@ export class ExportService {
     return this.queue.enqueue(() => this.export(request, user, translate));
   }
 
+  // Execute the export pipeline and write output to disk.
   async export(
     request: ExportRequest,
     user: UserAP,
     translate?: (value: string) => string
   ): Promise<ExportResult> {
+    // Resolve the exporter and fail fast on unsupported formats.
     const exporter = this.exporters.get(request.format);
     if (!exporter) {
       return {
@@ -80,6 +86,7 @@ export class ExportService {
       };
     }
 
+    // Build the full export context before streaming rows.
     const context = await this.resolveContext(request, user, translate);
     const outputDir = this.resolveOutputDir();
     const fileName = this.buildFileName(
@@ -88,6 +95,7 @@ export class ExportService {
     );
     const filePath = path.join(outputDir, fileName);
 
+    // Project stream rows to selected columns and apply optional limits.
     const projectedRows = this.projectRows(
       context.queryBuilder.stream(context.queryParams, {
         chunkSize: request.chunkSize
@@ -96,6 +104,7 @@ export class ExportService {
       request.limit
     );
 
+    // Compose the exporter payload with formatting options.
     const payload: ExportPayload = {
       filePath,
       fileName,
@@ -109,6 +118,7 @@ export class ExportService {
       freezeHeaders: request.freezeHeaders
     };
 
+    // Write the export and return the download metadata.
     const result = await exporter.export(payload);
     if (!result.success) {
       return result;
@@ -125,10 +135,13 @@ export class ExportService {
     user: UserAP,
     translate?: (value: string) => string
   ): Promise<ExportContext> {
+    // Prepare filter-related dependencies for reuse.
     const filterModule = this.adminizer.filters;
     const filterConfig = filterModule.config;
+    const filterService = filterModule.service;
     const translator = translate ?? ((value: string) => value);
 
+    // Resolve a saved filter when filterId or filterSlug is provided.
     let filter: Partial<FilterAP> | undefined;
     let filterColumns: FilterColumnAP[] = [];
 
@@ -153,6 +166,7 @@ export class ExportService {
       }
     }
 
+    // Determine the model for export and ensure filters are allowed.
     const modelName = request.modelName ?? (filter?.modelName ? String(filter.modelName) : undefined);
     if (!modelName) {
       throw new Error("modelName is required when filterId is not provided");
@@ -163,15 +177,25 @@ export class ExportService {
       throw new Error(`Filters are disabled for model ${modelName}`);
     }
 
+    // Decide whether legacy search parameters should be honored.
     const useLegacySearch = request.useLegacySearch
       ?? (!filterConfig.isFiltersEnabled() || filterConfig.shouldUseLegacySearch(modelName));
 
+    // Resolve the model context to drive field selection and query execution.
     const context = resolveModelContext(this.adminizer, modelName, user, "list");
 
     if (filter) {
-      this.assertFilterMatchesModel(filter, context.entry.model.modelname ?? context.entry.name, context);
+      const targetNames = filterService.buildTargetNameSet([
+        context?.entity?.name,
+        context?.entity?.config?.model,
+        context?.entry?.model?.modelname,
+        context?.entry?.model?.identity
+      ]);
+      const targetLabel = context.entry.model.modelname ?? context.entry.name;
+      filterService.assertFilterMatchesModel(filter, targetNames, targetLabel);
     }
 
+    // Build the column selection and query parameters for export.
     const selection = this.buildColumns(
       context.fields,
       filterColumns,
@@ -185,6 +209,7 @@ export class ExportService {
       context.dataAccessor
     );
 
+    // Build query params with filters, sort, and search options.
     const queryParams = this.buildQueryParams(
       request,
       filter,
@@ -210,6 +235,8 @@ export class ExportService {
     requestedColumns: string[] | undefined,
     translate: (value: string) => string
   ): { fields: Fields; columns: ExportColumn[]; columnKeys: string[] } {
+    // Build the selected column list and field map for export.
+    // Map filter column overrides for quick lookup.
     const filterColumnMap = new Map<string, FilterColumnAP>();
     filterColumns.forEach((column) => {
       const key = String(column.fieldName ?? "").trim();
@@ -218,6 +245,7 @@ export class ExportService {
       }
     });
 
+    // Resolve the requested column order with fallbacks.
     let orderedKeys: string[] = [];
     if (Array.isArray(requestedColumns) && requestedColumns.length > 0) {
       orderedKeys = requestedColumns.map((value) => String(value));
@@ -234,6 +262,7 @@ export class ExportService {
       orderedKeys = Object.keys(fields ?? {});
     }
 
+    // Filter out unknown or hidden fields, while keeping an ordered list.
     const selectedFields: Fields = {};
     const columnKeys: string[] = [];
     const missing: string[] = [];
@@ -272,6 +301,7 @@ export class ExportService {
       });
     }
 
+    // Build export column descriptors used by formatters.
     const columns: ExportColumn[] = columnKeys.map((key) => {
       const field = selectedFields[key];
       const config = field?.config as BaseFieldConfig | undefined;
@@ -301,19 +331,26 @@ export class ExportService {
     columnKeys: string[],
     useLegacySearch: boolean
   ): QueryParams {
+    // Build query parameters for the export stream.
+    // Compose filter conditions from saved filters and legacy column searches.
     const baseFilters = Array.isArray(filter?.conditions) ? filter?.conditions : [];
+    const filterService = this.adminizer.filters.service;
     const columnFilters = useLegacySearch
-      ? this.buildLegacyColumnFilters(fields, request.columnSearch ?? [])
+      ? filterService.buildLegacyColumnFilters(fields, request.columnSearch ?? [])
       : [];
     const filters: FilterCondition[] = [...baseFilters, ...columnFilters];
 
+    // Apply pagination and filter parameters for streaming exports.
     const queryParams: QueryParams = {
       page: 1,
       limit: request.chunkSize ?? 500,
       filters
     };
 
-    let sortField = request.sort ? this.resolveSortField(request.sort, columnKeys, fields) : undefined;
+    // Resolve sorting from request or fallback to filter configuration.
+    let sortField = request.sort
+      ? filterService.resolveSortField(request.sort, columnKeys, fields)
+      : undefined;
     if (!sortField && filter?.sortField) {
       const candidate = String(filter.sortField);
       sortField = fields?.[candidate] ? candidate : undefined;
@@ -322,13 +359,15 @@ export class ExportService {
       queryParams.sort = sortField;
     }
 
+    // Normalize sort direction from request or filter defaults.
     const sortDirection =
       request.sortDirection
-      ?? this.normalizeSortDirection(filter?.sortDirection);
+      ?? filterService.normalizeSortDirection(filter?.sortDirection);
     if (sortDirection) {
       queryParams.sortDirection = sortDirection;
     }
 
+    // Apply global search only when legacy mode is enabled.
     if (useLegacySearch && request.globalSearch) {
       queryParams.globalSearch = request.globalSearch;
     }
@@ -336,103 +375,7 @@ export class ExportService {
     return queryParams;
   }
 
-  private buildLegacyColumnFilters(
-    fields: Fields,
-    searchPairs: ExportColumnSearch[]
-  ): FilterCondition[] {
-    if (!searchPairs.length) {
-      return [];
-    }
-
-    const filters: FilterCondition[] = [];
-    const fieldKeys = Object.keys(fields ?? {});
-
-    searchPairs.forEach((pair, index) => {
-      const rawValue = pair.value?.trim();
-      if (!rawValue) {
-        return;
-      }
-
-      const fieldKey = this.resolveSortField(pair.column, fieldKeys, fields);
-      if (!fieldKey) {
-        return;
-      }
-
-      const field = fields[fieldKey];
-      if (!field || !field.model?.type) {
-        return;
-      }
-
-      const fieldType = field.model.type;
-      let operator: FilterCondition["operator"] | null = null;
-      let value: unknown = rawValue;
-
-      if (fieldType === "boolean") {
-        const lower = rawValue.toLowerCase();
-        if (lower !== "true" && lower !== "false") {
-          return;
-        }
-        operator = "eq";
-        value = lower === "true";
-      } else if (fieldType === "number") {
-        if (rawValue.startsWith(">") || rawValue.startsWith("<")) {
-          const parsed = parseFloat(rawValue.slice(1));
-          if (Number.isNaN(parsed)) {
-            return;
-          }
-          operator = rawValue.startsWith(">") ? "gte" : "lte";
-          value = parsed;
-        } else {
-          const parsed = parseFloat(rawValue);
-          if (Number.isNaN(parsed)) {
-            return;
-          }
-          operator = "eq";
-          value = parsed;
-        }
-      } else if (fieldType === "string") {
-        operator = "like";
-        value = rawValue;
-      } else {
-        return;
-      }
-
-      filters.push({
-        id: `column-${fieldKey}-${index}`,
-        field: fieldKey,
-        operator,
-        value
-      });
-    });
-
-    return filters;
-  }
-
-  private resolveSortField(
-    orderColumn: string | undefined,
-    fieldKeys: string[],
-    fields: Fields
-  ): string | undefined {
-    if (!orderColumn) {
-      return undefined;
-    }
-    if (fields?.[orderColumn]) {
-      return orderColumn;
-    }
-    const parsed = parseInt(orderColumn, 10);
-    if (Number.isFinite(parsed) && parsed > 0 && parsed <= fieldKeys.length) {
-      return fieldKeys[parsed - 1];
-    }
-    return undefined;
-  }
-
-  private normalizeSortDirection(direction?: string): QuerySortDirection | undefined {
-    if (!direction) {
-      return undefined;
-    }
-    return direction.toUpperCase() === "ASC" ? "ASC" : "DESC";
-  }
-
+  // Normalize column width values to the expected export range.
   private normalizeColumnWidth(value: unknown): number | undefined {
     const parsed = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -447,6 +390,7 @@ export class ExportService {
     modelName: string,
     filter?: Partial<FilterAP>
   ): string {
+    // Prefer explicit file names and fall back to filter/model identifiers.
     if (request.fileName) {
       return this.sanitizeFileName(request.fileName);
     }
@@ -460,11 +404,13 @@ export class ExportService {
     return `${this.sanitizeFileName(rawBase)}-${Date.now()}`;
   }
 
+  // Append the file extension to a sanitized base name.
   private buildFileName(base: string, extension: string): string {
     const safeBase = this.sanitizeFileName(base);
     return `${safeBase}.${extension}`;
   }
 
+  // Remove unsafe characters from file names for export output.
   private sanitizeFileName(value: string): string {
     return String(value ?? "")
       .replace(/[^a-z0-9-_]+/gi, "-")
@@ -472,10 +418,12 @@ export class ExportService {
       .slice(0, 120) || "export";
   }
 
+  // Resolve the output directory for exported files.
   private resolveOutputDir(): string {
     return path.join(process.cwd(), "exports");
   }
 
+  // Stream rows and project only the selected keys for the export.
   private async *projectRows(
     rows: AsyncIterable<Record<string, unknown>>,
     columnKeys: string[],
@@ -496,39 +444,5 @@ export class ExportService {
       yield projected;
       count += 1;
     }
-  }
-
-  private assertFilterMatchesModel(
-    filter: Partial<FilterAP>,
-    modelName: string,
-    context: ReturnType<typeof resolveModelContext>
-  ): void {
-    const filterModelName = String(filter.modelName ?? "").toLowerCase();
-    if (!filterModelName) {
-      return;
-    }
-
-    const targetNames = new Set<string>();
-    if (context?.entity?.name) {
-      targetNames.add(String(context.entity.name).toLowerCase());
-    }
-    if (context?.entity?.config?.model) {
-      targetNames.add(String(context.entity.config.model).toLowerCase());
-    }
-    if (context?.entry?.model?.modelname) {
-      targetNames.add(String(context.entry.model.modelname).toLowerCase());
-    }
-    if (context?.entry?.model?.identity) {
-      targetNames.add(String(context.entry.model.identity).toLowerCase());
-    }
-
-    if (targetNames.size === 0 || targetNames.has(filterModelName)) {
-      return;
-    }
-
-    const targetLabel = modelName || "unknown";
-    throw new Error(
-      `Filter "${filter.name ?? filter.id}" is configured for model "${filter.modelName}", not "${targetLabel}"`
-    );
   }
 }

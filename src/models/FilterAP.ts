@@ -111,6 +111,10 @@ export default {
   schemaVersion: {
     type: "string"
   },
+  selectedFields: {
+    type: "json",
+    defaultsTo: []
+  },
   columns: {
     collection: "FilterColumnAP",
     via: "filter"
@@ -145,6 +149,7 @@ export interface FilterAP {
   isSystemFilter?: boolean;
   version: number;
   schemaVersion?: string;
+  selectedFields?: string[];
   columns?: FilterColumnAP[];
   createdAt?: Date;
   updatedAt?: Date;

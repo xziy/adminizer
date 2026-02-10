@@ -51,6 +51,7 @@ export default async function update(req: ReqType, res: ResType) {
         description: payload.description,
         modelName: nextModelName,
         conditions: validation.sanitizedConditions ?? [],
+        selectedFields: payload.selectedFields,
         sortField: payload.sortField,
         sortDirection: payload.sortDirection,
         visibility: payload.visibility,

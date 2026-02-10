@@ -12,6 +12,7 @@ import {
     DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import { Checkbox } from "@/components/ui/checkbox";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {toast} from "sonner";
 import {Toaster} from "@/components/ui/sonner"
@@ -54,6 +55,7 @@ interface ExtendedSharedData extends SharedData {
     appliedFilterId?: string,
     filterColumnFields?: ColumnFieldInfo[],
     filterColumns?: ColumnConfig[],
+    filterSelectedFields?: string[],
     header: {
         actions: Action[],
         inlineActions: Action[],
@@ -86,10 +88,12 @@ const ListTable = () => {
     const appliedFilterId = page.props.appliedFilterId
     const availableColumnFields = page.props.filterColumnFields ?? []
     const savedFilterColumns = page.props.filterColumns ?? []
+    const savedFilterSelectedFields = page.props.filterSelectedFields ?? []
     const [loading, setLoading] = useState(false)
     const [columnDialogOpen, setColumnDialogOpen] = useState(false)
     const [columnSaving, setColumnSaving] = useState(false)
     const [columnDraft, setColumnDraft] = useState<ColumnConfig[]>([])
+    const [limitFieldsEnabled, setLimitFieldsEnabled] = useState(false)
     const [tableRows, setTableRows] = useState<any[]>(data.data ?? [])
     const [exporting, setExporting] = useState(false)
     const [exportFormat, setExportFormat] = useState<"csv" | "xlsx" | "json">("csv")
@@ -161,7 +165,8 @@ const ListTable = () => {
             return;
         }
         setColumnDraft(defaultColumns);
-    }, [columnDialogOpen, defaultColumns])
+        setLimitFieldsEnabled(savedFilterSelectedFields.length > 0);
+    }, [columnDialogOpen, defaultColumns, savedFilterSelectedFields.length])
 
     useEffect(() => {
         if (page.props.flash) {
@@ -433,8 +438,18 @@ const ListTable = () => {
 
         setColumnSaving(true)
         try {
+            const selectedFields = limitFieldsEnabled
+                ? Array.from(
+                    new Set(
+                        columnDraft
+                            .filter((column) => column.isVisible !== false)
+                            .map((column) => column.fieldName)
+                    )
+                )
+                : [];
             const res = await axios.patch(`${window.routePrefix}/filters/${appliedFilterId}`, {
-                columns: columnDraft
+                columns: columnDraft,
+                selectedFields
             })
             if (res.data?.success) {
                 toast.success("Column layout saved")
@@ -451,7 +466,7 @@ const ListTable = () => {
         } finally {
             setColumnSaving(false)
         }
-    }, [appliedFilterId, columnDraft])
+    }, [appliedFilterId, columnDraft, limitFieldsEnabled])
 
     return (
         <>
@@ -493,6 +508,21 @@ const ListTable = () => {
                                     selectedColumns={columnDraft}
                                     onChange={setColumnDraft}
                                 />
+                                <div className="flex items-start gap-3 rounded-md border bg-muted/30 p-3 text-sm">
+                                    <Checkbox
+                                        id="limit-selected-fields"
+                                        checked={limitFieldsEnabled}
+                                        onCheckedChange={(value) => setLimitFieldsEnabled(Boolean(value))}
+                                    />
+                                    <div className="grid gap-1">
+                                        <label htmlFor="limit-selected-fields" className="font-medium">
+                                            Limit data to visible columns
+                                        </label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Only the visible columns will be fetched when this filter is applied.
+                                        </p>
+                                    </div>
+                                </div>
                                 <DialogFooter>
                                     <Button
                                         variant="outline"

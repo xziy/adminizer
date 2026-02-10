@@ -1,11 +1,3 @@
-﻿Продолжай по плану
-Продолжай по плану
-Продолжай по плану
-Продолжай по плану
-Продолжай по плану
-Продолжай по плану
-Продолжай по плану
-Продолжай по плану
 import { FilterCondition } from "../../models/FilterAP";
 import { buildModelPermissionToken, ensureAuth } from "./helpers";
 
@@ -54,6 +46,7 @@ export default async function create(req: ReqType, res: ResType) {
         description: payload.description,
         modelName,
         conditions: validation.sanitizedConditions ?? [],
+        selectedFields: payload.selectedFields,
         sortField: payload.sortField,
         sortDirection: payload.sortDirection,
         visibility: payload.visibility,

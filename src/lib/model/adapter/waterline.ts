@@ -81,6 +81,9 @@ export class WaterlineModel<T> extends AbstractModel<T> {
         if (options.limit && typeof options.limit === "number") {
             query = query.limit(options.limit);
         }
+        if (Array.isArray(options.select) && options.select.length > 0) {
+            query = query.select(options.select);
+        }
         let result = await query;
 
         return result;

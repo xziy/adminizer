@@ -497,7 +497,13 @@ const config: AdminpanelConfig = {
     routePrefix: routePrefix,
     // routePrefix: "/admin",
     auth: {
-        enable: true
+        enable: true,
+        // Allow disabling CAPTCHA in E2E to keep login flows deterministic.
+        captcha: process.env.ADMINIZER_AUTH_CAPTCHA !== "false"
+    },
+    security: {
+        // Allow disabling CSRF in E2E to keep API flows deterministic.
+        csrf: process.env.ADMINIZER_CSRF !== "false"
     },
     registration: {
         enable: true,

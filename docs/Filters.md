@@ -10,6 +10,19 @@ Key capabilities:
 - Count endpoint for dashboard widgets.
 - Direct link endpoint that redirects to the list view with the filter applied.
 
+## Implementation Principles
+
+- Add a short comment (1-2 lines) above each meaningful block of code and text explaining what the block does and why it exists
+- Keep controllers thin: accept the request, call the service, return the response
+- Centralize all filter logic (parsing, normalization, condition building, sorting) in a single filter service used by controllers
+- Do not bloat the codebase: extract repeated logic into helpers/services and avoid creating new helpers unless necessary
+- During review, verify filter logic is not duplicated, controllers are not growing, and the shared filter service is used
+
+## Filter Service
+
+Filter parsing, normalization, and legacy condition building are centralized in `src/lib/filters/services/FilterService.ts`. Controllers and export flows should rely on this service instead of duplicating filter logic.
+When importing from the package root, use `FilterParsingService` to access this parser (the legacy `FilterService` name is reserved for the adminizer helper).
+
 ## Endpoints
 
 ### GET `/adminizer/filters`
@@ -101,6 +114,17 @@ Body (minimal):
 
 ### PATCH `/adminizer/filters/:id`
 Update an existing filter. You can update `conditions`, `sortField`, `visibility`, `groupIds`, `columns`, etc.
+
+#### Selected Fields Payload
+To reduce the data fetched for a filter, pass `selectedFields` with a list of field keys:
+
+```json
+{
+  "selectedFields": ["id", "name", "email"]
+}
+```
+
+When `selectedFields` is provided, the list view and filter execution will only fetch those fields (the primary key is always included). If omitted or empty, the full model fields are used.
 
 #### Columns Payload
 To store a column layout with a filter, pass a `columns` array when creating or updating:
