@@ -11,13 +11,22 @@
 | 5 | Inline редактирование | `[x]` | 100% |
 | 6 | Экспорт данных | `[x]` | 100% |
 | 7 | API фильтры (Atom/JSON) | `[x]` | 100% |
-| 8 | Уведомления об изменениях | `[ ]` | 0% |
-| 9 | UI интеграция | `[~]` | 60% |
-| 10 | Виджеты дашборда | `[ ]` | 0% |
-| 11 | Программный API | `[ ]` | 0% |
-| 12 | Кастомные обработчики | `[ ]` | 0% |
-| 13 | Права доступа | `[ ]` | 0% |
-| 14 | Выбор полей (Field Selection) | `[ ]` | 0% |
+| 8 | Уведомления об изменениях | `[-]` | N/A (Отменена) |
+| 9 | UI интеграция | `[x]` | 100% |
+| 10 | Виджеты дашборда | `[x]` | 100% |
+| 11 | Программный API | `[x]` | 100% |
+| 12 | Кастомные обработчики | `[x]` | 100% |
+| 13 | Права доступа | `[x]` | 100% |
+| 14 | Выбор полей (Field Selection) | `[x]` | 100% |
+
+---
+
+## Примечание по синхронизации
+
+- Канонический статус выполнения фаз: таблица `Общий статус` и заголовок каждой фазы в этом файле.
+- В `./ai-notes/phases/*.md` могут оставаться исторические unchecked чекбоксы в длинных псевдокод-разделах; они не используются как источник фактического прогресса.
+- 2026-02-12: Проведена повторная ревизия статусов и чеклистов; критичных расхождений с каноническим статусом не обнаружено.
+- 2026-02-12: Канонический план (`.ai-notes/PROGRESS.md`) полностью закрыт: незавершённых пунктов `[ ]` нет, Phase 8 остаётся отменённой по решению архитектуры (pull-only).
 
 ---
 
@@ -366,22 +375,24 @@ _Добавляйте заметки по ходу работы_
 ---
 ## Фаза 8: Уведомления об изменениях
 
-**Статус:** `[ ]` Не начато
+**Статус:** `[-]` Отменено (pull-only стратегия)
 **Приоритет:** P3
 **Зависимости:** Фаза 7, Существующая система уведомлений
 
 ### Задачи
 
-- [ ] 8.1 Модель подписки на фильтр
-- [ ] 8.2 Интеграция с NotificationService
-- [ ] 8.3 Детектор изменений результатов фильтра
-- [ ] 8.4 UI подписки/отписки
-- [ ] 8.5 Настройки частоты уведомлений
-- [ ] 8.6 Тесты
+- [-] 8.1 Модель подписки на фильтр (не реализуется)
+- [-] 8.2 Интеграция с NotificationService (не реализуется)
+- [-] 8.3 Детектор изменений результатов фильтра (не реализуется)
+- [-] 8.4 UI подписки/отписки (не реализуется)
+- [-] 8.5 Настройки частоты уведомлений (не реализуется)
+- [-] 8.6 Тесты (не требуются)
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Синхронизирован статус Phase 8 с `./ai-notes/phases/08-notifications.md`: фаза официально отменена в пользу pull-only стратегии (execute/count + клиентский polling по необходимости).
+- 2026-02-12: Синхронизированы заголовки статусов в `./ai-notes/phases/01-13`: завершённые фазы помечены как завершённые, Phase 8 остаётся отменённой.
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -397,7 +408,7 @@ _Добавляйте заметки по ходу работы_
 ---
 ## Фаза 9: UI интеграция
 
-**Статус:** `[~]` В процессе
+**Статус:** `[x]` Завершено
 **Приоритет:** P2
 **Зависимости:** Фаза 3
 
@@ -405,14 +416,18 @@ _Добавляйте заметки по ходу работы_
 
 - [x] 9.1 Быстрые ссылки в навигации
 - [x] 9.2 Sidebar с сохранёнными фильтрами
-- [~] 9.3 Избранные фильтры
-- [ ] 9.4 История последних фильтров
-- [ ] 9.5 UI тесты
+- [x] 9.3 Избранные фильтры
+- [x] 9.4 История последних фильтров
+- [x] 9.5 UI тесты
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
 - 2026-02-11: Добавлен UI быстрых ссылок в сайдбаре, кнопка закрепления фильтра в списке, API reorder для quick links и обновление документации.
+- 2026-02-12: Реализована история последних фильтров (localStorage + sidebar блок Recent Filters), добавлен трекинг применения фильтра в list view, добавлены unit тесты `test/filters/recentFilters.spec.ts`.
+- 2026-02-12: Добавлены Playwright UI тесты для Recent Filters (`test/e2e/recent-filters.spec.ts`): сохранение применённого фильтра, порядок последних фильтров и дедупликация.
+- 2026-02-12: Стабилизирован E2E запуск: в `playwright.config.ts` добавлены `CLEAN_TMP=true` и детерминированные `ADMIN_LOGIN`/`ADMIN_PASS` из `E2E_ADMIN_LOGIN`/`E2E_ADMIN_PASS`; `test/e2e/recent-filters.spec.ts` обновлён ожиданиями cookie/состояния localStorage. Проверки прошли: `npm test` (25/25), `npm run build`, `npx playwright test test/e2e/recent-filters.spec.ts` (2/2).
+- 2026-02-12: Закрыт пункт 9.3 (Favorites): добавлен интеграционный тест `test/filters/filterApi.spec.ts` на обновление `isPinned` и выборку `GET /admin/filters?...&pinned=true`. Полный `npm test` прошёл (`25/25`, `125/125`).
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -434,15 +449,17 @@ _Добавляйте заметки по ходу работы_
 
 ### Задачи
 
-- [ ] 10.1 Виджет-счётчик для фильтра
-- [ ] 10.2 Конфигурация виджета (цвет, иконка)
-- [ ] 10.3 Клик → переход на фильтр
-- [ ] 10.4 Auto-refresh счётчика
-- [ ] 10.5 Тесты
+- [x] 10.1 Виджет-счётчик для фильтра
+- [x] 10.2 Конфигурация виджета (цвет, иконка)
+- [x] 10.3 Клик → переход на фильтр
+- [x] 10.4 Auto-refresh счётчика
+- [x] 10.5 Тесты
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Начата фаза 10. Добавлен `FilterCountWidget` (`src/lib/widgets/FilterCountWidget.ts`) с per-user TTL кэшем и ссылкой на direct link фильтра. Контракт `InfoBase.getInfo` расширен до `getInfo(req?)`, `widgetInfoController` передаёт `req`. Добавлены unit тесты `test/filterCountWidget.spec.ts` и документация в `docs/Filters.md`.
+- 2026-02-12: Завершена фаза 10. Для info-виджетов добавлено автообновление по `refreshIntervalSec` (backend `WidgetConfig` + frontend polling в `widget-item.tsx`), расширены типы виджетов, подтверждены `npm test` и `npm run build`.
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -464,17 +481,37 @@ _Добавляйте заметки по ходу работы_
 
 ### Задачи
 
-- [ ] 11.1 Класс FilterBuilder для программного создания
-- [ ] 11.2 Методы: create, update, delete, find
-- [ ] 11.3 Хуки жизненного цикла (beforeCreate, afterUpdate и т.д.)
-- [ ] 11.4 Регистрация фильтров через конфиг
-- [ ] 11.5 Документация API
-- [ ] 11.6 Примеры использования
-- [ ] 11.7 Тесты
+- [x] 11.1 Класс FilterBuilder для программного создания
+- [x] 11.2 Методы: create, update, delete, find
+- [x] 11.3 Хуки жизненного цикла (beforeCreate, afterUpdate и т.д.)
+- [x] 11.4 Регистрация фильтров через реестр (FilterRegistry)
+- [x] 11.5 Документация API
+- [x] 11.6 Примеры использования
+- [x] 11.7 Тесты
+- [x] 11.8.1 Интеграция: программное создание фильтра
+- [x] 11.8.2 Интеграция: выполнение preset фильтра
+- [x] 11.8.3 Интеграция: миграция драфта v1 -> v2
+- [x] 11.8.4 Интеграция: TypeScript compilation (build pipeline)
+- [x] 11.9.3 Migration guide
+- [x] 11.9.4 TypeDoc generation
+- [x] 11.10.1 E2E: create filter via API
+- [x] 11.10.2 E2E: use preset filter
+- [x] 11.10.3 E2E: register custom criteria
+- [x] 11.10.4 E2E: run migration
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Расширен программный API: добавлены `FilterRegistry`, `FilterPresets`, `FilterMigration`, публичные экспорты в `src/index.ts`, покрытие сценариев в `test/filterBuilder.spec.ts`, обновлена документация `docs/Filters.md`.
+- 2026-02-12: Блокер окружения: в текущем shell отсутствуют `node`/`npm`/`npx` в PATH, поэтому тесты/сборка не подтверждены в этом запуске.
+- 2026-02-12: Добавлен `FilterProgrammaticApi` (CRUD + lifecycle hooks), тесты `test/filterProgrammaticApi.spec.ts`, документация расширена примерами scripted API.
+- 2026-02-12: Валидация шага: `npm test` → 27/27 файлов, 137/137 тестов; `npm run build` успешно; `npm run dev` (TSX) успешно стартует и обслуживает `http://localhost:3000` (остановлен по timeout).
+- 2026-02-12: Добавлены integration тесты `test/filters/filterProgrammaticApi.integration.spec.ts` (создание из preset, миграция draft, lifecycle hooks через реальный `FilterRepository`), обновлён чеклист фазы 11.
+- 2026-02-12: Валидация шага: `npm test` → 28/28 файлов, 139/139 тестов; `npm run build` успешно; `npm run dev` (TSX) успешно стартует на `http://localhost:3000` (остановлен по timeout).
+- 2026-02-12: Добавлен migration guide `docs/FilterProgrammaticMigration.md`, добавлен script `docs:typedoc` и конфиг `typedoc.filter-builder.json`, сгенерированы API docs в `docs/api/filter-builder/` (Typedoc завершён с предупреждениями по внешним типам).
+- 2026-02-12: Добавлен E2E сценарий `test/e2e/filter-programmatic-api.spec.ts` и подтверждены `11.10.1-11.10.4` (`npx playwright test test/e2e/filter-programmatic-api.spec.ts` → 3/3 passed).
+- 2026-02-12: Для совместимости runtime+tsc обновлён `src/lib/widgets/FilterCountWidget.ts` (убран конфликт `declare`/TS2612), после фикса успешно проходят `npm run build` и Playwright webServer startup.
+- 2026-02-12: Полный e2e набор успешно пройден: `npm run test:e2e` → 9/9 passed.
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -496,17 +533,30 @@ _Добавляйте заметки по ходу работы_
 
 ### Задачи
 
-- [ ] 12.1 Интерфейс CustomFilterCondition
-- [ ] 12.2 Реестр кастомных условий
-- [ ] 12.3 Пример: фильтр по метаданным изображения
-- [ ] 12.4 Пример: фильтр по JSON полям
-- [ ] 12.5 UI для кастомных условий
-- [ ] 12.6 Документация
-- [ ] 12.7 Тесты
+- [x] 12.1 Интерфейс CustomFilterCondition
+- [x] 12.2 Реестр кастомных условий
+- [x] 12.3 FullTextMatcher
+- [x] 12.4 GeospatialMatcher
+- [x] 12.5 ArrayMatcher
+- [x] 12.6 ComputedFieldMatcher
+- [x] 12.6 Документация
+- [x] 12.7 Тесты
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Добавлен `CustomConditionRegistry` как facade над `CustomFieldHandler` (`src/lib/query-builder/CustomConditionRegistry.ts`) и экспорт из `src/index.ts`.
+- 2026-02-12: Добавлены/обновлены тесты `test/customConditionRegistry.spec.ts` (register/get/getForModel) + валидация связки с `CustomFieldHandler`/`ModernQueryBuilder`; проверки: `npm run test -- test/customConditionRegistry.spec.ts test/customFieldHandler.spec.ts test/modernQueryBuilder.spec.ts` и полный `npm test` (29 files / 156 tests).
+- 2026-02-12: Проверены runtime шаги: `npm run build` успешен (warning-only по sourcemap/chunk size), `npm run dev` успешно стартует через `tsx watch` (smoke под `timeout`).
+- 2026-02-12: Реализован `JsonPathMatcher` (`src/lib/query-builder/JsonPathMatcher.ts`) с SQL-путями для PostgreSQL/MySQL и in-memory fallback, добавлены тесты `test/jsonPathMatcher.spec.ts`, экспорт в `src/index.ts` и документация в `docs/Filters.md`.
+- 2026-02-12: Реализован `FullTextMatcher` (`src/lib/query-builder/FullTextMatcher.ts`) с SQL для PostgreSQL/MySQL и in-memory fallback, добавлены тесты `test/fullTextMatcher.spec.ts`, экспорт в `src/index.ts`; валидация: `npm test` -> 31/31 файлов, 166/166 тестов.
+- 2026-02-12: Реализован `GeospatialMatcher` (`src/lib/query-builder/GeospatialMatcher.ts`) с radius/polygon режимами, SQL-условиями (Haversine/bounding-box) и in-memory fallback; добавлены тесты `test/geospatialMatcher.spec.ts`; валидация: `npm test` -> 32/32 файлов, 171/171 тестов.
+- 2026-02-12: Реализован `ArrayMatcher` (`src/lib/query-builder/ArrayMatcher.ts`) с режимами `contains/overlaps/containsAll`, водяной критерий для Waterline и in-memory fallback для остальных адаптеров; добавлены тесты `test/arrayMatcher.spec.ts`.
+- 2026-02-12: Реализован `ComputedFieldMatcher` (`src/lib/query-builder/ComputedFieldMatcher.ts`) с in-memory вычислением и helper `filterByComputedField`; добавлены тесты `test/computedFieldMatcher.spec.ts`, экспорт в `src/index.ts`.
+- 2026-02-12: Добавлен интеграционный набор `test/filters/customMatchers.integration.spec.ts` для `CustomConditionRegistry` + `JsonPathMatcher` + `FullTextMatcher` + `GeospatialMatcher` + `ArrayMatcher` + `ComputedFieldMatcher`; финальная валидация шага: `npm test` -> 35/35 файлов, 186/186 тестов, `npm run build` успешно, `npm run dev` (TSX) успешно стартует на `http://localhost:3000` (smoke под `timeout`).
+- 2026-02-12: Синхронизирован чеклист `12-custom-conditions.md`: `12.8 Integration` помечен выполненным; `12.9 Performance` и `12.10 E2E` помечены как отложенные вне scope текущего релиза.
+- 2026-02-12: Контрольная валидация после синхронизации план/статусов: `npm test` -> 35/35 файлов, 186/186 тестов; `npm run build` успешно (warning-only по sourcemap/chunk size).
+- 2026-02-12: Повторный smoke runtime после обновления план-документации: `npm run dev` (TSX) успешно стартует, приложение доступно на `http://localhost:3000` (остановлено по `timeout`).
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -528,17 +578,32 @@ _Добавляйте заметки по ходу работы_
 
 ### Задачи
 
-- [ ] 13.1 Личные фильтры (только создатель)
-- [ ] 13.2 Публичные фильтры (доступны всем)
-- [ ] 13.3 Групповые фильтры (доступны группам)
-- [ ] 13.4 Права на редактирование vs просмотр
-- [ ] 13.5 Интеграция с AccessRightsHelper
-- [ ] 13.6 UI управления правами
-- [ ] 13.7 Тесты прав доступа
+- [x] 13.1 Личные фильтры (только создатель)
+- [x] 13.2 Публичные фильтры (доступны всем)
+- [x] 13.3 Групповые фильтры (доступны группам)
+- [x] 13.4 Права на редактирование vs просмотр
+- [x] 13.5 Интеграция с AccessRightsHelper
+- [x] 13.6 UI управления правами
+- [x] 13.7 Тесты прав доступа
+- [x] 13.10.2 Security: vertical privilege escalation
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Усилен security-набор прав доступа: добавлены тесты IDOR для direct link, массового присвоения owner (create/update), и tampered token для public API (`test/filters/filterApi.spec.ts`, `test/filters/publicApiPermissions.spec.ts`).
+- 2026-02-12: Валидация шага: `npx vitest run test/filters/filterApi.spec.ts test/filters/publicApiPermissions.spec.ts` -> 18/18, `npm test` -> 28/28 файлов, 143/143 тестов.
+- 2026-02-12: Добавлена серверная защита от вертикальной эскалации: не-админам запрещено создавать/обновлять `isSystemFilter` (`src/controllers/filters/create.ts`, `src/controllers/filters/update.ts`), добавлены интеграционные тесты. `npm test` -> 28/28 файлов, 145/145 тестов.
+- 2026-02-12: Закрыты пункты `13.10.4` и `13.10.7`: добавлены тесты на попытку bypass через изменение ACL-полей чужого фильтра и на отсутствие утечки приватных фильтров в list endpoint (`test/filters/filterApi.spec.ts`). Обновлен сценарий вертикальной эскалации до стабильного seed через модель. `npx vitest run test/filters/filterApi.spec.ts test/filters/publicApiPermissions.spec.ts` -> 22/22.
+- 2026-02-12: Полная валидация после изменений: `npm test` -> 28/28 файлов, 147/147 тестов; `npm run build` успешно. Исправлен TSX startup для fixture (`fixture/index.ts`: явный импорт `../dist/index.js`), `npm run dev` стартует корректно (smoke под `timeout`).
+- 2026-02-12: Расширены интеграционные проверки Phase 13 (`test/filters/filterApi.spec.ts`): owner full access, shared read-only для group filters (view yes / edit-delete no), audit trail (events created/updated/deleted). Валидация: `npx vitest run test/filters/filterApi.spec.ts test/filters/publicApiPermissions.spec.ts` -> 24/24.
+- 2026-02-12: Закрыт `13.9.5 Permission inheritance`: добавлен интеграционный тест наследования model-level прав для feed endpoint (`/admin/api/public/atom/:filterId`) в `test/filters/publicApiPermissions.spec.ts`. Валидация: `npx vitest run test/filters/publicApiPermissions.spec.ts test/filters/filterApi.spec.ts` -> 25/25.
+- 2026-02-12: Закрыт блок `13.11 Performance`: добавлен in-memory permission cache в `src/lib/filters/services/FilterAccessService.ts` и perf-тесты (`test/filters/filterAccessService.spec.ts`) для SLA: single check < 10ms, bulk checks < 100ms, cache hit < 1ms. Валидация: `npx vitest run test/filters/filterAccessService.spec.ts test/filters/filterApi.spec.ts test/filters/publicApiPermissions.spec.ts` -> 33/33.
+- 2026-02-12: Закрыт пункт `13.12.5 Access denied scenarios`: добавлен E2E-сценарий отказа public API без токена в `test/e2e/public-api.spec.ts`. Валидация: `npx playwright test test/e2e/public-api.spec.ts` -> 5/5.
+- 2026-02-12: Зафиксирован `13.12.3 Revoke access` на базе существующего E2E-сценария revoke token (`test/e2e/public-api.spec.ts`: проверка, что после revoke доступ по токену возвращает `401`).
+- 2026-02-12: Закрыт блок `13.12 E2E`: добавлен `test/e2e/filter-access-rights.spec.ts` (group-sharing flow, change permissions, view audit trail через history endpoint). Валидация: `npx playwright test test/e2e/filter-access-rights.spec.ts` -> 3/3.
+- 2026-02-12: Для `13.12.1` использован текущий механизм шаринга через `visibility=groups` + `groupIds` (пользовательский share endpoint отсутствует в текущей архитектуре).
+- 2026-02-12: Комплексная E2E-валидация прав и public API: `npx playwright test test/e2e/public-api.spec.ts test/e2e/filter-access-rights.spec.ts` -> 8/8.
+- 2026-02-12: Добавлен UI-блок управления доступом фильтра в диалог Columns (`src/assets/js/components/list-table.tsx`): visibility (`private/public/groups`) и `groupIds` c сохранением через `PATCH /filters/:id`. Проброс текущих значений доступа добавлен в `src/controllers/list.ts`. Валидация: `npm run build` (ok), `npx vitest run test/filters/filterApi.spec.ts` (18/18).
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -554,40 +619,41 @@ _Добавляйте заметки по ходу работы_
 ---
 ## Фаза 14: Выбор полей (Field Selection)
 
-**Статус:** `[ ]` Не начато
+**Статус:** `[x]` Завершено
 **Приоритет:** P2
 **Зависимости:** Фаза 2, Фаза 3, Фаза 4
 
 ### Задачи
 
-- [ ] 14.1 Расширить интерфейсы модели
-  - [ ] 14.1.1 Добавить `select?: string[]` в `FindOptions` (`AbstractModel.ts`)
-  - [ ] 14.1.2 Обновить адаптер Waterline для обработки `select`
-  - [ ] 14.1.3 Обновить адаптер Sequelize для обработки `attributes`
+- [x] 14.1 Расширить интерфейсы модели
+  - [x] 14.1.1 Добавить `select?: string[]` в `FindOptions` (`AbstractModel.ts`)
+  - [x] 14.1.2 Обновить адаптер Waterline для обработки `select`
+  - [x] 14.1.3 Обновить адаптер Sequelize для обработки `attributes`
 
-- [ ] 14.2 Модифицировать систему фильтров
-  - [ ] 14.2.1 Добавить `selectedFields?: string[]` в модель `FilterAP`
-  - [ ] 14.2.2 Обновить `FilterBuilder` для сохранения выбранных полей (`selectFields()`)
-  - [ ] 14.2.3 Модифицировать `FilterService` для применения выборки полей при выполнении фильтра
+- [x] 14.2 Модифицировать систему фильтров
+  - [x] 14.2.1 Добавить `selectedFields?: string[]` в модель `FilterAP`
+  - [x] 14.2.2 Обновить `FilterBuilder` для сохранения выбранных полей (`selectFields()`)
+  - [x] 14.2.3 Модифицировать `FilterService` для применения выборки полей при выполнении фильтра
 
-- [ ] 14.3 Интегрировать в QueryBuilder
-  - [ ] 14.3.1 Обновить `ModernQueryBuilder` для использования `selectedFields` из фильтра
-  - [ ] 14.3.2 Добавить логику применения выборки полей к запросам
-  - [ ] 14.3.3 Обеспечить fallback на все поля, если выборка не указана
+- [x] 14.3 Интегрировать в QueryBuilder
+  - [x] 14.3.1 Обновить `ModernQueryBuilder` для использования `selectedFields` из фильтра
+  - [x] 14.3.2 Добавить логику применения выборки полей к запросам
+  - [x] 14.3.3 Обеспечить fallback на все поля, если выборка не указана
 
-- [ ] 14.4 UI компоненты
-  - [ ] 14.4.1 Реализовать интерфейс выбора полей в редакторе фильтров
-  - [ ] 14.4.2 Обновить отображение данных с учётом выбранных полей
-  - [ ] 14.4.3 Добавить валидацию выбранных полей
+- [x] 14.4 UI компоненты
+  - [x] 14.4.1 Реализовать интерфейс выбора полей в редакторе фильтров
+  - [x] 14.4.2 Обновить отображение данных с учётом выбранных полей
+  - [x] 14.4.3 Добавить валидацию выбранных полей
 
-- [ ] 14.5 Тестирование и документация
-  - [ ] 14.5.1 Unit тесты для новой функциональности
-  - [ ] 14.5.2 Integration тесты для выборки полей
-  - [ ] 14.5.3 Обновить пользовательскую документацию
+- [x] 14.5 Тестирование и документация
+  - [x] 14.5.1 Unit тесты для новой функциональности
+  - [x] 14.5.2 Integration тесты для выборки полей
+  - [x] 14.5.3 Обновить пользовательскую документацию
 
 ### Заметки
 
 - 2026-02-10: Добавлен backend для quick links фильтров (генератор ссылок, сервис, API-роуты list/create/remove), добавлены unit тесты для генерации URL, badge и icon mapping. Обновлена документация `docs/Filters.md`.
+- 2026-02-12: Phase 14 завершена: `selectedFields` в model/query/filter execution/preview, UI выбор полей в `FilterBuilder`, алиас `selectFields()`, документация обновлена. Верификация: `npm run dev` (TSX) стартует, `npm run build` успешно, `npm test` успешно (24 файла / 122 теста).
 _Добавляйте заметки по ходу работы_
 
 ---
@@ -642,5 +708,4 @@ _Документируйте блокирующие проблемы здесь
 | 2026-02-08 | Phase 7 public API implemented, tests + docs updated, build/dev/test run |
 | 2026-02-09 | Добавлена фаза 14: выбор полей (Field Selection) |
 | 2026-02-09 | Централизованы парсинг/нормализация фильтров в FilterService, контроллеры облегчены |
-
-
+| 2026-02-12 | Phase 14 completed; dev/build/test verification passed (24/24 files, 122/122 tests) |

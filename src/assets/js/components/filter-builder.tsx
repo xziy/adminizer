@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -83,6 +84,9 @@ export interface FilterBuilderProps {
   initialConditions?: FilterCondition[];
   value?: FilterCondition[];
   onChange?: (conditions: FilterCondition[]) => void;
+  initialSelectedFields?: string[];
+  selectedFields?: string[];
+  onSelectedFieldsChange?: (selectedFields: string[]) => void;
   maxDepth?: number;
   disabled?: boolean;
 }
@@ -403,6 +407,30 @@ const stringToList = (value: string): string[] => {
     .split(",")
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+};
+
+const normalizeSelectedFieldList = (
+  selectedFields: string[] | undefined,
+  availableFields: FilterField[]
+): string[] => {
+  if (!Array.isArray(selectedFields) || selectedFields.length === 0) {
+    return [];
+  }
+
+  const available = new Set(availableFields.map((field) => field.name));
+  const unique = new Set<string>();
+  const normalized: string[] = [];
+
+  selectedFields.forEach((fieldName) => {
+    const key = String(fieldName ?? "").trim();
+    if (!key || !available.has(key) || unique.has(key)) {
+      return;
+    }
+    unique.add(key);
+    normalized.push(key);
+  });
+
+  return normalized;
 };
 
 const LogicSeparator: FC<{ logic: FilterLogic }> = ({ logic }) => {
@@ -799,6 +827,9 @@ export const FilterBuilder: FC<FilterBuilderProps> = ({
   initialConditions,
   value,
   onChange,
+  initialSelectedFields,
+  selectedFields,
+  onSelectedFieldsChange,
   maxDepth = 3,
   disabled
 }) => {
@@ -811,6 +842,18 @@ export const FilterBuilder: FC<FilterBuilderProps> = ({
     }
     return [createEmptyCondition(fields, relations)];
   });
+  const [localSelectedFields, setLocalSelectedFields] = useState<string[]>(() =>
+    normalizeSelectedFieldList(initialSelectedFields, fields)
+  );
+  const selectedFieldValues = useMemo(
+    () => normalizeSelectedFieldList(selectedFields ?? localSelectedFields, fields),
+    [fields, localSelectedFields, selectedFields]
+  );
+  const selectedFieldSet = useMemo(
+    () => new Set(selectedFieldValues),
+    [selectedFieldValues]
+  );
+  const allFieldsSelected = fields.length > 0 && selectedFieldValues.length === fields.length;
 
   useEffect(() => {
     if (!value) {
@@ -818,6 +861,10 @@ export const FilterBuilder: FC<FilterBuilderProps> = ({
     }
     setConditions(ensureConditionList(value, fields, relations));
   }, [value, fields, relations]);
+
+  useEffect(() => {
+    setLocalSelectedFields((prev) => normalizeSelectedFieldList(prev, fields));
+  }, [fields]);
 
   const updateConditions = useCallback(
     (updater: FilterCondition[] | ((prev: FilterCondition[]) => FilterCondition[])) => {
@@ -900,6 +947,36 @@ export const FilterBuilder: FC<FilterBuilderProps> = ({
     [updateConditions]
   );
 
+  const updateSelectedFields = useCallback(
+    (nextValues: string[]) => {
+      const normalized = normalizeSelectedFieldList(nextValues, fields);
+      if (selectedFields === undefined) {
+        setLocalSelectedFields(normalized);
+      }
+      onSelectedFieldsChange?.(normalized);
+    },
+    [fields, onSelectedFieldsChange, selectedFields]
+  );
+
+  const handleToggleSelectedField = useCallback(
+    (fieldName: string, checked: boolean) => {
+      if (checked) {
+        updateSelectedFields([...selectedFieldValues, fieldName]);
+        return;
+      }
+      updateSelectedFields(selectedFieldValues.filter((field) => field !== fieldName));
+    },
+    [selectedFieldValues, updateSelectedFields]
+  );
+
+  const handleSelectAllFields = useCallback(() => {
+    updateSelectedFields(fields.map((field) => field.name));
+  }, [fields, updateSelectedFields]);
+
+  const handleClearSelectedFields = useCallback(() => {
+    updateSelectedFields([]);
+  }, [updateSelectedFields]);
+
   const renderConditions = useCallback(
     (items: FilterCondition[], logic: FilterLogic, depth: number) => {
       return items.map((condition, index) => (
@@ -960,6 +1037,56 @@ export const FilterBuilder: FC<FilterBuilderProps> = ({
 
   return (
     <div className="space-y-4">
+      <div className="space-y-3 rounded-md border border-muted-foreground/20 bg-muted/5 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Selected fields</p>
+            <p className="text-xs text-muted-foreground">
+              Restrict query payload to selected model fields.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAllFields}
+              disabled={disabled || allFieldsSelected}
+            >
+              Select all
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClearSelectedFields}
+              disabled={disabled || selectedFieldValues.length === 0}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {fields.map((field) => {
+            const checked = selectedFieldSet.has(field.name);
+            return (
+              <label
+                key={field.name}
+                className="flex items-center gap-2 rounded border border-transparent px-2 py-1 text-sm hover:border-muted-foreground/20"
+              >
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(value) =>
+                    handleToggleSelectedField(field.name, value === true)
+                  }
+                  disabled={disabled}
+                />
+                <span>{field.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
       <div className="space-y-3">
         {renderConditions(conditions, "AND", 0)}
       </div>

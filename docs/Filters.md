@@ -82,6 +82,7 @@ Body:
   "conditions": [
     { "id": "1", "field": "status", "operator": "eq", "value": "active" }
   ],
+  "selectedFields": ["id", "name", "email"],
   "page": 1,
   "limit": 25,
   "sort": "createdAt",
@@ -97,6 +98,8 @@ Response:
   "meta": { "total": 120, "filtered": 1, "page": 1, "pages": 1, "limit": 25 }
 }
 ```
+
+If `selectedFields` is provided, preview execution only fetches those fields (the primary key is always included).
 
 ### POST `/adminizer/filters`
 Create a new filter.
@@ -216,6 +219,24 @@ const draft = FilterBuilder.create("Active customers", "Customer")
 ```
 
 The `build()` result is immutable and can be passed directly into `FilterRepository.create` or used as a validated DTO in your own services.
+You can also use `.selectFields([...])` as a concise alias for `.withSelectedFields([...])`.
+
+## React Filter Builder Component
+
+The `FilterBuilder` UI component supports selected field configuration in addition to conditions:
+
+```tsx
+<FilterBuilder
+  fields={fields}
+  relations={relations}
+  value={conditions}
+  onChange={setConditions}
+  selectedFields={selectedFields}
+  onSelectedFieldsChange={setSelectedFields}
+/>
+```
+
+`onSelectedFieldsChange` always returns a validated list of known field names. Unknown or empty values are ignored.
 
 ## System Filters
 

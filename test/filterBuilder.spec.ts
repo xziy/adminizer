@@ -43,7 +43,7 @@ describe("FilterBuilder", () => {
       .withCriteria(criteria)
       .withSort("createdAt", "DESC")
       .withVisibility("public")
-      .withSelectedFields(["id", "name", " email "])
+      .selectFields(["id", "name", " email "])
       .withAppearance("groups", "#0EA5E9")
       .withPinned()
       .withSystemFlag(false)

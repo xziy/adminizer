@@ -19,6 +19,7 @@ export default async function preview(req: ReqType, res: ResType) {
   const sort = typeof req.body?.sort === "string" ? req.body.sort : undefined;
   const sortDirection = typeof req.body?.sortDirection === "string" ? req.body.sortDirection : undefined;
   const globalSearch = typeof req.body?.globalSearch === "string" ? req.body.globalSearch : undefined;
+  const selectedFields = req.body?.selectedFields;
 
   // Ensure required fields are provided.
   if (!modelName) {
@@ -59,7 +60,7 @@ export default async function preview(req: ReqType, res: ResType) {
       modelName,
       validation.sanitizedConditions ?? [],
       req.user,
-      { page, limit, sort, sortDirection, globalSearch }
+      { page, limit, sort, sortDirection, globalSearch, selectFields: selectedFields }
     );
 
     return res.json({

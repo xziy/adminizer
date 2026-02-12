@@ -100,6 +100,14 @@ export class FilterBuilder {
   }
 
   /**
+   * Alias for selected field assignment in concise programmatic flows.
+   * Keeps API naming aligned with select-style query semantics.
+   */
+  public selectFields(fields: string[]): this {
+    return this.withSelectedFields(fields);
+  }
+
+  /**
    * Sets visual settings used in filter UI.
    * These values are optional and non-functional.
    */

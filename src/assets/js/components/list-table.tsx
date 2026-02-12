@@ -544,15 +544,14 @@ const ListTable = () => {
                             </DialogContent>
                         </Dialog>
                     )}
-                    // Offer quick-link pinning when a saved filter is applied.
-                    // Offer quick-link pinning when a saved filter is applied.
+                    {/* Offer quick-link pinning when a saved filter is applied. */}
                     {page.props.filtersEnabled && appliedFilterId && (
                         <FilterQuickLinksToggle
                             filterId={appliedFilterId}
                             filterName={appliedFilterName}
                         />
                     )}
-                    // Allow users to mark the active filter as a favorite.
+                    {/* Allow users to mark the active filter as a favorite. */}
                     {page.props.filtersEnabled && appliedFilterId && (
                         <FilterFavoriteToggle
                             filterId={appliedFilterId}

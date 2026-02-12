@@ -45,6 +45,11 @@ export class FilterExecutionService {
     if (options.globalSearch) {
       queryParams.globalSearch = options.globalSearch;
     }
+    queryParams.selectFields = this.normalizeSelectedFields(
+      options.selectFields,
+      context.fields,
+      context.entry.model.primaryKey
+    );
 
     return queryBuilder.execute(queryParams);
   }
