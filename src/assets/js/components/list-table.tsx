@@ -22,6 +22,8 @@ import {generatePagination} from "@/lib/pagination.ts";
 import PaginationRender from "@/components/pagination-render.tsx";
 import FilterMigrationAlert from "@/components/filter-migration-alert";
 import ColumnSelector, { type ColumnConfig, type ColumnFieldInfo } from "@/components/column-selector";
+import FilterQuickLinksToggle from "@/components/filter-quick-links-toggle";
+import FilterFavoriteToggle from "@/components/filter-favorite-toggle";
 import {
     Dialog,
     DialogContent,
@@ -53,6 +55,8 @@ interface ExtendedSharedData extends SharedData {
     useLegacySearch?: boolean,
     appliedFilter?: string,
     appliedFilterId?: string,
+    appliedFilterName?: string,
+    appliedFilterPinned?: boolean,
     filterColumnFields?: ColumnFieldInfo[],
     filterColumns?: ColumnConfig[],
     filterSelectedFields?: string[],
@@ -89,6 +93,8 @@ const ListTable = () => {
     const availableColumnFields = page.props.filterColumnFields ?? []
     const savedFilterColumns = page.props.filterColumns ?? []
     const savedFilterSelectedFields = page.props.filterSelectedFields ?? []
+    const appliedFilterName = page.props.appliedFilterName
+    const appliedFilterPinned = page.props.appliedFilterPinned
     const [loading, setLoading] = useState(false)
     const [columnDialogOpen, setColumnDialogOpen] = useState(false)
     const [columnSaving, setColumnSaving] = useState(false)
@@ -537,6 +543,21 @@ const ListTable = () => {
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
+                    )}
+                    // Offer quick-link pinning when a saved filter is applied.
+                    // Offer quick-link pinning when a saved filter is applied.
+                    {page.props.filtersEnabled && appliedFilterId && (
+                        <FilterQuickLinksToggle
+                            filterId={appliedFilterId}
+                            filterName={appliedFilterName}
+                        />
+                    )}
+                    // Allow users to mark the active filter as a favorite.
+                    {page.props.filtersEnabled && appliedFilterId && (
+                        <FilterFavoriteToggle
+                            filterId={appliedFilterId}
+                            isPinned={appliedFilterPinned}
+                        />
                     )}
                     <div className="flex items-center gap-2">
                         <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "xlsx" | "json")}>

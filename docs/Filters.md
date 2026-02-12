@@ -163,8 +163,15 @@ Use these endpoints to pin saved filters into Navigation quick links.
 - `GET /adminizer/filters/quick-links?sectionId=<section>`: list quick links for a navigation section.
 - `POST /adminizer/filters/:id/quick-links`: add a filter as a quick link. Optional body: `sectionId`, `customName`, `icon`.
 - `DELETE /adminizer/filters/:id/quick-links?sectionId=<section>`: remove the quick link for a filter.
+- `POST /adminizer/filters/quick-links/reorder`: reorder quick links. Body: `{ orderedIds: string[], sectionId?: string }`.
 
 The generated URL targets list pages in the format `/adminizer/model/:modelName?filterSlug=<slug>` and falls back to `filterId` when slug is not available.
+
+### Quick Links UI
+
+When a saved filter is applied in the list view, the toolbar shows a **Pin** button. Use it to add or remove the filter from the sidebar quick links section.
+
+The sidebar renders the pinned filters under **Quick Filters**, supports drag-and-drop ordering, and displays a badge with the current record count per filter.
 
 ## Programmatic Filter Builder (Phase 11 - partial)
 
