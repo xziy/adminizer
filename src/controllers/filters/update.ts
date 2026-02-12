@@ -33,6 +33,16 @@ export default async function update(req: ReqType, res: ResType) {
       });
     }
 
+    if (
+      payload.isSystemFilter === true &&
+      !req.user.isAdministrator
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Only administrators can enable system filters"
+      });
+    }
+
     const conditionsInput = payload.conditions ?? existing.conditions ?? [];
     const validation = validator.validate(conditionsInput as FilterCondition[], nextModelName, req.user);
 

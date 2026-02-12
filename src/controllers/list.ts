@@ -91,6 +91,8 @@ export default async function list(req: ReqType, res: ResType) {
     let appliedFilterId: string | undefined;
     let appliedFilterName: string | undefined;
     let appliedFilterPinned = false;
+    let appliedFilterVisibility: string | undefined;
+    let appliedFilterGroupIds: number[] = [];
     // Resolve the identifier field for list rendering.
     const identifierField =
         entity.config?.identifierField
@@ -120,6 +122,13 @@ export default async function list(req: ReqType, res: ResType) {
                 appliedFilterId = filter.id ? String(filter.id) : undefined;
                 appliedFilterName = typeof filter.name === "string" ? filter.name : undefined;
                 appliedFilterPinned = filter.isPinned === true;
+                appliedFilterVisibility =
+                    typeof filter.visibility === "string" ? filter.visibility : undefined;
+                appliedFilterGroupIds = Array.isArray(filter.groupIds)
+                    ? filter.groupIds
+                        .map((value) => Number(value))
+                        .filter((value) => Number.isInteger(value))
+                    : [];
 
                 const targetNames = filterService.buildTargetNameSet([
                     dataAccessor?.entity?.name,
@@ -235,7 +244,9 @@ export default async function list(req: ReqType, res: ResType) {
             filterColumns: filterColumnsForUi,
             filterSelectedFields,
             appliedFilterName,
-            appliedFilterPinned
+            appliedFilterPinned,
+            appliedFilterVisibility,
+            appliedFilterGroupIds
         }
     });
 }

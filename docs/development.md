@@ -31,6 +31,7 @@
   Runs Playwright end-to-end tests against the TSX server (built assets are required; run `npm run build` if `dist/assets/manifest.json` is missing). By default the config uses the locally installed Chrome (no Playwright browser download required).
   If Chrome is not installed, run `npx playwright install chromium`.
   The E2E suite disables login CAPTCHA and CSRF by setting `ADMINIZER_AUTH_CAPTCHA=false` and `ADMINIZER_CSRF=false`, and can override the server URL via `E2E_BASE_URL`.
+  It also enforces deterministic auth by cleaning fixture storage (`CLEAN_TMP=true`) and setting admin credentials from `E2E_ADMIN_LOGIN`/`E2E_ADMIN_PASS` (defaults: `admin` / `45345345FF38`).
 
 ## Module-specific Builds (this is just for tests, as an example, you should create your own commands to build modules)
 - **`npm run build:module`**  

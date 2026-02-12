@@ -14,6 +14,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {ChevronRight, ChevronsUpDown} from "lucide-react";
 import FilterQuickLinks from "@/components/filter-quick-links";
 import FilterFavoritesList from "@/components/filter-favorites-list";
+import RecentFiltersList from "@/components/recent-filters-list";
 import {
     Menubar,
     MenubarContent,
@@ -239,6 +240,7 @@ export function AppSidebar() {
                 {/*Render saved filter shortcuts before the main navigation groups.*/}
                 <FilterQuickLinks />
                 <FilterFavoritesList />
+                <RecentFiltersList />
                 <NavMain items={page.props.menu}/>
             </SidebarContent>
 

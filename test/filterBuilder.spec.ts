@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { CriteriaBuilder } from "../src/lib/filter-builder/CriteriaBuilder";
 import { FilterBuilder } from "../src/lib/filter-builder/FilterBuilder";
+import { FilterRegistry } from "../src/lib/filter-builder/FilterRegistry";
+import { FilterPresets } from "../src/lib/filter-builder/FilterPresets";
+import { FilterMigration } from "../src/lib/filter-builder/FilterMigration";
 
 // Verify fluent criteria API generates expected operators and logic links.
 describe("CriteriaBuilder", () => {
@@ -63,5 +66,105 @@ describe("FilterBuilder", () => {
       selectedFields: ["id", "name", "email"]
     });
     expect(draft.conditions).toHaveLength(2);
+  });
+});
+
+// Verify registry can store and create immutable draft presets by key.
+describe("FilterRegistry", () => {
+  it("registers factories and creates drafts", () => {
+    const registry = new FilterRegistry();
+    registry.register("active-users", () =>
+      FilterBuilder.create("Active users", "User")
+        .withConditions([
+          {
+            id: "status-active",
+            field: "status",
+            operator: "eq",
+            value: "active",
+            logic: "AND"
+          }
+        ])
+        .build()
+    );
+
+    const draft = registry.create("active-users");
+
+    expect(registry.has("active-users")).toBe(true);
+    expect(registry.keys()).toEqual(["active-users"]);
+    expect(draft).toMatchObject({
+      name: "Active users",
+      modelName: "User"
+    });
+    expect(draft.conditions).toHaveLength(1);
+  });
+
+  it("rejects duplicate keys without overwrite and allows overwrite when enabled", () => {
+    const registry = new FilterRegistry();
+
+    registry.register("preset", () => FilterBuilder.create("First", "User").build());
+    expect(() =>
+      registry.register("preset", () => FilterBuilder.create("Second", "User").build())
+    ).toThrowError("already registered");
+
+    registry.register("preset", () => FilterBuilder.create("Second", "User").build(), {
+      overwrite: true
+    });
+
+    const draft = registry.create("preset");
+    expect(draft.name).toBe("Second");
+  });
+});
+
+// Verify built-in and custom presets can be resolved into filter drafts.
+describe("FilterPresets", () => {
+  it("provides default preset and allows custom preset registration", () => {
+    const presets = new FilterPresets();
+
+    expect(presets.has("active-records")).toBe(true);
+    expect(presets.names()).toContain("active-records");
+
+    presets.register("recent-orders", () =>
+      FilterBuilder.create("Recent orders", "Order")
+        .withSort("createdAt", "DESC")
+        .build()
+    );
+
+    const draft = presets.apply("recent-orders");
+    expect(draft).toMatchObject({
+      name: "Recent orders",
+      modelName: "Order",
+      sortField: "createdAt",
+      sortDirection: "DESC"
+    });
+  });
+});
+
+// Verify migration pipeline applies incremental steps for draft evolution.
+describe("FilterMigration", () => {
+  it("migrates draft through sequential version steps", () => {
+    const migration = new FilterMigration();
+
+    migration.register(1, (draft) => ({
+      ...draft,
+      description: draft.description ?? "Migrated to v2"
+    }));
+    migration.register(2, (draft) => ({
+      ...draft,
+      selectedFields: draft.selectedFields ?? ["id", "name"]
+    }));
+
+    const source = FilterBuilder.create("Customers", "Customer").build();
+    const result = migration.migrate(source, 1, 3);
+
+    expect(result.description).toBe("Migrated to v2");
+    expect(result.selectedFields).toEqual(["id", "name"]);
+    expect(migration.latestVersion()).toBe(3);
+  });
+
+  it("throws when migration step is missing", () => {
+    const migration = new FilterMigration();
+    const source = FilterBuilder.create("Customers", "Customer").build();
+
+    expect(() => migration.migrate(source, 1, 2)).toThrowError("not registered");
   });
 });

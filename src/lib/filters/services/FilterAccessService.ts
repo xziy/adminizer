@@ -10,38 +10,45 @@ export class ForbiddenError extends Error {
 }
 
 export class FilterAccessService {
+  private static readonly MAX_PERMISSION_CACHE_ENTRIES = 5000;
+  private readonly permissionCache = new Map<string, boolean>();
+
   constructor(private readonly adminizer: Adminizer) {}
 
   public canView(filter: Partial<FilterAP>, user: UserAP): boolean {
-    if (user.isAdministrator) {
-      return true;
-    }
+    return this.resolveWithCache("view", filter, user, () => {
+      if (user.isAdministrator) {
+        return true;
+      }
 
-    const ownerId = this.resolveOwnerId(filter);
-    if (ownerId !== undefined && ownerId === user.id) {
-      return true;
-    }
+      const ownerId = this.resolveOwnerId(filter);
+      if (ownerId !== undefined && ownerId === user.id) {
+        return true;
+      }
 
-    if (filter.visibility === "public") {
-      return true;
-    }
+      if (filter.visibility === "public") {
+        return true;
+      }
 
-    if (filter.visibility === "groups" && Array.isArray(filter.groupIds)) {
-      const filterGroupIds = filter.groupIds.map((id) => String(id));
-      const userGroupIds = (user.groups ?? []).map((group) => String(group.id));
-      return filterGroupIds.some((id) => userGroupIds.includes(id));
-    }
+      if (filter.visibility === "groups" && Array.isArray(filter.groupIds)) {
+        const filterGroupIds = filter.groupIds.map((id) => String(id));
+        const userGroupIds = (user.groups ?? []).map((group) => String(group.id));
+        return filterGroupIds.some((id) => userGroupIds.includes(id));
+      }
 
-    return false;
+      return false;
+    });
   }
 
   public canEdit(filter: Partial<FilterAP>, user: UserAP): boolean {
-    if (user.isAdministrator) {
-      return true;
-    }
+    return this.resolveWithCache("edit", filter, user, () => {
+      if (user.isAdministrator) {
+        return true;
+      }
 
-    const ownerId = this.resolveOwnerId(filter);
-    return ownerId !== undefined && ownerId === user.id;
+      const ownerId = this.resolveOwnerId(filter);
+      return ownerId !== undefined && ownerId === user.id;
+    });
   }
 
   public canExecute(filter: Partial<FilterAP>, user: UserAP): boolean {
@@ -88,6 +95,53 @@ export class FilterAccessService {
     }
 
     return undefined;
+  }
+
+  private resolveWithCache(
+    action: "view" | "edit",
+    filter: Partial<FilterAP>,
+    user: UserAP,
+    compute: () => boolean
+  ): boolean {
+    const cacheKey = this.buildPermissionCacheKey(action, filter, user);
+    const cached = this.permissionCache.get(cacheKey);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const result = compute();
+    this.putCacheEntry(cacheKey, result);
+    return result;
+  }
+
+  private buildPermissionCacheKey(
+    action: "view" | "edit",
+    filter: Partial<FilterAP>,
+    user: UserAP
+  ): string {
+    const ownerId = this.resolveOwnerId(filter);
+    const userGroupIds = (user.groups ?? []).map((group) => String(group.id)).sort().join(",");
+    const filterGroupIds = Array.isArray(filter.groupIds)
+      ? filter.groupIds.map((id) => String(id)).sort().join(",")
+      : "";
+
+    return [
+      action,
+      String(user.id),
+      String(user.isAdministrator === true),
+      userGroupIds,
+      String(filter.id ?? ""),
+      String(ownerId ?? ""),
+      String(filter.visibility ?? ""),
+      filterGroupIds
+    ].join("|");
+  }
+
+  private putCacheEntry(key: string, value: boolean): void {
+    if (this.permissionCache.size >= FilterAccessService.MAX_PERMISSION_CACHE_ENTRIES) {
+      this.permissionCache.clear();
+    }
+    this.permissionCache.set(key, value);
   }
 
   private logSecurityEvent(event: string, filterId: string | undefined, user: UserAP): void {

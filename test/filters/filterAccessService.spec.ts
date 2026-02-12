@@ -2,6 +2,7 @@
 import { FilterAccessService, ForbiddenError } from "../../src/lib/filters/services/FilterAccessService";
 import { FilterAP } from "../../src/models/FilterAP";
 import { UserAP } from "../../src/models/UserAP";
+import { performance } from "node:perf_hooks";
 
 const buildUser = (overrides: Partial<UserAP> = {}): UserAP => ({
   id: 1,
@@ -59,5 +60,57 @@ describe("FilterAccessService", () => {
 
     expect(service.canUseRawSQL(user)).toBe(false);
     expect(service.canUseRawSQL(admin)).toBe(true);
+  });
+
+  it("performs a single permission check in under 10ms", () => {
+    const user = buildUser({ id: 5 });
+    const filter = { id: "perf-single", visibility: "private", owner: 5 } as Partial<FilterAP>;
+
+    const start = performance.now();
+    const allowed = service.canView(filter, user);
+    const durationMs = performance.now() - start;
+
+    expect(allowed).toBe(true);
+    expect(durationMs).toBeLessThan(10);
+  });
+
+  it("performs bulk permission checks in under 100ms", () => {
+    const user = buildUser({ id: 10, groups: [{ id: 100 } as any] });
+    const filter = {
+      id: "perf-bulk",
+      visibility: "groups",
+      groupIds: [100]
+    } as Partial<FilterAP>;
+
+    const checks = 5000;
+    const start = performance.now();
+    let allowedCount = 0;
+    for (let index = 0; index < checks; index += 1) {
+      if (service.canView(filter, user)) {
+        allowedCount += 1;
+      }
+    }
+    const durationMs = performance.now() - start;
+
+    expect(allowedCount).toBe(checks);
+    expect(durationMs).toBeLessThan(100);
+  });
+
+  it("keeps cached permission checks under 1ms", () => {
+    const user = buildUser({ id: 11, groups: [{ id: 200 } as any] });
+    const filter = {
+      id: "perf-cache",
+      visibility: "groups",
+      groupIds: [200]
+    } as Partial<FilterAP>;
+
+    expect(service.canView(filter, user)).toBe(true);
+
+    const start = performance.now();
+    const cachedResult = service.canView(filter, user);
+    const durationMs = performance.now() - start;
+
+    expect(cachedResult).toBe(true);
+    expect(durationMs).toBeLessThan(1);
   });
 });

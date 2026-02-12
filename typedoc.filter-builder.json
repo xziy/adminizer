@@ -1,0 +1,22 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/lib/filter-builder/CriteriaBuilder.ts",
+    "src/lib/filter-builder/FilterBuilder.ts",
+    "src/lib/filter-builder/FilterRegistry.ts",
+    "src/lib/filter-builder/FilterPresets.ts",
+    "src/lib/filter-builder/FilterMigration.ts",
+    "src/lib/filter-builder/FilterProgrammaticApi.ts"
+  ],
+  "tsconfig": "src/tsconfig.json",
+  "out": "docs/api/filter-builder",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "disableSources": true,
+  "sort": [
+    "kind",
+    "alphabetical"
+  ],
+  "readme": "none"
+}

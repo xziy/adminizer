@@ -34,6 +34,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 import axios from "axios";
+import { storeRecentFilterVisit } from "@/lib/recent-filters";
 
 interface Action {
     id: string,
@@ -57,6 +58,8 @@ interface ExtendedSharedData extends SharedData {
     appliedFilterId?: string,
     appliedFilterName?: string,
     appliedFilterPinned?: boolean,
+    appliedFilterVisibility?: string,
+    appliedFilterGroupIds?: number[],
     filterColumnFields?: ColumnFieldInfo[],
     filterColumns?: ColumnConfig[],
     filterSelectedFields?: string[],
@@ -95,11 +98,15 @@ const ListTable = () => {
     const savedFilterSelectedFields = page.props.filterSelectedFields ?? []
     const appliedFilterName = page.props.appliedFilterName
     const appliedFilterPinned = page.props.appliedFilterPinned
+    const appliedFilterVisibility = page.props.appliedFilterVisibility ?? "private"
+    const appliedFilterGroupIds = page.props.appliedFilterGroupIds ?? []
     const [loading, setLoading] = useState(false)
     const [columnDialogOpen, setColumnDialogOpen] = useState(false)
     const [columnSaving, setColumnSaving] = useState(false)
     const [columnDraft, setColumnDraft] = useState<ColumnConfig[]>([])
     const [limitFieldsEnabled, setLimitFieldsEnabled] = useState(false)
+    const [accessVisibility, setAccessVisibility] = useState<"private" | "public" | "groups">("private")
+    const [accessGroupIdsText, setAccessGroupIdsText] = useState("")
     const [tableRows, setTableRows] = useState<any[]>(data.data ?? [])
     const [exporting, setExporting] = useState(false)
     const [exportFormat, setExportFormat] = useState<"csv" | "xlsx" | "json">("csv")
@@ -172,7 +179,38 @@ const ListTable = () => {
         }
         setColumnDraft(defaultColumns);
         setLimitFieldsEnabled(savedFilterSelectedFields.length > 0);
-    }, [columnDialogOpen, defaultColumns, savedFilterSelectedFields.length])
+        if (appliedFilterVisibility === "public" || appliedFilterVisibility === "groups") {
+            setAccessVisibility(appliedFilterVisibility);
+        } else {
+            setAccessVisibility("private");
+        }
+        setAccessGroupIdsText(
+            Array.isArray(appliedFilterGroupIds) ? appliedFilterGroupIds.join(", ") : ""
+        );
+    }, [
+        columnDialogOpen,
+        defaultColumns,
+        savedFilterSelectedFields.length,
+        appliedFilterVisibility,
+        appliedFilterGroupIds
+    ])
+
+    useEffect(() => {
+        if (!page.props.filtersEnabled || !appliedFilterId || !appliedFilterName) {
+            return;
+        }
+
+        storeRecentFilterVisit({
+            id: String(appliedFilterId),
+            name: String(appliedFilterName),
+            modelName: String(page.props.header.entity.name)
+        });
+    }, [
+        appliedFilterId,
+        appliedFilterName,
+        page.props.filtersEnabled,
+        page.props.header.entity.name
+    ]);
 
     useEffect(() => {
         if (page.props.flash) {
@@ -453,9 +491,18 @@ const ListTable = () => {
                     )
                 )
                 : [];
+            const parsedGroupIds =
+                accessVisibility === "groups"
+                    ? accessGroupIdsText
+                        .split(",")
+                        .map((value) => Number(value.trim()))
+                        .filter((value) => Number.isInteger(value) && value > 0)
+                    : [];
             const res = await axios.patch(`${window.routePrefix}/filters/${appliedFilterId}`, {
                 columns: columnDraft,
-                selectedFields
+                selectedFields,
+                visibility: accessVisibility,
+                groupIds: parsedGroupIds
             })
             if (res.data?.success) {
                 toast.success("Column layout saved")
@@ -472,7 +519,7 @@ const ListTable = () => {
         } finally {
             setColumnSaving(false)
         }
-    }, [appliedFilterId, columnDraft, limitFieldsEnabled])
+    }, [appliedFilterId, columnDraft, limitFieldsEnabled, accessVisibility, accessGroupIdsText])
 
     return (
         <>
@@ -527,6 +574,42 @@ const ListTable = () => {
                                         <p className="text-xs text-muted-foreground">
                                             Only the visible columns will be fetched when this filter is applied.
                                         </p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3 rounded-md border bg-muted/30 p-3 text-sm">
+                                    <p className="font-medium">Access</p>
+                                    <div className="grid gap-2 md:grid-cols-2">
+                                        <div className="grid gap-1">
+                                            <label className="text-xs font-medium text-muted-foreground">
+                                                Visibility
+                                            </label>
+                                            <Select
+                                                value={accessVisibility}
+                                                onValueChange={(value) =>
+                                                    setAccessVisibility(value as "private" | "public" | "groups")
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Visibility" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="private">Private</SelectItem>
+                                                    <SelectItem value="public">Public</SelectItem>
+                                                    <SelectItem value="groups">Groups</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid gap-1">
+                                            <label className="text-xs font-medium text-muted-foreground">
+                                                Group IDs (comma-separated)
+                                            </label>
+                                            <Input
+                                                value={accessGroupIdsText}
+                                                onChange={(event) => setAccessGroupIdsText(event.target.value)}
+                                                placeholder="1, 2, 3"
+                                                disabled={accessVisibility !== "groups"}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <DialogFooter>

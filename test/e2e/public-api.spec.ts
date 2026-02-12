@@ -136,6 +136,15 @@ test.describe("Public API E2E", () => {
     expect(revokedResult.status()).toBe(401);
   });
 
+  test("denies public API access without token", async ({ page }) => {
+    await loginViaUi(page);
+    const request = page.context().request;
+    const filter = await createFilter(request);
+
+    const response = await request.get(`${routePrefix}/api/public/json/${filter.id}`);
+    expect(response.status()).toBe(401);
+  });
+
   test("exports JSON and Excel formats", async ({ page }) => {
     // Establish an authenticated session before exporting.
     await loginViaUi(page);

@@ -19,8 +19,8 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL,
-    // Use the locally installed Chrome to avoid Playwright browser downloads.
-    channel: "chrome",
+    // Prefer a configured browser channel when available; fallback to bundled Chromium.
+    channel: process.env.PW_CHANNEL as "chrome" | "msedge" | undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     // Disable video to avoid ffmpeg downloads in constrained environments.
@@ -38,7 +38,10 @@ export default defineConfig({
       ADMINIZER_AUTH_CAPTCHA: "false",
       ADMINIZER_CSRF: "false",
       NO_SEED_DATA: "true",
-      ADMINPANEL_LAZY_GEN_ADMIN_ENABLE: "1"
+      CLEAN_TMP: "true",
+      ADMINPANEL_LAZY_GEN_ADMIN_ENABLE: "1",
+      ADMIN_LOGIN: process.env.E2E_ADMIN_LOGIN ?? "admin",
+      ADMIN_PASS: process.env.E2E_ADMIN_PASS ?? "45345345FF38"
     }
   }
 });

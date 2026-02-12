@@ -29,6 +29,7 @@
 * [Admin Controls](Controls.md)
 * [Query Builder](QueryBuilder.md)
 * [Saved Filters API](Filters.md)
+* [Programmatic Filters Migration](FilterProgrammaticMigration.md)
 * [Data Export](Export.md)
 * [Public API](PublicApi.md)
 

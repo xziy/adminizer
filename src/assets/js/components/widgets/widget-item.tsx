@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from "axios";
 import { getDefaultColorByID } from "./colorPallete.ts";
 import { Widget as WidgetData } from "@/types";
@@ -74,25 +74,40 @@ const WidgetItem: React.FC<WidgetProps> = ({ widgets, draggable, ID }) => {
             default:
                 break;
         }
-    }, [widgets, ID]);
+    }, [widgets, ID, getInfo, getState]);
 
-    const getInfo = async (api: string) => {
+    const getInfo = useCallback(async (api: string) => {
         try {
             const response = await axios.get(api);
             setWidgetState((prev) => ({ ...prev, info: response.data }));
         } catch (error) {
             console.error('Error fetching widget info:', error);
         }
-    };
+    }, []);
 
-    const getState = async (api: string) => {
+    const getState = useCallback(async (api: string) => {
         try {
             const response = await axios.get(api);
             setWidgetState((prev) => ({ ...prev, state: response.data.state }));
         } catch (error) {
             console.error('Error fetching widget state:', error);
         }
-    };
+    }, []);
+
+    // Poll info widgets when refreshIntervalSec is configured.
+    useEffect(() => {
+        const currentWidget = widgets.find((e) => e.id === ID);
+        if (!currentWidget || currentWidget.type !== 'info' || !currentWidget.api) return;
+
+        const refreshIntervalSec = Number(currentWidget.refreshIntervalSec ?? 0);
+        if (!Number.isFinite(refreshIntervalSec) || refreshIntervalSec <= 0) return;
+
+        const intervalId = window.setInterval(() => {
+            getInfo(currentWidget.api as string);
+        }, refreshIntervalSec * 1000);
+
+        return () => window.clearInterval(intervalId);
+    }, [widgets, ID, getInfo]);
 
     const handleLinkWidget = () => {
         const widget = widgets.find((e) => e.id === ID);

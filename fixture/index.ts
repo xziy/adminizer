@@ -2,8 +2,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Adminizer } from "../dist";
-import { bindNavigation } from "../dist";
+import { Adminizer } from "../dist/index.js";
+import { bindNavigation } from "../dist/index.js";
 import http from 'http';
 import { WaterlineAdapter, WaterlineModel } from "../dist/lib/model/adapter/waterline";
 import Waterline from "waterline";

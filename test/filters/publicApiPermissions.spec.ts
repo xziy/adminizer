@@ -480,4 +480,43 @@ describe("Public API permissions", () => {
 
     expect(publicResult.response.status).toBe(403);
   });
+
+  it("inherits model read permissions for feed formats", async () => {
+    await seedRecords();
+    const filterRecord = await createFilterRecord(users.noread.id);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST",
+      user: "noread"
+    });
+    expect(tokenResult.response.status).toBe(201);
+    const token = tokenResult.json?.token as string;
+
+    const feedResult = await jsonRequest(
+      `/admin/api/public/atom/${filterRecord.id}?token=${token}`,
+      { user: "noread" }
+    );
+
+    expect(feedResult.response.status).toBe(403);
+  });
+
+  it("denies API with tampered token", async () => {
+    await seedRecords();
+    const filterRecord = await createFilterRecord(users.full.id);
+
+    const tokenResult = await jsonRequest("/admin/api/user/api-token", {
+      method: "POST",
+      user: "full"
+    });
+    expect(tokenResult.response.status).toBe(201);
+    const token = tokenResult.json?.token as string;
+    const tamperedToken = `${token.slice(0, -1)}x`;
+
+    const publicResult = await jsonRequest(
+      `/admin/api/public/json/${filterRecord.id}?token=${tamperedToken}`,
+      { user: "full" }
+    );
+
+    expect(publicResult.response.status).toBe(401);
+  });
 });

@@ -28,6 +28,13 @@ export default async function create(req: ReqType, res: ResType) {
     });
   }
 
+  if (payload.isSystemFilter === true && !req.user.isAdministrator) {
+    return res.status(403).json({
+      success: false,
+      error: "Only administrators can create system filters"
+    });
+  }
+
   const conditionsInput = payload.conditions ?? [];
   const validation = validator.validate(conditionsInput as FilterCondition[], modelName, req.user);
 

@@ -260,7 +260,7 @@ export class FilterRepository {
     }
 
     const filterEntry = this.getFilterEntry();
-    const accessor = this.createAccessor(this.createSystemUser(), "list", filterEntry);
+    const accessor = this.createAccessor(this.createSystemUser(), "view", filterEntry);
 
     const where: Record<string, unknown> = {
       ...baseWhere,

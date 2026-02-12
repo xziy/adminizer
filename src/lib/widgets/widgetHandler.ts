@@ -27,6 +27,7 @@ export interface WidgetConfig {
     size?: { h: number; w: number; };
     added?: boolean;
     hideAdminPanelUI?: boolean
+    refreshIntervalSec?: number
 }
 
 export interface WidgetLayoutItem {
@@ -111,7 +112,8 @@ export class WidgetHandler {
                             backgroundCSS: widget.backgroundCSS ?? null,
                             size: widget.size ?? null,
                             link: widget.link,
-                            linkType: widget.linkType
+                            linkType: widget.linkType,
+                            refreshIntervalSec: widget.refreshIntervalSec
                         })
                     }
                 } else if (widget.widgetType === 'action') {

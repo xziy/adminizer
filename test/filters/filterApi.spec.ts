@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import Waterline, { Config } from "waterline";
 // @ts-ignore
 import sailsDisk from "sails-disk";
@@ -288,6 +288,146 @@ describe("Filters API", () => {
     expect(listIds).toContain(publicId);
   });
 
+  it("allows group-scoped filters for users in allowed groups", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: {
+        name: "Alice Group Filter",
+        modelName: "test",
+        visibility: "groups",
+        groupIds: [users.bob.groups?.[0]?.id]
+      }
+    });
+    const filterId = created.json?.data?.id as string;
+
+    const viewAsBob = await jsonRequest(`/admin/filters/${filterId}`, { user: "bob" });
+    expect(viewAsBob.response.status).toBe(200);
+
+    const listAsBob = await jsonRequest("/admin/filters?modelName=test", { user: "bob" });
+    const bobIds = (listAsBob.json?.data ?? []).map((item: any) => item.id);
+    expect(bobIds).toContain(filterId);
+
+    const editAsBob = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "bob",
+      body: { name: "Bob should not edit group filter" }
+    });
+    expect(editAsBob.response.status).toBe(403);
+
+    const deleteAsBob = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "DELETE",
+      user: "bob"
+    });
+    expect(deleteAsBob.response.status).toBe(403);
+  });
+
+  it("allows owner full access to own private filter", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Alice Full Access", modelName: "test", visibility: "private" }
+    });
+    expect(created.response.status).toBe(201);
+
+    const filterId = created.json?.data?.id as string;
+    expect(filterId).toBeTruthy();
+
+    const viewAsOwner = await jsonRequest(`/admin/filters/${filterId}`, { user: "alice" });
+    expect(viewAsOwner.response.status).toBe(200);
+
+    const updateAsOwner = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "alice",
+      body: { name: "Alice Full Access Updated" }
+    });
+    expect(updateAsOwner.response.status).toBe(200);
+
+    const deleteAsOwner = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "DELETE",
+      user: "alice"
+    });
+    expect(deleteAsOwner.response.status).toBe(200);
+  });
+
+  it("allows owner to change access visibility and group scope", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Alice Access Settings", modelName: "test", visibility: "private" }
+    });
+    expect(created.response.status).toBe(201);
+    const filterId = created.json?.data?.id as string;
+
+    const updateToGroups = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "alice",
+      body: { visibility: "groups", groupIds: [users.bob.groups?.[0]?.id] }
+    });
+    expect(updateToGroups.response.status).toBe(200);
+    expect(updateToGroups.json?.data?.visibility).toBe("groups");
+
+    const updateToPublic = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "alice",
+      body: { visibility: "public", groupIds: [] }
+    });
+    expect(updateToPublic.response.status).toBe(200);
+    expect(updateToPublic.json?.data?.visibility).toBe("public");
+  });
+
+  it("keeps edit rights owner-only even when filter is publicly visible", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Alice Public Editable", modelName: "test", visibility: "public" }
+    });
+    const filterId = created.json?.data?.id as string;
+
+    const viewAsBob = await jsonRequest(`/admin/filters/${filterId}`, { user: "bob" });
+    expect(viewAsBob.response.status).toBe(200);
+
+    const editAsBob = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "bob",
+      body: { name: "Bob should not edit" }
+    });
+    expect(editAsBob.response.status).toBe(403);
+
+    const deleteAsBob = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "DELETE",
+      user: "bob"
+    });
+    expect(deleteAsBob.response.status).toBe(403);
+  });
+
+  it("updates pinned state and filters favorites list", async () => {
+    const first = await jsonRequest("/admin/filters", {
+      method: "POST",
+      body: { name: "Pinned Filter", modelName: "test" }
+    });
+    const second = await jsonRequest("/admin/filters", {
+      method: "POST",
+      body: { name: "Regular Filter", modelName: "test" }
+    });
+
+    const firstId = first.json?.data?.id as string;
+    const secondId = second.json?.data?.id as string;
+
+    const pinResult = await jsonRequest(`/admin/filters/${firstId}`, {
+      method: "PATCH",
+      body: { isPinned: true }
+    });
+    expect(pinResult.response.status).toBe(200);
+    expect(pinResult.json?.data?.isPinned).toBe(true);
+
+    const pinnedOnly = await jsonRequest("/admin/filters?modelName=test&pinned=true");
+    expect(pinnedOnly.response.status).toBe(200);
+    const pinnedIds = (pinnedOnly.json?.data ?? []).map((item: any) => item.id);
+    expect(pinnedIds).toContain(firstId);
+    expect(pinnedIds).not.toContain(secondId);
+  });
+
   it("redirects to a list page via direct link", async () => {
     const created = await jsonRequest("/admin/filters", {
       method: "POST",
@@ -302,6 +442,107 @@ describe("Filters API", () => {
     expect(response.response.status).toBe(302);
     const location = response.response.headers.get("location");
     expect(location).toContain(`/admin/model/test?filterId=${filterId}`);
+  });
+
+  it("blocks direct-link access to private filters for other users (IDOR)", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Alice Private DirectLink", modelName: "test", visibility: "private" }
+    });
+    const filterId = created.json?.data?.id as string;
+
+    const forbidden = await jsonRequest(`/admin/filter/${filterId}`, {
+      user: "bob",
+      redirect: "manual"
+    });
+
+    expect(forbidden.response.status).toBe(403);
+    expect(forbidden.json?.success).toBe(false);
+  });
+
+  it("ignores owner in create payload to prevent mass assignment", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: {
+        name: "Mass Assignment Create",
+        modelName: "test",
+        owner: users.bob.id
+      }
+    });
+
+    expect(created.response.status).toBe(201);
+    const filterId = created.json?.data?.id as string;
+
+    const asAlice = await jsonRequest(`/admin/filters/${filterId}`, { user: "alice" });
+    expect(asAlice.response.status).toBe(200);
+
+    const asBob = await jsonRequest(`/admin/filters/${filterId}`, { user: "bob" });
+    expect(asBob.response.status).toBe(403);
+  });
+
+  it("ignores owner in update payload to prevent ownership takeover", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Mass Assignment Update", modelName: "test" }
+    });
+    const filterId = created.json?.data?.id as string;
+
+    const update = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "alice",
+      body: { owner: users.bob.id, name: "Mass Assignment Update Changed" }
+    });
+    expect(update.response.status).toBe(200);
+
+    const asAlice = await jsonRequest(`/admin/filters/${filterId}`, { user: "alice" });
+    expect(asAlice.response.status).toBe(200);
+
+    const asBob = await jsonRequest(`/admin/filters/${filterId}`, { user: "bob" });
+    expect(asBob.response.status).toBe(403);
+  });
+
+  it("blocks ACL field changes by non-owner users (permission bypass attempt)", async () => {
+    const created = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "ACL Protected", modelName: "test", visibility: "private" }
+    });
+    const filterId = created.json?.data?.id as string;
+
+    const bypassAttempt = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "bob",
+      body: {
+        visibility: "public",
+        groupIds: [users.bob.groups?.[0]?.id],
+        apiEnabled: true
+      }
+    });
+
+    expect(bypassAttempt.response.status).toBe(403);
+
+    const asBobAfterAttempt = await jsonRequest(`/admin/filters/${filterId}`, { user: "bob" });
+    expect(asBobAfterAttempt.response.status).toBe(403);
+  });
+
+  it("does not leak private filters via list endpoint (ACL bypass)", async () => {
+    const privateFilter = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "alice",
+      body: { name: "Alice Secret", modelName: "test", visibility: "private" }
+    });
+    const privateFilterId = privateFilter.json?.data?.id as string;
+
+    const listAsBob = await jsonRequest("/admin/filters?modelName=test&includeSystem=true", {
+      user: "bob"
+    });
+    expect(listAsBob.response.status).toBe(200);
+
+    const listedIds = (listAsBob.json?.data ?? []).map((item: any) => item.id);
+    expect(listedIds).not.toContain(privateFilterId);
   });
 
   it("validates and migrates legacy filters", async () => {
@@ -345,5 +586,87 @@ describe("Filters API", () => {
     expect(migrateResult.json?.migrated).toBe(true);
     expect(migrateResult.json?.data?.version).toBe(1);
     expect(migrateResult.json?.data?.conditions?.[0]?.operator).toBe("like");
+  });
+
+  it("prevents non-admin users from creating system filters (vertical escalation)", async () => {
+    const result = await jsonRequest("/admin/filters", {
+      method: "POST",
+      user: "bob",
+      body: {
+        name: "Escalation Create System",
+        modelName: "test",
+        isSystemFilter: true
+      }
+    });
+
+    expect(result.response.status).toBe(403);
+    expect(result.json?.success).toBe(false);
+  });
+
+  it("prevents non-admin users from promoting filters to system (vertical escalation)", async () => {
+    const filterEntry = resolveModelEntry(adminizer, "FilterAP");
+    const accessor = new DataAccessor(
+      adminizer,
+      users.admin,
+      buildEntity(adminizer, filterEntry),
+      "add"
+    );
+    const seeded = await filterEntry.model.create(
+      {
+        id: randomUUID(),
+        name: `Escalation Update System ${randomUUID().slice(0, 8)}`,
+        slug: `escalation-update-${randomUUID().slice(0, 8)}`,
+        modelName: "test",
+        conditions: [],
+        visibility: "private",
+        owner: users.alice.id,
+        version: 1,
+        isSystemFilter: false
+      } as any,
+      accessor
+    );
+    const filterId = String(seeded.id);
+
+    const update = await jsonRequest(`/admin/filters/${filterId}`, {
+      method: "PATCH",
+      user: "alice",
+      body: { isSystemFilter: true }
+    });
+
+    expect(update.response.status).toBe(403);
+    expect(update.json?.success).toBe(false);
+  });
+
+  it("writes audit trail entries for create, update and delete", async () => {
+    const auditSpy = vi.spyOn(adminizer.filters.audit, "record");
+    try {
+      const created = await jsonRequest("/admin/filters", {
+        method: "POST",
+        user: "admin",
+        body: { name: "Audit Trail Filter", modelName: "test" }
+      });
+      expect(created.response.status).toBe(201);
+      const filterId = created.json?.data?.id as string;
+
+      const updated = await jsonRequest(`/admin/filters/${filterId}`, {
+        method: "PATCH",
+        user: "admin",
+        body: { name: "Audit Trail Filter Updated" }
+      });
+      expect(updated.response.status).toBe(200);
+
+      const removed = await jsonRequest(`/admin/filters/${filterId}`, {
+        method: "DELETE",
+        user: "admin"
+      });
+      expect(removed.response.status).toBe(200);
+
+      const eventNames = auditSpy.mock.calls.map((call) => call[0]);
+      expect(eventNames).toContain("created");
+      expect(eventNames).toContain("updated");
+      expect(eventNames).toContain("deleted");
+    } finally {
+      auditSpy.mockRestore();
+    }
   });
 });

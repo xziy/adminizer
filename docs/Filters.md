@@ -152,10 +152,43 @@ Each column item supports:
 ### DELETE `/adminizer/filters/:id`
 Delete a filter.
 
+## Security Notes
+
+- Ownership is enforced on update/delete routes: non-owners cannot change ACL-related fields (`visibility`, `groupIds`, `apiEnabled`) of another user's filter.
+- Direct-link and list endpoints are protected from private filter disclosure; private filters are not accessible by id and are not leaked through list queries.
+- Group-shared filters are read-only for shared users: they can view/use filters granted by group visibility but cannot edit or delete them.
+- Public API access requires a valid API token and permission tokens (`api-public-access`, export token, and model read token).
+- Filter repository operations emit audit events for create/update/delete through `FilterAuditLogger`.
+- `FilterAccessService` uses an in-memory permission cache to speed up repeated access checks.
+
 ### GET `/adminizer/filters/:id/count`
 Return the number of records that match the filter (useful for widgets).
 
 If the saved filter no longer matches the current schema, the endpoint returns `400` with a validation payload.
+
+### Filter Count Widget (Phase 10 - partial)
+
+You can register an info widget that shows the saved-filter count and links to the filter results page:
+
+```ts
+import { FilterCountWidget } from "adminizer";
+
+adminizer.widgetHandler.add(
+  new FilterCountWidget(adminizer, {
+    id: "orders_open_count",
+    filterId: "uuid-of-saved-filter",
+    name: "Open Orders",
+    description: "Current open orders by saved filter",
+    refreshIntervalSec: 60
+  })
+);
+```
+
+Notes:
+- The widget reads data through existing filter services (`repository`, `access`, `execution`).
+- Counts are cached per user for `refreshIntervalSec` to reduce repeated query load.
+- `refreshIntervalSec` is also exposed to dashboard UI and triggers periodic polling of widget value.
+- The widget link points to `/adminizer/filter/:id` (direct filter redirect endpoint).
 
 ### GET `/adminizer/filter/:id`
 Direct link to a filter. Redirects to the list page with `filterId` applied.
@@ -175,6 +208,11 @@ The generated URL targets list pages in the format `/adminizer/model/:modelName?
 When a saved filter is applied in the list view, the toolbar shows a **Pin** button. Use it to add or remove the filter from the sidebar quick links section.
 
 The sidebar renders the pinned filters under **Quick Filters**, supports drag-and-drop ordering, and displays a badge with the current record count per filter.
+
+### Recent Filters UI
+
+The sidebar also keeps a local history of recently applied filters under **Recent Filters**.  
+This history is stored in browser `localStorage`, updates automatically when a filter is applied in list view, and is limited to the latest entries.
 
 ## Programmatic Filter Builder (Phase 11 - partial)
 
@@ -220,6 +258,228 @@ const draft = FilterBuilder.create("Active customers", "Customer")
 
 The `build()` result is immutable and can be passed directly into `FilterRepository.create` or used as a validated DTO in your own services.
 You can also use `.selectFields([...])` as a concise alias for `.withSelectedFields([...])`.
+
+### FilterRegistry
+
+Use `FilterRegistry` to register named factories for reusable filter drafts:
+
+```ts
+import { FilterBuilder, FilterRegistry } from "adminizer";
+
+const registry = new FilterRegistry();
+
+registry.register("active-users", () =>
+  FilterBuilder.create("Active users", "User")
+    .withConditions([
+      { id: "status-active", field: "status", operator: "eq", value: "active", logic: "AND" }
+    ])
+    .build()
+);
+
+const draft = registry.create("active-users");
+```
+
+### CustomConditionRegistry
+
+Use `CustomConditionRegistry` to register model-scoped custom handlers for complex fields.
+The registry is a facade over `CustomFieldHandler` and supports `register`, `get`, `getAll`, `getForModel`, and `clear`.
+
+```ts
+import { CustomConditionRegistry } from "adminizer";
+
+const registry = new CustomConditionRegistry();
+
+registry.register("Order.phone", {
+  name: "order-phone",
+  buildCondition: ({ value }) => ({
+    rawSQL: "phone->>'number' = ?",
+    rawSQLParams: [value]
+  })
+});
+
+const orderHandlers = registry.getForModel("Order"); // keys: "phone"
+```
+
+### JsonPathMatcher
+
+Use `JsonPathMatcher` to build reusable JSON-path handlers backed by SQL when available:
+
+```ts
+import { registerJsonPathMatcher } from "adminizer";
+
+registerJsonPathMatcher({
+  handlerId: "Order.metaCity",
+  jsonColumn: "metadata",
+  jsonPath: ["location", "city"]
+});
+```
+
+The matcher validates operator/value pairs, generates SQL for Sequelize adapters (PostgreSQL/MySQL), and falls back to in-memory evaluation for non-SQL adapters.
+
+### FullTextMatcher
+
+Use `FullTextMatcher` to register reusable full-text handlers for multiple fields:
+
+```ts
+import { registerFullTextMatcher } from "adminizer";
+
+registerFullTextMatcher({
+  handlerId: "Post.searchText",
+  fields: ["title", "content"]
+});
+```
+
+The matcher validates query input, uses PostgreSQL/MySQL SQL expressions for full-text or fallback `LIKE` searches, and applies in-memory matching for non-SQL adapters.
+
+### GeospatialMatcher
+
+Use geospatial matchers for radius and polygon filters:
+
+```ts
+import {
+  registerGeospatialPolygonMatcher,
+  registerGeospatialRadiusMatcher
+} from "adminizer";
+
+registerGeospatialRadiusMatcher({
+  handlerId: "Place.nearby",
+  latField: "lat",
+  lngField: "lng"
+});
+
+registerGeospatialPolygonMatcher({
+  handlerId: "Place.inArea",
+  latField: "lat",
+  lngField: "lng"
+});
+```
+
+The radius matcher uses a Haversine SQL condition for SQL adapters and falls back to in-memory distance checks.  
+The polygon matcher applies SQL bounding-box prefiltering and in-memory point-in-polygon verification.
+
+### ArrayMatcher
+
+Use array matchers for contains/overlaps/contains-all operations:
+
+```ts
+import {
+  registerArrayContainsAllMatcher,
+  registerArrayContainsMatcher,
+  registerArrayOverlapsMatcher
+} from "adminizer";
+
+registerArrayContainsMatcher({
+  handlerId: "Post.tagsContains",
+  fieldName: "tags"
+});
+
+registerArrayOverlapsMatcher({
+  handlerId: "Post.tagsOverlap",
+  fieldName: "tags"
+});
+
+registerArrayContainsAllMatcher({
+  handlerId: "Post.tagsAll",
+  fieldName: "tags"
+});
+```
+
+The matcher supports `contains`, `overlaps`, and `containsAll` modes.  
+For Waterline, it emits criteria-based conditions; for other adapters, it uses in-memory filtering fallback.
+
+### ComputedFieldMatcher
+
+Use `ComputedFieldMatcher` for virtual/computed values that are evaluated in memory:
+
+```ts
+import { registerComputedFieldMatcher } from "adminizer";
+
+registerComputedFieldMatcher({
+  handlerId: "User.computedAge",
+  computedField: "computedAge",
+  compute: (record) => 2026 - Number(record.birthYear)
+});
+```
+
+Provide `operator` and `targetValue` in the condition payload to compare computed results.  
+The matcher also exports `filterByComputedField(...)` for standalone post-processing pipelines.
+
+### FilterPresets
+
+Use `FilterPresets` when you want a managed list of reusable presets with built-in defaults:
+
+```ts
+import { FilterBuilder, FilterPresets } from "adminizer";
+
+const presets = new FilterPresets();
+
+presets.register("recent-orders", () =>
+  FilterBuilder.create("Recent orders", "Order")
+    .withSort("createdAt", "DESC")
+    .build()
+);
+
+const draft = presets.apply("recent-orders");
+```
+
+### FilterMigration
+
+Use `FilterMigration` to migrate programmatic draft formats between schema versions:
+
+```ts
+import { FilterBuilder, FilterMigration } from "adminizer";
+
+const migration = new FilterMigration();
+
+migration.register(1, (draft) => ({ ...draft, description: draft.description ?? "Migrated to v2" }));
+migration.register(2, (draft) => ({ ...draft, selectedFields: draft.selectedFields ?? ["id", "name"] }));
+
+const source = FilterBuilder.create("Customers", "Customer").build();
+const migrated = migration.migrate(source, 1, 3);
+```
+
+### FilterProgrammaticApi
+
+Use `FilterProgrammaticApi` for scripted CRUD operations over filters with lifecycle hooks:
+
+```ts
+import { FilterBuilder, FilterProgrammaticApi } from "adminizer";
+
+const api = new FilterProgrammaticApi(filterRepository, currentUser);
+
+api.on("beforeCreate", async ({ data }) => {
+  // custom validation, metrics or logging
+});
+
+const draft = FilterBuilder.create("Backoffice active users", "User")
+  .withConditions([
+    { id: "status-active", field: "status", operator: "eq", value: "active", logic: "AND" }
+  ])
+  .build();
+
+const created = await api.create(draft);
+const found = await api.findById(String(created.id));
+await api.update(String(created.id), { name: "Backoffice active users v2" });
+await api.delete(String(created.id));
+```
+
+### Programmatic API Migration Guide
+
+For step-by-step migration from ad-hoc draft objects/custom maps to Phase 11 builders and runtime API, see:
+
+- `docs/FilterProgrammaticMigration.md`
+
+### TypeDoc API Reference
+
+Filter-builder API reference can be generated with:
+
+```bash
+npm run docs:typedoc
+```
+
+Generated output path:
+
+- `docs/api/filter-builder/`
 
 ## React Filter Builder Component
 

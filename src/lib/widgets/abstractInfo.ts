@@ -18,6 +18,9 @@ export abstract class InfoBase extends BaseWidget {
 	/** Link type */
 	public readonly linkType?: 'self' | 'blank';
 
+	/** Optional auto refresh interval in seconds for frontend polling */
+	public readonly refreshIntervalSec?: number;
+
 	/** Get info */
-	public abstract getInfo(): Promise<string>
+	public abstract getInfo(req?: ReqType): Promise<string>
 }

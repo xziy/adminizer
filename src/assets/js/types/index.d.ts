@@ -88,6 +88,7 @@ export interface Widget {
     constructorOption?: any;
     constructorName?: string;
     hideAdminPanelUI?: boolean;
+    refreshIntervalSec?: number;
     size?: {
         w: number
         h: number
