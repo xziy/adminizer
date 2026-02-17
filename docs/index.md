@@ -10,6 +10,7 @@
 * [Model Definitions](Configuration/Models.md)
 * [Field Options](Configuration/Fields.md)
 * [Custom Components](Configuration/CustomComponents.md)
+* [Custom Control + Inertia + List Example](Configuration/CustomControlInertiaAndFieldList.md)
 
 ## Other
 
