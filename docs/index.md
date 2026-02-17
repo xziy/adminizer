@@ -15,6 +15,8 @@
 ## Other
 
 * [Localization](Configuration/Localization.md)
+* [AI Documentation Guidelines](AI-Documentation-Guidelines.md)
+* [Documentation README](README.md)
 * [Icons](Icons.md)
 * [Notifications](Notifications.md)
 * [History-Actions](HistoryActions.md)

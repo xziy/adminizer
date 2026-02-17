@@ -1,5 +1,9 @@
 # Admin Panel configuration
 
+## Related guides
+
+- [Custom Control + Inertia + List Example](Configuration/CustomControlInertiaAndFieldList.md)
+
 
 ### Abstract
 
