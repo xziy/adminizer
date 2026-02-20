@@ -1,6 +1,6 @@
-import { Sequelize } from "sequelize-typescript";
-import { SequelizeAdapter } from "adminizer/lib/model/adapter/sequelize";
-import { Post } from "../models/Post";
+import { Sequelize } from "sequelize";
+import { SequelizeAdapter } from "adminizer";
+import { initPostModel } from "../models/Post";
 
 let sequelizeInstance: Sequelize | null = null;
 
@@ -15,8 +15,8 @@ export async function getSequelizeInstance() {
     logging: false
   });
 
-  await SequelizeAdapter.registerSystemModels(sequelizeInstance);
-  sequelizeInstance.addModels([Post]);
+  await SequelizeAdapter.registerSystemModels(sequelizeInstance as any);
+  initPostModel(sequelizeInstance);
   await sequelizeInstance.sync();
 
   return sequelizeInstance;

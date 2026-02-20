@@ -8,10 +8,9 @@
     "preview": "nuxi preview"
   },
   "dependencies": {
-    "adminizer": "latest",
+    "adminizer": "^4.4.0",
     "nuxt": "^3.13.2",
     "sequelize": "^6.37.7",
-    "sequelize-typescript": "^2.1.6",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {

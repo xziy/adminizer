@@ -1,9 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { Adminizer, type AdminpanelConfig } from "adminizer";
-import { SequelizeAdapter } from "adminizer/lib/model/adapter/sequelize";
+import { Adminizer, SequelizeAdapter } from "adminizer";
 import { getSequelizeInstance } from "./sequelize";
 
-const adminizerConfig: AdminpanelConfig = {
+const adminizerConfig = {
   routePrefix: "/adminizer",
   auth: {
     enable: false
@@ -33,10 +32,10 @@ export async function getAdminizerMiddleware() {
   }
 
   const sequelize = await getSequelizeInstance();
-  const adapter = new SequelizeAdapter(sequelize);
+  const adapter = new SequelizeAdapter(sequelize as any);
   const adminizer = new Adminizer([adapter]);
 
-  await adminizer.init(adminizerConfig);
+  await adminizer.init(adminizerConfig as any);
   middlewareInstance = adminizer.getMiddleware();
 
   return middlewareInstance;

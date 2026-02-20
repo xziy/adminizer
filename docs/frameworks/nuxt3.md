@@ -4,14 +4,14 @@
 
 # Nuxt 3 + Adminizer (minimal Sequelize fixture)
 
-This guide adds a minimal Nuxt 3 integration with Adminizer using Sequelize + SQLite.
+This guide describes a minimal Nuxt 3 integration with Adminizer using Sequelize + SQLite.
 
 Reference example: `fixture-nuxt3/`.
 
 ## 1) Install dependencies
 
 ```bash
-npm install adminizer nuxt sequelize sequelize-typescript sqlite3
+npm install adminizer nuxt sequelize sqlite3
 npm install -D tsx typescript
 ```
 
@@ -34,10 +34,8 @@ fixture-nuxt3/
 
 - creates a singleton Sequelize instance,
 - registers Adminizer system models,
-- registers one custom model (`Post`),
+- initializes one custom model (`Post`),
 - runs `sync()`.
-
-This is enough to make Adminizer CRUD available for the model.
 
 ## 4) Adminizer bootstrap
 
@@ -76,5 +74,6 @@ npm run preview
 ## Notes
 
 - This fixture is intentionally minimal and focused on wiring.
+- It uses `Adminizer` and `SequelizeAdapter` from the `adminizer` package root export.
 - For production use, enable Adminizer auth and move secrets to environment variables.
-- You can add more Sequelize models by placing them in `server/models` and extending `models` config in `server/utils/adminizer.ts`.
+- Add more Sequelize models in `server/models` and extend `models` config in `server/utils/adminizer.ts`.
