@@ -26,6 +26,7 @@
 * [Form Error Management](FormError.md)
 * [Appearance](Appearance.md)
 * [Next.js Framework Guide](frameworks/nextjs.md)
+* [Nuxt 3 Framework Guide](frameworks/nuxt3.md)
 
 ## 4. Admin Panel Features
 
