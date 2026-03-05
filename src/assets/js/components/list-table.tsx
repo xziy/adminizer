@@ -67,7 +67,7 @@ const ListTable = () => {
     const page = usePage<ExtendedSharedData>()
     const data = page.props.data
     const [loading, setLoading] = useState(false)
-    // Состояния для параметров
+    // States for parameters
     const [searchValue, setSearchValue] = useState('')
     const [showSearch, setShowSearch] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
@@ -83,10 +83,10 @@ const ListTable = () => {
     const [showFilterDialog, setShowFilterDialog] = useState(false)
     const [editingFilter, setEditingFilter] = useState<FilterDialogFilter | null>(null)
 
-    // Ref для хранения параметров поиска по колонкам
+    // Ref for storing search parameters by columns
     const queryColumnsRef = useRef<{ key: string, value: string }[]>([])
 
-    // Инициализация состояний из URL при загрузке
+    // Initializing states from URL on load
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search)
         console.log(page.props)
@@ -101,7 +101,7 @@ const ListTable = () => {
         const filterId = searchParams.get('filterId')
         setCurrentFilterId(filterId)
 
-        // Инициализация queryColumnsRef из URL
+        // Initializing queryColumnsRef from URL
         const searchColumns = searchParams.getAll('searchColumn')
         const searchValues = searchParams.getAll('searchColumnValue')
         queryColumnsRef.current = searchColumns.map((col, i) => ({
